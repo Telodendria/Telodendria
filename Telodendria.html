@@ -12,7 +12,7 @@
     content="Telodendria | A Matrix Homeserver written in ANSI C.">
 <meta property="og:type" content="website">
 <meta property="og:url"
-    content="https://bancino.net/pub/telodendria/telodendria.html">
+    content="https://bancino.net/pub/telodendria">
 <meta property="og:description"
     content="Telodendria, a Matrix homeserver written in ANSI C.">
 
@@ -116,18 +116,10 @@ Submit code patches to the <b>Telodendria</b> project.
 <a href="#telodendria">Telodendria</a>
 <ul>
 <li><a href="#table-of-contents">Table of Contents</a></li>
-<li>
-<a href="#getting-started">Getting Started</a>
-<ul>
-<li>
-<a href="#install">Install Telodendria</a>
-<ul>
-<li><a href="#openbsd">OpenBSD</a></li>
-<li><a href="#building-from-source">Building From Source</a></li>
-</ul>
+<li><a href="#download">Download</a></li>
+<li><a href="#building-the-source">Building The Source</a></li>
 </li>
 <li><a href="#configure">Configure Telodendria</a></li>
-</ul>
 </li>
 <li>
 <a href="#project-status">Project Status</a>
@@ -163,28 +155,50 @@ Submit code patches to the <b>Telodendria</b> project.
 </ul>
 </li>
 </ul>
-<h2 id="getting-started">Getting Started</h2>
-<h3 id="install">Install Telodendria</h3>
+<h2 id="download">Download</h2>
+<p>
+<b>Telodendria</b> is distributed as source tarballs, in true Unix
+fashion. If you want, you can verify the checksum of your download,
+and check the signature. To check the signature, you'll need 
+<code>signify</code>, and the signify public key:
+<a href="/pub/telodendria/telodendria-signify.pub">
+telodendria-signify.pub</a>.
+</p>
 <p>
 If your operating system has an official package or port of
-<b>Telodendria</b>, you should prefer to use that. If your operating
-system's package or port is too out of date for your tastes, please
-contact the package's maintainers to notify them, or offer to update
-the package yourself.
+<b>Telodendria</b>, you should prefer to use that instead of manually
+downloading the source and building it. If your operating system's
+package or port is too out of date for your tastes, please contact
+the package's maintainers to notify them, or offer to update the
+package yourself.
 </p>
-<p>
-If your operating system does not have an official package, see below
-for instructions on building from source and use them to create one.
-</p>
-<h4 id="openbsd">OpenBSD</h4>
-<p>
-<b>Telodendria</b> is available in the ports tree and as a binary
-package. You can install it with the following command:
-</p>
-<div class="code">
-$ pkg_add telodendria
-</div>
-<h4 id="building-from-source">Building From Source</h4>
+<table>
+<tr>
+<th>Version</th>
+<th>Download</th>
+<th>Checksum</th>
+<th>Signature</th>
+</tr>
+<tr>
+<td>v0.0.0</td>
+<td>
+<a href="/pub/telodendria/v0.0.0/Telodendria-v0.0.0.tar.gz">
+Telodendria-v0.0.0.tar.gz
+</a>
+</td>
+<td>
+<a href="/pub/telodendria/v0.0.0/Telodendria-v0.0.0.tar.gz.sha256">
+SHA256
+</a>
+</td>
+<td>
+<a href="/pub/telodendria/v0.0.0/Telodendria-v0.0.0.tar.gz.sig">
+Signify
+</a>
+</td>
+</tr>
+</table>
+<h2 id="building-the-source">Building The Source</h4>
 <p>
 <b>Telodendria</b> is designed to be light enough that it can be built
 from source on just about any operating system. It only has the
@@ -226,7 +240,7 @@ aren't using OpenBSD's <code>httpd(8)</code>, you should find its
 configuration syntax simple enough to adequately demonstrate the proper
 configuration.
 </p>
-<h3 id="configure">Configure Telodendria</h3>
+<h2 id="configure">Configure Telodendria</h3>
 <p>
 Once you get <b>Telodendria</b> built and hooked into your web server,
 you will have to write a configuration file for it. The configuration
@@ -266,6 +280,7 @@ can get involved.
 <li><s>Implement a hash map</s></li>
 <li><s>Combine library code files</s></li>
 <li><s>Implement configuration file parsing using the hash map</s></li>
+<li><s>Base64 encoding/decoding with padded/unpadded support</s></li>
 <li>Implement a JSON library using the hash map and array</li>
 <li>Figure out how to write unit tests for array/hashmap/etc</li>
 <li>Implement a simple HTTP server</li>
@@ -434,9 +449,7 @@ the contribution workflow goes as smoothly as possible.
 </p>
 <h4 id="getting-the-code">Getting The Code</h4>
 <p>
-There are multiple ways to get the source code for <b>Telodendria</b>.
-You can download an official release tarball from
-<a href="https://bancino.net/pub/telodendria">here</a> if you would like,
+You can download an official release tarball if you would really like,
 but the preferred way is to check out the source code from CVS. This
 makes generating patches a lot easier. If you do not have CVS, consult
 your operating system's package repository to install it. CVS was the
