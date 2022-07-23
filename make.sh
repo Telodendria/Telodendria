@@ -1,15 +1,27 @@
 #!/usr/bin/env sh
 
-TELODENDRIA_VERSION="0.0.1"
-CVS_TAG="Telodendria-$(echo $TELODENDRIA_VERSION | sed 's/\./_/g')"
+#
+# Set variables
+#
+# This syntax may look odd, but as far as I can tell, it is POSIX,
+# and it allows the values to be overridden by the environment,
+# such that these serve more as sane defaults than hard requirements.
+#
 
-HEADERS="-D_POSIX_C_SOURCE=199506L -DTELODENDRIA_VERSION=\"$TELODENDRIA_VERSION\""
-INCLUDES="-Isrc/include"
+: "${TELODENDRIA_VERSION:=0.0.0}"
+: "${CVS_TAG:=Telodendria-$(echo $TELODENDRIA_VERSION | sed 's/\./_/g')}"
 
-CC="${CC:-cc}"
-CFLAGS="-Wall -Werror -pedantic -std=c89 -O3 $HEADERS $INCLUDES"
-LDFLAGS="-static -flto -fdata-sections -ffunction-sections -s -Wl,-static -Wl,-gc-sections"
-PROG="telodendria"
+: "${HEADERS:=-D_POSIX_C_SOURCE=199506L -DTELODENDRIA_VERSION=\"$TELODENDRIA_VERSION\"}"
+: "${INCLUDES:=-Isrc/include}"
+
+: "${CC:=cc}"
+: "${CFLAGS:=-Wall -Werror -pedantic -std=c89 -O3 $HEADERS $INCLUDES}"
+: "${LDFLAGS:=-static -flto -fdata-sections -ffunction-sections -s -Wl,-static -Wl,-gc-sections}"
+: "${PROG:=telodendria}"
+
+if [ -f "$(pwd)/.env" ]; then
+	. "$(pwd)/.env"
+fi
 
 mod_time() {
     if [ -n "$1" ] && [ -f "$1" ]; then
@@ -65,6 +77,46 @@ recipe_test() {
 	echo "Unit tests are not implemented yet."
 }
 
+recipe_site() {
+	if [ -z "$TELODENDRIA_PUB" ]; then
+		echo "No public root directory specified."
+		echo "Set TELODENDRIA_PUB."
+		exit 1
+	fi
+
+	cp "Telodendria.css" "$TELODENDRIA_PUB/"
+	cp "Telodendria.html" "$TELODENDRIA_PUB/index.html"
+	cp "release/telodendria-signify.pub" "$TELODENDRIA_PUB/"
+}
+
+recipe_release() {
+	if [ -z "$TELODENDRIA_PUB" ]; then
+		echo "No public root directory specified."
+		echo "Set TELODENDRIA_PUB."
+		exit 1
+	fi
+
+	if [ -z "$TELODENDRIA_SIGNIFY_SECRET" ]; then
+		echo "No signify secret key specified."
+		echo "Set TELODENDRIA_SIGNIFY_SECRET."
+		exit 1
+	fi
+
+	mkdir -p "$TELODENDRIA_PUB/pub/v$TELODENDRIA_VERSION"
+	cd "$TELODENDRIA_PUB/pub/v$TELODENDRIA_VERSION"
+
+	cvs export "-r$CVS_TAG" "Telodendria"
+	mv "Telodendria" "Telodendria-v$TELODENDRIA_VERSION"
+	tar -czf "Telodendria-v$TELODENDRIA_VERSION.tar.gz" \
+		"Telodendria-v$TELODENDRIA_VERSION"
+	rm -r "Telodendria-v$TELODENDRIA_VERSION"
+	sha256 "Telodendria-v$TELODENDRIA_VERSION.tar.gz" \
+		> "Telodendria-v$TELODENDRIA_VERSION.tar.gz.sha256"
+	signify -S -s "$TELODENDRIA_SIGNIFY_SECRET" \
+		-m "Telodendria-v$TELODENDRIA_VERSION.tar.gz" \
+		-x "Telodendria-v$TELODENDRIA_VERSION.tar.gz.sig"
+}
+
 for recipe in $@; do
 	recipe_$recipe
 done
@@ -72,3 +124,4 @@ done
 if [ -z "$1" ]; then
 	recipe_build
 fi
+
