@@ -68,6 +68,11 @@ Is packaged as a single small, statically-linked and highly-optimized
 binary that can be run just about anywhere. It is designed to be
 extremely easy to set up and consume as few resources as possible.
 </li>
+<li>
+Is permissively licensed. <b>Telodendria</b> is licensed under the
+MIT license, which imposes few restrictions on what you can do with
+it.
+</li>
 </ul>
 <p>
 <b>Telodendria</b> is on Matrix! Check out the official Matrix rooms:
@@ -242,27 +247,22 @@ $ ./make.sh
 </div>
 <p>
 If everything went well, that will produce
-<code>telodendria.cgi</code>, which you can then place under your web
-root and configure your web server to execute. You'll need to make sure
-<code>/.well-known/matrix</code> and <code>/_matrix</code> and all the
-paths under them actually execute <code>telodendria.cgi</code>. See the
-provided OpenBSD <code>httpd.conf</code> for reference. Even if you
-aren't using OpenBSD's <code>httpd(8)</code>, you should find its
-configuration syntax simple enough to adequately demonstrate the proper
-configuration.
+<code>build/telodendria</code>, which you can then place wherever you
+want, and run as a system daemon. See the <code>contrib</code> folder
+for configuration examples.
 </p>
 <h2 id="configure">Configure Telodendria</h3>
 <p>
-Once you get <b>Telodendria</b> built and hooked into your web server,
-you will have to write a configuration file for it. The configuration
-file is just JSON, and it should be called
-<code>Telodendria.json</code>.
+Once you get <b>Telodendria</b> built, you will have to write a
+configuration file for it. The configuration file is a simple
+OpenBSD-style configuration file, which should be called
+<code>telodendria.conf</code>.
 </p>
 <h2 id="project-status">Project Status</h2>
 <p>
 <b>Telodendria</b> is a very ambitious project. There's a lot that needs
 to happen yet before it is usable. At the moment, there's nothing that
-even remotely resembles a Matrix homeserver here; I'm still
+even remotely ressembles a Matrix homeserver here; I'm still
 getting off the ground and building a foundation.
 </p>
 <p>
