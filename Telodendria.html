@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<meta name="author" content="Jordan Bancino">
+<meta name="description"
+    content="Telodendria, a Matrix homeserver written in ANSI C.">
+
+<meta property="og:title"
+    content="Telodendria | A Matrix Homeserver written in ANSI C.">
+<meta property="og:type" content="website">
+<meta property="og:url"
+    content="https://bancino.net/pub/telodendria/telodendria.html">
+<meta property="og:description"
+    content="Telodendria, a Matrix homeserver written in ANSI C.">
+
+<link rel="stylesheet" href="Telodendria.css">
+
+<title>Telodendria | A Matrix Homeserver written in ANSI C.</title>
+</head>
+<body>
+<h1 id="telodendria">Telodendria</h1>
+<p>
+<b>Telodendria:</b> The terminal branches of an axon.
+</p>
+<p>
+<b><i>Note:</i></b> <b>Telodendria</b> is under <i>heavy</i> development.
+Please see the <a href="#project-status">Project Status</a>.
+</p>
+<p>
+<b>Telodendria</b> is a Matrix homeserver implementation written from
+scratch in ANSI C. It is designed to be lightweight and simple, yet
+functional. <b>Telodendria</b> differentiates itself from other Matrix
+homeserver implementations because it:
+<ul>
+<li>
+Is written in C, a stable, low-level programming language with a long
+history, low build and runtime overhead, and wide compatibility.
+</li>
+<li>
+Is written with minimalism as a primary design goal. Whenever possible
+and practical, no third-party libraries are pulled in to the source
+code. Everything <b>Telodendria</b> needs is custom written. As a
+result, <b>Telodendria</b> depends only on a standard C compiler and
+library to be built, and only a web server with CGI capabilities to
+run.
+</li>
+<li>
+Uses a flat-file directory structure to store data instead of a
+database. This has a number of advantages:
+<ul>
+<li>It makes setup and maintenance much easier.</li>
+<li>
+It allows <b>Telodendria</b> to run on systems with fewer resources.
+</li>
+<li>
+It provides both runtime and data safety and stability. Since no
+database is running, there's fewer things that could go wrong because
+there's a lot less code running on the system.
+</li>
+</ul>
+</li>
+<li>
+Runs as a CGI application. <b>Telodendria</b> is delivered as a single
+small, highly-optimized binary that can be dropped in a web server's
+web root to be executed. This allows it to consume very few resources
+and be very easy to set up.
+</li>
+</ul>
+<p>
+<b>Telodendria</b> is on Matrix! Check out the official Matrix rooms:
+</p>
+<table>
+<tr>
+<th>Room</th>
+<th>Description</th>
+</tr>
+<tr>
+<td>
+<code>#telodendria-releases:bancino.net</code>
+</td>
+<td>
+Get notified of new releases.
+</td>
+</tr>
+<tr>
+<td>
+<code>#telodendria-general:bancino.net</code>
+</td>
+<td>
+General discussion and support for <b>Telodendria</b>.
+</td>
+</tr>
+<tr>
+<td>
+<code>#telodendria-issues:bancino.net</code>
+</td>
+<td>
+Report issues with <b>Telodendria</b>.
+</td>
+</tr>
+<tr>
+<td>
+<code>#telodendria-patches:bancino.net</code>
+</td>
+<td>
+Submit code patches to the <b>Telodendria</b> project.
+</td>
+</tr>
+</table>
+<h2 id="table-of-contents">Table of Contents</h2>
+<ul>
+<li>
+<a href="#telodendria">Telodendria</a>
+<ul>
+<li><a href="#table-of-contents">Table of Contents</a></li>
+<li>
+<a href="#getting-started">Getting Started</a>
+<ul>
+<li>
+<a href="#install">Install Telodendria</a>
+<ul>
+<li><a href="#openbsd">OpenBSD</a></li>
+<li><a href="#building-from-source">Building From Source</a></li>
+</ul>
+</li>
+<li><a href="#configure">Configure Telodendria</a></li>
+</ul>
+</li>
+<li>
+<a href="#project-status">Project Status</a>
+<ul>
+<li><a href="#phase-1">Phase 1: Getting Off The Ground</a></li>
+<li><a href="#phase-2">Phase 2: Building A Foundation</a></li>
+<li><a href="#phase-3">Phase 3: Welcome To Matrix</a></li>
+<li><a href="#phase-4">Phase 4: A Real Homeserver</a></li>
+</ul>
+</li>
+<li><a href="#rationale">Rationale</a></li>
+<li><a href="#project-goals">Project Goals</a></li>
+<li><a href="#getting-support">Getting Support</a></li>
+<li>
+<li>
+<a href="#documentation-status">Documentation Status</a>
+</li>
+<a href="#contributing">Contributing</a>
+<ul>
+<li><a href="#reporting-issues">Reporting Issues</a></li>
+<li>
+<a href="#Developing">Developing</a>
+<ul>
+<li><a href="#getting-the-code">Getting The Code</a></li>
+<li><a href="#code-style">Code Style</a></li>
+<li><a href="#submitting-patches">Subitting Patches</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#license">License</a></li>
+<li><a href="#change-log">Change Log</a></li>
+</ul>
+</li>
+</ul>
+<h2 id="getting-started">Getting Started</h2>
+<h3 id="install">Install Telodendria</h3>
+<p>
+If your operating system has an official package or port of
+<b>Telodendria</b>, you should prefer to use that. If your operating
+system's package or port is too out of date for your tastes, please
+contact the package's maintainers to notify them, or offer to update
+the package yourself.
+</p>
+<p>
+If your operating system does not have an official package, see below
+for instructions on building from source and use them to create one.
+</p>
+<h4 id="openbsd">OpenBSD</h4>
+<p>
+<b>Telodendria</b> is available in the ports tree and as a binary
+package. You can install it with the following command:
+</p>
+<div class="code">
+$ pkg_add telodendria
+</div>
+<h4 id="building-from-source">Building From Source</h4>
+<p>
+<b>Telodendria</b> is designed to be light enough that it can be built
+from source on just about any operating system. It only has the
+following requirements, all of which should be already available to
+you on a sufficiently complete operating system:
+</p>
+<ul>
+<li>
+A standards-compliant C compiler with the C standard library. Because
+<b>Telodendria</b> is written in ANSI C, it should compile on just about
+any compiler, but the following compilers are known to work:
+<ul>
+<li>GCC</li>
+<li>Clang</li>
+<li>
+Tiny C Compiler (<b>Note:</b> must edit <code>make.sh</code> and remove
+<code>-Wl,-static -Wl,-gc-sections</code> from <code>LDFLAGS</code>)
+</li>
+</ul>
+Other compilers should work as well, but you may have to play with the
+flags in <code>make.sh</code>.
+</li>
+<li>
+POSIX base utilities, including <code>find</code>, <code>stat</code>,
+<code>env</code>, and compliant <code>sh</code>-like shell.
+</li>
+</ul>
+<div class="code">
+$ ./make.sh
+</div>
+<p>
+If everything went well, that will produce
+<code>telodendria.cgi</code>, which you can then place under your web
+root and configure your web server to execute. You'll need to make sure
+<code>/.well-known/matrix</code> and <code>/_matrix</code> and all the
+paths under them actually execute <code>telodendria.cgi</code>. See the
+provided OpenBSD <code>httpd.conf</code> for reference. Even if you
+aren't using OpenBSD's <code>httpd(8)</code>, you should find its
+configuration syntax simple enough to adequately demonstrate the proper
+configuration.
+</p>
+<h3 id="configure">Configure Telodendria</h3>
+<p>
+Once you get <b>Telodendria</b> built and hooked into your web server,
+you will have to write a configuration file for it. The configuration
+file is just JSON, and it should be called
+<code>Telodendria.json</code>.
+</p>
+<h2 id="project-status">Project Status</h2>
+<p>
+<b>Telodendria</b> is a very ambitious project. There's a lot that needs
+to happen yet before it is even remotely usable. At the moment, there's
+nothing that even remotely resembles a Matrix homeserver here; we're still
+getting off the ground and building a foundation.
+</p>
+<p>
+Just because there's nothing here yet doesn't mean you should go away
+though! We desparately need help, so you are more than welcome to help
+out if you want things to go quicker. Please see the
+<a href="#contributing">Contributing</a> section for details on how you
+can get involved.
+</p>
+<h3 id="phase-1">Phase 1: Getting Off The Ground</h3>
+<ul>
+<li><s>Name this project</s></li>
+<li><s>Set up a CVS repository</s></li>
+<li><s>Make CVS repository public</s></li>
+<li><s>Write a coding style guide</s></li>
+<li><s>Write a build script</s></li>
+<li><s>Add a license</s></li>
+<li><s>Add support and issue reporting guide</s></li>
+<li><s>Add table of contents to this document</s></li>
+</ul>
+<h3 id="phase-2">Phase 2: Building A Foundation</h3>
+<ul>
+<li><s>Implement an array</s></li>
+<li><s>Implement a logging facility</s></li>
+<li><s>Implement argument parsing (<code>-c file -Vh</code>)</s></li>
+<li><s>Implement a hash map</s></li>
+<li><s>Combine library code files</s></li>
+<li><s>Implement configuration file parsing using the hash map</s></li>
+<li>Implement a JSON library using the hash map and array</li>
+<li>Figure out how to write unit tests for array/hashmap/etc</li>
+<li>Implement a simple HTTP server</li>
+<li>
+Design the server architecture
+<ul>
+<li>Route requests</li>
+<li>Handle requests</li>
+<li>Data abstraction layer</li>
+<li>Error generation</li>
+</ul>
+</li>
+</ul>
+<h3 id="phase-3">Phase 3: Welcome To Matrix</h3>
+<ul>
+<li>
+Implement the Client-Server API
+</li>
+<li>
+Implement the Server-Server API
+</li>
+<li>
+Implement the other Matrix APIs
+</li>
+</ul>
+<h3 id="phase-4">Phase 4: A Real Homeserver</h3>
+<ul>
+<li>
+Create an OpenBSD package and get it submitted to ports
+</li>
+<li>
+Create a command line tool to manage Telodendria
+<ul>
+<li>Configuration file generation</li>
+<li>User management</li>
+<li>Room management</li>
+</ul>
+</li>
+<li>
+Migrate from Synapse. I run a Synapse homeserver right now, so somehow
+I have to get all my data into the Telodendria format.
+</li>
+</ul>
+<h2 id="documentation-status">Documentation Status</h2>
+<p>
+This documentation needs just a little work. Here's the things
+on my list for that:
+</p>
+<ul>
+<li>Update Rationale section</li>
+<li>Update Project description (no longer a CGI binary)</li>
+<li>Update project code requirements (ANSI C, POSIX.1c)</li>
+</ul>
+<h2 id="rationale">Rationale</h2>
+<p>
+This section explains
+</p>
+<p>
+I want a lightweight Matrix homeserver designed for OpenBSD. I want a
+homeserver that can be developed in <code>vi(1)</code> and compiled
+with a C compiler. I want it to function entirely on a base OpenBSD
+install without having to install any extra packages whatsoever. I've
+found that the existing homeserver implementations are way
+over-engineered and written in such a way that many programs and
+libraries have to be pulled in to use them. I also want to learn how
+Matrix works, and I want to understand the code I'm running on my
+server.
+</p>
+<p>
+So I wrote Telodendria.
+</p>
+<p>
+Telodendria is written entirely in portable ANSI C. It depends on no
+third-party C libraries other than the standard C library. The only
+thing you need to run it is a web server that supports executing CGI
+programs, and a directory that data can be written to. Everything
+Telodendria needs to run itself is compiled into a single static
+binary, and the source code can be built anywhere, right out of the
+box.
+</p>
+<p>
+Telodendria doesn't use a database like all the other homeservers.
+Instead, it operates more like email: it uses a flat-file data
+structure similar to maildir to store data. The advantage of this is
+that it saves server maintainers from also having to maintain a
+database.  It greatly simplifies the process of getting a Matrix
+homeserver up and running, and it makes it highly portable. It also is
+extremely easy to back up and restore with base tools; just
+<code>tar(1)</code> up the directory, and you're good to go.
+</p>
+<p>
+Telodendria is developed and tested on OpenBSD, but you'll find that it
+should run under any web server that supports CGI. I chose to write
+Telodendria as a CGI program because anyone running an existing Matrix
+server is likely running a web server acting as a reverse proxy in
+front of it anyway, so why not just hook the homeserver directly into
+the web server? That's one less daemon to run, which means memory and
+CPU savings. CGI also allows Telodendria to remain single-threaded.
+Each request that comes in is handled as its own process, and
+operations are entirely isolated.
+</p>
+<h2 id="project-goals">Project Goals</h2>
+<p>
+The goals of this project are as follows:
+</p>
+<ul>
+<li>
+To be a production-ready Matrix server capable of handling a lot of
+users. Telodendria should have good performance in many diverse
+environments.
+</li>
+<li>
+To have as few external build and run dependencies as possible. It
+should be possible to compile Telodendria on any operating system out
+of the box, and have it be totally statically linked, ready to run
+under a <code>chroot(8)</code>-ed web server. You'll even notice that
+the documentation is written in HTML directly, not Markdown, to remove
+the dependency on a Markdown parser and renderer.
+</li>
+<li>
+To be written in clean, elegant, and well-documented code. The goal is
+to build a Matrix homeserver from the ground up, not just because I
+don't the way existing homeservers are implemented, but also so I can
+learn how Matrix really works, and maybe even teach others along the
+way.
+</li>
+</ul>
+<h2 id="getting-support">Getting Support</h2>
+<p>
+<b>Telodendria</b> is designed to be fairly straightforward, but that
+doesn't mean there won't be hiccups along the way. If you are struggling
+to get <b>Telodendria</b> up and running, you're more than welcome to
+reach out for support. Just join the
+<code>#telodendria-general:bancino.net</code> Matrix channel. Before
+you do though, make sure you're running the latest version of
+<b>Telodendria</b> and you've thoroughly read through all the
+relevant documentation.
+</p>
+<h2 id="contributing">Contributing</h2>
+<p>
+<b>Telodendria</b> is an open source project. As such, it welcomes
+contributions. There are many ways you can contribute, and any way you
+can is greatly appreciated.
+</p>
+<h3 id="reporting-issues">Reporting Issues</h3>
+<p>
+If&mdash;after you've reached out to
+<code>#telodendria-general:bancino.net</code>&mdash;it has been
+determined that there is a problem with <b>Telodendria</b>, it should
+be reported to <code>#telodendria-issues:bancino.net</code>. There it
+can be discussed further. The issues channel serves as the official
+issue tracker of <b>Telodendria</b>; although issues may  be copied
+into a <code>TODO</code> file in the CVS repository just so they
+don't get lost.
+</p>
+<h3 id="developing">Developing</h3>
+<p>
+The primary language used to write <b>Telodendria</b> code is ANSI C.
+Yes, that's the original C standard from 1989. The reason this standard
+is chosen, and the reason that it will not be changed, is because the
+original C is the most portable. Other languages you'll find in the
+<b>Telodendria</b> repository are shell scripts and HTML. If you have
+any experience at all with any of these languages, your contributions
+are valuable. Please follow the guidelines in this section to ensure
+the contribution workflow goes as smoothly as possible.
+</p>
+<h4 id="getting-the-code">Getting The Code</h4>
+<p>
+There are multiple ways to get the source code for <b>Telodendria</b>.
+You can download an official release tarball from
+<a href="https://bancino.net/pub/telodendria">here</a> if you would like,
+but the preferred way is to check out the source code from CVS. This
+makes generating patches a lot easier. If you do not have CVS, consult
+your operating system's package repository to install it. CVS was the
+chosen version control system for this project primarily because it is
+built into OpenBSD.
+</p>
+<div class="code">
+$ export CVSROOT=anoncvs@bancino.net:/cvs
+$ cvs checkout Telodendria
+$ cd Telodendria
+</div>
+<p>
+You should now have the latest <b>Telodendria</b> source code. Follow
+the <a href="#code-style">Code Style</a> as you make your changes.
+</p>
+<h4 id="code-style">Code Style</h4>
+<p>
+<b>Telodendria</b>'s code style is very unique. In general, these are
+the conventions used by the code base.
+</p>
+<ul>
+<li>
+All function, enumeration, structure, and header names are
+<code>CamelCase</code>. This is preferred to <code>snake_case</code>
+because it is more compact.
+</li>
+<li>
+<code>enum</code>s and <code>struct</code>s are always
+<code>typedef</code>-ed to their same name. The <code>typedef</code>
+occurs in the public API header, and the actual declaration occurs in
+the private implementation header.
+</li>
+<li>
+Indentation is done with spaces. This ensures that files look the same
+for everyone. It also makes line wrapping rules much easier because
+the indentations are the same size. Please configure your editor to
+make the <kbd>Tab</kbd> key insert spaces, and if it does automatic
+indentation, make sure it indents with spaces. If you cannot configure
+your editor to insert spaces, then you can try running the code files
+you were working on through <code>expand</code>. A unit of indentation
+is 4 spaces.
+</li>
+<li>
+Lines should not exceed 72 characters, including indentations. Some
+developers use <code>vi(1)</code> in an 80x24 terminal to write code.
+</li>
+</ul>
+<p>
+This guide may be subject to change. The source code is the absolute
+source of truth, so as long as you make your code look like the
+code surrounding it, you should be fine.
+</p>
+<h4 id="submitting-patches">Submitting Patches</h4>
+<p>
+Submitting patches is fairly easy to do if you've got the CVS sources
+checked out. Once you have made your changes, just run
+<code>cvs diff</code>:
+</p>
+<div class="code">
+$ cvs diff -uNp > your-changes.patch
+</div>
+<p>
+Then, send the resulting patches to
+<code>#telodendria-patches:bancino.net</code>, where they will be
+promptly reviewed by the community.
+</p>
+<h2 id="license">License</h2>
+<p>
+All of the code and documentation for <b>Telodendria</b> is licensed
+under the following terms and conditions:
+</p>
+<div class="code">
+Copyright (C) 2022 Jordan Bancino &lt;@jordan:bancino.net&gt;
+
+Permission is hereby granted, free of charge, to any person obtaining a
+copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to
+the following conditions:
+
+The above copyright notice and this permission notice shall be included
+in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+</div>
+<h2 id="change-log">Change Log</h2>
+<p>
+At this time, Telodendria does not have any tagged releases because it
+is not yet functional as a Matrix homeserver. Please check out the <a
+href="#project-status">Project Status</a> to see where things are
+currently at.
+</p>
+</body>
+</html>
