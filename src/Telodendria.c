@@ -32,7 +32,7 @@ TelodendriaPrintHeader(LogConfig *lc)
     Log(lc, LOG_MESSAGE,
         "Copyright (C) 2022 Jordan Bancino <@jordan:bancino.net>");
     Log(lc, LOG_MESSAGE,
-        "Documentation/Support: https://bancino.net/pub/Telodendria");
+        "Documentation/Support: https://telodendria.io");
     Log(lc, LOG_MESSAGE, "");
 }
 
