@@ -84,9 +84,8 @@ recipe_site() {
 		exit 1
 	fi
 
-	cp "Telodendria.css" "$TELODENDRIA_PUB/"
-	cp "Telodendria.html" "$TELODENDRIA_PUB/index.html"
-	cp "release/telodendria-signify.pub" "$TELODENDRIA_PUB/"
+	# In the future, this might do more.
+	cp site/* "$TELODENDRIA_PUB/"
 }
 
 recipe_release() {
