@@ -1,5 +1,1 @@
 build
-data
-.env
-*.log
-vgcore.*

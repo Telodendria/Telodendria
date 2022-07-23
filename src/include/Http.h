@@ -1,36 +1,7 @@
-/*
- * Copyright (C) 2022 Jordan Bancino <@jordan:bancino.net>
- *
- * Permission is hereby granted, free of charge, to any person
- * obtaining a copy of this software and associated documentation files
- * (the "Software"), to deal in the Software without restriction,
- * including without limitation the rights to use, copy, modify, merge,
- * publish, distribute, sublicense, and/or sell copies of the Software,
- * and to permit persons to whom the Software is furnished to do so,
- * subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be
- * included in all copies or portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
- * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
- * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
- * NONINFRINGEMENT.  IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS
- * BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
- * ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
- * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
 #ifndef TELODENDRIA_HTTP_H
 #define TELODENDRIA_HTTP_H
 
-#include <stdio.h>
-
-#include <HashMap.h>
-
-typedef enum HttpRequestMethod
-{
-    HTTP_METHOD_UNKNOWN,
+typedef enum HttpRequestMethod {
     HTTP_GET,
     HTTP_HEAD,
     HTTP_POST,
@@ -42,13 +13,12 @@ typedef enum HttpRequestMethod
     HTTP_PATCH
 } HttpRequestMethod;
 
-typedef enum HttpStatus
-{
+typedef enum HttpStatus {
     /* Informational responses */
     HTTP_CONTINUE = 100,
     HTTP_SWITCHING_PROTOCOLS = 101,
     HTTP_EARLY_HINTS = 103,
-
+    
     /* Successful responses */
     HTTP_OK = 200,
     HTTP_CREATED = 201,
@@ -57,7 +27,7 @@ typedef enum HttpStatus
     HTTP_NO_CONTENT = 204,
     HTTP_RESET_CONTENT = 205,
     HTTP_PARTIAL_CONTENT = 206,
-
+    
     /* Redirection messages */
     HTTP_MULTIPLE_CHOICES = 300,
     HTTP_MOVED_PERMANENTLY = 301,
@@ -66,7 +36,7 @@ typedef enum HttpStatus
     HTTP_NOT_MODIFIED = 304,
     HTTP_TEMPORARY_REDIRECT = 307,
     HTTP_PERMANENT_REDIRECT = 308,
-
+    
     /* Client error messages */
     HTTP_BAD_REQUEST = 400,
     HTTP_UNAUTHORIZED = 401,
@@ -91,7 +61,7 @@ typedef enum HttpStatus
     HTTP_TOO_MANY_REQUESTS = 429,
     HTTP_REQUEST_HEADER_FIELDS_TOO_LARGE = 431,
     HTTP_UNAVAILABLE_FOR_LEGAL_REASONS = 451,
-
+    
     /* Server error responses */
     HTTP_INTERNAL_SERVER_ERROR = 500,
     HTTP_NOT_IMPLEMENTED = 501,
@@ -104,25 +74,23 @@ typedef enum HttpStatus
     HTTP_NETWORK_AUTH_REQUIRED = 511
 } HttpStatus;
 
-extern const char *
- HttpStatusToString(const HttpStatus);
+struct HttpRequest {
+    HttpRequestMethod method;
+};
+
+struct HttpResponse {
+    HttpStatus status;
+};
+
+extern char *
+HttpGetStatusString(const HttpStatus httpStatus);
 
 extern HttpRequestMethod
- HttpRequestMethodFromString(const char *);
+HttpRequestMethodFromString(const char *requestMethod);
 
-extern const char *
- HttpRequestMethodToString(const HttpRequestMethod);
+typedef struct HttpRequest HttpRequest;
+typedef struct HttpResponse HttpResponse;
 
-extern char *
- HttpUrlEncode(char *);
-
-extern char *
- HttpUrlDecode(char *);
-
-extern HashMap *
- HttpParamDecode(char *);
-
-extern char *
- HttpParamEncode(HashMap *);
+typedef void (*HttpHandler)(HttpRequest *, HttpResponse *);
 
 #endif

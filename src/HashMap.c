@@ -1,61 +1,31 @@
-/*
- * Copyright (C) 2022 Jordan Bancino <@jordan:bancino.net>
- *
- * Permission is hereby granted, free of charge, to any person
- * obtaining a copy of this software and associated documentation files
- * (the "Software"), to deal in the Software without restriction,
- * including without limitation the rights to use, copy, modify, merge,
- * publish, distribute, sublicense, and/or sell copies of the Software,
- * and to permit persons to whom the Software is furnished to do so,
- * subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be
- * included in all copies or portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
- * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
- * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
- * NONINFRINGEMENT.  IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS
- * BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
- * ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
- * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
 #include <HashMap.h>
 
-#include <Memory.h>
-
+#include <stdint.h>
 #include <stddef.h>
-#include <string.h>
+#include <stdlib.h>
 
-typedef struct HashMapBucket
-{
-    unsigned long hash;
-    char *key;
+typedef struct HashMapBucket {
+    uint32_t hash;
     void *value;
 } HashMapBucket;
 
-struct HashMap
-{
+struct HashMap {
     size_t count;
     size_t capacity;
     HashMapBucket **entries;
 
-    unsigned long (*hashFunc) (const char *);
-
     float maxLoad;
-    size_t iterator;
 };
 
-static unsigned long
+static uint32_t
 HashMapHashKey(const char *key)
 {
-    unsigned long hash = 2166136261u;
+    uint32_t hash = 2166136261u;
     size_t i = 0;
 
     while (key[i])
     {
-        hash ^= (unsigned char) key[i];
+        hash ^= (uint8_t) key[i];
         hash *= 16777619;
 
         i++;
@@ -64,8 +34,9 @@ HashMapHashKey(const char *key)
     return hash;
 }
 
+
 static int
-HashMapGrow(HashMap * map)
+HashMapGrow(HashMap *map)
 {
     size_t oldCapacity;
     size_t i;
@@ -79,14 +50,11 @@ HashMapGrow(HashMap * map)
     oldCapacity = map->capacity;
     map->capacity *= 2;
 
-    newEntries = Malloc(map->capacity * sizeof(HashMapBucket *));
+    newEntries = calloc(map->capacity, sizeof(HashMapBucket *));
     if (!newEntries)
     {
-        map->capacity /= 2;
         return 0;
     }
-
-    memset(&newEntries, 0, map->capacity * sizeof(HashMapBucket *));
 
     for (i = 0; i < oldCapacity; i++)
     {
@@ -102,7 +70,7 @@ HashMapGrow(HashMap * map)
                 {
                     if (!newEntries[index]->hash)
                     {
-                        Free(newEntries[index]);
+                        free(newEntries[index]);
                         newEntries[index] = map->entries[i];
                         break;
                     }
@@ -119,11 +87,11 @@ HashMapGrow(HashMap * map)
         else
         {
             /* Either NULL or a tombstone */
-            Free(map->entries[i]);
+            free(map->entries[i]);
         }
     }
 
-    Free(map->entries);
+    free(map->entries);
     map->entries = newEntries;
     return 1;
 }
@@ -131,8 +99,7 @@ HashMapGrow(HashMap * map)
 HashMap *
 HashMapCreate(void)
 {
-    HashMap *map = Malloc(sizeof(HashMap));
-
+    HashMap *map = malloc(sizeof(HashMap));
     if (!map)
     {
         return NULL;
@@ -141,25 +108,21 @@ HashMapCreate(void)
     map->maxLoad = 0.75;
     map->count = 0;
     map->capacity = 16;
-    map->iterator = 0;
-    map->hashFunc = HashMapHashKey;
 
-    map->entries = Malloc(map->capacity * sizeof(HashMapBucket *));
+    map->entries = calloc(map->capacity, sizeof(HashMapBucket *));
     if (!map->entries)
     {
-        Free(map);
+        free(map);
         return NULL;
     }
-
-    memset(map->entries, 0, map->capacity * sizeof(HashMapBucket *));
 
     return map;
 }
 
 void *
-HashMapDelete(HashMap * map, const char *key)
+HashMapDelete(HashMap *map, const char *key)
 {
-    unsigned long hash;
+    uint32_t hash;
     size_t index;
 
     if (!map || !key)
@@ -167,7 +130,7 @@ HashMapDelete(HashMap * map, const char *key)
         return NULL;
     }
 
-    hash = map->hashFunc(key);
+    hash = HashMapHashKey(key);
     index = hash % map->capacity;
 
     for (;;)
@@ -192,7 +155,7 @@ HashMapDelete(HashMap * map, const char *key)
 }
 
 void
-HashMapFree(HashMap * map)
+HashMapFree(HashMap *map)
 {
     if (map)
     {
@@ -202,18 +165,18 @@ HashMapFree(HashMap * map)
         {
             if (map->entries[i])
             {
-                Free(map->entries[i]);
+                free(map->entries[i]);
             }
         }
-        Free(map->entries);
-        Free(map);
     }
+
+    free(map);
 }
 
 void *
-HashMapGet(HashMap * map, const char *key)
+HashMapGet(HashMap *map, const char *key)
 {
-    unsigned long hash;
+    uint32_t hash;
     size_t index;
 
     if (!map || !key)
@@ -221,7 +184,7 @@ HashMapGet(HashMap * map, const char *key)
         return NULL;
     }
 
-    hash = map->hashFunc(key);
+    hash = HashMapHashKey(key);
     index = hash % map->capacity;
 
     for (;;)
@@ -244,44 +207,31 @@ HashMapGet(HashMap * map, const char *key)
     return NULL;
 }
 
-int
-HashMapIterate(HashMap * map, char **key, void **value)
+void
+HashMapIterate(HashMap *map, void (*iteratorFunc)(void *))
 {
+    size_t i;
+
     if (!map)
     {
-        return 0;
+        return;
     }
 
-    if (map->iterator >= map->capacity)
+    for (i = 0; i < map->capacity; i++)
     {
-        map->iterator = 0;
-        *key = NULL;
-        *value = NULL;
-        return 0;
-    }
-
-    while (map->iterator < map->capacity)
-    {
-        HashMapBucket *bucket = map->entries[map->iterator];
-
-        map->iterator++;
+        HashMapBucket *bucket = map->entries[i];
 
         if (bucket)
         {
-            *key = bucket->key;
-            *value = bucket->value;
-            return 1;
+            iteratorFunc(bucket->value);
         }
     }
-
-    map->iterator = 0;
-    return 0;
 }
 
 void
-HashMapMaxLoadSet(HashMap * map, float load)
+HashMapMaxLoadSet(HashMap *map, float load)
 {
-    if (!map || (load > 1.0 || load <= 0))
+    if (!map)
     {
         return;
     }
@@ -289,21 +239,11 @@ HashMapMaxLoadSet(HashMap * map, float load)
     map->maxLoad = load;
 }
 
-void
-HashMapFunctionSet(HashMap * map, unsigned long (*hashFunc) (const char *))
-{
-    if (!map || !hashFunc)
-    {
-        return;
-    }
-
-    map->hashFunc = hashFunc;
-}
 
 void *
-HashMapSet(HashMap * map, char *key, void *value)
+HashMapSet(HashMap *map, const char *key, void *value)
 {
-    unsigned long hash;
+    uint32_t hash;
     size_t index;
 
     if (!map || !key || !value)
@@ -316,7 +256,7 @@ HashMapSet(HashMap * map, char *key, void *value)
         HashMapGrow(map);
     }
 
-    hash = map->hashFunc(key);
+    hash = HashMapHashKey(key);
     index = hash % map->capacity;
 
     for (;;)
@@ -325,14 +265,13 @@ HashMapSet(HashMap * map, char *key, void *value)
 
         if (!bucket)
         {
-            bucket = Malloc(sizeof(HashMapBucket));
+            bucket = malloc(sizeof(HashMapBucket));
             if (!bucket)
             {
                 break;
             }
 
             bucket->hash = hash;
-            bucket->key = key;
             bucket->value = value;
             map->entries[index] = bucket;
             map->count++;
@@ -342,7 +281,6 @@ HashMapSet(HashMap * map, char *key, void *value)
         if (!bucket->hash)
         {
             bucket->hash = hash;
-            bucket->key = key;
             bucket->value = value;
             break;
         }
@@ -350,7 +288,6 @@ HashMapSet(HashMap * map, char *key, void *value)
         if (bucket->hash == hash)
         {
             void *oldValue = bucket->value;
-
             bucket->value = value;
             return oldValue;
         }
@@ -361,16 +298,3 @@ HashMapSet(HashMap * map, char *key, void *value)
     return NULL;
 }
 
-void
-HashMapIterateFree(char *key, void *value)
-{
-    if (key)
-    {
-        Free(key);
-    }
-
-    if (value)
-    {
-        Free(value);
-    }
-}

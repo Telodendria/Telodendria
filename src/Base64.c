@@ -1,40 +1,17 @@
-/*
- * Copyright (C) 2022 Jordan Bancino <@jordan:bancino.net>
- *
- * Permission is hereby granted, free of charge, to any person
- * obtaining a copy of this software and associated documentation files
- * (the "Software"), to deal in the Software without restriction,
- * including without limitation the rights to use, copy, modify, merge,
- * publish, distribute, sublicense, and/or sell copies of the Software,
- * and to permit persons to whom the Software is furnished to do so,
- * subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be
- * included in all copies or portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
- * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
- * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
- * NONINFRINGEMENT.  IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS
- * BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
- * ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
- * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
 #include <Base64.h>
 
-#include <Memory.h>
+#include <stdlib.h>
 
 static const char Base64EncodeMap[] =
-"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
 static const int Base64DecodeMap[] = {
-    62, -1, -1, -1, 63, 52, 53, 54, 55, 56, 57, 58,
-    59, 60, 61, -1, -1, -1, -1, -1, -1, -1, 0, 1, 2, 3, 4, 5,
-    6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
-    21, 22, 23, 24, 25, -1, -1, -1, -1, -1, -1, 26, 27, 28,
-    29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42,
-    43, 44, 45, 46, 47, 48, 49, 50, 51
+        62, -1, -1, -1, 63, 52, 53, 54, 55, 56, 57, 58,
+        59, 60, 61, -1, -1, -1, -1, -1, -1, -1, 0, 1, 2, 3, 4, 5,
+        6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
+        21, 22, 23, 24, 25, -1, -1, -1, -1, -1, -1, 26, 27, 28,
+        29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42,
+        43, 44, 45, 46, 47, 48, 49, 50, 51
 };
 
 size_t
@@ -66,14 +43,10 @@ Base64DecodedSize(const char *base64, size_t len)
 
     ret = len / 4 * 3;
 
-    for (i = len; i > 0; i--)
-    {
-        if (base64[i] == '=')
-        {
+    for (i = len; i > 0; i--) {
+        if (base64[i] == '=') {
             ret--;
-        }
-        else
-        {
+        } else {
             break;
         }
     }
@@ -94,7 +67,7 @@ Base64Encode(const char *input, size_t len)
     }
 
     outLen = Base64EncodedSize(len);
-    out = Malloc(outLen + 1);
+    out = malloc(outLen + 1);
     if (!out)
     {
         return NULL;
@@ -113,17 +86,12 @@ Base64Encode(const char *input, size_t len)
         if (i + 1 < len)
         {
             out[j + 2] = Base64EncodeMap[(v >> 6) & 0x3F];
-        }
-        else
-        {
+        } else {
             out[j + 2] = '=';
         }
-        if (i + 2 < len)
-        {
+        if (i + 2 < len) {
             out[j + 3] = Base64EncodeMap[v & 0x3F];
-        }
-        else
-        {
+        } else {
             out[j + 3] = '=';
         }
     }
@@ -135,11 +103,11 @@ static int
 Base64IsValidChar(char c)
 {
     return (c >= '0' && c <= '9') ||
-    (c >= 'A' && c <= 'Z') ||
-    (c >= 'a' && c <= 'z') ||
-    (c == '+') ||
-    (c == '/') ||
-    (c == '=');
+            (c >= 'A' && c <= 'Z') ||
+            (c >= 'a' && c <= 'z') ||
+            (c == '+') ||
+            (c == '/') ||
+            (c == '=');
 }
 
 char *
@@ -158,11 +126,11 @@ Base64Decode(const char *input, size_t len)
     outLen = Base64DecodedSize(input, len);
     if (len % 4)
     {
-        /* Invalid length; must have incorrect padding */
+		/* Invalid length; must have incorrect padding */
         return NULL;
     }
 
-    /* Scan for invalid characters. */
+	/* Scan for invalid characters. */
     for (i = 0; i < len; i++)
     {
         if (!Base64IsValidChar(input[i]))
@@ -171,7 +139,7 @@ Base64Decode(const char *input, size_t len)
         }
     }
 
-    out = Malloc(outLen + 1);
+    out = malloc(outLen + 1);
     if (!out)
     {
         return NULL;
@@ -179,8 +147,7 @@ Base64Decode(const char *input, size_t len)
 
     out[outLen] = '\0';
 
-    for (i = 0, j = 0; i < len; i += 4, j += 3)
-    {
+    for (i = 0, j = 0; i < len; i += 4, j += 3) {
         v = Base64DecodeMap[input[i] - 43];
         v = (v << 6) | Base64DecodeMap[input[i + 1] - 43];
         v = input[i + 2] == '=' ? v << 6 : (v << 6) | Base64DecodeMap[input[i + 2] - 43];
@@ -221,17 +188,17 @@ Base64Pad(char **base64Ptr, size_t length)
 
     if (length % 4 == 0)
     {
-        return length;             /* Success: no padding needed */
+        return length; /* Success: no padding needed */
     }
 
     newSize = length + (4 - (length % 4));
 
-    tmp = Realloc(*base64Ptr, newSize + 100);;
+    tmp = realloc(*base64Ptr, newSize + 100);;
     if (!tmp)
     {
-        return 0;                  /* Memory error */
+        return 0; /* Memory error */
     }
-    *base64Ptr = tmp;
+	*base64Ptr = tmp;
 
     for (i = length; i < newSize; i++)
     {
@@ -242,3 +209,4 @@ Base64Pad(char **base64Ptr, size_t length)
 
     return newSize;
 }
+
