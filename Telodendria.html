@@ -44,8 +44,9 @@ Is written with minimalism as a primary design goal. Whenever possible
 and practical, no third-party libraries are pulled in to the source
 code. Everything <b>Telodendria</b> needs is custom written. As a
 result, <b>Telodendria</b> depends only on a standard C compiler and
-library to be built, and only a web server with CGI capabilities to
-run.
+POSIX C library to be built, both of which are built in to a good
+Unix-style operating system already, which means you shouldn't have
+to install anything extra.
 </li>
 <li>
 Uses a flat-file directory structure to store data instead of a
@@ -63,10 +64,9 @@ there's a lot less code running on the system.
 </ul>
 </li>
 <li>
-Runs as a CGI application. <b>Telodendria</b> is delivered as a single
-small, highly-optimized binary that can be dropped in a web server's
-web root to be executed. This allows it to consume very few resources
-and be very easy to set up.
+Is packaged as a single small, statically-linked and highly-optimized
+binary that can be run just about anywhere. It is designed to be
+extremely easy to set up and consume as few resources as possible.
 </li>
 </ul>
 <p>
@@ -134,6 +134,7 @@ Submit code patches to the <b>Telodendria</b> project.
 <li><a href="#rationale">Rationale</a></li>
 <li><a href="#project-goals">Project Goals</a></li>
 <li><a href="#getting-support">Getting Support</a></li>
+<li>
 <a href="#contributing">Contributing</a>
 <ul>
 <li><a href="#reporting-issues">Reporting Issues</a></li>
@@ -216,9 +217,10 @@ you on a sufficiently complete operating system:
 </p>
 <ul>
 <li>
-A standards-compliant C compiler with the C standard library. Because
-<b>Telodendria</b> is written in ANSI C, it should compile on just about
-any compiler, but the following compilers are known to work:
+A standards-compliant C compiler with a POSIX.1c standard library. Because
+<b>Telodendria</b> is written in ANSI C and sticks to POSIX.1c features, it
+should compile on almost any compiler and operating system with minimal
+effort, but the following compilers are known to work:
 <ul>
 <li>GCC</li>
 <li>Clang</li>
@@ -341,42 +343,43 @@ This documentation needs just a little work. Here's the things
 on my list for that:
 </p>
 <ul>
-<li>Update Rationale section</li>
-<li>Update Project description (no longer a CGI binary)</li>
-<li>Update project code requirements (ANSI C, POSIX.1c)</li>
-<li></s>Clean up dark mode colors (tables, background, code snippets)</s></li>
+<li><s>Update Rationale section</s></li>
+<li><s>Update Project description (no longer a CGI binary)</s></li>
+<li><s>Update project code requirements (ANSI C, POSIX.1c)</s></li>
+<li><s>Clean up dark mode colors (tables, background, code snippets)</s></li>
+<li>Add logo (possibly center title?)</li>
 </ul>
 <h2 id="rationale">Rationale</h2>
 <p>
-This section explains
+I want a lightweight Matrix homeserver designed specifically for
+OpenBSD and other Unix-like operating systems. I want a homeserver
+that can be developed in <code>vi(1)</code> and compiled with the
+built-in C compiler. I want it to function entirely on a base OS
+install without having to install any extra packages whatsoever.
+I've found that as far as these priorities are concerned, the
+existing homeserver implementations fall tremendously short. This
+project aims to point out that existing homeserver implementations
+are way over-engineered and written in such a way that many programs
+and libraries have to be pulled in to use them.
 </p>
 <p>
-I want a lightweight Matrix homeserver designed for OpenBSD. I want a
-homeserver that can be developed in <code>vi(1)</code> and compiled
-with a C compiler. I want it to function entirely on a base OpenBSD
-install without having to install any extra packages whatsoever. I've
-found that the existing homeserver implementations are way
-over-engineered and written in such a way that many programs and
-libraries have to be pulled in to use them. I also want to learn how
-Matrix works, and I want to understand the code I'm running on my
-server.
+I also want to learn how Matrix works, and I want to understand the
+code I'm running on my server, which is why I'm writing every
+component from scratch, even the HTTP server.
 </p>
-<p>
-So I wrote Telodendria.
-</p>
-<p>
-Telodendria is written entirely in portable ANSI C. It depends on no
-third-party C libraries other than the standard C library. The only
-thing you need to run it is a web server that supports executing CGI
-programs, and a directory that data can be written to. Everything
-Telodendria needs to run itself is compiled into a single static
-binary, and the source code can be built anywhere, right out of the
-box.
+Telodendria is written entirely in portable ANSI C. It depends on
+no third-party C libraries other than the standard POSIX C library.
+The only thing you need to run it is a reverse proxy with HTTPS support,
+such as <code>relayd(8)</code>, and a directory that data can be
+written to. Everything Telodendria needs to run itself is compiled
+into a single static binary, and the source code can be built
+anywhere, right out of the box. This makes it suitable for running
+in a <code>chroot(8)</code> environment.
 </p>
 <p>
 Telodendria doesn't use a database like all the other homeservers.
 Instead, it operates more like email: it uses a flat-file data
-structure similar to maildir to store data. The advantage of this is
+structure similar to Maildir to store data. The advantage of this is
 that it saves server maintainers from also having to maintain a
 database.  It greatly simplifies the process of getting a Matrix
 homeserver up and running, and it makes it highly portable. It also is
@@ -385,14 +388,7 @@ extremely easy to back up and restore with base tools; just
 </p>
 <p>
 Telodendria is developed and tested on OpenBSD, but you'll find that it
-should run under any web server that supports CGI. I chose to write
-Telodendria as a CGI program because anyone running an existing Matrix
-server is likely running a web server acting as a reverse proxy in
-front of it anyway, so why not just hook the homeserver directly into
-the web server? That's one less daemon to run, which means memory and
-CPU savings. CGI also allows Telodendria to remain single-threaded.
-Each request that comes in is handled as its own process, and
-operations are entirely isolated.
+should just run on any POSIX operating system without modification.
 </p>
 <h2 id="project-goals">Project Goals</h2>
 <p>
@@ -415,7 +411,7 @@ the dependency on a Markdown parser and renderer.
 <li>
 To be written in clean, elegant, and well-documented code. The goal is
 to build a Matrix homeserver from the ground up, not just because I
-don't the way existing homeservers are implemented, but also so I can
+don't like the way existing homeservers are implemented, but also so I can
 learn how Matrix really works, and maybe even teach others along the
 way.
 </li>
