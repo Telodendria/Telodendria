@@ -1,11 +1,45 @@
+:root {
+	--border-radius: 10px;
+}
+
+@media(prefers-color-scheme: dark) {
+	:root {
+		--color-snippet: #161b22;	
+		--color-link: #58a6ff;
+		--color-bg: #0d1117;
+		--color-text: #c9d1d9;
+
+		--color-table-border: #30363d;
+		--color-table-accent: #161b22;
+	}
+}
+
+@media(prefers-color-scheme: light) {
+	:root {
+		--color-snippet: #f6f8fa;
+		--color-link: #0969da;
+		--color-bg: #ffffff;
+		--color-text: #24292f;
+
+		--color-table-border: #d0d7de;
+		--color-table-accent: #f6f8fa;
+	}
+}
+
 body {
     margin: auto;
     max-width: 8.5in;
     padding: 0.25in;
+
+	color: var(--color-text);
+	background-color: var(--color-bg);
+
+	font-family: Arial;
 }
+
 .code {
-    background-color: #eee;
-    border-radius: 5px;
+    background-color: var(--color-snippet);
+    border-radius: var(--border-radius);
     display: block;
     padding: 0.5em 1em 1.5em 1em;
 
@@ -13,10 +47,11 @@ body {
     white-space: pre;
     overflow-x: scroll;
 }
+
 kbd {
     background-color: #eee;
     border-radius: 3px;
-    border: 1px solid #b4b4b4;
+    border: 1px solid var(--color-table-border);
     box-shadow: 0 1px 1px rgba(0, 0, 0, .2), 0 2px 0 0 rgba(255, 255, 255, .7) inset;
     color: #333;
     display: inline-block;
@@ -26,37 +61,53 @@ kbd {
     padding: 2px 4px;
     white-space: nowrap;
 }
+
 h1, h4, h5, h6 {
-    border-bottom: 1px dashed gray;
+    border-bottom: 1px dashed var(--color-table-border);
 }
+
 h4, h5, h6 {
     width: fit-content;
 }
+
 a {
-    color: #0969da;
+    color: var(--color-link);
     text-decoration: none;
 }
+
 a:hover {
     text-decoration: underline;
 }
+
 table {
     width: 100%;
-    border-collapse: collapse;
+    border-collapse: separate;
+	border-spacing: 0px;
+	border-radius: var(--border-radius);
 }
+
 td, th {
-    border: 1px solid #eee;
+    border: 1px solid var(--color-table-border);
     text-align: left;
     padding: 8px;
 }
+
 tr:nth-child(even) {
-    background-color: #eee;
+    background-color: var(--color-table-accent);
 }
-@media (prefers-color-scheme: dark) {
-    body {
-        background-color: #212121;
-        color: white;
-    }
-    .code, tr:nth-child(even) {
-        background-color: #333333;
-    }
+
+th:first-of-type {
+	border-top-left-radius: var(--border-radius);
+}
+
+th:last-of-type {
+	border-top-right-radius: var(--border-radius);
+}
+
+tr:last-of-type td:first-of-type {
+	border-bottom-left-radius: var(--border-radius);
+}
+
+tr:last-of-type td:last-of-type {
+	border-bottom-right-radius: var(--border-radius);
 }
