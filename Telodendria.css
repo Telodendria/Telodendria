@@ -1,5 +1,13 @@
 :root {
 	--border-radius: 10px;
+
+	--color-snippet: #f6f8fa;
+	--color-link: #0969da;
+	--color-bg: #ffffff;
+	--color-text: #24292f;
+
+	--color-table-border: #d0d7de;
+	--color-table-accent: #f6f8fa;
 }
 
 @media(prefers-color-scheme: dark) {
@@ -11,18 +19,6 @@
 
 		--color-table-border: #30363d;
 		--color-table-accent: #161b22;
-	}
-}
-
-@media(prefers-color-scheme: light) {
-	:root {
-		--color-snippet: #f6f8fa;
-		--color-link: #0969da;
-		--color-bg: #ffffff;
-		--color-text: #24292f;
-
-		--color-table-border: #d0d7de;
-		--color-table-accent: #f6f8fa;
 	}
 }
 
@@ -45,7 +41,7 @@ body {
 
     font-family: monospace;
     white-space: pre;
-    overflow-x: scroll;
+	overflow: auto;
 }
 
 kbd {
