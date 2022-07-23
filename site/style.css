@@ -62,6 +62,11 @@ h1, h4, h5, h6 {
     border-bottom: 1px dashed var(--color-table-border);
 }
 
+hr {
+	border: 0;
+	border-bottom: 1px dashed var(--color-table-border);
+}
+
 h4, h5, h6 {
     width: fit-content;
 }
