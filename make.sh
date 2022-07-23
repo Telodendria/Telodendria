@@ -85,7 +85,7 @@ recipe_site() {
 	fi
 
 	# In the future, this might do more.
-	cp site/* "$TELODENDRIA_PUB/"
+	cp -v site/* "$TELODENDRIA_PUB/"
 }
 
 recipe_release() {
