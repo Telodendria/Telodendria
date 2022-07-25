@@ -7,6 +7,7 @@
 typedef struct HashMapBucket
 {
     uint32_t hash;
+    char *key;
     void *value;
 } HashMapBucket;
 
@@ -211,7 +212,7 @@ HashMapGet(HashMap * map, const char *key)
 }
 
 void
-HashMapIterate(HashMap * map, void (*iteratorFunc) (void *))
+HashMapIterate(HashMap * map, void (*iteratorFunc) (char *, void *))
 {
     size_t i;
 
@@ -226,7 +227,7 @@ HashMapIterate(HashMap * map, void (*iteratorFunc) (void *))
 
         if (bucket)
         {
-            iteratorFunc(bucket->value);
+            iteratorFunc(bucket->key, bucket->value);
         }
     }
 }
@@ -244,7 +245,7 @@ HashMapMaxLoadSet(HashMap * map, float load)
 
 
 void *
-HashMapSet(HashMap * map, const char *key, void *value)
+HashMapSet(HashMap * map, char *key, void *value)
 {
     uint32_t hash;
     size_t index;
@@ -275,6 +276,7 @@ HashMapSet(HashMap * map, const char *key, void *value)
             }
 
             bucket->hash = hash;
+            bucket->key = key;
             bucket->value = value;
             map->entries[index] = bucket;
             map->count++;
@@ -284,6 +286,7 @@ HashMapSet(HashMap * map, const char *key, void *value)
         if (!bucket->hash)
         {
             bucket->hash = hash;
+            bucket->key = key;
             bucket->value = value;
             break;
         }

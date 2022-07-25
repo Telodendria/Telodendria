@@ -63,10 +63,10 @@ extern JsonValue *
 extern void *
  JsonValueFree(JsonValue * value);
 
-extern char *
- JsonEncode(HashMap * object);
+extern int
+ JsonEncode(HashMap * object, FILE * out);
 
 extern HashMap *
- JsonDecode(char *string);
+ JsonDecode(FILE * in);
 
 #endif

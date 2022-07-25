@@ -49,7 +49,7 @@ extern void
  * use HashMapDelete.
  */
 extern void *
- HashMapSet(HashMap * map, const char *key, void *value);
+ HashMapSet(HashMap * map, char *key, void *value);
 
 /*
  * HashMapGet: Get the value for the given key.
@@ -70,7 +70,7 @@ extern void *
  HashMapDelete(HashMap * map, const char *key);
 
 extern void
- HashMapIterate(HashMap * map, void (*iteratorFunc) (void *));
+ HashMapIterate(HashMap * map, void (*iteratorFunc) (char *, void *));
 
 /*
  * HashMapFree: Free the hash map, returning its memory to the operating
