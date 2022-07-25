@@ -350,8 +350,8 @@ on my list for that:
 <li><s>Update project code requirements (ANSI C, POSIX.1c)</s></li>
 <li><s>Clean up dark mode colors (tables, background, code snippets)</s></li>
 <li>Add logo (possibly center title?)</li>
-<li>Update Code Style to not include indent or line rules, but to use
-<code>indent(1)</code> instead.</li>
+<li><s>Update Code Style to not include indent or line rules, but to use
+<code>indent(1)</code> instead.</s></li>
 <li><s>Fix typo "Subitting Patches" in Table of Contents</s></li>
 <li><s>Make a note in Getting The Code that the password for the
 <code>anoncvs</code> account is just <code>anoncvs</code>.</s></li>
@@ -487,8 +487,11 @@ the <a href="#code-style">Code Style</a> as you make your changes.
 </p>
 <h4 id="code-style">Code Style</h4>
 <p>
-<b>Telodendria</b>'s code style is very unique. In general, these are
-the conventions used by the code base.
+In general, these are the conventions used by the code base. This
+guide may be slightly outdated or subject to change, however. The
+source code itself is the absolute source of truth, so as long as
+you make your code look like the code surrounding it, you should
+be fine.
 </p>
 <ul>
 <li>
@@ -500,27 +503,30 @@ because it is more compact.
 <code>enum</code>s and <code>struct</code>s are always
 <code>typedef</code>-ed to their same name. The <code>typedef</code>
 occurs in the public API header, and the actual declaration occurs in
-the private implementation header.
+the implementation file.
 </li>
 <li>
-Indentation is done with spaces. This ensures that files look the same
-for everyone. It also makes line wrapping rules much easier because
-the indentations are the same size. Please configure your editor to
-make the <kbd>Tab</kbd> key insert spaces, and if it does automatic
-indentation, make sure it indents with spaces. If you cannot configure
-your editor to insert spaces, then you can try running the code files
-you were working on through <code>expand</code>. A unit of indentation
-is 4 spaces.
+A feature of the code base lives in a single <code>.c</code> file that
+has a matching header file. The header file should only export public
+symbols, everything else in the <code>.c</code> file should be
+<code>static</code>.
 </li>
 <li>
-Lines should not exceed 72 characters, including indentations. Some
-developers use <code>vi(1)</code> in an 80x24 terminal to write code.
+Anywhere curly braces are optional, there must still be curly braces.
+This makes it easy to add on to the code later, and just makes things
+less ambiguous.
 </li>
 </ul>
 <p>
-This guide may be subject to change. The source code is the absolute
-source of truth, so as long as you make your code look like the
-code surrounding it, you should be fine.
+As far as actually formatting the code goes, such as where to put
+brackets and whether you use tabs or spaces, use <code>indent(1)</code>
+to take care of all of that. The root of the repository has a
+<code>.indent.pro</code> file that should automatically be loaded by
+<code>indent(1)</code> to set the correct rules. If you don't have
+access to a working <code>indent(1)</code>, just indicate in your patch
+that I should run <code>indent(1)</code> on the code after applying it.
+I'll likely run my <code>indent(1)</code> on the code anyway though,
+just to make sure the spacing is consistent, if nothing else.
 </p>
 <h4 id="submitting-patches">Submitting Patches</h4>
 <p>
