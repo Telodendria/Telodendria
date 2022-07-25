@@ -8,7 +8,8 @@
 
 #define LOG_TSBUFFER 64
 
-struct LogConfig {
+struct LogConfig
+{
     LogLevel level;
     size_t indent;
     FILE *out;
@@ -17,7 +18,7 @@ struct LogConfig {
 };
 
 void
-Log(LogConfig *config, LogLevel level, const char *msg, ...)
+Log(LogConfig * config, LogLevel level, const char *msg,...)
 {
     int i;
     int doColor;
@@ -47,11 +48,12 @@ Log(LogConfig *config, LogLevel level, const char *msg, ...)
     }
 
     doColor = LogConfigFlagGet(config, LOG_FLAG_COLOR)
-              && isatty(fileno(config->out));
+            && isatty(fileno(config->out));
 
     if (doColor)
     {
         char *ansi;
+
         switch (level)
         {
             case LOG_ERROR:
@@ -140,10 +142,9 @@ Log(LogConfig *config, LogLevel level, const char *msg, ...)
     fputc('\n', config->out);
     va_end(argp);
 
-    /* If we are debugging, there might be something that's
-     * going to segfault the program coming up, so flush the
-     * output stream immediately.
-     */
+    /* If we are debugging, there might be something that's going to
+     * segfault the program coming up, so flush the output stream
+     * immediately. */
     if (config->level == LOG_DEBUG)
     {
         fflush(config->out);
@@ -164,7 +165,7 @@ LogConfigCreate(void)
 
     LogConfigLevelSet(config, LOG_MESSAGE);
     LogConfigIndentSet(config, 0);
-    LogConfigOutputSet(config, NULL); /* Will set to stdout */
+    LogConfigOutputSet(config, NULL);   /* Will set to stdout */
     LogConfigFlagSet(config, LOG_FLAG_COLOR);
     LogConfigTimeStampFormatSet(config, "%y-%m-%d %H:%M:%S");
 
@@ -172,7 +173,7 @@ LogConfigCreate(void)
 }
 
 void
-LogConfigFlagClear(LogConfig *config, int flags)
+LogConfigFlagClear(LogConfig * config, int flags)
 {
     if (!config)
     {
@@ -183,7 +184,7 @@ LogConfigFlagClear(LogConfig *config, int flags)
 }
 
 int
-LogConfigFlagGet(LogConfig *config, int flags)
+LogConfigFlagGet(LogConfig * config, int flags)
 {
     if (!config)
     {
@@ -194,7 +195,7 @@ LogConfigFlagGet(LogConfig *config, int flags)
 }
 
 void
-LogConfigFlagSet(LogConfig *config, int flags)
+LogConfigFlagSet(LogConfig * config, int flags)
 {
     if (!config)
     {
@@ -205,13 +206,13 @@ LogConfigFlagSet(LogConfig *config, int flags)
 }
 
 void
-LogConfigFree(LogConfig *config)
+LogConfigFree(LogConfig * config)
 {
     free(config);
 }
 
 void
-LogConfigIndent(LogConfig *config)
+LogConfigIndent(LogConfig * config)
 {
     if (config)
     {
@@ -220,7 +221,7 @@ LogConfigIndent(LogConfig *config)
 }
 
 size_t
-LogConfigIndentGet(LogConfig *config)
+LogConfigIndentGet(LogConfig * config)
 {
     if (!config)
     {
@@ -231,7 +232,7 @@ LogConfigIndentGet(LogConfig *config)
 }
 
 void
-LogConfigIndentSet(LogConfig *config, size_t indent)
+LogConfigIndentSet(LogConfig * config, size_t indent)
 {
     if (!config)
     {
@@ -242,7 +243,7 @@ LogConfigIndentSet(LogConfig *config, size_t indent)
 }
 
 LogLevel
-LogConfigLevelGet(LogConfig *config)
+LogConfigLevelGet(LogConfig * config)
 {
     if (!config)
     {
@@ -253,7 +254,7 @@ LogConfigLevelGet(LogConfig *config)
 }
 
 void
-LogConfigLevelSet(LogConfig *config, LogLevel level)
+LogConfigLevelSet(LogConfig * config, LogLevel level)
 {
     if (!config)
     {
@@ -273,7 +274,7 @@ LogConfigLevelSet(LogConfig *config, LogLevel level)
 }
 
 void
-LogConfigOutputSet(LogConfig *config, FILE *out)
+LogConfigOutputSet(LogConfig * config, FILE * out)
 {
     if (!config)
     {
@@ -292,7 +293,7 @@ LogConfigOutputSet(LogConfig *config, FILE *out)
 }
 
 void
-LogConfigTimeStampFormatSet(LogConfig *config, char *tsFmt)
+LogConfigTimeStampFormatSet(LogConfig * config, char *tsFmt)
 {
     if (config)
     {
@@ -301,7 +302,7 @@ LogConfigTimeStampFormatSet(LogConfig *config, char *tsFmt)
 }
 
 void
-LogConfigUnindent(LogConfig *config)
+LogConfigUnindent(LogConfig * config)
 {
     if (config && config->indent >= 2)
     {

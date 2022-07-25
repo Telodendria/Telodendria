@@ -4,12 +4,14 @@
 #include <stddef.h>
 #include <stdlib.h>
 
-typedef struct HashMapBucket {
+typedef struct HashMapBucket
+{
     uint32_t hash;
     void *value;
 } HashMapBucket;
 
-struct HashMap {
+struct HashMap
+{
     size_t count;
     size_t capacity;
     HashMapBucket **entries;
@@ -36,7 +38,7 @@ HashMapHashKey(const char *key)
 
 
 static int
-HashMapGrow(HashMap *map)
+HashMapGrow(HashMap * map)
 {
     size_t oldCapacity;
     size_t i;
@@ -100,6 +102,7 @@ HashMap *
 HashMapCreate(void)
 {
     HashMap *map = malloc(sizeof(HashMap));
+
     if (!map)
     {
         return NULL;
@@ -120,7 +123,7 @@ HashMapCreate(void)
 }
 
 void *
-HashMapDelete(HashMap *map, const char *key)
+HashMapDelete(HashMap * map, const char *key)
 {
     uint32_t hash;
     size_t index;
@@ -155,7 +158,7 @@ HashMapDelete(HashMap *map, const char *key)
 }
 
 void
-HashMapFree(HashMap *map)
+HashMapFree(HashMap * map)
 {
     if (map)
     {
@@ -174,7 +177,7 @@ HashMapFree(HashMap *map)
 }
 
 void *
-HashMapGet(HashMap *map, const char *key)
+HashMapGet(HashMap * map, const char *key)
 {
     uint32_t hash;
     size_t index;
@@ -208,7 +211,7 @@ HashMapGet(HashMap *map, const char *key)
 }
 
 void
-HashMapIterate(HashMap *map, void (*iteratorFunc)(void *))
+HashMapIterate(HashMap * map, void (*iteratorFunc) (void *))
 {
     size_t i;
 
@@ -229,7 +232,7 @@ HashMapIterate(HashMap *map, void (*iteratorFunc)(void *))
 }
 
 void
-HashMapMaxLoadSet(HashMap *map, float load)
+HashMapMaxLoadSet(HashMap * map, float load)
 {
     if (!map)
     {
@@ -241,7 +244,7 @@ HashMapMaxLoadSet(HashMap *map, float load)
 
 
 void *
-HashMapSet(HashMap *map, const char *key, void *value)
+HashMapSet(HashMap * map, const char *key, void *value)
 {
     uint32_t hash;
     size_t index;
@@ -288,6 +291,7 @@ HashMapSet(HashMap *map, const char *key, void *value)
         if (bucket->hash == hash)
         {
             void *oldValue = bucket->value;
+
             bucket->value = value;
             return oldValue;
         }
@@ -297,4 +301,3 @@ HashMapSet(HashMap *map, const char *key, void *value)
 
     return NULL;
 }
-

@@ -15,7 +15,7 @@ typedef enum ArgFlag
 } ArgFlag;
 
 static void
-TelodendriaPrintHeader(LogConfig *lc)
+TelodendriaPrintHeader(LogConfig * lc)
 {
     Log(lc, LOG_MESSAGE,
         " _____    _           _                _      _");
@@ -26,7 +26,7 @@ TelodendriaPrintHeader(LogConfig *lc)
     Log(lc, LOG_MESSAGE,
         "  | |  __/ | (_) | (_| |  __/ | | | (_| | |  | | (_| |");
     Log(lc, LOG_MESSAGE,
-        "  |_|\\___|_|\\___/ \\__,_|\\___|_| |_|\\__,_|_|  |_|\\__,_|");
+      "  |_|\\___|_|\\___/ \\__,_|\\___|_| |_|\\__,_|_|  |_|\\__,_|");
     Log(lc, LOG_MESSAGE, "Telodendria v" TELODENDRIA_VERSION);
     Log(lc, LOG_MESSAGE, "");
     Log(lc, LOG_MESSAGE,
@@ -37,7 +37,7 @@ TelodendriaPrintHeader(LogConfig *lc)
 }
 
 static void
-TelodendriaPrintUsage(LogConfig *lc)
+TelodendriaPrintUsage(LogConfig * lc)
 {
     Log(lc, LOG_MESSAGE, "Usage:");
     Log(lc, LOG_MESSAGE, "  -c <file>    Configuration file ('-' for stdin).");
@@ -45,7 +45,8 @@ TelodendriaPrintUsage(LogConfig *lc)
     Log(lc, LOG_MESSAGE, "  -h           Print this usage, then exit.");
 }
 
-int main(int argc, char **argv)
+int 
+main(int argc, char **argv)
 {
     LogConfig *lc;
     int exit = EXIT_SUCCESS;

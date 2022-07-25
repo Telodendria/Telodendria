@@ -7,14 +7,16 @@
 #include <stddef.h>
 #include <stdlib.h>
 
-struct Array {
-    void **entries; /* An array of void pointers, to store any data */
-    size_t allocated; /* Elements allocated on the heap */
-    size_t size; /* Elements actually filled */
+struct Array
+{
+    void **entries;                /* An array of void pointers, to
+                                    * store any data */
+    size_t allocated;              /* Elements allocated on the heap */
+    size_t size;                   /* Elements actually filled */
 };
 
 int
-ArrayAdd(Array *array, void *value)
+ArrayAdd(Array * array, void *value)
 {
     if (!array)
     {
@@ -48,7 +50,7 @@ ArrayCreate(void)
 }
 
 void *
-ArrayDelete(Array *array, size_t index)
+ArrayDelete(Array * array, size_t index)
 {
     size_t i;
     void *element;
@@ -71,7 +73,7 @@ ArrayDelete(Array *array, size_t index)
 }
 
 void
-ArrayFree(Array *array)
+ArrayFree(Array * array)
 {
     if (array)
     {
@@ -81,7 +83,7 @@ ArrayFree(Array *array)
 }
 
 void *
-ArrayGet(Array *array, size_t index)
+ArrayGet(Array * array, size_t index)
 {
     if (!array)
     {
@@ -98,7 +100,7 @@ ArrayGet(Array *array, size_t index)
 
 
 extern int
-ArrayInsert(Array *array, void *value, size_t index)
+ArrayInsert(Array * array, void *value, size_t index)
 {
     size_t i;
 
@@ -139,7 +141,7 @@ ArrayInsert(Array *array, void *value, size_t index)
 }
 
 size_t
-ArraySize(Array *array)
+ArraySize(Array * array)
 {
     if (!array)
     {
@@ -150,7 +152,7 @@ ArraySize(Array *array)
 }
 
 int
-ArrayTrim(Array *array)
+ArrayTrim(Array * array)
 {
     void **tmp;
 
