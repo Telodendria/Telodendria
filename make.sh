@@ -73,6 +73,16 @@ recipe_clean() {
 	rm -rv build
 }
 
+recipe_format() {
+	find src -name '*.c' | while IFS= read -r src; do
+		echo "indent $src"
+		indent -bad -bap -bbb -nbc -bl -c36 -cd36 -ncdb -nce \
+			-ci8 -cli1 -d0 -di1 -ndj -ei -fc1 -i4 -ip -l72 \
+			-lc72 -lp -npro -npcs -psl -sc -nsob -nut -nv \
+			"$src"
+	done
+}
+
 recipe_test() {
 	echo "Unit tests are not implemented yet."
 }
