@@ -148,7 +148,7 @@ Submit code patches to the <b>Telodendria</b> project.
 <ul>
 <li><a href="#getting-the-code">Getting The Code</a></li>
 <li><a href="#code-style">Code Style</a></li>
-<li><a href="#submitting-patches">Subitting Patches</a></li>
+<li><a href="#submitting-patches">Submitting Patches</a></li>
 </ul>
 </li>
 </ul>
@@ -226,13 +226,14 @@ you on a sufficiently complete operating system:
 A standards-compliant C compiler with a POSIX.1c standard library. Because
 <b>Telodendria</b> is written in ANSI C and sticks to POSIX.1c features, it
 should compile on almost any compiler and operating system with minimal
-effort, but the following compilers are known to work:
+effort, but the following compilers and operating systems are known to work:
 <ul>
-<li>GCC</li>
-<li>Clang</li>
+<li>GCC on Linux</li>
+<li>Clang on OpenBSD</li>
 <li>
 Tiny C Compiler (<b>Note:</b> must edit <code>make.sh</code> and remove
 <code>-Wl,-static -Wl,-gc-sections</code> from <code>LDFLAGS</code>)
+on OpenBSD.
 </li>
 </ul>
 Other compilers should work as well, but you may have to play with the
