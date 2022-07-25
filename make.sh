@@ -74,7 +74,7 @@ recipe_clean() {
 }
 
 recipe_format() {
-	find src -name '*.c' | while IFS= read -r src; do
+	find src -name '*.c' -or -name '*.h' | while IFS= read -r src; do
 		echo "indent $src"
 		indent -bad -bap -bbb -nbc -bl -c36 -cd36 -ncdb -nce \
 			-ci8 -cli1 -d0 -di1 -ndj -ei -fc1 -i4 -ip -l72 \

@@ -45,7 +45,7 @@ TelodendriaPrintUsage(LogConfig * lc)
     Log(lc, LOG_MESSAGE, "  -h           Print this usage, then exit.");
 }
 
-int 
+int
 main(int argc, char **argv)
 {
     LogConfig *lc;

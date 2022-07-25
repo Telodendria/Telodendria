@@ -4,7 +4,8 @@
 #include <HashMap.h>
 #include <Array.h>
 
-typedef enum JsonType {
+typedef enum JsonType
+{
     JSON_OBJECT,
     JSON_ARRAY,
     JSON_STRING,
@@ -14,56 +15,58 @@ typedef enum JsonType {
     JSON_NULL
 } JsonType;
 
-typedef struct JsonValue {
+typedef struct JsonValue
+{
     JsonType type;
-    union as {
+    union as
+    {
         HashMap *object;
         Array *array;
         char *string;
         int64_t integer;
         double floating;
-        int boolean : 1;
+        int boolean:1;
     };
 } JsonValue;
 
 
 extern JsonType
-JsonValueType(JsonValue *value);
+ JsonValueType(JsonValue * value);
 
 extern JsonValue *
-JsonValueObject(HashMap *object);
+ JsonValueObject(HashMap * object);
 
 extern HashMap *
-JsonValueAsObject(JsonValue *value);
+ JsonValueAsObject(JsonValue * value);
 
 extern JsonValue *
-JsonValueArray(Array *array);
+ JsonValueArray(Array * array);
 
 extern Array *
-JsonValueAsArray(JsonValue *value);
+ JsonValueAsArray(JsonValue * value);
 
 extern JsonValue *
-JsonValueString(char *string);
+ JsonValueString(char *string);
 
 extern JsonValue *
-JsonValueInteger(int64_t integer);
+ JsonValueInteger(int64_t integer);
 
 extern JsonValue *
-JsonValueFloat(double floating);
+ JsonValueFloat(double floating);
 
 extern JsonValue *
-JsonValueBoolean(int boolean);
+ JsonValueBoolean(int boolean);
 
 extern JsonValue *
-JsonValueNull(void);
+ JsonValueNull(void);
 
 extern void *
-JsonValueFree(JsonValue *value);
+ JsonValueFree(JsonValue * value);
 
 extern char *
-JsonEncode(HashMap *object);
+ JsonEncode(HashMap * object);
 
 extern HashMap *
-JsonDecode(char *string);
+ JsonDecode(char *string);
 
 #endif

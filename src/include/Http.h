@@ -1,7 +1,8 @@
 #ifndef TELODENDRIA_HTTP_H
 #define TELODENDRIA_HTTP_H
 
-typedef enum HttpRequestMethod {
+typedef enum HttpRequestMethod
+{
     HTTP_GET,
     HTTP_HEAD,
     HTTP_POST,
@@ -13,12 +14,13 @@ typedef enum HttpRequestMethod {
     HTTP_PATCH
 } HttpRequestMethod;
 
-typedef enum HttpStatus {
+typedef enum HttpStatus
+{
     /* Informational responses */
     HTTP_CONTINUE = 100,
     HTTP_SWITCHING_PROTOCOLS = 101,
     HTTP_EARLY_HINTS = 103,
-    
+
     /* Successful responses */
     HTTP_OK = 200,
     HTTP_CREATED = 201,
@@ -27,7 +29,7 @@ typedef enum HttpStatus {
     HTTP_NO_CONTENT = 204,
     HTTP_RESET_CONTENT = 205,
     HTTP_PARTIAL_CONTENT = 206,
-    
+
     /* Redirection messages */
     HTTP_MULTIPLE_CHOICES = 300,
     HTTP_MOVED_PERMANENTLY = 301,
@@ -36,7 +38,7 @@ typedef enum HttpStatus {
     HTTP_NOT_MODIFIED = 304,
     HTTP_TEMPORARY_REDIRECT = 307,
     HTTP_PERMANENT_REDIRECT = 308,
-    
+
     /* Client error messages */
     HTTP_BAD_REQUEST = 400,
     HTTP_UNAUTHORIZED = 401,
@@ -61,7 +63,7 @@ typedef enum HttpStatus {
     HTTP_TOO_MANY_REQUESTS = 429,
     HTTP_REQUEST_HEADER_FIELDS_TOO_LARGE = 431,
     HTTP_UNAVAILABLE_FOR_LEGAL_REASONS = 451,
-    
+
     /* Server error responses */
     HTTP_INTERNAL_SERVER_ERROR = 500,
     HTTP_NOT_IMPLEMENTED = 501,
@@ -74,23 +76,25 @@ typedef enum HttpStatus {
     HTTP_NETWORK_AUTH_REQUIRED = 511
 } HttpStatus;
 
-struct HttpRequest {
+struct HttpRequest
+{
     HttpRequestMethod method;
 };
 
-struct HttpResponse {
+struct HttpResponse
+{
     HttpStatus status;
 };
 
 extern char *
-HttpGetStatusString(const HttpStatus httpStatus);
+ HttpGetStatusString(const HttpStatus httpStatus);
 
 extern HttpRequestMethod
-HttpRequestMethodFromString(const char *requestMethod);
+ HttpRequestMethodFromString(const char *requestMethod);
 
 typedef struct HttpRequest HttpRequest;
 typedef struct HttpResponse HttpResponse;
 
-typedef void (*HttpHandler)(HttpRequest *, HttpResponse *);
+typedef void (*HttpHandler) (HttpRequest *, HttpResponse *);
 
 #endif

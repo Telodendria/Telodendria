@@ -4,7 +4,8 @@
 #include <stdio.h>
 #include <stddef.h>
 
-typedef enum LogLevel {
+typedef enum LogLevel
+{
     LOG_ERROR,
     LOG_WARNING,
     LOG_TASK,
@@ -12,52 +13,53 @@ typedef enum LogLevel {
     LOG_DEBUG
 } LogLevel;
 
-typedef enum LogFlag {
-	LOG_FLAG_COLOR = (1 << 0)
+typedef enum LogFlag
+{
+    LOG_FLAG_COLOR = (1 << 0)
 } LogFlag;
 
 typedef struct LogConfig LogConfig;
 
 extern LogConfig *
-LogConfigCreate(void);
+ LogConfigCreate(void);
 
 extern void
-LogConfigFree(LogConfig *config);
+ LogConfigFree(LogConfig * config);
 
 extern void
-LogConfigLevelSet(LogConfig *config, LogLevel level);
+ LogConfigLevelSet(LogConfig * config, LogLevel level);
 
 extern LogLevel
-LogConfigLevelGet(LogConfig *config);
+ LogConfigLevelGet(LogConfig * config);
 
 extern void
-LogConfigIndentSet(LogConfig *config, size_t indent);
+ LogConfigIndentSet(LogConfig * config, size_t indent);
 
 extern size_t
-LogConfigIndentGet(LogConfig *config);
+ LogConfigIndentGet(LogConfig * config);
 
 extern void
-LogConfigIndent(LogConfig *config);
+ LogConfigIndent(LogConfig * config);
 
 extern void
-LogConfigUnindent(LogConfig *config);
+ LogConfigUnindent(LogConfig * config);
 
 extern void
-LogConfigOutputSet(LogConfig *config, FILE *out);
+ LogConfigOutputSet(LogConfig * config, FILE * out);
 
 extern void
-LogConfigFlagSet(LogConfig *config, int flags);
+ LogConfigFlagSet(LogConfig * config, int flags);
 
 extern void
-LogConfigFlagClear(LogConfig *config, int flags);
+ LogConfigFlagClear(LogConfig * config, int flags);
 
 extern int
-LogConfigFlagGet(LogConfig *config, int flags);
+ LogConfigFlagGet(LogConfig * config, int flags);
 
 extern void
-LogConfigTimeStampFormatSet(LogConfig *config, char *tsFmt);
+ LogConfigTimeStampFormatSet(LogConfig * config, char *tsFmt);
 
 extern void
-Log(LogConfig *config, LogLevel level, const char *msg, ...);
+ Log(LogConfig * config, LogLevel level, const char *msg,...);
 
 #endif
