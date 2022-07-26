@@ -249,6 +249,12 @@ JsonValueFree(JsonValue * value)
 }
 
 static void
+JsonEncodeString(const char * str, FILE * out)
+{
+	fprintf(out, "\"%s\"", str);
+}
+
+static void
 JsonEncodeValue(JsonValue * value, FILE * out)
 {
     size_t i;
@@ -278,7 +284,7 @@ JsonEncodeValue(JsonValue * value, FILE * out)
             fputc(']', out);
             break;
         case JSON_STRING:
-            fprintf(out, "\"%s\"", value->as.string);
+			JsonEncodeString(value->as.string, out);
             break;
         case JSON_INTEGER:
             fprintf(out, "%lld", value->as.integer);
@@ -328,7 +334,8 @@ JsonEncode(HashMap * object, FILE * out)
     index = 0;
     while (HashMapIterate(object, &key, (void **) &value))
     {
-        fprintf(out, "\"%s\":", key);
+		JsonEncodeString(key, out);
+		fputc(':', out);
         JsonEncodeValue(value, out);
 
         if (index < count - 1)
