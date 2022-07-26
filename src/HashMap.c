@@ -243,6 +243,7 @@ HashMapIterate(HashMap * map, char **key, void **value)
         }
     }
 
+    map->iterator = 0;
     return 0;
 }
 
