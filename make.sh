@@ -76,7 +76,9 @@ recipe_clean() {
 recipe_format() {
 	find src -name '*.c' -or -name '*.h' | while IFS= read -r src; do
 		echo "indent $src"
-		indent "$src"
+		if indent "$src"; then
+			rm $(basename "$src").BAK
+		fi
 	done
 }
 
