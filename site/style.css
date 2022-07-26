@@ -44,6 +44,11 @@ body {
 	overflow: auto;
 }
 
+code {
+	background-color: var(--color-snippet);
+	border-radius: calc(var(--border-radius) / 2);
+}
+
 kbd {
     background-color: #eee;
     border-radius: 3px;
