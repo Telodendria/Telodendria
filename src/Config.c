@@ -91,15 +91,9 @@ ConfigChildrenGet(ConfigDirective * directive)
     return directive ? directive->children : NULL;
 }
 
-/*
- * Takes a void pointer because it is only used with
- * HashMapIterate(), which requires a pointer to a function
- * that takes a void pointer.
- */
 static void
-ConfigDirectiveFree(void *ptr)
+ConfigDirectiveFree(ConfigDirective * directive)
 {
-    ConfigDirective *directive = ptr;
     size_t i;
 
     if (!directive)
@@ -113,6 +107,7 @@ ConfigDirectiveFree(void *ptr)
     }
 
     ArrayFree(directive->values);
+
     ConfigFree(directive->children);
 
     free(directive);
@@ -121,7 +116,15 @@ ConfigDirectiveFree(void *ptr)
 void
 ConfigFree(HashMap * conf)
 {
-    HashMapIterate(conf, ConfigDirectiveFree);
+    char *key;
+    void *value;
+
+    while (HashMapIterate(conf, &key, &value))
+    {
+        ConfigDirectiveFree((ConfigDirective *) value);
+        free(key);
+    }
+
     HashMapFree(conf);
 }
 
@@ -156,14 +159,23 @@ ConfigParserStateCreate(FILE * stream)
 static void
 ConfigParserStateFree(ConfigParserState * state)
 {
+    char *key;
+    void *value;
+
     if (!state)
     {
         return;
     }
 
+
     free(state->token);
 
-    HashMapIterate(state->macroMap, free);
+    while (HashMapIterate(state->macroMap, &key, &value))
+    {
+        free(key);
+        free(value);
+    }
+
     HashMapFree(state->macroMap);
 
     free(state);
@@ -432,7 +444,6 @@ ConfigParseBlock(ConfigParserState * state, int level)
              * NULL is sent to ConfigDirectiveFree(), making it a no-op.
              */
             ConfigDirectiveFree(HashMapSet(block, name, directive));
-
         }
         else if (ConfigExpect(state, TOKEN_MACRO_ASSIGNMENT))
         {
@@ -442,7 +453,7 @@ ConfigParseBlock(ConfigParserState * state, int level)
                 char *valueCopy = malloc(strlen(state->token) + 1);
 
                 strcpy(valueCopy, state->token);
-                free(HashMapSet(state->macroMap, name, state->token));
+                free(HashMapSet(state->macroMap, name, valueCopy));
                 ConfigTokenSeek(state);
             }
             else

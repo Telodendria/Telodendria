@@ -127,8 +127,12 @@ main(int argc, char **argv)
 
     Log(lc, LOG_MESSAGE, "Using configuration file '%s'.", configArg);
 
+    Log(lc, LOG_DEBUG, "Executing ConfigParse()");
+
     /* Read config here */
     configParseResult = ConfigParse(configFile);
+
+    Log(lc, LOG_DEBUG, "Exitting ConfigParse()");
 
     if (!ConfigParseResultOk(configParseResult))
     {

@@ -4,6 +4,9 @@
 #include <HashMap.h>
 #include <Array.h>
 
+#include <stdio.h>
+#include <stddef.h>
+
 typedef enum JsonType
 {
     JSON_OBJECT,
@@ -15,20 +18,7 @@ typedef enum JsonType
     JSON_NULL
 } JsonType;
 
-typedef struct JsonValue
-{
-    JsonType type;
-    union as
-    {
-        HashMap *object;
-        Array *array;
-        char *string;
-        int64_t integer;
-        double floating;
-        int boolean:1;
-    };
-} JsonValue;
-
+typedef struct JsonValue JsonValue;
 
 extern JsonType
  JsonValueType(JsonValue * value);
@@ -60,8 +50,11 @@ extern JsonValue *
 extern JsonValue *
  JsonValueNull(void);
 
-extern void *
+extern void
  JsonValueFree(JsonValue * value);
+
+extern void
+ JsonFree(HashMap * object);
 
 extern int
  JsonEncode(HashMap * object, FILE * out);

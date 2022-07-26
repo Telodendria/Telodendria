@@ -69,8 +69,8 @@ extern void *
 extern void *
  HashMapDelete(HashMap * map, const char *key);
 
-extern void
- HashMapIterate(HashMap * map, void (*iteratorFunc) (char *, void *));
+extern int
+ HashMapIterate(HashMap * map, char **key, void **value);
 
 /*
  * HashMapFree: Free the hash map, returning its memory to the operating
@@ -80,6 +80,6 @@ extern void
  * free the values using your own algorithm.
  */
 extern void
- HashMapFree(HashMap * map);
+ HashMapFree(HashMap *);
 
 #endif                             /* TELODENDRIA_HASHMAP_H */

@@ -18,6 +18,7 @@ struct HashMap
     HashMapBucket **entries;
 
     float maxLoad;
+    size_t iterator;
 };
 
 static uint32_t
@@ -112,6 +113,7 @@ HashMapCreate(void)
     map->maxLoad = 0.75;
     map->count = 0;
     map->capacity = 16;
+    map->iterator = 0;
 
     map->entries = calloc(map->capacity, sizeof(HashMapBucket *));
     if (!map->entries)
@@ -211,25 +213,37 @@ HashMapGet(HashMap * map, const char *key)
     return NULL;
 }
 
-void
-HashMapIterate(HashMap * map, void (*iteratorFunc) (char *, void *))
+int
+HashMapIterate(HashMap * map, char **key, void **value)
 {
-    size_t i;
-
     if (!map)
     {
-        return;
+        return 0;
     }
 
-    for (i = 0; i < map->capacity; i++)
+    if (map->iterator >= map->capacity)
     {
-        HashMapBucket *bucket = map->entries[i];
+        map->iterator = 0;
+        *key = NULL;
+        *value = NULL;
+        return 0;
+    }
+
+    while (map->iterator < map->capacity)
+    {
+        HashMapBucket *bucket = map->entries[map->iterator];
+
+        map->iterator++;
 
         if (bucket)
         {
-            iteratorFunc(bucket->key, bucket->value);
+            *key = bucket->key;
+            *value = bucket->value;
+            return 1;
         }
     }
+
+    return 0;
 }
 
 void
@@ -303,4 +317,18 @@ HashMapSet(HashMap * map, char *key, void *value)
     }
 
     return NULL;
+}
+
+void
+HashMapIterateFree(char *key, void *value)
+{
+    if (key)
+    {
+        free(key);
+    }
+
+    if (value)
+    {
+        free(value);
+    }
 }
