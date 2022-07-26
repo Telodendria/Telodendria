@@ -249,9 +249,149 @@ JsonValueFree(JsonValue * value)
 }
 
 static void
-JsonEncodeString(const char * str, FILE * out)
+JsonEncodeString(const char *str, FILE * out)
 {
-	fprintf(out, "\"%s\"", str);
+    size_t i;
+    char c;
+
+    fputc('"', out);
+
+    i = 0;
+    while ((c = str[i]) != '\0')
+    {
+        switch (c)
+        {
+            case '\\':
+            case '"':
+            case '/':
+                fputc('\\', out);
+                fputc(c, out);
+                break;
+            case '\b':
+                fputs("\\b", out);
+                break;
+            case '\t':
+                fputs("\\t", out);
+                break;
+            case '\n':
+                fputs("\\n", out);
+                break;
+            case '\f':
+                fputs("\\f", out);
+                break;
+            case '\r':
+                fputs("\\r", out);
+                break;
+            default:
+                if (c < ' ')
+                {
+                    fprintf(out, "\\u%04x", c);
+                }
+                else
+                {
+                    fputc(c, out);
+                }
+                break;
+        }
+        i++;
+    }
+
+    fputc('"', out);
+}
+
+static char *
+JsonDecodeString(FILE * in)
+{
+    const size_t strBlockSize = 16;
+
+    size_t len;
+    size_t allocated;
+    char *str;
+    char c;
+    char a;
+
+    len = 0;
+    allocated = strBlockSize;
+
+    str = malloc(allocated * sizeof(char));
+    if (!str)
+    {
+        return NULL;
+    }
+
+    while ((c = fgetc(in)) != EOF)
+    {
+        switch (c)
+        {
+            case '"':
+                str[len] = '\0';
+                return str;
+                break;
+            case '\\':
+                c = fgetc(in);
+                switch (c)
+                {
+                    case '\\':
+                    case '"':
+                    case '/':
+                        a = c;
+                        break;
+                    case 'b':
+                        a = '\b';
+                        break;
+                    case 't':
+                        a = '\t';
+                        break;
+                    case 'n':
+                        a = '\n';
+                        break;
+                    case 'f':
+                        a = '\f';
+                        break;
+                    case 'r':
+                        a = '\r';
+                        break;
+                    case 'u':
+                        if (fscanf(in, "%04x", (unsigned int *) &a) != 1)
+                        {
+                            /* Bad hex value */
+                            free(str);
+                            return NULL;
+                        }
+                        break;
+                    default:
+                        /* Bad escape value */
+                        free(str);
+                        return NULL;
+                }
+                break;
+            default:
+                a = c;
+                break;
+        }
+
+        /* Append a */
+        if (len >= allocated)
+        {
+            char *tmp;
+
+            allocated += strBlockSize;
+            tmp = realloc(str, allocated * sizeof(char));
+            if (!tmp)
+            {
+                free(str);
+                return NULL;
+            }
+
+            str = tmp;
+        }
+
+        str[len] = a;
+        len++;
+    }
+
+    free(str);
+    return NULL;
 }
 
 static void
@@ -284,7 +424,7 @@ JsonEncodeValue(JsonValue * value, FILE * out)
             fputc(']', out);
             break;
         case JSON_STRING:
-			JsonEncodeString(value->as.string, out);
+            JsonEncodeString(value->as.string, out);
             break;
         case JSON_INTEGER:
             fprintf(out, "%lld", value->as.integer);
@@ -334,8 +474,8 @@ JsonEncode(HashMap * object, FILE * out)
     index = 0;
     while (HashMapIterate(object, &key, (void **) &value))
     {
-		JsonEncodeString(key, out);
-		fputc(':', out);
+        JsonEncodeString(key, out);
+        fputc(':', out);
         JsonEncodeValue(value, out);
 
         if (index < count - 1)
