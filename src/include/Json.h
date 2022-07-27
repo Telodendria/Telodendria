@@ -56,6 +56,12 @@ extern void
 extern void
  JsonFree(HashMap * object);
 
+extern void
+ JsonEncodeString(const char *str, FILE * out);
+
+extern void
+ JsonEncodeValue(JsonValue * value, FILE * out);
+
 extern int
  JsonEncode(HashMap * object, FILE * out);
 

@@ -243,15 +243,35 @@ JsonValueNull(void)
 void
 JsonValueFree(JsonValue * value)
 {
+    size_t i;
+    Array *arr;
+
     if (!value)
     {
         return;
     }
 
+    switch (value->type)
+    {
+        case JSON_OBJECT:
+            JsonFree(value->as.object);
+            break;
+        case JSON_ARRAY:
+            arr = value->as.array;
+            for (i = 0; i < ArraySize(arr); i++)
+            {
+                JsonValueFree((JsonValue *) ArrayGet(arr, i));
+            }
+            ArrayFree(arr);
+            break;
+        default:
+            break;
+    }
+
     free(value);
 }
 
-static void
+void
 JsonEncodeString(const char *str, FILE * out)
 {
     size_t i;
@@ -286,7 +306,25 @@ JsonEncodeString(const char *str, FILE * out)
                 fputs("\\r", out);
                 break;
             default:              /* Assume UTF-8 input */
-                fputc(c, out);
+                /*
+                 * RFC 4627: "All Unicode characters may be placed
+                 * within the quotation marks except for the characters
+                 * that must be escaped: quotation mark, reverse solidus,
+                 * and the control characters (U+0000 through U+001F)."
+                 *
+                 * This technically covers the above cases for backspace,
+                 * tab, newline, feed, and carriage return characters,
+                 * but we can save bytes if we encode those as their
+                 * more human-readable representation.
+                 */
+                if (c <= 0x001F)
+                {
+                    printf("\\u%04x", c);
+                }
+                else
+                {
+                    fputc(c, out);
+                }
                 break;
 
         }
@@ -367,6 +405,24 @@ JsonDecodeString(FILE * in)
                             return NULL;
                         }
 
+                        if (utf8 == 0)
+                        {
+                            /*
+                             * We read in a \u0000, null. There is no
+                             * circumstance in which putting a null
+                             * character into our buffer will end well.
+                             *
+                             * There's also really no legitimate use
+                             * for the null character in our JSON anyway;
+                             * it's likely an attempted exploit.
+                             *
+                             * So lets just strip it out. Don't even
+                             * include it in the string. There should be
+                             * no harm in ignoring it.
+                             */
+                            continue;
+                        }
+
                         /* Encode the 4-byte UTF-8 buffer into a series
                          * of 1-byte characters */
                         utf8Ptr = UtilUtf8Encode(utf8);
@@ -423,7 +479,7 @@ JsonDecodeString(FILE * in)
     return NULL;
 }
 
-static void
+void
 JsonEncodeValue(JsonValue * value, FILE * out)
 {
     size_t i;
@@ -518,4 +574,18 @@ JsonEncode(HashMap * object, FILE * out)
     fputc('}', out);
 
     return 1;
+}
+
+void
+JsonFree(HashMap * object)
+{
+    char *key;
+    JsonValue *value;
+
+    while (HashMapIterate(object, &key, (void **) &value))
+    {
+        JsonValueFree(value);
+    }
+
+    HashMapFree(object);
 }
