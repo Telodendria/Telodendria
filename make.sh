@@ -15,7 +15,7 @@
 : "${INCLUDES:=-Isrc/include}"
 
 : "${CC:=cc}"
-: "${CFLAGS:=-Wall -Werror -Wextra -pedantic -ansi -std=c89 -O3 $HEADERS $INCLUDES}"
+: "${CFLAGS:=-Wall -Wextra -pedantic -ansi -std=c89 -O3 $HEADERS $INCLUDES}"
 : "${LDFLAGS:=-static -flto -fdata-sections -ffunction-sections -s -Wl,-static -Wl,-gc-sections}"
 : "${PROG:=telodendria}"
 
