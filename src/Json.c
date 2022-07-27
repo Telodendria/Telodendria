@@ -153,7 +153,7 @@ JsonValueInteger(long integer)
     return value;
 }
 
-int64_t
+long
 JsonValueAsInteger(JsonValue * value)
 {
     if (!value || value->type != JSON_INTEGER)
