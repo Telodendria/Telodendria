@@ -24,6 +24,9 @@ extern void *
  ArrayDelete(Array * array, size_t index);
 
 extern void
+ ArraySort(Array *, int (*compare) (void *, void *));
+
+extern void
  ArrayFree(Array * array);
 
 extern int

@@ -174,3 +174,53 @@ ArrayTrim(Array * array)
 
     return 1;
 }
+
+static void
+ArraySwap(Array * array, size_t i, size_t j)
+{
+    void *p = array->entries[i];
+
+    array->entries[i] = array->entries[j];
+    array->entries[j] = p;
+}
+
+static size_t
+ArrayPartition(Array * array, size_t low, size_t high, int (*compare) (void *, void *))
+{
+    void *pivot = array->entries[high];
+    size_t i = low - 1;
+    size_t j;
+
+    for (j = low; j <= high - 1; j++)
+    {
+        if (compare(array->entries[j], pivot) < 0)
+        {
+            i++;
+            ArraySwap(array, i, j);
+        }
+    }
+    ArraySwap(array, i + 1, high);
+    return i + 1;
+}
+
+static void
+ArrayQuickSort(Array * array, size_t low, size_t high, int (*compare) (void *, void *))
+{
+    if (low < high)
+    {
+        size_t pi = ArrayPartition(array, low, high, compare);
+
+        ArrayQuickSort(array, low, pi - 1, compare);
+        ArrayQuickSort(array, pi + 1, high, compare);
+    }
+}
+
+void
+ArraySort(Array * array, int (*compare) (void *, void *))
+{
+    if (!array)
+    {
+        return;
+    }
+    ArrayQuickSort(array, 0, array->size, compare);
+}
