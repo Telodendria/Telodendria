@@ -20,7 +20,7 @@ struct LogConfig
 void
 Log(LogConfig * config, LogLevel level, const char *msg,...)
 {
-    int i;
+    size_t i;
     int doColor;
     char indicator;
     va_list argp;
