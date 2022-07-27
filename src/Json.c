@@ -1,8 +1,11 @@
 #include <Json.h>
 
+#include <Util.h>
+
 #include <stdio.h>
 #include <stddef.h>
 #include <stdlib.h>
+#include <string.h>
 
 struct JsonValue
 {
@@ -282,16 +285,10 @@ JsonEncodeString(const char *str, FILE * out)
             case '\r':
                 fputs("\\r", out);
                 break;
-            default:
-                if (c < ' ')
-                {
-                    fprintf(out, "\\u%04x", c);
-                }
-                else
-                {
-                    fputc(c, out);
-                }
+            default:              /* Assume UTF-8 input */
+                fputc(c, out);
                 break;
+
         }
         i++;
     }
@@ -304,11 +301,15 @@ JsonDecodeString(FILE * in)
 {
     const size_t strBlockSize = 16;
 
+    size_t i;
     size_t len;
     size_t allocated;
     char *str;
     char c;
-    char a;
+    char a[5];
+
+    unsigned long utf8;
+    char *utf8Ptr;
 
     len = 0;
     allocated = strBlockSize;
@@ -334,30 +335,52 @@ JsonDecodeString(FILE * in)
                     case '\\':
                     case '"':
                     case '/':
-                        a = c;
+                        a[0] = c;
+                        a[1] = '\0';
                         break;
                     case 'b':
-                        a = '\b';
+                        a[0] = '\b';
+                        a[1] = '\0';
                         break;
                     case 't':
-                        a = '\t';
+                        a[0] = '\t';
+                        a[1] = '\0';
                         break;
                     case 'n':
-                        a = '\n';
+                        a[0] = '\n';
+                        a[1] = '\0';
                         break;
                     case 'f':
-                        a = '\f';
+                        a[0] = '\f';
+                        a[1] = '\0';
                         break;
                     case 'r':
-                        a = '\r';
+                        a[0] = '\r';
+                        a[1] = '\0';
                         break;
                     case 'u':
-                        if (fscanf(in, "%04x", (unsigned int *) &a) != 1)
+                        /* Read \uXXXX point into a 4-byte buffer */
+                        if (fscanf(in, "%04lx", &utf8) != 1)
                         {
                             /* Bad hex value */
                             free(str);
                             return NULL;
                         }
+
+                        /* Encode the 4-byte UTF-8 buffer into a series
+                         * of 1-byte characters */
+                        utf8Ptr = UtilUtf8Encode(utf8);
+                        if (!utf8Ptr)
+                        {
+                            /* Mem error */
+                            free(str);
+                            return NULL;
+                        }
+
+                        /* Move the output of UtilUtf8Encode() into our
+                         * local buffer */
+                        strcpy(a, utf8Ptr);
+                        free(utf8Ptr);
                         break;
                     default:
                         /* Bad escape value */
@@ -366,28 +389,34 @@ JsonDecodeString(FILE * in)
                 }
                 break;
             default:
-                a = c;
+                a[0] = c;
+                a[1] = '\0';
                 break;
         }
 
-        /* Append a */
-        if (len >= allocated)
+        /* Append buffer a */
+        i = 0;
+        while (a[i] != '\0')
         {
-            char *tmp;
-
-            allocated += strBlockSize;
-            tmp = realloc(str, allocated * sizeof(char));
-            if (!tmp)
+            if (len >= allocated)
             {
-                free(str);
-                return NULL;
+                char *tmp;
+
+                allocated += strBlockSize;
+                tmp = realloc(str, allocated * sizeof(char));
+                if (!tmp)
+                {
+                    free(str);
+                    return NULL;
+                }
+
+                str = tmp;
             }
 
-            str = tmp;
+            str[len] = a[i];
+            len++;
+            i++;
         }
-
-        str[len] = a;
-        len++;
     }
 
     free(str);
