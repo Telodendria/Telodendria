@@ -39,7 +39,7 @@ extern JsonValue *
  JsonValueString(char *string);
 
 extern JsonValue *
- JsonValueInteger(int64_t integer);
+ JsonValueInteger(long integer);
 
 extern JsonValue *
  JsonValueFloat(double floating);

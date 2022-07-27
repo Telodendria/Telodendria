@@ -1,12 +1,11 @@
 #include <HashMap.h>
 
-#include <stdint.h>
 #include <stddef.h>
 #include <stdlib.h>
 
 typedef struct HashMapBucket
 {
-    uint32_t hash;
+    unsigned long hash;
     char *key;
     void *value;
 } HashMapBucket;
@@ -21,15 +20,15 @@ struct HashMap
     size_t iterator;
 };
 
-static uint32_t
+static unsigned long
 HashMapHashKey(const char *key)
 {
-    uint32_t hash = 2166136261u;
+    unsigned long hash = 2166136261u;
     size_t i = 0;
 
     while (key[i])
     {
-        hash ^= (uint8_t) key[i];
+        hash ^= (unsigned char) key[i];
         hash *= 16777619;
 
         i++;
@@ -128,7 +127,7 @@ HashMapCreate(void)
 void *
 HashMapDelete(HashMap * map, const char *key)
 {
-    uint32_t hash;
+    unsigned long hash;
     size_t index;
 
     if (!map || !key)
@@ -182,7 +181,7 @@ HashMapFree(HashMap * map)
 void *
 HashMapGet(HashMap * map, const char *key)
 {
-    uint32_t hash;
+    unsigned long hash;
     size_t index;
 
     if (!map || !key)
@@ -262,7 +261,7 @@ HashMapMaxLoadSet(HashMap * map, float load)
 void *
 HashMapSet(HashMap * map, char *key, void *value)
 {
-    uint32_t hash;
+    unsigned long hash;
     size_t index;
 
     if (!map || !key || !value)

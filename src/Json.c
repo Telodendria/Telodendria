@@ -12,7 +12,7 @@ struct JsonValue
         HashMap *object;
         Array *array;
         char *string;
-        int64_t integer;
+        long integer;
         double floating;
         int boolean:1;
     } as;
@@ -137,7 +137,7 @@ JsonValueAsString(JsonValue * value)
 }
 
 JsonValue *
-JsonValueInteger(int64_t integer)
+JsonValueInteger(long integer)
 {
     JsonValue *value;
 
@@ -427,7 +427,7 @@ JsonEncodeValue(JsonValue * value, FILE * out)
             JsonEncodeString(value->as.string, out);
             break;
         case JSON_INTEGER:
-            fprintf(out, "%lld", value->as.integer);
+            fprintf(out, "%ld", value->as.integer);
             break;
         case JSON_FLOAT:
             fprintf(out, "%f", value->as.floating);

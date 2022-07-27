@@ -6,7 +6,6 @@
 #include <Log.h>
 #include <HashMap.h>
 #include <Config.h>
-#include <Base64.h>
 
 typedef enum ArgFlag
 {
