@@ -421,22 +421,47 @@ should just run on any POSIX operating system without modification.
 </p>
 <h2 id="project-goals">Project Goals</h2>
 <p>
-The goals of this project are as follows:
+The goals of this project are generally divided into <i>user goals</i>,
+and <i>developer goals</i>, depending on who they impact the most. This
+isn't an exhaustive list, but it is a list of things that I want to
+prioritize, <i>because other server implementations lack them</i>.
+</p>
+<p>
+The user goals are as follows:
 </p>
 <ul>
 <li>
 To be a production-ready Matrix server capable of handling a lot of
 users. Telodendria should have good performance in many diverse
-environments.
+environments. It should scale up well for large instances, and yet also
+be able to scale down to a peer-to-peer device.
 </li>
 <li>
+To be easier to configure than any of the other Matrix homeserver
+implementations. The configuration file should be flexible,
+well-documented, and easy to understand and modify. An intuitive
+command-line tool for administrative tasks should also be available.
+</li>
+</ul>
+<p>
+The developer goals are as follows:
+</p>
+<ul>
+<li>
 To have as few external build and run dependencies as possible. It
-should be possible to compile Telodendria on any operating system out
-of the box, and have it be totally statically linked, ready to run
-under a <code>chroot(8)</code>-ed web server. You'll even notice that
+should be possible to compile Telodendria on any POSIX operating
+system right out of the box, and have it be totally statically linked,
+ready to run under a <code>chroot(8)</code>. You'll even notice that
 the documentation is written in HTML directly, not Markdown, to remove
 the dependency on a Markdown parser and renderer.
 </li>
+<li>
+To have a simple yet elegant workflow, and not depend on any large
+or complex development tools, such as code forges. The entire
+development workflow should be able to be successfully and efficiently
+completed on a base OpenBSD install. Of course you don't have to use
+OpenBSD for development by any means, but the point is, the workflow
+should not require a lot of tools.
 <li>
 To be written in clean, elegant, and well-documented code. The goal is
 to build a Matrix homeserver from the ground up, not just because I
@@ -486,12 +511,29 @@ the contribution workflow goes as smoothly as possible.
 </p>
 <h4 id="getting-the-code">Getting The Code</h4>
 <p>
+If you'd like to hack on <b>Telodendria</b>, you'll need the following
+tools in addition to the tools required to
+<a href="#building-the-source">build the source</a>:
+</p>
+<ul>
+<li><code>cvs</code> for checking out and updating a local copy
+of the source code.</li>
+<li><code>indent</code> for formatting your code before generating
+patches</li>
+<li><code>patch</code> for applying patches to your local copy of the
+source code.</li>
+</ul>
+<p>
+Note that all of these tools are built into OpenBSD. While you of course
+don't have to use OpenBSD to develop <b>Telodendria</b>, it may make
+the process a little easier. In fact, these tools were chosen
+precisely <i>because</i> they were built into OpenBSD, the operating
+system I use.
+</p>
+<p>
 You can download an official release tarball if you would really like,
 but the preferred way is to check out the source code from CVS. This
-makes generating patches a lot easier. If you do not have CVS, consult
-your operating system's package repository to install it. CVS was the
-chosen version control system for this project primarily because it is
-built into OpenBSD.
+makes generating patches a lot easier. 
 </p>
 <div class="code">
 $ export CVSROOT=anoncvs@bancino.net:/cvs
