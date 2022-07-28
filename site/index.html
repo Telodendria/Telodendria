@@ -69,8 +69,8 @@ binary that can be run just about anywhere. It is designed to be
 extremely easy to set up and consume as few resources as possible.
 </li>
 <li>
-Is permissively licensed. <b>Telodendria</b> is licensed under the
-MIT license, which imposes few restrictions on what you can do with
+Is permissively licensed. <b>Telodendria</b> is licensed under a
+modified MIT license, which imposes few restrictions on what you can do with
 it.
 </li>
 </ul>
@@ -318,7 +318,7 @@ Implement a JSON library using the hash map and array
 <li><s>Write a function that gets the  current Unix timestamp in milliseconds.</s></code>
 <li><s>Figure out how to w</s>Write unit tests for array/hashmap/etc</li>
 <li>Parse the <b>Telodendria</b> config file</li>
-<li>Add license/documentation comments to all source files</li>
+<li>Add <s>license/</s>documentation comments to all source files</li>
 <li>Implement a simple HTTP server</li>
 <li>
 Design the server architecture
@@ -377,6 +377,7 @@ on my list for that:
 <li><s>Make a note in Getting The Code that the password for the
 <code>anoncvs</code> account is just <code>anoncvs</code>.</s></li>
 <li><s>Add Contributors list</s></li>
+<li>Add list of <code>make.sh</code> recipes, and what they do</li>
 </ul>
 <h2 id="rationale">Rationale</h2>
 <p>
@@ -683,30 +684,20 @@ reviewed again, or you can use them as a starting point for future patches.
 <h2 id="license">License</h2>
 <p>
 All of the code and documentation for <b>Telodendria</b> is licensed
-under the following terms and conditions:
+under a modified MIT license. Please consult the <code>src/header.txt</code>
+file for the actual license text. The <b>Telodendria</b> license text
+differs from the MIT license in the following ways:
 </p>
-<div class="code">
-Copyright (C) 2022 Jordan Bancino &lt;@jordan:bancino.net&gt;
-
-Permission is hereby granted, free of charge, to any person obtaining a
-copy of this software and associated documentation files (the
-"Software"), to deal in the Software without restriction, including
-without limitation the rights to use, copy, modify, merge, publish,
-distribute, sublicense, and/or sell copies of the Software, and to
-permit persons to whom the Software is furnished to do so, subject to
-the following conditions:
-
-The above copyright notice and this permission notice shall be included
-in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
-OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
-CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
-TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
-SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-</div>
+<ul>
+<li>
+Where the MIT license states that the copyright notice and permission
+notice shall be included in all copies or <i>substantial</i> portions
+of the software, the <b>Telodendria</b> license requires the copyright
+notice and permission notice be included in <i>all</i>
+portions&mdash;regardless of size&mdash;of the software by omitting
+the word <i>substantial</i>.
+</li>
+</ul>
 <h2 id="contributors">Contributors</h2>
 <p>
 <b>Telodendria</b> would not be possible without the support of the
