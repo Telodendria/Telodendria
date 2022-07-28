@@ -551,17 +551,88 @@ just to make sure the spacing is consistent, if nothing else.
 </p>
 <h4 id="submitting-patches">Submitting Patches</h4>
 <p>
-Submitting patches is fairly easy to do if you've got the CVS sources
-checked out. Once you have made your changes, just run
+<b>Telodendria</b> aims at remaining as minimal as possible. This doesn't
+just mean minimal code, it also means a minimal development process, which
+is why <b>Telodendria</b> doesn't use GitHub, GitLab, or even SourceHut.
+Instead, the contribution workflow operates on submitting patch files to
+a public Matrix room, sort of like the OpenBSD project operates on patch
+files sent to a public mailing list.
+</p>
+<p>
+If you're not used to manually creating and submitting patches instead of
+opening a "pull request," you should be pleased to hear that submitting
+patches is fairly easy to do if you've got the CVS sources checked out.
+In fact, I find it easier than having to make a GitHub account, forking
+a project repository, and then making a pull request for it. Once you
+have made your changes in your local copy of the code, just run
 <code>cvs diff</code>:
 </p>
 <div class="code">
-$ cvs diff -uNp > your-changes.patch
+$ cvs diff -uNp &gt; your-changes.patch
 </div>
 <p>
-Then, send the resulting patches to
-<code>#telodendria-patches:bancino.net</code>, where they will be
-promptly reviewed by the community.
+At this point, it would be a good idea to open up your patch file in
+your preferred editor and look it over to make sure everything looks
+good. While you have the file open, you should also add some
+email-style headers to the top of your patch file, for quick
+identification:
+</p>
+<div class="code">
+From: Jordan Bancino &lt;@jordan:bancino.net&gt;
+Subject: Document Patch Procedure
+Date: 2022-07-27
+</div>
+<p>
+Obviously, set the actual values to your own information. <code>From</code>
+should be your name and Matrix ID, and <code>Date</code> should be in the format
+<code>%Y-%m-%d</code>. The <code>Subject</code> should very briefly
+describe what the patch is about. Below these headers, write a more in-depth
+description of the patch.
+</p>
+<p>
+Then, send the resulting patch file to
+<code>#telodendria-patches:bancino.net</code>, so it can be
+discussed and reviewed by the community. If you don't have a Matrix
+account, and you <i>really</i> don't want to create one&mdash;ignoring
+how odd it is that you are trying to contribute to a <i>Matrix</i>
+homeserver project&mdash;you can email your patches to
+<a href="mailto:jordan@bancino.net">jordan@bancino.net</a>. However,
+the preferred way of submitting patches is to the official Matrix room,
+so I will upload your patch there along with your email address. If you
+are going to send patches via email, <b>they must be plain text</b> emails,
+and the patch must be in the main body of the email. No MIME, base64, or
+printed-quotable garbage. I will silently reject emails that are not
+purely plain text. I should be able to write a raw copy of your message to
+an <code>mbox</code> file, and then apply it onto my code right from
+there, with no further processing. If you're going to be a regular contributor,
+it would just be easier to create a Matrix account. It doesn't have to be
+on my public homeserver, but it certainly can be. Note that the discussion and
+ultimately the decision on what to do with your patch will all happen in
+the Matrix room, so if you submit patches using email, you'll miss out on
+any feedback.
+</p>
+<p>
+Try to keep your patches on topic&mdash;make one patch file per feature
+or bug fix being implemented. It is okay if your patches depend on previous
+patches, just indicate that in the patch. Note that it may take a while
+for patches to be committed, and some patches may not be committed at
+all. In either case, all sent patches are queued from the Matrix room into the
+<a href="/patches">public patch directory</a>, so they can be referenced easier
+in the future. If you want to reference a submitted patch in a Matrix message
+or email, it might be a good idea to link to it in the public patch directory.
+</p>
+<p>
+The public patch directory works as follows: as soon as your patch is recieved,
+it will be downloaded and placed in the <code>queue/</code> directory. Then,
+if your patch is accepted, it will be moved to the <code>accepted/</code>
+directory and then committed to the official CVS repository. If you patch is
+rejected for some reason, it will be moved to the <code>rejected/</code>
+directory. Regardless of the state of your patch, it will always be permalinked
+in the <code>p/</code> directory.
+</p>
+<p>
+You're always welcome to inquire about rejected patches, and request they be
+reviewed again, or you can use them as a starting point for future patches.
 </p>
 <h2 id="license">License</h2>
 <p>
