@@ -144,15 +144,18 @@ recipe_patch() {
 		EDITOR=vi
 	fi
 
+	PATCH_FILE="${MXID}_$(date +%s).patch"
+
 	(
 		printf 'From: "%s" <%s>\n' "$DISPLAY_NAME" "$MXID"
-		echo "Date: $(date +%Y-%m-%d)"
+		echo "Date: $(date)"
 		echo "Subject: "
 		echo
 		cvs diff -uNp $PATCH | grep -v '^\? '
-	) > "telodendria-patch.patch"
+	) > "$PATCH_FILE"
 
-	"$EDITOR" "telodendria-patch.patch"
+	"$EDITOR" "$PATCH_FILE"
+	echo "$PATCH_FILE"
 }
 
 for recipe in $@; do
