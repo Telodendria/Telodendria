@@ -8,6 +8,9 @@
 
 	--color-table-border: #d0d7de;
 	--color-table-accent: #f6f8fa;
+
+	--color-error-bg: #ffdce0;
+	--color-error: #bd181e;
 }
 
 @media(prefers-color-scheme: dark) {
@@ -19,6 +22,8 @@
 
 		--color-table-border: #30363d;
 		--color-table-accent: #161b22;
+
+		--color-error-bg: #3f1e23;
 	}
 }
 
@@ -31,6 +36,13 @@ body {
 	background-color: var(--color-bg);
 
 	font-family: Arial;
+}
+
+.msg-error {
+	background-color: var(--color-error-bg);
+	color: var(--color-error);
+	border-radius: var(--border-radius);
+	padding: 20px;
 }
 
 .code {
