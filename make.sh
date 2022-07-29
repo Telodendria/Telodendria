@@ -144,7 +144,8 @@ recipe_patch() {
 		EDITOR=vi
 	fi
 
-	PATCH_FILE="${MXID}_$(date +%s).patch"
+	NORMALIZED_MXID=$(echo "$MXID" | sed -e 's/@//g' -e 's/:/-/g')
+	PATCH_FILE="${NORMALIZED_MXID}_$(date +%s).patch"
 
 	(
 		printf 'From: "%s" <%s>\n' "$DISPLAY_NAME" "$MXID"
