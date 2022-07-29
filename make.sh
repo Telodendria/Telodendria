@@ -131,6 +131,30 @@ recipe_release() {
 	fi
 }
 
+recipe_patch() {
+	if [ -z "$MXID" ]; then
+		MXID="@${USER}:$(hostname)"
+	fi
+
+	if [ -z "$DISPLAY_NAME" ]; then
+		DISPLAY_NAME=$(getent passwd "$USER" | cut -d ':' -f 5 | cut -d ',' -f 1)
+	fi
+
+	if [ -z "$EDITOR" ]; then
+		EDITOR=vi
+	fi
+
+	(
+		printf 'From: "%s" <%s>\n' "$DISPLAY_NAME" "$MXID"
+		echo "Date: $(date +%Y-%m-%d)"
+		echo "Subject: "
+		echo
+		cvs diff -uNp $PATCH | grep -v '^\? '
+	) > "telodendria-patch.patch"
+
+	"$EDITOR" "telodendria-patch.patch"
+}
+
 for recipe in $@; do
 	recipe_$recipe
 done
