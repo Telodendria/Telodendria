@@ -287,6 +287,9 @@ JsonValueFree(JsonValue * value)
             }
             ArrayFree(arr);
             break;
+		case JSON_STRING:
+			free(value->as.string);
+			break;
         default:
             break;
     }
