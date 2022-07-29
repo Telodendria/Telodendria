@@ -268,4 +268,4 @@ extern int
 extern HashMap *
  JsonDecode(FILE *);
 
-#endif
+#endif                             /* TELODENDRIA_JSON_H */

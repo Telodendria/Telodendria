@@ -28,6 +28,7 @@
 #include <unistd.h>
 #include <ctype.h>
 #include <stdarg.h>
+#include <pthread.h>
 
 #define LOG_TSBUFFER 64
 
@@ -38,7 +39,157 @@ struct LogConfig
     FILE *out;
     int flags;
     char *tsFmt;
+
+    pthread_mutex_t lock;
 };
+
+LogConfig *
+LogConfigCreate(void)
+{
+    LogConfig *config;
+
+    config = calloc(1, sizeof(LogConfig));
+
+    if (!config)
+    {
+        return NULL;
+    }
+
+    LogConfigLevelSet(config, LOG_MESSAGE);
+    LogConfigIndentSet(config, 0);
+    LogConfigOutputSet(config, NULL);   /* Will set to stdout */
+    LogConfigFlagSet(config, LOG_FLAG_COLOR);
+    LogConfigTimeStampFormatSet(config, "%y-%m-%d %H:%M:%S");
+
+    return config;
+}
+
+void
+LogConfigFlagClear(LogConfig * config, int flags)
+{
+    if (!config)
+    {
+        return;
+    }
+
+    config->flags &= ~flags;
+}
+
+static int
+LogConfigFlagGet(LogConfig * config, int flags)
+{
+    if (!config)
+    {
+        return 0;
+    }
+
+    return config->flags & flags;
+}
+
+void
+LogConfigFlagSet(LogConfig * config, int flags)
+{
+    if (!config)
+    {
+        return;
+    }
+
+    config->flags |= flags;
+}
+
+void
+LogConfigFree(LogConfig * config)
+{
+    free(config);
+}
+
+void
+LogConfigIndent(LogConfig * config)
+{
+    if (config)
+    {
+        config->indent += 2;
+    }
+}
+
+void
+LogConfigIndentSet(LogConfig * config, size_t indent)
+{
+    if (!config)
+    {
+        return;
+    }
+
+    config->indent = indent;
+}
+
+LogLevel
+LogConfigLevelGet(LogConfig * config)
+{
+    if (!config)
+    {
+        return -1;
+    }
+
+    return config->level;
+}
+
+void
+LogConfigLevelSet(LogConfig * config, LogLevel level)
+{
+    if (!config)
+    {
+        return;
+    }
+
+    switch (level)
+    {
+        case LOG_ERROR:
+        case LOG_WARNING:
+        case LOG_MESSAGE:
+        case LOG_DEBUG:
+            config->level = level;
+        default:
+            break;
+    }
+}
+
+void
+LogConfigOutputSet(LogConfig * config, FILE * out)
+{
+    if (!config)
+    {
+        return;
+    }
+
+    if (out)
+    {
+        config->out = out;
+    }
+    else
+    {
+        config->out = stdout;
+    }
+
+}
+
+void
+LogConfigTimeStampFormatSet(LogConfig * config, char *tsFmt)
+{
+    if (config)
+    {
+        config->tsFmt = tsFmt;
+    }
+}
+
+void
+LogConfigUnindent(LogConfig * config)
+{
+    if (config && config->indent >= 2)
+    {
+        config->indent -= 2;
+    }
+}
 
 void
 Log(LogConfig * config, LogLevel level, const char *msg,...)
@@ -64,6 +215,8 @@ Log(LogConfig * config, LogLevel level, const char *msg,...)
     {
         return;
     }
+
+    pthread_mutex_lock(&config->lock);
 
     for (i = 0; i < config->indent; i++)
     {
@@ -146,7 +299,7 @@ Log(LogConfig * config, LogLevel level, const char *msg,...)
             indicator = '*';
             break;
         default:
-            indicator = ' ';
+            indicator = '?';
             break;
     }
 
@@ -172,163 +325,6 @@ Log(LogConfig * config, LogLevel level, const char *msg,...)
     {
         fflush(config->out);
     }
-}
 
-LogConfig *
-LogConfigCreate(void)
-{
-    LogConfig *config;
-
-    config = calloc(1, sizeof(LogConfig));
-
-    if (!config)
-    {
-        return NULL;
-    }
-
-    LogConfigLevelSet(config, LOG_MESSAGE);
-    LogConfigIndentSet(config, 0);
-    LogConfigOutputSet(config, NULL);   /* Will set to stdout */
-    LogConfigFlagSet(config, LOG_FLAG_COLOR);
-    LogConfigTimeStampFormatSet(config, "%y-%m-%d %H:%M:%S");
-
-    return config;
-}
-
-void
-LogConfigFlagClear(LogConfig * config, int flags)
-{
-    if (!config)
-    {
-        return;
-    }
-
-    config->flags &= ~flags;
-}
-
-int
-LogConfigFlagGet(LogConfig * config, int flags)
-{
-    if (!config)
-    {
-        return 0;
-    }
-
-    return config->flags & flags;
-}
-
-void
-LogConfigFlagSet(LogConfig * config, int flags)
-{
-    if (!config)
-    {
-        return;
-    }
-
-    config->flags |= flags;
-}
-
-void
-LogConfigFree(LogConfig * config)
-{
-    free(config);
-}
-
-void
-LogConfigIndent(LogConfig * config)
-{
-    if (config)
-    {
-        config->indent += 2;
-    }
-}
-
-size_t
-LogConfigIndentGet(LogConfig * config)
-{
-    if (!config)
-    {
-        return 0;
-    }
-
-    return config->indent;
-}
-
-void
-LogConfigIndentSet(LogConfig * config, size_t indent)
-{
-    if (!config)
-    {
-        return;
-    }
-
-    config->indent = indent;
-}
-
-LogLevel
-LogConfigLevelGet(LogConfig * config)
-{
-    if (!config)
-    {
-        return -1;
-    }
-
-    return config->level;
-}
-
-void
-LogConfigLevelSet(LogConfig * config, LogLevel level)
-{
-    if (!config)
-    {
-        return;
-    }
-
-    switch (level)
-    {
-        case LOG_ERROR:
-        case LOG_WARNING:
-        case LOG_MESSAGE:
-        case LOG_DEBUG:
-            config->level = level;
-        default:
-            break;
-    }
-}
-
-void
-LogConfigOutputSet(LogConfig * config, FILE * out)
-{
-    if (!config)
-    {
-        return;
-    }
-
-    if (out)
-    {
-        config->out = out;
-    }
-    else
-    {
-        config->out = stdout;
-    }
-
-}
-
-void
-LogConfigTimeStampFormatSet(LogConfig * config, char *tsFmt)
-{
-    if (config)
-    {
-        config->tsFmt = tsFmt;
-    }
-}
-
-void
-LogConfigUnindent(LogConfig * config)
-{
-    if (config && config->indent >= 2)
-    {
-        config->indent -= 2;
-    }
+    pthread_mutex_unlock(&config->lock);
 }

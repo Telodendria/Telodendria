@@ -50,8 +50,6 @@ typedef struct Array Array;
 /*
  * Create a new, empty array on the heap.
  *
- * Params: none
- *
  * Return: A pointer to an Array, or NULL if there was an error
  * allocating memory for the Array.
  */
@@ -214,4 +212,4 @@ extern void
 extern int
  ArrayTrim(Array *);
 
-#endif
+#endif                             /* TELODENDRIA_ARRAY_H */

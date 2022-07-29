@@ -102,11 +102,13 @@ typedef enum HttpStatus
 struct HttpRequest
 {
     HttpRequestMethod method;
+    HashMap *headers;
 };
 
 struct HttpResponse
 {
     HttpStatus status;
+    HashMap *headers;
 };
 
 extern char *

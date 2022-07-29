@@ -83,4 +83,4 @@ extern int
 extern char *
  CanonicalJsonEncodeToString(HashMap *);
 
-#endif
+#endif                             /* TELODENDRIA_CANONICALJSON_H */

@@ -180,4 +180,4 @@ extern int
 extern void
  HashMapFree(HashMap *);
 
-#endif
+#endif                             /* TELODENDRIA_HASHMAP_H */

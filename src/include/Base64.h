@@ -152,4 +152,4 @@ extern void
 extern int
  Base64Pad(char **, size_t);
 
-#endif
+#endif                             /* TELODENDRIA_BASE64_H */
