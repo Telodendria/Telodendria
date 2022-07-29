@@ -152,7 +152,9 @@ recipe_patch() {
 		echo "Date: $(date)"
 		echo "Subject: "
 		echo
-		cvs diff -uNp $PATCH | grep -v '^\? '
+		# Do a quiet diff that doesn't have any untracked files
+		# listed in it.
+		cvs -q diff -uNp $PATCH | grep -v '^\? '
 	) > "$PATCH_FILE"
 
 	"$EDITOR" "$PATCH_FILE"
