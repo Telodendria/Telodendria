@@ -272,7 +272,7 @@ HashMapIterate(HashMap * map, char **key, void **value)
 void
 HashMapMaxLoadSet(HashMap * map, float load)
 {
-    if (!map)
+    if (!map || (load > 1.0 || load <= 0))
     {
         return;
     }
