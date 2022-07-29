@@ -110,12 +110,6 @@ recipe_release() {
 		exit 1
 	fi
 
-	if [ -z "$TELODENDRIA_SIGNIFY_SECRET" ]; then
-		echo "No signify secret key specified."
-		echo "Set TELODENDRIA_SIGNIFY_SECRET."
-		exit 1
-	fi
-
 	mkdir -p "$TELODENDRIA_PUB/pub/v$TELODENDRIA_VERSION"
 	cd "$TELODENDRIA_PUB/pub/v$TELODENDRIA_VERSION"
 
@@ -126,9 +120,15 @@ recipe_release() {
 	rm -r "Telodendria-v$TELODENDRIA_VERSION"
 	sha256 "Telodendria-v$TELODENDRIA_VERSION.tar.gz" \
 		> "Telodendria-v$TELODENDRIA_VERSION.tar.gz.sha256"
-	signify -S -s "$TELODENDRIA_SIGNIFY_SECRET" \
-		-m "Telodendria-v$TELODENDRIA_VERSION.tar.gz" \
-		-x "Telodendria-v$TELODENDRIA_VERSION.tar.gz.sig"
+
+	if [ ! -z "$TELODENDRIA_SIGNIFY_SECRET" ]; then
+		signify -S -s "$TELODENDRIA_SIGNIFY_SECRET" \
+			-m "Telodendria-v$TELODENDRIA_VERSION.tar.gz" \
+			-x "Telodendria-v$TELODENDRIA_VERSION.tar.gz.sig"
+	else
+		echo "Warning: TELODENDRIA_SIGNIFY_SECRET not net."
+		echo "The built tarball will not be signed."
+	fi
 }
 
 for recipe in $@; do
