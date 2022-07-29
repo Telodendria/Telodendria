@@ -598,7 +598,57 @@ I'll likely run my <code>indent(1)</code> on the code anyway though,
 just to make sure the spacing is consistent, if nothing else.
 </p>
 <h4 id="the-build-script">The Build Script</h4>
-<!-- describe recipes and the .env file -->
+<p>
+<b>Telodendria</b> uses a custom build script called <code>td</code>,
+for <i>Telodendria developer</i>. The <code>td</code> is not only
+a build script, however. It does all kinds of cool things like
+format the source code, and generate patch files. <code>td</code> is
+the only supported way to build <b>Telodendria</b>.
+</p>
+<p>
+I opted to write a custom build script instead of just using
+<code>make</code>, because I felt that there is really no way to make
+a truly portable <code>Makefile</code> that could do everything I
+need. I was doing a lot of research on the differences between the
+GNU and BSD versions of <code>make</code>, and I felt it just wasn't
+worth it when I could write a small POSIX script that would run on
+both GNU systems and BSD systems without a fuss. I also wanted a way
+to automate more than just building code. I wanted a system
+versatile enough that I could define arbitrary recipes to do whatever
+I want. I didn't want to be limited by the <code>Makefile</code>
+syntax.
+</p>
+<p>
+The <code>td</code> script is fairly intuitive. It operates somewhat
+like <code>make</code>, in that it has recipes that you specify
+on the command line. To start using it, just run the following
+command in your <b>Telodendria</b> directory:
+</p>
+<div class="code">
+$ . contrib/td-env.sh
+</div>
+<p>
+<b>Note:</b> You will have to run the above command every time you
+start a new terminal session, as nothing is persisted.
+</p>
+<p>
+If you're going to be submitting patches, you should also configure
+a <code>.env</code> file, which <code>td</code> will include
+automatically for you. For the best experience, you'll want at
+least these values:
+</p>
+<div class="code">
+MXID=@your:matrix-id.net
+DISPLAY_NAME="Your Display Name"
+EDITOR=gedit # Or whatever your preferred editor is.
+</div>
+<p>
+If you don't provide these values, <code>td</code> will deduce them
+from your environment. It uses your system username and hostname to
+create the <code>MXID</code>, and reads the password database to
+get your configured display name. It also uses <code>vi</code> as
+the default editor, which may not be suitable for all developers.
+</p>
 <h4 id="submitting-patches">Submitting Patches</h4>
 <p>
 <b>Telodendria</b> aims at remaining as minimal as possible. This doesn't
@@ -614,35 +664,37 @@ opening a "pull request," you should be pleased to hear that submitting
 patches is fairly easy to do if you've got the CVS sources checked out.
 In fact, I find it easier than having to make a GitHub account, forking
 a project repository, and then making a pull request for it. Once you
-have made your changes in your local copy of the code, just run the
+have made your changes in your local copy of the code, and you've
+configured your environment using the instructions in
+<a href="#the-build-script">The Build Script</a>, just run the
 <code>patch</code> recipe:
 </p>
 <div class="code">
-$ sh make.sh patch
+$ td patch
 </div>
 <p>
-This will automatically generate the patch file from all your changes,
+This will automatically generate a patch file for all your changes,
 and then open it in your default editor. You can set the
 <code>EDITOR</code> variable to your preferred editor if the default
 doesn't work for you. Either set it in your environment via your
 preferred means, or set it like this:
 </p>
 <div class="code">
-$ EDITOR=gedit sh make.sh patch
+$ EDITOR=gedit td patch
 </div>
 <p>
 You can also generate a patch for only certain files and directories.
-To do that, set <code>PATCH</code>, like this:
+To do that, set <code>PATCHSET</code>, like this:
 </p>
 <div class="code">
 # Only write a patch for README.txt and the files in site/
-$ PATCH="README.txt site/" sh make.sh patch
+$ PATCHSET="README.txt site/" td patch
 </div>
 <p>
-You can of course specify both <code>PATCH</code> and
+You can of course specify both <code>PATCHSET</code> and
 <code>EDITOR</code> at the same time, if you want. But at that point,
-it might make more sense to just set them in <code>.env</code> or in
-your system environment.
+it might make more sense to just <code>EDITOR</code> in your
+<code>.env</code> or in your system environment.
 </p>
 <p>
 As you'll notice, the top of the patch file should have some email-style
