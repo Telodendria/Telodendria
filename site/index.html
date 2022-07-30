@@ -247,13 +247,18 @@ POSIX base utilities, including <code>find</code>, <code>stat</code>,
 </li>
 </ul>
 <div class="code">
-$ ./make.sh
+$ . tools/env.sh
+$ td build
 </div>
 <p>
-If everything went well, that will produce
-<code>build/telodendria</code>, which you can then place wherever you
-want, and run as a system daemon. See the <code>contrib</code> folder
-for configuration examples.
+If everything went well, that will produce <code>build/telodendria</code>,
+which you can then place wherever you want, and run as a system daemon.
+See the <code>contrib</code> folder for configuration examples.
+</p>
+<p>
+If you're going to be doing more than just building the code, see
+<a href="#the-build-script">The Build Script</a> for full documentation on
+what the <code>td</code> script can do.
 </p>
 <h2 id="configure">Configure Telodendria</h3>
 <p>
@@ -538,14 +543,16 @@ but the preferred way is to check out the source code from CVS. This
 makes generating patches a lot easier. 
 </p>
 <div class="code">
-$ export CVSROOT=anoncvs@bancino.net:/cvs
-$ cvs checkout Telodendria
+$ cvs -d anoncvs@bancino.net:/cvs checkout -P Telodendria
 $ cd Telodendria
 </div>
 <p>
-There is no password for the <code>anoncvs</code> account. It should
-just let you fetch the source code without having to input a password.
+If you already checkout out the code previously, make sure you update your
+local copy before you start developing:
 </p>
+<div class="code">
+$ cvs -q update -P
+</div>
 <p>
 You should now have the latest <b>Telodendria</b> source code. Follow
 the <a href="#code-style">Code Style</a> as you make your changes.
@@ -600,10 +607,10 @@ just to make sure the spacing is consistent, if nothing else.
 <h4 id="the-build-script">The Build Script</h4>
 <p>
 <b>Telodendria</b> uses a custom build script called <code>td</code>,
-for <i>Telodendria developer</i>. The <code>td</code> is not only
+for <i>Telodendria developer</i>. The <code>td</code> script is not only
 a build script, however. It does all kinds of cool things like
 format the source code, and generate patch files. <code>td</code> is
-the only supported way to build <b>Telodendria</b>.
+the only supported way to develop <b>Telodendria</b>.
 </p>
 <p>
 I opted to write a custom build script instead of just using
@@ -625,17 +632,20 @@ on the command line. To start using it, just run the following
 command in your <b>Telodendria</b> directory:
 </p>
 <div class="code">
-$ . contrib/td-env.sh
+$ . tools/env.sh
 </div>
 <p>
 <b>Note:</b> You will have to run the above command every time you
-start a new terminal session, as nothing is persisted.
+start a new terminal session, as nothing is persisted to your system.
+I believe in non-invasive, fully self-contained tooling, so it is up to
+you to hook the Telodendria tools into your environment if you want them
+to persist.
 </p>
 <p>
 If you're going to be submitting patches, you should also configure
-a <code>.env</code> file, which <code>td</code> will include
-automatically for you. For the best experience, you'll want at
-least these values:
+a <code>.env</code> file in the project directory root, which
+<code>td</code> will include automatically for you. For the best
+experience, you'll want at least these values:
 </p>
 <div class="code">
 MXID=@your:matrix-id.net
@@ -674,15 +684,7 @@ $ td patch
 </div>
 <p>
 This will automatically generate a patch file for all your changes,
-and then open it in your default editor. You can set the
-<code>EDITOR</code> variable to your preferred editor if the default
-doesn't work for you. Either set it in your environment via your
-preferred means, or set it like this:
-</p>
-<div class="code">
-$ EDITOR=gedit td patch
-</div>
-<p>
+and then open it in your preferred editor. 
 You can also generate a patch for only certain files and directories.
 To do that, set <code>PATCHSET</code>, like this:
 </p>
@@ -690,12 +692,6 @@ To do that, set <code>PATCHSET</code>, like this:
 # Only write a patch for README.txt and the files in site/
 $ PATCHSET="README.txt site/" td patch
 </div>
-<p>
-You can of course specify both <code>PATCHSET</code> and
-<code>EDITOR</code> at the same time, if you want. But at that point,
-it might make more sense to just <code>EDITOR</code> in your
-<code>.env</code> or in your system environment.
-</p>
 <p>
 As you'll notice, the top of the patch file should have some email-style
 headers that look like this:
