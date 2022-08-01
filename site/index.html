@@ -231,15 +231,15 @@ should compile on almost any compiler and operating system with minimal
 effort, but the following compilers and operating systems are known to work:
 <ul>
 <li>GCC on Linux</li>
-<li>Clang on OpenBSD</li>
+<li>Clang on OpenBSD, Linux, and WSL</li>
 <li>
-Tiny C Compiler (<b>Note:</b> must edit <code>make.sh</code> and remove
+Tiny C Compiler (<b>Note:</b> must remove
 <code>-Wl,-static -Wl,-gc-sections</code> from <code>LDFLAGS</code>)
 on OpenBSD.
 </li>
 </ul>
 Other compilers should work as well, but you may have to play with the
-flags in <code>make.sh</code>.
+flags.
 </li>
 <li>
 POSIX base utilities, including <code>find</code>, <code>stat</code>,
@@ -383,7 +383,7 @@ on my list for that:
 <li><s>Make a note in Getting The Code that the password for the
 <code>anoncvs</code> account is just <code>anoncvs</code>.</s></li>
 <li><s>Add Contributors list</s></li>
-<li>Add list of <code>make.sh</code> recipes, and what they do</li>
+<li><s>Add list of <code>make.sh</code> recipes, and what they do</s></li>
 </ul>
 <h2 id="rationale">Rationale</h2>
 <p>
@@ -659,6 +659,121 @@ create the <code>MXID</code>, and reads the password database to
 get your configured display name. It also uses <code>vi</code> as
 the default editor, which may not be suitable for all developers.
 </p>
+<p>
+You can invoke <code>td</code> recipes with the following syntax:
+</p>
+<div class="code">
+$ td &lt;recipe&gt; ...
+</div>
+<p>
+Multiple recipes can be invoked in a single run of <code>td</code>.
+At the moment, recipes are run unconditionally; that is, even if parts
+of a recipe fail, all following recipes still run.
+</p>
+<p>
+Here is a complete list of recipes currently supported by
+<code>td</code>, and a description of what they do. Some recipes can
+alter their behavior based on certain environment variables. Those
+variables are also documented here.
+</p>
+<ul>
+<li>
+<code>build</code>: Build the source code, and generate the
+<code>build/telodendria</code> binary. This is the <i>default</i>
+recipe; that is, it runs if no recipes are given as arguments to
+<code>td</code>. The build recipe is incremental; it only rebuilds
+sources that have been modified since the last build, which makes
+builds faster. This recipe makes use of many environment variables:
+<ul>
+<li><code>CFLAGS</code>: Compiler flags to generate object files.</li>
+<li><code>LDFLAGS</code>: Compiler flags to link the output binary</li>
+<li><code>CC</code>: The compiler to use.</li>
+<li><code>PROG</code>: The name of the output binary</li>
+<li><code>DEFINES</code>: Global preprocessor definitions</li>
+<li><code>INCLUDES</code>: Header directories to make available</li>
+</ul>
+<code>TELODENDRIA_VERSION</code> also makes its way into the output
+binary, but it is primarily used for generating releases.
+</li>
+<li>
+<code>clean</code>: Remove the <code>build/</code> directory, which
+effectively cleans the source tree. Note that <code>build</code> does
+not place anything outside of <code>build/</code>, so this is
+functionally equivalent to running <code>rm -r build</code>.
+</li>
+<li>
+<code>format</code>: Make sure the source code copyright headers are
+up to date, and format the source code using the system's
+<code>indent(1)</code> command. This should be run before generating
+patch files, to ensure that the code follows the project conventions.
+Note that the provided <code>.indent.pro</code> assumes an OpenBSD
+<code>indent</code>, which may cause the GNU implementation to choke.
+</li>
+<li>
+<code>test</code>: Run all of the unit tests, and report the results.
+It is highly recommended to ensure that the tests all pass before
+submitting a patch, because patches that break the tests are likely
+to be rejected.
+</li>
+<li>
+<code>site</code>: Deploy the <b>Telodendria</b> website by copying the
+required files to a web root. The web root is defined by the
+<code>TELODENDRIA_PUB</code> environment variable. This is mainly
+used to deploy the official website, but it can be used to set up a
+local development site if absolutely neccessary.
+</li>
+<li>
+<code>release</code>: Generate a release tarball, checksum and sign it,
+and push it into the web root. The web root is defined by the
+<code>TELODENDRIA_PUB</code> environment variable. You may also have
+to set <code>CVSROOT</code> to the official CVS repository of
+<b>Telodendria</b>. If you want to create a release tarball for an
+older version, set <code>TELODENDRIA_VERSION</code>. If you want to
+generate a release tarball for the latest code, set
+<code>CVS_TAG</code> to <code>HEAD</code>. If you want to sign the
+generated tarball, set <code>TELODENDRIA_SIGNIFY_SECRET</code> to a
+<code>signify</code> private key file. This is mainly used to deploy
+releases to the official website, but it can be used to independently
+mirror <b>Telodendria</b> releases from the official CVS repository.
+</li>
+<li>
+<code>patch</code>: Generate a formatted patch file. The
+<b>Telodendria</b> project isn't super picky about how patches look
+as long as they apply cleanly, but this recipe generates patches in
+the format we like them. It makes them easy to read. This recipe will
+use the <code>EDITOR</code> variable to open your formatted patch in
+your preferred editor. If no <code>EDITOR</code> is specified, then
+<code>vi</code> is used. For more details on how this recipe works,
+read <a href="#submitting-patches">Submitting Patches</a>. This
+recipe also makes use of <code>PATCHSET</code>, <code>MXID</code>,
+and <code>DISPLAY_NAME</code>.
+</li>
+<li>
+<code>diff</code>: Generate a temporary preview patch that is
+opened in the default pager. This recipe uses the <code>PAGER</code>
+variable to preview patches. If no <code>PAGER</code> is set, then
+<code>less -F</code> is used as the default. This can be used for
+quickly previewing patches. Setting <code>PATCHSET</code> allows you
+to only preview certain changes; see
+<a href="#submitting-patches">Submitting Patches</a> for more
+information on how <code>PATCHSET</code> works.
+</li>
+</ul>
+<p>
+Any environment variables noted above that <code>td</code> recipes
+use can be specified in a <code>.env</code> file in the root of the
+<code>Telodendria</code> directory. This saves you from constantly
+having to set the environment variables in your shell, as well as
+from having to pollute your user environment with <b>Telodendria</b>
+variables. <code>td</code> will automatically include the
+<code>.env</code> file on every run.
+</p>
+<div class="msg-err">
+<code>td</code> will source the <code>.env</code> file, which means
+it executes it like a shell script. Any shell code inside of
+<code>.env</code> will be executed every time <code>td</code> is
+run.
+</div>
 <h4 id="submitting-patches">Submitting Patches</h4>
 <p>
 <b>Telodendria</b> aims at remaining as minimal as possible. This doesn't
@@ -702,13 +817,14 @@ Date: Fri Jul 29 03:21:21 PM EDT 2022
 Subject: Document Patch Procedure
 </div>
 <p>
-As much information as possible should be filled out for you, such as the
-date. An attempt to fill out the <code>From</code> header was also made,
-but the information there can be made more accurate by setting
-<code>MXID</code> to your Matrix ID, and <code>DISPLAY_NAME</code> to your
-real name. The <code>Subject</code> should very briefly describe what
-the patch is about. Below these headers, write a more in-depth
-description of the patch.
+As much information as possible should be filled out for you, such as
+the date. An attempt to fill out the <code>From</code> header was also
+made, but the information there can be made more accurate by setting
+<code>MXID</code> to your Matrix ID, and <code>DISPLAY_NAME</code> to
+your real name in your environment, or the <code>.env</code> file.
+The <code>Subject</code> should very briefly describe what the patch
+is about. Below these headers, write a more in-depth description of
+the patch.
 </p>
 <p>
 Then, send the resulting patch file to

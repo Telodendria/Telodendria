@@ -11,15 +11,6 @@
 # handle building the code, it also handles formatting it, as well
 # as generating patch files.
 
-# If a .env file exists in the current directory, we load it.
-# As Telodendria's build infrastructure relies heavily on
-# environment variables, we allow users to specify their
-# Telodendria-specific variables in a dedicated .env so they don't
-# have to pollute their environment.
-if [ -f "$(pwd)/.env" ]; then
-	. "$(pwd)/.env"
-fi
-
 #
 # Set variables
 #
@@ -31,13 +22,22 @@ fi
 : "${TELODENDRIA_VERSION:=0.0.0}"
 : "${CVS_TAG:=Telodendria-$(echo $TELODENDRIA_VERSION | sed 's/\./_/g')}"
 
-: "${HEADERS:=-D_POSIX_C_SOURCE=199506L -DTELODENDRIA_VERSION=\"$TELODENDRIA_VERSION\"}"
+: "${DEFINES:=-D_POSIX_C_SOURCE=199506L -DTELODENDRIA_VERSION=\"$TELODENDRIA_VERSION\"}"
 : "${INCLUDES:=-Isrc/include}"
 
 : "${CC:=cc}"
-: "${CFLAGS:=-Wall -Wextra -pedantic -ansi -std=c89 -O3 $HEADERS $INCLUDES}"
+: "${CFLAGS:=-Wall -Wextra -pedantic -ansi -std=c89 -O3 $DEFINES $INCLUDES}"
 : "${LDFLAGS:=-static -flto -fdata-sections -ffunction-sections -s -Wl,-static -Wl,-gc-sections}"
 : "${PROG:=telodendria}"
+
+# If a .env file exists in the current directory, we load it.
+# As Telodendria's build infrastructure relies heavily on
+# environment variables, we allow users to specify their
+# Telodendria-specific variables in a dedicated .env so they don't
+# have to pollute their environment.
+if [ -f "$(pwd)/.env" ]; then
+	. "$(pwd)/.env"
+fi
 
 # Check the modificiation time of a file. This is used to do
 # incremental builds; we only want to rebuild files that have
@@ -208,7 +208,14 @@ recipe_patch() {
 }
 
 recipe_diff() {
-	cvs -q diff -uNp | less
+	tmp_patch="/tmp/telodendria-$(date +%s).patch"
+	cvs -q diff -uNp $PATCHSET > "$tmp_patch"
+	if [ -z "$PAGER" ]; then
+		PAGER="less -F"
+	fi
+
+	$PAGER "$tmp_patch"
+	rm "$tmp_patch"
 }
 
 # Execute the user-specified recipes.
