@@ -59,6 +59,7 @@ body {
 code {
 	background-color: var(--color-snippet);
 	border-radius: calc(var(--border-radius) / 2);
+	font-size: 1.3em;
 }
 
 kbd {
