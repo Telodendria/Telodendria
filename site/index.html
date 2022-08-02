@@ -859,10 +859,11 @@ in the future. If you want to reference a submitted patch in a Matrix message
 or email, it might be a good idea to link to it in the public patch directory.
 </p>
 <p>
-The public patch directory works as follows: as soon as your patch is recieved,
-it is downloaded and placed in the <code>ingress/</code> directory with the
-original name it was given. Eventually, it will be assigned an ID and moved
-to the <code>p/</code> directory. There is a permanent link that will
+The public patch directory works as follows: when you send your patch to the
+Matrix room, it is downloaded by the <b>Telodendria</b> Bot and placed in the
+<code>ingress/</code> directory, named as the message ID. Then, it is 
+assigned a <b>Telodendria</b> patch ID and copied to the <code>p/</code>
+directory as just <code>${id}.patch</code>. This is a permanent link that will
 always reference your patch. Then, your patch is symlinked to the
 <code>queue/</code> directory. I have a script that automatically ingresses
 patches and queues them for me, and I'll use this to review patches.
@@ -871,7 +872,8 @@ If your patch is accepted, the queue symlink will be moved to the
 CVS repository. If you patch is rejected for some reason, its symlink will
 be moved to the <code>rejected/</code> directory. Regardless of the state
 of your patch, it will always remain permalinked in the <code>p/</code>
-directory.
+directory, and when it is accepted or rejected, <b>Telodendria</b> Bot will
+send a message.
 </p>
 <p>
 You're always welcome to inquire about rejected patches, and request they be
