@@ -29,6 +29,7 @@
 #include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 
 struct JsonValue
 {
@@ -43,6 +44,31 @@ struct JsonValue
         int boolean:1;
     } as;
 };
+
+typedef enum JsonToken
+{
+    TOKEN_UNKNOWN,
+    TOKEN_COLON,
+    TOKEN_COMMA,
+    TOKEN_OBJECT_OPEN,
+    TOKEN_OBJECT_CLOSE,
+    TOKEN_ARRAY_OPEN,
+    TOKEN_ARRAY_CLOSE,
+    TOKEN_STRING,
+    TOKEN_INTEGER,
+    TOKEN_FLOAT,
+    TOKEN_BOOLEAN,
+    TOKEN_NULL,
+    TOKEN_EOF
+} JsonToken;
+
+typedef struct JsonParserState
+{
+    FILE *stream;
+
+    JsonToken tokenType;
+    char *token;
+} JsonParserState;
 
 JsonType
 JsonValueType(JsonValue * value)
@@ -386,6 +412,13 @@ JsonDecodeString(FILE * in)
 
     while ((c = fgetc(in)) != EOF)
     {
+        if (c <= 0x001F)
+        {
+            /* Bad byte; these must  be escaped */
+            free(str);
+            return NULL;
+        }
+
         switch (c)
         {
             case '"':
@@ -614,4 +647,47 @@ JsonFree(HashMap * object)
     }
 
     HashMapFree(object);
+}
+
+static void
+JsonConsumeWhitespace(JsonParserState * state)
+{
+    int c;
+
+    while (isspace(c = fgetc(state->stream)));
+    ungetc(c, state->stream);
+}
+
+static void
+JsonTokenSeek(JsonParserState * state)
+{
+
+}
+
+static int
+JsonExpect(JsonParserState * state, JsonToken token)
+{
+    return state->tokenType == token;
+}
+
+static HashMap *
+JsonDecodeObject(JsonParserState * state)
+{
+    return NULL;
+}
+
+static Array *
+JsonDecodeArray(JsonParserState * state)
+{
+    return NULL;
+}
+
+HashMap *
+JsonDecode(FILE * stream)
+{
+    JsonParserState state;
+
+    state.stream = stream;
+
+    return JsonDecodeObject(&state);
 }
