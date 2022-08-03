@@ -649,19 +649,184 @@ JsonFree(HashMap * object)
     HashMapFree(object);
 }
 
-static void
+static int
 JsonConsumeWhitespace(JsonParserState * state)
 {
     int c;
 
     while (isspace(c = fgetc(state->stream)));
-    ungetc(c, state->stream);
+
+    return c;
 }
 
 static void
 JsonTokenSeek(JsonParserState * state)
 {
+    int c = JsonConsumeWhitespace(state);
 
+    if (feof(state->stream))
+    {
+        state->tokenType = TOKEN_EOF;
+        return;
+    }
+
+    if (state->token)
+    {
+        free(state->token);
+        state->token = NULL;
+    }
+
+    switch (c)
+    {
+        case ':':
+            state->tokenType = TOKEN_COLON;
+            break;
+        case ',':
+            state->tokenType = TOKEN_COMMA;
+            break;
+        case '{':
+            state->tokenType = TOKEN_OBJECT_OPEN;
+            break;
+        case '}':
+            state->tokenType = TOKEN_OBJECT_CLOSE;
+            break;
+        case '[':
+            state->tokenType = TOKEN_ARRAY_OPEN;
+            break;
+        case ']':
+            state->tokenType = TOKEN_ARRAY_CLOSE;
+            break;
+        case '"':
+            state->token = JsonDecodeString(state->stream);
+            if (!state->token)
+            {
+                state->tokenType = TOKEN_EOF;
+                return;
+            }
+            state->tokenType = TOKEN_STRING;
+            break;
+        default:
+            if (c == '-' || isdigit(c))
+            {
+                int isFloat = 0;
+                size_t allocated = 16;
+                size_t len = 1;
+
+                state->token = malloc(allocated);
+                if (!state->token)
+                {
+                    state->tokenType = TOKEN_EOF;
+                    return;
+                }
+                state->token[0] = c;
+
+                while ((c = fgetc(state->stream)) != EOF)
+                {
+                    if (c == '.')
+                    {
+                        if (len > 1)
+                        {
+                            isFloat = 1;
+                        }
+                        else
+                        {
+                            state->tokenType = TOKEN_UNKNOWN;
+                            return;
+                        }
+                    }
+
+                    if (!isdigit(c))
+                    {
+                        ungetc(c, state->stream);
+                        break;
+                    }
+
+                    if (len >= allocated)
+                    {
+                        char *tmp;
+
+                        allocated += 16;
+
+                        tmp = realloc(state->token, allocated);
+                        if (!tmp)
+                        {
+                            state->tokenType = TOKEN_EOF;
+                            return;
+                        }
+
+                        state->token = tmp;
+                    }
+
+                    state->token[len] = c;
+                    len++;
+                }
+
+                if (state->token[len - 1] == '.')
+                {
+                    state->tokenType = TOKEN_UNKNOWN;
+                    return;
+                }
+
+                state->token[len] = '\0';
+                if (isFloat)
+                {
+                    state->tokenType = TOKEN_FLOAT;
+                }
+                else
+                {
+                    state->tokenType = TOKEN_INTEGER;
+                }
+            }
+            else
+            {
+                state->token = malloc(8);
+                if (!state->token)
+                {
+                    state->tokenType = TOKEN_EOF;
+                    return;
+                }
+
+                switch (c)
+                {
+                    case 't':
+                        fgets(state->token, 5, state->stream);
+                        if (!strcmp("true", state->token))
+                        {
+                            state->tokenType = TOKEN_BOOLEAN;
+                        }
+                        else
+                        {
+                            state->tokenType = TOKEN_UNKNOWN;
+                        }
+                        break;
+                    case 'f':
+                        fgets(state->token, 6, state->stream);
+                        if (!strcmp("false", state->token))
+                        {
+                            state->tokenType = TOKEN_BOOLEAN;
+                        }
+                        else
+                        {
+                            state->tokenType = TOKEN_UNKNOWN;
+                        }
+                        break;
+                    case 'n':
+                        fgets(state->token, 5, state->stream);
+                        if (strcmp("null", state->token))
+                        {
+                            state->tokenType = TOKEN_NULL;
+                        }
+                        else
+                        {
+                            state->tokenType = TOKEN_UNKNOWN;
+                        }
+                        break;
+                    default:
+                        state->tokenType = TOKEN_UNKNOWN;
+                        break;
+                }
+            }
+    }
 }
 
 static int
@@ -688,6 +853,7 @@ JsonDecode(FILE * stream)
     JsonParserState state;
 
     state.stream = stream;
+    state.token = NULL;
 
     return JsonDecodeObject(&state);
 }
