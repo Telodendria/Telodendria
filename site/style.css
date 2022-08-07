@@ -76,6 +76,10 @@ kbd {
     white-space: nowrap;
 }
 
+h1 {
+	text-align: center;
+}
+
 h1, h4, h5, h6 {
     border-bottom: 1px dashed var(--color-table-border);
 }
@@ -129,4 +133,12 @@ tr:last-of-type td:first-of-type {
 
 tr:last-of-type td:last-of-type {
 	border-bottom-right-radius: var(--border-radius);
+}
+
+/* Thanks Jonah! */
+#logo {
+	display: block;
+	margin: auto;
+	width: 50vw;
+	max-width: 400px;
 }
