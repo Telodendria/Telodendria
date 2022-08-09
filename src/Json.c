@@ -68,6 +68,7 @@ typedef struct JsonParserState
 
     JsonToken tokenType;
     char *token;
+    size_t tokenLen;
 } JsonParserState;
 
 JsonType
@@ -710,8 +711,8 @@ JsonTokenSeek(JsonParserState * state)
             {
                 int isFloat = 0;
                 size_t allocated = 16;
-                size_t len = 1;
 
+                state->tokenLen = 1;
                 state->token = malloc(allocated);
                 if (!state->token)
                 {
@@ -724,7 +725,7 @@ JsonTokenSeek(JsonParserState * state)
                 {
                     if (c == '.')
                     {
-                        if (len > 1)
+                        if (state->tokenLen > 1)
                         {
                             isFloat = 1;
                         }
@@ -741,7 +742,7 @@ JsonTokenSeek(JsonParserState * state)
                         break;
                     }
 
-                    if (len >= allocated)
+                    if (state->tokenLen >= allocated)
                     {
                         char *tmp;
 
@@ -757,17 +758,17 @@ JsonTokenSeek(JsonParserState * state)
                         state->token = tmp;
                     }
 
-                    state->token[len] = c;
-                    len++;
+                    state->token[state->tokenLen] = c;
+                    state->tokenLen++;
                 }
 
-                if (state->token[len - 1] == '.')
+                if (state->token[state->tokenLen - 1] == '.')
                 {
                     state->tokenType = TOKEN_UNKNOWN;
                     return;
                 }
 
-                state->token[len] = '\0';
+                state->token[state->tokenLen] = '\0';
                 if (isFloat)
                 {
                     state->tokenType = TOKEN_FLOAT;
@@ -779,7 +780,8 @@ JsonTokenSeek(JsonParserState * state)
             }
             else
             {
-                state->token = malloc(8);
+                state->tokenLen = 8;
+                state->token = malloc(state->tokenLen);
                 if (!state->token)
                 {
                     state->tokenType = TOKEN_EOF;
@@ -793,6 +795,7 @@ JsonTokenSeek(JsonParserState * state)
                         if (!strcmp("true", state->token))
                         {
                             state->tokenType = TOKEN_BOOLEAN;
+                            state->tokenLen = 5;
                         }
                         else
                         {
@@ -804,6 +807,7 @@ JsonTokenSeek(JsonParserState * state)
                         if (!strcmp("false", state->token))
                         {
                             state->tokenType = TOKEN_BOOLEAN;
+                            state->tokenLen = 6;
                         }
                         else
                         {
@@ -812,7 +816,7 @@ JsonTokenSeek(JsonParserState * state)
                         break;
                     case 'n':
                         fgets(state->token, 5, state->stream);
-                        if (strcmp("null", state->token))
+                        if (!strcmp("null", state->token))
                         {
                             state->tokenType = TOKEN_NULL;
                         }
@@ -835,15 +839,172 @@ JsonExpect(JsonParserState * state, JsonToken token)
     return state->tokenType == token;
 }
 
+static Array *
+ JsonDecodeArray(JsonParserState *);
+
+static HashMap *
+ JsonDecodeObject(JsonParserState *);
+
+static JsonValue *
+JsonDecodeValue(JsonParserState * state)
+{
+    JsonValue *value;
+    char *strValue;
+
+    switch (state->tokenType)
+    {
+        case TOKEN_OBJECT_OPEN:
+            value = JsonValueObject(JsonDecodeObject(state));
+            break;
+        case TOKEN_ARRAY_OPEN:
+            value = JsonValueArray(JsonDecodeArray(state));
+            break;
+        case TOKEN_STRING:
+            strValue = malloc(state->tokenLen);
+            if (!strValue)
+            {
+                return NULL;
+            }
+            strcpy(strValue, state->token);
+            value = JsonValueString(strValue);
+            break;
+        case TOKEN_INTEGER:
+            value = JsonValueInteger(atol(state->token));
+            break;
+        case TOKEN_FLOAT:
+            value = JsonValueFloat(atof(state->token));
+            break;
+        case TOKEN_BOOLEAN:
+            value = JsonValueBoolean(state->token[0] == 't');
+            break;
+        case TOKEN_NULL:
+            value = JsonValueNull();
+            break;
+        default:
+            value = NULL;
+            break;
+    }
+
+    return value;
+}
+
 static HashMap *
 JsonDecodeObject(JsonParserState * state)
 {
+    HashMap *obj = HashMapCreate();
+
+    if (!obj)
+    {
+        return NULL;
+    }
+
+    do
+    {
+
+        JsonTokenSeek(state);
+        if (JsonExpect(state, TOKEN_STRING))
+        {
+            char *key = malloc(state->tokenLen);
+            JsonValue *value;
+
+            if (!key)
+            {
+                goto error;
+            }
+            strcpy(key, state->token);
+
+            JsonTokenSeek(state);
+            if (!JsonExpect(state, TOKEN_COLON))
+            {
+                goto error;
+            }
+
+            JsonTokenSeek(state);
+            value = JsonDecodeValue(state);
+
+            if (!value)
+            {
+                goto error;
+            }
+
+            HashMapSet(obj, key, value);
+
+            JsonTokenSeek(state);
+            if (JsonExpect(state, TOKEN_OBJECT_CLOSE))
+            {
+                break;
+            }
+
+            if (JsonExpect(state, TOKEN_COMMA))
+            {
+                continue;
+            }
+
+            goto error;
+        }
+        else if (JsonExpect(state, TOKEN_OBJECT_CLOSE))
+        {
+            break;
+        }
+        else
+        {
+            goto error;
+        }
+    } while (!JsonExpect(state, TOKEN_EOF));
+
+    return obj;
+error:
+    JsonFree(obj);
     return NULL;
 }
 
 static Array *
 JsonDecodeArray(JsonParserState * state)
 {
+    Array *arr = ArrayCreate();
+    size_t i;
+
+    if (!arr)
+    {
+        return NULL;
+    }
+
+    do
+    {
+        JsonValue *value;
+
+        JsonTokenSeek(state);
+        value = JsonDecodeValue(state);
+
+        if (!value)
+        {
+            goto error;
+        }
+
+        ArrayAdd(arr, value);
+
+        JsonTokenSeek(state);
+
+        if (JsonExpect(state, TOKEN_ARRAY_CLOSE))
+        {
+            break;
+        }
+
+        if (JsonExpect(state, TOKEN_COMMA))
+        {
+            continue;
+        }
+
+        goto error;
+    } while (!JsonExpect(state, TOKEN_EOF));
+
+    return NULL;
+error:
+    for (i = 0; i < ArraySize(arr); i++)
+    {
+        JsonValueFree((JsonValue *) ArrayGet(arr, i));
+    }
+    ArrayFree(arr);
     return NULL;
 }
 
@@ -854,6 +1015,12 @@ JsonDecode(FILE * stream)
 
     state.stream = stream;
     state.token = NULL;
+
+    JsonTokenSeek(&state);
+    if (!JsonExpect(&state, TOKEN_OBJECT_OPEN))
+    {
+        return NULL;
+    }
 
     return JsonDecodeObject(&state);
 }
