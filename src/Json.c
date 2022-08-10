@@ -791,7 +791,12 @@ JsonTokenSeek(JsonParserState * state)
                 switch (c)
                 {
                     case 't':
-                        fgets(state->token, 5, state->stream);
+                        if (!fgets(state->token, 5, state->stream))
+                        {
+                            state->tokenType = TOKEN_EOF;
+                            return;
+                        }
+
                         if (!strcmp("true", state->token))
                         {
                             state->tokenType = TOKEN_BOOLEAN;
@@ -803,7 +808,12 @@ JsonTokenSeek(JsonParserState * state)
                         }
                         break;
                     case 'f':
-                        fgets(state->token, 6, state->stream);
+                        if (!fgets(state->token, 6, state->stream))
+                        {
+                            state->tokenType = TOKEN_EOF;
+                            return;
+                        }
+
                         if (!strcmp("false", state->token))
                         {
                             state->tokenType = TOKEN_BOOLEAN;
@@ -815,7 +825,12 @@ JsonTokenSeek(JsonParserState * state)
                         }
                         break;
                     case 'n':
-                        fgets(state->token, 5, state->stream);
+                        if (!fgets(state->token, 5, state->stream))
+                        {
+                            state->tokenType = TOKEN_EOF;
+                            return;
+                        }
+
                         if (!strcmp("null", state->token))
                         {
                             state->tokenType = TOKEN_NULL;
