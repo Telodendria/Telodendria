@@ -227,8 +227,10 @@ you on a sufficiently complete operating system:
 </p>
 <ul>
 <li>
-A standards-compliant C compiler with a POSIX.1c standard library. Because
-<b>Telodendria</b> is written in ANSI C and sticks to POSIX.1c features, it
+A standards-compliant C compiler with a POSIX.1c standard library and
+access to a <code>chroot()</code> system call (which is available in all
+UNIX-like operating systems, but is not POSIX.) Because <b>Telodendria</b>
+is written in ANSI C and sticks almost entirely to POSIX.1c features, it
 should compile on almost any compiler and operating system with minimal
 effort, but the following compilers and operating systems are known to work:
 <ul>

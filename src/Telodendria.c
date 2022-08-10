@@ -26,6 +26,9 @@
 #include <string.h>
 #include <unistd.h>
 
+#include <grp.h>
+#include <pwd.h>
+
 #include <TelodendriaConfig.h>
 
 #include <Log.h>
@@ -87,6 +90,10 @@ main(int argc, char **argv)
 
     /* Program configuration */
     TelodendriaConfig *tConfig = NULL;
+
+    /* User validation */
+    struct passwd *userInfo;
+    struct group *groupInfo;
 
     lc = LogConfigCreate();
 
@@ -184,6 +191,71 @@ main(int argc, char **argv)
     Log(lc, LOG_DEBUG, "Threads: %d", tConfig->threads);
     Log(lc, LOG_DEBUG, "Flags: %x", tConfig->flags);
     LogConfigUnindent(lc);
+
+    Log(lc, LOG_TASK, "Evaluating permissions...");
+
+    if (chdir(tConfig->chroot) != 0)
+    {
+        Log(lc, LOG_ERROR, "Unable to change into directory: %s.", tConfig->chroot);
+        exit = EXIT_FAILURE;
+        goto finish;
+    }
+
+    Log(lc, LOG_DEBUG, "Running as uid/gid: %d/%d.", getuid(), getgid());
+
+    userInfo = getpwnam(tConfig->uid);
+    groupInfo = getgrnam(tConfig->gid);
+
+    if (!userInfo || !groupInfo)
+    {
+        Log(lc, LOG_ERROR, "Unable to locate the user/group specified in the configuration.");
+        exit = EXIT_FAILURE;
+        goto finish;
+    }
+
+    if (getuid() == 0)
+    {
+        if (chroot(tConfig->chroot) == 0)
+        {
+            Log(lc, LOG_MESSAGE, "Changed the root directory to: %s.", tConfig->chroot);
+        }
+        else
+        {
+            Log(lc, LOG_WARNING, "Unable to chroot into directory: %s.", tConfig->chroot);
+        }
+
+        if (setgid(groupInfo->gr_gid) != 0 || setuid(userInfo->pw_uid) != 0)
+        {
+            Log(lc, LOG_WARNING, "Unable to set process uid/gid.");
+        }
+        else
+        {
+            Log(lc, LOG_MESSAGE, "Set uid/gid to %s:%s.", tConfig->uid, tConfig->gid);
+        }
+    }
+    else
+    {
+        Log(lc, LOG_MESSAGE, "Not changing root directory, because we are not root.");
+
+        if (getuid() != userInfo->pw_uid || getgid() != groupInfo->gr_gid)
+        {
+            Log(lc, LOG_WARNING, "Not running as the uid/gid specified in the configuration.");
+        }
+        else
+        {
+            Log(lc, LOG_DEBUG, "Running as the uid/gid specified in the configuration.");
+        }
+    }
+
+    /* These config values are no longer needed; don't hold them in
+     * memory anymore */
+    free(tConfig->chroot);
+    free(tConfig->uid);
+    free(tConfig->gid);
+
+    tConfig->chroot = NULL;
+    tConfig->uid = NULL;
+    tConfig->gid = NULL;
 
 finish:
     Log(lc, LOG_DEBUG, "Exiting with code '%d'.", exit);

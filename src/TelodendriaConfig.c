@@ -119,9 +119,23 @@ TelodendriaConfigParse(HashMap * config, LogConfig * lc)
 
     GET_DIRECTIVE("id");
     ASSERT_NO_CHILDREN("id");
-    ASSERT_VALUES("id", 2);
     COPY_VALUE(tConfig->uid, 0);
-    COPY_VALUE(tConfig->gid, 1);
+
+    switch (ArraySize(value))
+    {
+        case 1:
+            Log(lc, LOG_WARNING, "No run group specified; assuming it's the same as the user.");
+            tConfig->gid = UtilStringDuplicate(tConfig->uid);
+            break;
+        case 2:
+            COPY_VALUE(tConfig->gid, 1);
+            break;
+        default:
+            Log(lc, LOG_ERROR,
+                "Wrong value count in directive 'id': got '%d', but expected 1 or 2.",
+                ArraySize(value));
+            break;
+    }
 
     GET_DIRECTIVE("data-dir");
     ASSERT_NO_CHILDREN("data-dir");
