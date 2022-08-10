@@ -198,6 +198,7 @@ HashMapFree(HashMap * map)
         }
     }
 
+    free(map->entries);
     free(map);
 }
 
