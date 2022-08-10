@@ -264,11 +264,181 @@ what the <code>td</code> script can do.
 </p>
 <h2 id="configure">Configure Telodendria</h3>
 <p>
-Once you get <b>Telodendria</b> built, you will have to write a
-configuration file for it. The configuration file is a simple
-OpenBSD-style configuration file, which should be called
-<code>telodendria.conf</code>.
+<b>Telodendria</b> is designed to be extremely configurable. As such, it has
+a fairly extensive configuration file. The configuration file is passed to
+the <b>Telodendria</b> binary with the <code>-c</code> option, and is
+typically called <code>/etc/telodendria.conf</code>. It uses OpenBSD-style
+syntax, and consists of the following options.
 </p>
+<p>
+There are example configuration files in the <code>contrib</code> folder of
+every source tarball, and in the CVS repository.
+</p>
+<ul>
+<li>
+<code><b>listen</b> [hostname] [port]</code>
+<p>
+The address to listen on. It is recommended to only listen on
+<code>localhost</code>, and then configure a reverse proxy such as
+<code>relayd(8)</code> in front of it, because <b>Telodendria</b> does
+not implement TLS. Note that <b>Telodendria</b> doesn't provide multiple
+ports for the various services it offers. All APIs are made available over
+the same port.
+</p>
+<p>
+<code>[hostname]</code> should be a host name, an IPv4 address, or
+an IPv6 address, if your operating system supports IPv6. <code>[port]</code>
+should be a decimal port number or a service name. Refer to your system's
+<code>getaddrinfo()</code> manual page for acceptable values for both of
+these parameters.
+</p>
+<p>
+The <code>listen</code> directive is entirely optional; if it is omitted,
+then <b>Telodendria</b> will listen on <code>localhost</code>, port
+<code>8008</code> by default.
+</p>
+</li>
+<li>
+<code><b>server-name</b> [name]</code>
+<p>
+Configure the domain name of your homeserver. Note that Matrix servers
+cannot be migrated to other domains, so once this is set, it should never
+change, unless you want unexpected things to happen, or you want to start
+over.
+</p>
+<p>
+<code>[name]</code> should be a DNS name that everyone on the network
+can resolve. This directive is required.
+</p>
+</li>
+<li>
+<code><b>chroot</b> [directory]</code>
+<p>
+Change the root to the specified directory as soon as possible. Note that
+all other paths and files specified in the configuration file must be
+accessible from this directory. This only works if <b>Telodendria</b> is
+running as <code>root</code>. If it isn't, then a warning is printed to the
+log, and no <code>chroot</code> call is made. In that case, <b>Telodendria</b>
+will still change into the specified directory, so that other paths can be
+made relative to this one.
+</p>
+<p>
+This directive is required. It is expected that the server data and logs
+will live here.
+</p>
+</li>
+<li>
+<code><b>id</b> [uid] [gid]</code>
+<p>
+The effective UNIX user and group to drop to after binding to the socket and
+changing the filesystem root. This only works if <b>Telodendria</b> is running as
+<code>root</code>, and is used as a security mechanism. If <b>Telodendria</b> is
+started as a non-privileged user, then a warning is printed to the log if that
+user does not match what's specified here.
+</p>
+<p>
+This directive is required, even if <b>Telodendria</b> is unable to switch to
+this user. It can be used as a sanity check to make sure the permissions are
+working properly.
+</p>
+</li>
+<li>
+<code><b>data-dir</b> [directory]</code>
+<p>
+The data directory in which <b>Telodendria</b> will write all user and event
+information. <b>Telodendria</b> doesn't use a database like other Matrix
+homeserver implementations; it uses a flat-file directory structure, similar to
+how an SMTP server uses Maildirs to deliver email.
+</p>
+<p>
+This directive is required. <code>[directory]</code> should be a path relative
+to the <code>chroot</code> directory. Don't depend on the <code>chroot</code>
+option working, because there are many legitimate cases when <b>Telodendria</b>
+will not be started as <code>root</code>, thus causing the chroot to fail.
+</p>
+</li>
+<li>
+<code><b>federation</b> [true|false]</code>
+<p>
+Whether to enable federation with other Matrix homeservers or not. Matrix by
+its very nature is a federated protocol, but if you just want your own internal
+chat server with no contact with the outside, then you can use this option to
+disable federation. It is highly recommended to set this to <code>true</code>,
+however, if you wish to be able to communicate with users on other Matrix
+servers.
+</p>
+<p>
+This directive is required, though it may be made optional at some point in
+the future.
+</p>
+</li>
+<li>
+<code><b>registration</b> [true|false]</code>
+<p>
+Whether or not to enable new user registration or not. For security and anti-spam
+reasons, you can set this to <code>false</code>. If you do, you can still add users
+via the administrator API.
+</p>
+<p>
+In an ideal world, everyone would run their own homeserver, so no public
+registration would ever be required. But unfortunately, not everyone has the means
+to run their own homeserver, especially because of the fact that public IPv4 addresses
+are becoming increasingly harder to come by. If you would like to provide a service
+for those that are unable to run their own homeserver, you can set this to <code>true</code>,
+which will allow anyone to create an account.
+</p>
+<p>
+<b>Telodendria</b> should be capable of handling a large amount of users without
+difficulty or security issues. This directive is required.
+</p>
+</li>
+<li>
+<code><b>log</b> [file|stdout]</code>
+<p>
+The log configuration. <b>Telodendria</b> uses its own logging facility, which can
+output to either standard output or a file. A number of child directives can be
+added to this directive to customize the log output:
+</p>
+<ul>
+<li>
+<code><b>level</b> [error|warning|task|message|debug]</code>
+<p>
+The level of messages to log at. Each level shows all the levels above it. For
+example, setting the level to <code>error</code> will show only errors, while
+setting the level to <code>warning</code> will show warnings <i>and</i> errors.
+<code>task</code> shows tasks, warnings, and errors, and so on.
+</p>
+</li>
+<li>
+<code><b>timestampFormat</b> [format|none|default]</code>
+<p>
+If you want to custom ize the timestamp format shown in the log, or disable
+the timestamp functionality altogether, you do so via this option. Acceptable
+values are <code>none</code>, <code>default</code>, or a formatter string as
+described by your system's <code>strftime()</code> manual.
+</li>
+<li>
+<code><b>color</b> [true|false]</code>
+<p>
+Whether or not to enable colored output on TTYs. Note that ANSI color sequences
+will <i>not</i> be written to a log file, only a real terminal, so this option
+only applies if the log is being written to a standard output which is connected
+to a terminal.
+</p>
+</li>
+</ul>
+</li>
+<li>
+<code><b>threads</b> [count]</code>
+<p>
+How many worker threads to sping up to handle requests. This should generally be
+less than the total CPU core count, to prevent overloading the system. The most
+efficient number of threads ultimately depends on the configuration of the machine
+running <b>Telodendria</b>, so you may just have to play around with different
+values here to see which gives the best performance.
+</p>
+</li>
+</ul>
 <h2 id="project-status">Project Status</h2>
 <p>
 <b>Telodendria</b> is a very ambitious project. There's a lot that needs
@@ -325,7 +495,7 @@ can get involved.
 </li>
 <li><s>Write a function that gets the current Unix timestamp in milliseconds.</s></code>
 <li><s>Figure out how to w</s>Write unit tests for array/hashmap/etc</li>
-<li>Parse the <b>Telodendria</b> config file</li>
+<li><s>Parse the <b>Telodendria</b> config file</s></li>
 <li>Add <s>license/</s>documentation comments to all source files</li>
 <li>Implement a simple HTTP server</li>
 <li>
@@ -341,13 +511,22 @@ Design the server architecture
 <h3 id="phase-3">Phase 3: Welcome To Matrix</h3>
 <ul>
 <li>
-Implement the Client-Server API
+Client-Server API
 </li>
 <li>
-Implement the Server-Server API
+Server-Server API
 </li>
 <li>
-Implement the other Matrix APIs
+Application Service API
+</li>
+<li>
+Identity Service API
+</li>
+<li>
+Push Gateway API
+</li>
+<li>
+Room Versions
 </li>
 </ul>
 <h3 id="phase-4">Phase 4: A Real Homeserver</h3>
