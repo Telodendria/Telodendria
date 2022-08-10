@@ -880,6 +880,10 @@ builds faster. This recipe makes use of many environment variables:
 <li><code>PROG</code>: The name of the output binary</li>
 <li><code>DEFINES</code>: Global preprocessor definitions</li>
 <li><code>INCLUDES</code>: Header directories to make available</li>
+<li><code>DEBUG</code>: If set to "1", append some debug flags to
+<code>CFLAGS</code>, and wipe out any <code>LDFLAGS</code> that
+would cause the output binary to be optimized. Also appends "-debug"
+to <code>PROG</code>.</li>
 </ul>
 <code>TELODENDRIA_VERSION</code> also makes its way into the output
 binary, but it is primarily used for generating releases.

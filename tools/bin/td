@@ -39,6 +39,12 @@ if [ -f "$(pwd)/.env" ]; then
 	. "$(pwd)/.env"
 fi
 
+if [ "$DEBUG" = "1" ]; then
+	CFLAGS="$CFLAGS -O0 -g"
+	LDFLAGS=""
+	PROG="$PROG-debug"
+fi
+
 # Check the modificiation time of a file. This is used to do
 # incremental builds; we only want to rebuild files that have
 # have changed.
