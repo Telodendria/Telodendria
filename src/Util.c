@@ -24,6 +24,7 @@
 #include <Util.h>
 
 #include <stdlib.h>
+#include <string.h>
 #include <sys/time.h>
 
 long
@@ -85,4 +86,22 @@ UtilUtf8Encode(unsigned long utf8)
     }
 
     return str;
+}
+
+char *
+UtilStringDuplicate(char *inStr)
+{
+    size_t len;
+    char *outStr;
+
+    len = strlen(inStr);
+    outStr = malloc(len + 1);      /* For the null terminator */
+    if (!outStr)
+    {
+        return NULL;
+    }
+
+    strcpy(outStr, inStr);
+
+    return outStr;
 }

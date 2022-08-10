@@ -100,6 +100,12 @@ LogConfigFlagSet(LogConfig * config, int flags)
 void
 LogConfigFree(LogConfig * config)
 {
+    if (!config)
+    {
+        return;
+    }
+
+    fclose(config->out);
     free(config);
 }
 
@@ -218,10 +224,6 @@ Log(LogConfig * config, LogLevel level, const char *msg,...)
 
     pthread_mutex_lock(&config->lock);
 
-    for (i = 0; i < config->indent; i++)
-    {
-        fputc(' ', config->out);
-    }
 
     doColor = LogConfigFlagGet(config, LOG_FLAG_COLOR)
             && isatty(fileno(config->out));
@@ -312,6 +314,10 @@ Log(LogConfig * config, LogLevel level, const char *msg,...)
     }
 
     fputc(' ', config->out);
+    for (i = 0; i < config->indent; i++)
+    {
+        fputc(' ', config->out);
+    }
 
     va_start(argp, msg);
     vfprintf(config->out, msg, argp);

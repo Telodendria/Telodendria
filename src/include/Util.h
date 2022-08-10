@@ -68,4 +68,20 @@ extern long
 extern char *
  UtilUtf8Encode(unsigned long);
 
+
+/*
+ * Duplicate a null-terminated string, and return a new string on the
+ * heap.
+ *
+ * Params:
+ *   (char *) The string to duplicate. It can be located anywhere on
+ *            the heap or the stack.
+ *
+ * Return: A pointer to a null-terminated string on the heap. You must
+ * free() it when you're done with it. This may also return NULL if the
+ * call to malloc() fails.
+ */
+extern char *
+ UtilStringDuplicate(char *);
+
 #endif                             /* TELODENDRIA_UTIL_H */

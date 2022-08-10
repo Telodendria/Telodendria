@@ -26,6 +26,8 @@
 #include <string.h>
 #include <unistd.h>
 
+#include <TelodendriaConfig.h>
+
 #include <Log.h>
 #include <HashMap.h>
 #include <Config.h>
@@ -83,10 +85,10 @@ main(int argc, char **argv)
     ConfigParseResult *configParseResult = NULL;
     HashMap *config = NULL;
 
-    lc = LogConfigCreate();
+    /* Program configuration */
+    TelodendriaConfig *tConfig = NULL;
 
-    /* TODO: Remove */
-    LogConfigLevelSet(lc, LOG_DEBUG);
+    lc = LogConfigCreate();
 
     if (!lc)
     {
@@ -147,15 +149,9 @@ main(int argc, char **argv)
         }
     }
 
-    Log(lc, LOG_MESSAGE, "Using configuration file '%s'.", configArg);
+    Log(lc, LOG_TASK, "Processing configuration file '%s'.", configArg);
 
-    Log(lc, LOG_DEBUG, "Executing ConfigParse()");
-
-    /* Read config here */
     configParseResult = ConfigParse(configFile);
-
-    Log(lc, LOG_DEBUG, "Exitting ConfigParse()");
-
     if (!ConfigParseResultOk(configParseResult))
     {
         Log(lc, LOG_ERROR, "Syntax error on line %d.",
@@ -167,18 +163,30 @@ main(int argc, char **argv)
     config = ConfigParseResultGet(configParseResult);
     ConfigParseResultFree(configParseResult);
 
-    Log(lc, LOG_DEBUG, "Closing configuration file.");
     fclose(configFile);
 
-    /* Configure log file */
+    tConfig = TelodendriaConfigParse(config, lc);
+    if (!tConfig)
+    {
+        exit = EXIT_FAILURE;
+        goto finish;
+    }
+
+    ConfigFree(config);
+
+    Log(lc, LOG_DEBUG, "Configuration:");
+    LogConfigIndent(lc);
+    Log(lc, LOG_DEBUG, "Listen On: %s:%s", tConfig->listenHost, tConfig->listenPort);
+    Log(lc, LOG_DEBUG, "Server Name: %s", tConfig->serverName);
+    Log(lc, LOG_DEBUG, "Chroot: %s", tConfig->chroot);
+    Log(lc, LOG_DEBUG, "Run As: %s:%s", tConfig->uid, tConfig->gid);
+    Log(lc, LOG_DEBUG, "Data Directory: %s", tConfig->dataDir);
+    Log(lc, LOG_DEBUG, "Threads: %d", tConfig->threads);
+    Log(lc, LOG_DEBUG, "Flags: %x", tConfig->flags);
+    LogConfigUnindent(lc);
 
 finish:
-    if (config)
-    {
-        Log(lc, LOG_DEBUG, "Freeing configuration structure.");
-        ConfigFree(config);
-    }
-    Log(lc, LOG_DEBUG, "Freeing log configuration and exiting with code '%d'.", exit);
-    LogConfigFree(lc);
+    Log(lc, LOG_DEBUG, "Exiting with code '%d'.", exit);
+    TelodendriaConfigFree(tConfig);
     return exit;
 }
