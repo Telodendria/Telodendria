@@ -83,7 +83,7 @@ TelodendriaConfigParse(HashMap * config, LogConfig * lc)
         return NULL;
     }
 
-    tConfig = calloc(1, sizeof(tConfig));
+    tConfig = calloc(1, sizeof(TelodendriaConfig));
     if (!tConfig)
     {
         return NULL;
