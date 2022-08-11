@@ -107,7 +107,7 @@ main(int argc, char **argv)
     TelodendriaPrintHeader(lc);
 
 #ifdef __OpenBSD__
-    Log(lc, LOG_DEBUG, "Attempting pledge() and unveil()...");
+    Log(lc, LOG_DEBUG, "Attempting pledge...");
 
     if (pledge("stdio rpath wpath cpath inet dns getpw id unveil", NULL) != 0)
     {
@@ -155,7 +155,7 @@ main(int argc, char **argv)
 
     if (strcmp(configArg, "-") == 0)
     {
-        configFile = stdout;
+        configFile = stdin;
     }
     else
     {
@@ -239,7 +239,7 @@ main(int argc, char **argv)
 
     Log(lc, LOG_DEBUG, "Configuration:");
     LogConfigIndent(lc);
-    Log(lc, LOG_DEBUG, "Listen On: %s:%s", tConfig->listenHost, tConfig->listenPort);
+    Log(lc, LOG_DEBUG, "Listen On: %s:%d", tConfig->listenHost, tConfig->listenPort);
     Log(lc, LOG_DEBUG, "Server Name: %s", tConfig->serverName);
     Log(lc, LOG_DEBUG, "Chroot: %s", tConfig->chroot);
     Log(lc, LOG_DEBUG, "Run As: %s:%s", tConfig->uid, tConfig->gid);

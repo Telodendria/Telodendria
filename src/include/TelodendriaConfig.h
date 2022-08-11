@@ -53,7 +53,7 @@ typedef enum TelodendriaConfigFlag
 typedef struct TelodendriaConfig
 {
     char *listenHost;
-    char *listenPort;
+    unsigned short listenPort;
     char *serverName;
     char *chroot;
     char *uid;

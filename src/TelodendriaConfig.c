@@ -97,14 +97,20 @@ TelodendriaConfigParse(HashMap * config, LogConfig * lc)
     {
         Log(lc, LOG_WARNING, "No 'listen' directive specified; using defaults, which may change.");
         tConfig->listenHost = UtilStringDuplicate("localhost");
-        tConfig->listenPort = UtilStringDuplicate("8008");
+        tConfig->listenPort = 8008;
     }
     else
     {
         ASSERT_NO_CHILDREN("listen");
         ASSERT_VALUES("listen", 2);
         COPY_VALUE(tConfig->listenHost, 0);
-        COPY_VALUE(tConfig->listenPort, 1);
+
+        tConfig->listenPort = (unsigned short) atoi(ArrayGet(value, 1));
+        if (!tConfig->listenPort)
+        {
+            Log(lc, LOG_ERROR, "Expected numeric value for listen port, got '%s'.", ArrayGet(value, 1));
+            goto error;
+        }
     }
 
     GET_DIRECTIVE("server-name");
@@ -311,7 +317,6 @@ TelodendriaConfigFree(TelodendriaConfig * tConfig)
     }
 
     free(tConfig->listenHost);
-    free(tConfig->listenPort);
     free(tConfig->serverName);
     free(tConfig->chroot);
     free(tConfig->uid);
