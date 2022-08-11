@@ -99,18 +99,6 @@ typedef enum HttpStatus
     HTTP_NETWORK_AUTH_REQUIRED = 511
 } HttpStatus;
 
-struct HttpRequest
-{
-    HttpRequestMethod method;
-    HashMap *headers;
-};
-
-struct HttpResponse
-{
-    HttpStatus status;
-    HashMap *headers;
-};
-
 extern char *
  HttpGetStatusString(const HttpStatus httpStatus);
 
@@ -119,7 +107,5 @@ extern HttpRequestMethod
 
 typedef struct HttpRequest HttpRequest;
 typedef struct HttpResponse HttpResponse;
-
-typedef void (*HttpHandler) (HttpRequest *, HttpResponse *);
 
 #endif

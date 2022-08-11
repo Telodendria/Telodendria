@@ -52,14 +52,13 @@ typedef enum TelodendriaConfigFlag
  */
 typedef struct TelodendriaConfig
 {
-    char *listenHost;
-    unsigned short listenPort;
     char *serverName;
     char *chroot;
     char *uid;
     char *gid;
     char *dataDir;
 
+    unsigned short listenPort;
     unsigned int flags;
     unsigned int threads;
 

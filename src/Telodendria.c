@@ -26,15 +26,35 @@
 #include <string.h>
 #include <unistd.h>
 #include <errno.h>
+#include <signal.h>
 
 #include <grp.h>
 #include <pwd.h>
 
-#include <TelodendriaConfig.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 
+#include <TelodendriaConfig.h>
 #include <Log.h>
 #include <HashMap.h>
 #include <Config.h>
+#include <HttpServer.h>
+
+HttpServer *httpServer = NULL;
+
+static void
+TelodendriaHttpHandler(HttpRequest * req, HttpResponse * res, void *args)
+{
+
+}
+
+static void
+TelodendriaSignalHandler(int signalNo)
+{
+    (void) signalNo;
+    HttpServerStop(httpServer);
+}
 
 typedef enum ArgFlag
 {
@@ -73,6 +93,31 @@ TelodendriaPrintUsage(LogConfig * lc)
     Log(lc, LOG_MESSAGE, "  -h           Print this usage, then exit.");
 }
 
+static int
+TelodendriaBindSocket(unsigned short port)
+{
+    struct sockaddr_in remote = {0};
+    int s = socket(AF_INET, SOCK_STREAM, 0);
+
+    if (s < 0)
+    {
+        /* Unable to create the socket */
+        return -1;
+    }
+
+    remote.sin_family = AF_INET;
+    remote.sin_port = port;
+    remote.sin_addr.s_addr = htonl(INADDR_ANY);
+
+    if (bind(s, (struct sockaddr *) & remote, sizeof(remote)) < 0)
+    {
+        /* Unable to bind the socket */
+        return -1;
+    }
+
+    return s;
+}
+
 int
 main(int argc, char **argv)
 {
@@ -95,6 +140,12 @@ main(int argc, char **argv)
     /* User validation */
     struct passwd *userInfo;
     struct group *groupInfo;
+
+    /* Networking */
+    int httpSocket = -1;
+
+    /* Signal handling */
+    struct sigaction sigAction;
 
     lc = LogConfigCreate();
 
@@ -239,7 +290,7 @@ main(int argc, char **argv)
 
     Log(lc, LOG_DEBUG, "Configuration:");
     LogConfigIndent(lc);
-    Log(lc, LOG_DEBUG, "Listen On: %s:%d", tConfig->listenHost, tConfig->listenPort);
+    Log(lc, LOG_DEBUG, "Listen On: %d", tConfig->listenPort);
     Log(lc, LOG_DEBUG, "Server Name: %s", tConfig->serverName);
     Log(lc, LOG_DEBUG, "Chroot: %s", tConfig->chroot);
     Log(lc, LOG_DEBUG, "Run As: %s:%s", tConfig->uid, tConfig->gid);
@@ -247,8 +298,6 @@ main(int argc, char **argv)
     Log(lc, LOG_DEBUG, "Threads: %d", tConfig->threads);
     Log(lc, LOG_DEBUG, "Flags: %x", tConfig->flags);
     LogConfigUnindent(lc);
-
-    Log(lc, LOG_TASK, "Setting permissions...");
 
     if (chdir(tConfig->chroot) != 0)
     {
@@ -275,6 +324,15 @@ main(int argc, char **argv)
     else
     {
         Log(lc, LOG_DEBUG, "Found user/group information using getpwnam() and getgrnam().");
+    }
+
+    /* Bind the socket before possibly dropping permissions */
+    httpSocket = TelodendriaBindSocket(tConfig->listenPort);
+    if (httpSocket < 0)
+    {
+        Log(lc, LOG_ERROR, "Unable to bind to port %d: %s", strerror(errno));
+        exit = EXIT_FAILURE;
+        goto finish;
     }
 
     if (getuid() == 0)
@@ -325,7 +383,50 @@ main(int argc, char **argv)
     tConfig->uid = NULL;
     tConfig->gid = NULL;
 
+    Log(lc, LOG_TASK, "Starting server...");
+
+    httpServer = HttpServerCreate(httpSocket, tConfig->threads, TelodendriaHttpHandler, NULL);
+    if (!httpServer)
+    {
+        Log(lc, LOG_ERROR, "Unable to create HTTP server.");
+        exit = EXIT_FAILURE;
+        goto finish;
+    }
+
+    if (!HttpServerStart(httpServer))
+    {
+        Log(lc, LOG_ERROR, "Unable to start HTTP server.");
+        exit = EXIT_FAILURE;
+        goto finish;
+    }
+
+    Log(lc, LOG_MESSAGE, "Ready.");
+
+    sigAction.sa_handler = TelodendriaSignalHandler;
+    sigfillset(&sigAction.sa_mask);
+    sigAction.sa_flags = SA_RESTART;
+
+    if (sigaction(SIGINT, &sigAction, NULL) < 0)
+    {
+        Log(lc, LOG_ERROR, "Unable to install signal handler.");
+        exit = EXIT_FAILURE;
+        goto finish;
+    }
+
+    /* Block this thread until the server is terminated by a signal
+     * handler */
+    HttpServerJoin(httpServer);
+
 finish:
+    Log(lc, LOG_TASK, "Shutting down...");
+    if (httpSocket > 0)
+    {
+        close(httpSocket);
+    }
+    if (httpServer)
+    {
+        HttpServerFree(httpServer);
+    }
     Log(lc, LOG_DEBUG, "Exiting with code '%d'.", exit);
     TelodendriaConfigFree(tConfig);
     LogConfigFree(lc);
