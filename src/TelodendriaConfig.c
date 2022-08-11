@@ -211,23 +211,23 @@ TelodendriaConfigParse(HashMap * config, LogConfig * lc)
             cVal = ArrayGet(ConfigValuesGet(cDirective), 0);
             if (strcmp(cVal, "message") == 0)
             {
-                LogConfigLevelSet(lc, LOG_MESSAGE);
+                tConfig->logLevel = LOG_MESSAGE;
             }
             else if (strcmp(cVal, "debug") == 0)
             {
-                LogConfigLevelSet(lc, LOG_DEBUG);
+                tConfig->logLevel = LOG_DEBUG;
             }
             else if (strcmp(cVal, "task") == 0)
             {
-                LogConfigLevelSet(lc, LOG_TASK);
+                tConfig->logLevel = LOG_TASK;
             }
             else if (strcmp(cVal, "warning") == 0)
             {
-                LogConfigLevelSet(lc, LOG_WARNING);
+                tConfig->logLevel = LOG_WARNING;
             }
             else if (strcmp(cVal, "error") == 0)
             {
-                LogConfigLevelSet(lc, LOG_ERROR);
+                tConfig->logLevel = LOG_ERROR;
             }
             else
             {
@@ -250,11 +250,11 @@ TelodendriaConfigParse(HashMap * config, LogConfig * lc)
 
             if (strcmp(cVal, "none") == 0)
             {
-                LogConfigTimeStampFormatSet(lc, NULL);
+                tConfig->logTimestamp = NULL;
             }
             else if (strcmp(cVal, "default") != 0)
             {
-                LogConfigTimeStampFormatSet(lc, UtilStringDuplicate(cVal));
+                tConfig->logTimestamp = UtilStringDuplicate(cVal);
             }
         }
 
@@ -270,11 +270,11 @@ TelodendriaConfigParse(HashMap * config, LogConfig * lc)
 
             cVal = ArrayGet(ConfigValuesGet(cDirective), 0);
 
-            if (strcmp(cVal, "false") == 0)
+            if (strcmp(cVal, "true") == 0)
             {
-                LogConfigFlagClear(lc, LOG_FLAG_COLOR);
+                tConfig->flags |= TELODENDRIA_LOG_COLOR;
             }
-            else if (strcmp(cVal, "true") != 0)
+            else if (strcmp(cVal, "false") != 0)
             {
                 Log(lc, LOG_ERROR, "Expected boolean value for log.color, got '%s'.", cVal);
                 goto error;
@@ -285,20 +285,13 @@ TelodendriaConfigParse(HashMap * config, LogConfig * lc)
     /* Set the actual log output file last */
     if (strcmp(ArrayGet(value, 0), "stdout") != 0)
     {
-        FILE *out = fopen(ArrayGet(value, 0), "w");
-
-        if (!out)
-        {
-            Log(lc, LOG_ERROR, "Unable to open log file '%s' for writing.",
-                ArrayGet(value, 0));
-            goto error;
-        }
-
-        Log(lc, LOG_DEBUG, "Redirecting output to '%s'.", ArrayGet(value, 0));
-        LogConfigOutputSet(lc, out);
+        tConfig->logOut = UtilStringDuplicate(ArrayGet(value, 0));
+    }
+    else
+    {
+        tConfig->logOut = NULL;
     }
 
-    tConfig->logConfig = lc;
     return tConfig;
 error:
     TelodendriaConfigFree(tConfig);
@@ -324,8 +317,6 @@ TelodendriaConfigFree(TelodendriaConfig * tConfig)
     free(tConfig->uid);
     free(tConfig->gid);
     free(tConfig->dataDir);
-
-    LogConfigFree(tConfig->logConfig);
 
     free(tConfig);
 }

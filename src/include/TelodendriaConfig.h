@@ -37,7 +37,8 @@
 typedef enum TelodendriaConfigFlag
 {
     TELODENDRIA_FEDERATION = (1 << 0),
-    TELODENDRIA_REGISTRATION = (1 << 1)
+    TELODENDRIA_REGISTRATION = (1 << 1),
+    TELODENDRIA_LOG_COLOR = (1 << 2)
 } TelodendriaConfigFlag;
 
 /*
@@ -62,7 +63,9 @@ typedef struct TelodendriaConfig
     unsigned int flags;
     unsigned int threads;
 
-    LogConfig *logConfig;
+    char *logOut;
+    char *logTimestamp;
+    LogLevel logLevel;
 } TelodendriaConfig;
 
 /*

@@ -25,6 +25,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <errno.h>
 
 #include <grp.h>
 #include <pwd.h>
@@ -105,6 +106,17 @@ main(int argc, char **argv)
 
     TelodendriaPrintHeader(lc);
 
+#ifdef __OpenBSD__
+    Log(lc, LOG_DEBUG, "Attempting pledge() and unveil()...");
+
+    if (pledge("stdio rpath wpath cpath inet dns getpw id unveil", NULL) != 0)
+    {
+        Log(lc, LOG_ERROR, "Pledge failed: %s", strerror(errno));
+        exit = EXIT_FAILURE;
+        goto finish;
+    }
+#endif
+
     while ((opt = getopt(argc, argv, "c:Vh")) != -1)
     {
         switch (opt)
@@ -147,6 +159,14 @@ main(int argc, char **argv)
     }
     else
     {
+#ifdef __OpenBSD__
+        if (unveil(configArg, "r") != 0)
+        {
+            Log(lc, LOG_ERROR, "Unable to unveil() configuration file '%s' for reading.", configArg);
+            exit = EXIT_FAILURE;
+            goto finish;
+        }
+#endif
         configFile = fopen(configArg, "r");
         if (!configFile)
         {
@@ -181,6 +201,42 @@ main(int argc, char **argv)
 
     ConfigFree(config);
 
+#ifdef __OpenBSD__
+    if (unveil(tConfig->chroot, "rwc") != 0)
+    {
+        Log(lc, LOG_ERROR, "Unveil of data directory failed: %s", strerror(errno));
+        exit = EXIT_FAILURE;
+        goto finish;
+    }
+
+    unveil(NULL, NULL);            /* Done with unveil(), so disable it */
+#endif
+
+    LogConfigTimeStampFormatSet(lc, tConfig->logTimestamp);
+
+    /* Color is enabled by default in the logger. */
+    if (!(tConfig->flags & TELODENDRIA_LOG_COLOR))
+    {
+        LogConfigFlagClear(lc, LOG_FLAG_COLOR);
+    }
+
+    LogConfigLevelSet(lc, tConfig->logLevel);
+
+    if (tConfig->logOut)
+    {
+        FILE *logFile = fopen(tConfig->logOut, "w");
+
+        if (!logFile)
+        {
+            Log(lc, LOG_ERROR, "Unable to open log file '%s' for writing.", tConfig->logOut);
+            exit = EXIT_FAILURE;
+            goto finish;
+        }
+
+        Log(lc, LOG_DEBUG, "Redirecting future output to '%s'.", tConfig->logOut);
+        LogConfigOutputSet(lc, logFile);
+    }
+
     Log(lc, LOG_DEBUG, "Configuration:");
     LogConfigIndent(lc);
     Log(lc, LOG_DEBUG, "Listen On: %s:%s", tConfig->listenHost, tConfig->listenPort);
@@ -192,16 +248,20 @@ main(int argc, char **argv)
     Log(lc, LOG_DEBUG, "Flags: %x", tConfig->flags);
     LogConfigUnindent(lc);
 
-    Log(lc, LOG_TASK, "Evaluating permissions...");
+    Log(lc, LOG_TASK, "Setting permissions...");
 
     if (chdir(tConfig->chroot) != 0)
     {
-        Log(lc, LOG_ERROR, "Unable to change into directory: %s.", tConfig->chroot);
+        Log(lc, LOG_ERROR, "Unable to change into data directory: %s.", strerror(errno));
         exit = EXIT_FAILURE;
         goto finish;
     }
+    else
+    {
+        Log(lc, LOG_DEBUG, "Changed working directory to: %s", tConfig->chroot);
+    }
 
-    Log(lc, LOG_DEBUG, "Running as uid/gid: %d/%d.", getuid(), getgid());
+    Log(lc, LOG_DEBUG, "Running as uid:gid: %d:%d.", getuid(), getgid());
 
     userInfo = getpwnam(tConfig->uid);
     groupInfo = getgrnam(tConfig->gid);
@@ -212,17 +272,25 @@ main(int argc, char **argv)
         exit = EXIT_FAILURE;
         goto finish;
     }
+    else
+    {
+        Log(lc, LOG_DEBUG, "Found user/group information using getpwnam() and getgrnam().");
+    }
 
     if (getuid() == 0)
     {
+#ifndef __OpenBSD__
         if (chroot(tConfig->chroot) == 0)
         {
-            Log(lc, LOG_MESSAGE, "Changed the root directory to: %s.", tConfig->chroot);
+            Log(lc, LOG_DEBUG, "Changed the root directory to: %s.", tConfig->chroot);
         }
         else
         {
             Log(lc, LOG_WARNING, "Unable to chroot into directory: %s.", tConfig->chroot);
         }
+#else
+        Log(lc, LOG_DEBUG, "Not attempting chroot() after pledge() and unveil().");
+#endif
 
         if (setgid(groupInfo->gr_gid) != 0 || setuid(userInfo->pw_uid) != 0)
         {
@@ -230,12 +298,12 @@ main(int argc, char **argv)
         }
         else
         {
-            Log(lc, LOG_MESSAGE, "Set uid/gid to %s:%s.", tConfig->uid, tConfig->gid);
+            Log(lc, LOG_DEBUG, "Set uid/gid to %s:%s.", tConfig->uid, tConfig->gid);
         }
     }
     else
     {
-        Log(lc, LOG_MESSAGE, "Not changing root directory, because we are not root.");
+        Log(lc, LOG_DEBUG, "Not changing root directory, because we are not root.");
 
         if (getuid() != userInfo->pw_uid || getgid() != groupInfo->gr_gid)
         {
@@ -260,5 +328,6 @@ main(int argc, char **argv)
 finish:
     Log(lc, LOG_DEBUG, "Exiting with code '%d'.", exit);
     TelodendriaConfigFree(tConfig);
+    LogConfigFree(lc);
     return exit;
 }
