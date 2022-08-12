@@ -37,6 +37,8 @@
 #include <Config.h>
 #include <HttpServer.h>
 
+#include <NonPosix.h>
+
 HttpServer *httpServer = NULL;
 
 static void
