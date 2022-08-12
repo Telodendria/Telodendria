@@ -31,10 +31,6 @@
 #include <grp.h>
 #include <pwd.h>
 
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-
 #include <TelodendriaConfig.h>
 #include <Log.h>
 #include <HashMap.h>
@@ -93,31 +89,6 @@ TelodendriaPrintUsage(LogConfig * lc)
     Log(lc, LOG_MESSAGE, "  -h           Print this usage, then exit.");
 }
 
-static int
-TelodendriaBindSocket(unsigned short port)
-{
-    struct sockaddr_in remote = {0};
-    int s = socket(AF_INET, SOCK_STREAM, 0);
-
-    if (s < 0)
-    {
-        /* Unable to create the socket */
-        return -1;
-    }
-
-    remote.sin_family = AF_INET;
-    remote.sin_port = port;
-    remote.sin_addr.s_addr = htonl(INADDR_ANY);
-
-    if (bind(s, (struct sockaddr *) & remote, sizeof(remote)) < 0)
-    {
-        /* Unable to bind the socket */
-        return -1;
-    }
-
-    return s;
-}
-
 int
 main(int argc, char **argv)
 {
@@ -140,9 +111,6 @@ main(int argc, char **argv)
     /* User validation */
     struct passwd *userInfo;
     struct group *groupInfo;
-
-    /* Networking */
-    int httpSocket = -1;
 
     /* Signal handling */
     struct sigaction sigAction;
@@ -327,10 +295,11 @@ main(int argc, char **argv)
     }
 
     /* Bind the socket before possibly dropping permissions */
-    httpSocket = TelodendriaBindSocket(tConfig->listenPort);
-    if (httpSocket < 0)
+    httpServer = HttpServerCreate(tConfig->listenPort, tConfig->threads, TelodendriaHttpHandler, NULL);
+    if (!httpServer)
     {
-        Log(lc, LOG_ERROR, "Unable to bind to port %d: %s", strerror(errno));
+        Log(lc, LOG_ERROR, "Unable to create HTTP server on port %d: %s",
+            tConfig->listenPort, strerror(errno));
         exit = EXIT_FAILURE;
         goto finish;
     }
@@ -385,14 +354,6 @@ main(int argc, char **argv)
 
     Log(lc, LOG_TASK, "Starting server...");
 
-    httpServer = HttpServerCreate(httpSocket, tConfig->threads, TelodendriaHttpHandler, NULL);
-    if (!httpServer)
-    {
-        Log(lc, LOG_ERROR, "Unable to create HTTP server.");
-        exit = EXIT_FAILURE;
-        goto finish;
-    }
-
     if (!HttpServerStart(httpServer))
     {
         Log(lc, LOG_ERROR, "Unable to start HTTP server.");
@@ -400,7 +361,7 @@ main(int argc, char **argv)
         goto finish;
     }
 
-    Log(lc, LOG_MESSAGE, "Ready.");
+    Log(lc, LOG_MESSAGE, "Listening on port: %d", tConfig->listenPort);
 
     sigAction.sa_handler = TelodendriaSignalHandler;
     sigfillset(&sigAction.sa_mask);
@@ -419,10 +380,6 @@ main(int argc, char **argv)
 
 finish:
     Log(lc, LOG_TASK, "Shutting down...");
-    if (httpSocket > 0)
-    {
-        close(httpSocket);
-    }
     if (httpServer)
     {
         HttpServerFree(httpServer);

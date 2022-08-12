@@ -26,6 +26,11 @@
 #include <pthread.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <stdio.h>
+
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 
 struct HttpServer
 {
@@ -41,16 +46,43 @@ struct HttpServer
 };
 
 HttpServer *
-HttpServerCreate(int socketDesc, unsigned int nThreads, HttpHandler * requestHandler, void *handlerArgs)
+HttpServerCreate(unsigned short port, unsigned int nThreads, HttpHandler * requestHandler, void *handlerArgs)
 {
     HttpServer *server = malloc(sizeof(HttpServer));
+    struct sockaddr_in sa = {0};
 
     if (!server)
     {
         return NULL;
     }
 
-    server->sd = socketDesc;
+    server->sd = socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, 0);
+
+    if (server->sd < 0)
+    {
+        free(server);
+        return NULL;
+    }
+
+    sa.sin_family = AF_INET;
+    sa.sin_port = port;
+    sa.sin_addr.s_addr = htonl(INADDR_ANY);
+
+    if (bind(server->sd, (struct sockaddr *) & sa, sizeof(sa)) < 0)
+    {
+        close(server->sd);
+        free(server);
+        return NULL;
+    }
+
+    /* TODO: Make this a user-tunable parameter? */
+    if (listen(server->sd, 32) < 0)
+    {
+        close(server->sd);
+        free(server);
+        return NULL;
+    }
+
     server->nThreads = nThreads;
     server->requestHandler = requestHandler;
     server->handlerArgs = handlerArgs;
@@ -63,10 +95,14 @@ HttpServerCreate(int socketDesc, unsigned int nThreads, HttpHandler * requestHan
 void
 HttpServerFree(HttpServer * server)
 {
+    if (!server)
+    {
+        return;
+    }
+
+    close(server->sd);
     free(server);
 }
-
-#include <stdio.h>
 
 static void *
 HttpServerEventThread(void *args)
