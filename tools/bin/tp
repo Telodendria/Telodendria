@@ -103,7 +103,13 @@ case "$1" in
 	"accept"|"reject")
 		if [ -f "$TP_DIR/queued/$2.patch" ]; then
 			mv "$TP_DIR/queued/$2.patch" "$TP_DIR/${1}ed/$2.patch"
-			matrix_send "Patch <a href=\"https://telodendria.io/patches/p/$2.patch\">#$2</a> was marked as ${1}ed."
+			msg="Patch <a href=\"https://telodendria.io/patches/p/$2.patch\">#$2</a> was marked as ${1}ed."
+			msgFile="/tmp/patchmsg-$(date +%s).txt"
+			$EDITOR "$msgFile"
+			if [ -f "$msgFile" ]; then
+				msg="$msg<br><blockquote>$(cat $msgFile)</blockquote>"
+			fi
+			matrix_send "$msg"
 		else
 			echo "Patch #$2 doesn't exist in the queue."
 			exit 1
