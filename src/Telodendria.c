@@ -295,7 +295,8 @@ main(int argc, char **argv)
     }
 
     /* Bind the socket before possibly dropping permissions */
-    httpServer = HttpServerCreate(tConfig->listenPort, tConfig->threads, TelodendriaHttpHandler, NULL);
+    httpServer = HttpServerCreate(tConfig->listenPort, tConfig->threads,
+                                  TelodendriaHttpHandler, NULL);
     if (!httpServer)
     {
         Log(lc, LOG_ERROR, "Unable to create HTTP server on port %d: %s",

@@ -26,7 +26,8 @@
 #include <pthread.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <stdio.h>
+#include <errno.h>
+#include <poll.h>
 
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -36,27 +37,34 @@ struct HttpServer
 {
     int sd;
     unsigned int nThreads;
-    HttpHandler *requestHandler;
-    void *handlerArgs;
-
     pthread_t socketThread;
 
     volatile unsigned int stop:1;
     volatile unsigned int isRunning:1;
+
+    HttpHandler *requestHandler;
+    void *handlerArgs;
 };
 
 HttpServer *
-HttpServerCreate(unsigned short port, unsigned int nThreads, HttpHandler * requestHandler, void *handlerArgs)
+HttpServerCreate(unsigned short port, unsigned int nThreads,
+                 HttpHandler * requestHandler, void *handlerArgs)
 {
-    HttpServer *server = malloc(sizeof(HttpServer));
+    HttpServer *server;
     struct sockaddr_in sa = {0};
 
+    if (!requestHandler)
+    {
+        return NULL;
+    }
+
+    server = malloc(sizeof(HttpServer));
     if (!server)
     {
         return NULL;
     }
 
-    server->sd = socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, 0);
+    server->sd = socket(AF_INET, SOCK_STREAM, 0);
 
     if (server->sd < 0)
     {
@@ -108,20 +116,38 @@ static void *
 HttpServerEventThread(void *args)
 {
     HttpServer *server = (HttpServer *) args;
+    struct pollfd pollFds[1];
 
     server->isRunning = 1;
     server->stop = 0;
 
+    pollFds[0].fd = server->sd;
+    pollFds[0].events = POLLIN;
+
     while (!server->stop)
     {
-        printf("In server event thread\n");
-        fflush(stdout);
-        sleep(1);
+        struct sockaddr_storage addr;
+        socklen_t addrLen = sizeof(addr);
+        int connFd;
+        int pollResult = poll(pollFds, 1, 60 * 1000);
+
+        if (pollResult < 0)
+        {
+            /* The poll either timed out, or was interrupted. */
+            continue;
+        }
+
+        connFd = accept(server->sd, (struct sockaddr *) & addr, &addrLen);
+
+        if (connFd < 0)
+        {
+            continue;
+        }
+
+        close(connFd);
     }
 
     server->isRunning = 0;
-
-    printf("Event thread dying!\n");
 
     return NULL;
 }
