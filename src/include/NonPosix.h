@@ -54,6 +54,15 @@ extern int chroot(const char *);
 extern int pledge(const char *, const char *);
 extern int unveil(const char *, const char *);
 
+/*
+ * OpenBSD requires that _BSD_SOURCE be set to use SOCK_NONBLOCK for
+ * some reason, even though from everything I can tell, SOCK_NONBLOCK
+ * is POSIX.
+ */
+#ifndef _BSD_SOURCE
+#define _BSD_SOURCE
+#endif
+
 #endif
 
 #endif

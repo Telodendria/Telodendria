@@ -21,6 +21,8 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+#include <NonPosix.h>
+
 #include <HttpServer.h>
 
 #include <pthread.h>
@@ -64,7 +66,7 @@ HttpServerCreate(unsigned short port, unsigned int nThreads,
         return NULL;
     }
 
-    server->sd = socket(AF_INET, SOCK_STREAM, 0);
+    server->sd = socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, 0);
 
     if (server->sd < 0)
     {
@@ -129,7 +131,7 @@ HttpServerEventThread(void *args)
         struct sockaddr_storage addr;
         socklen_t addrLen = sizeof(addr);
         int connFd;
-        int pollResult = poll(pollFds, 1, 60 * 1000);
+        int pollResult = poll(pollFds, 1, 500);
 
         if (pollResult < 0)
         {
