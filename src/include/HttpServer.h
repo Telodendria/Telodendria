@@ -31,7 +31,7 @@ typedef struct HttpServer HttpServer;
 typedef void (HttpHandler) (HttpRequest *, HttpResponse *, void *);
 
 extern HttpServer *
- HttpServerCreate(unsigned short, unsigned int, HttpHandler *, void *);
+ HttpServerCreate(unsigned short, unsigned int, unsigned int, HttpHandler *, void *);
 
 extern void
  HttpServerFree(HttpServer *);

@@ -153,6 +153,11 @@ TelodendriaConfigParse(HashMap * config, LogConfig * lc)
     if (IsInteger(ArrayGet(value, 0)))
     {
         tConfig->threads = atoi(ArrayGet(value, 0));
+        if (!tConfig->threads)
+        {
+            Log(lc, LOG_ERROR, "threads must be greater than zero");
+            goto error;
+        }
     }
     else
     {
@@ -161,6 +166,34 @@ TelodendriaConfigParse(HashMap * config, LogConfig * lc)
             "but got '%s'.", ArrayGet(value, 0));
         goto error;
     }
+
+    directive = (ConfigDirective *) HashMapGet(config, "max-connections");
+    if (!directive)
+    {
+        Log(lc, LOG_WARNING, "max-connections not specified; using defaults, which may change");
+        tConfig->maxConnections = 32;
+    }
+    else
+    {
+        ASSERT_NO_CHILDREN("max-connections");
+        ASSERT_VALUES("max-connections", 1);
+        if (IsInteger(ArrayGet(value, 0)))
+        {
+            tConfig->maxConnections = atoi(ArrayGet(value, 0));
+            if (!tConfig->maxConnections)
+            {
+                Log(lc, LOG_ERROR, "max-connections must be greater than zero.");
+                goto error;
+            }
+        }
+        else
+        {
+            Log(lc, LOG_ERROR, "Expected integer for max-connections, got '%s'", ArrayGet(value, 0));
+            goto error;
+        }
+    }
+
+
 
     GET_DIRECTIVE("federation");
     ASSERT_NO_CHILDREN("federation");

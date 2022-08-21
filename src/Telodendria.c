@@ -297,7 +297,7 @@ main(int argc, char **argv)
     }
 
     /* Bind the socket before possibly dropping permissions */
-    httpServer = HttpServerCreate(tConfig->listenPort, tConfig->threads,
+    httpServer = HttpServerCreate(tConfig->listenPort, tConfig->threads, tConfig->maxConnections,
                                   TelodendriaHttpHandler, NULL);
     if (!httpServer)
     {

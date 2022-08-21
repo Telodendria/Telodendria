@@ -39,6 +39,7 @@ struct HttpServer
 {
     int sd;
     unsigned int nThreads;
+    unsigned int maxConnections;
     pthread_t socketThread;
 
     volatile unsigned int stop:1;
@@ -49,7 +50,7 @@ struct HttpServer
 };
 
 HttpServer *
-HttpServerCreate(unsigned short port, unsigned int nThreads,
+HttpServerCreate(unsigned short port, unsigned int nThreads, unsigned int maxConnections,
                  HttpHandler * requestHandler, void *handlerArgs)
 {
     HttpServer *server;
@@ -85,8 +86,7 @@ HttpServerCreate(unsigned short port, unsigned int nThreads,
         return NULL;
     }
 
-    /* TODO: Make this a user-tunable parameter? */
-    if (listen(server->sd, 32) < 0)
+    if (listen(server->sd, maxConnections) < 0)
     {
         close(server->sd);
         free(server);
@@ -94,6 +94,7 @@ HttpServerCreate(unsigned short port, unsigned int nThreads,
     }
 
     server->nThreads = nThreads;
+    server->maxConnections = maxConnections;
     server->requestHandler = requestHandler;
     server->handlerArgs = handlerArgs;
     server->stop = 0;

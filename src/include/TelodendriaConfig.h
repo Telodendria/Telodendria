@@ -61,6 +61,7 @@ typedef struct TelodendriaConfig
     unsigned short listenPort;
     unsigned int flags;
     unsigned int threads;
+    unsigned int maxConnections;
 
     char *logOut;
     char *logTimestamp;
