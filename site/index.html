@@ -278,9 +278,10 @@ every source tarball, and in the CVS repository.
 </p>
 <ul>
 <li>
-<code><b>listen</b> [hostname] [port]</code>
+<code><b>listen</b> [port]</code>
 <p>
-The address to listen on. It is recommended to only listen on
+The port to listen on. <b>Telodendria</b> will bind to all interfaces, but
+It is recommended to configure your firewall so that it only listens on
 <code>localhost</code>, and then configure a reverse proxy such as
 <code>relayd(8)</code> in front of it, because <b>Telodendria</b> does
 not implement TLS. Note that <b>Telodendria</b> doesn't provide multiple
@@ -288,11 +289,7 @@ ports for the various services it offers. All APIs are made available over
 the same port.
 </p>
 <p>
-<code>[hostname]</code> should be a host name, an IPv4 address, or
-an IPv6 address, if your operating system supports IPv6. <code>[port]</code>
-should be a decimal port number or a service name. Refer to your system's
-<code>getaddrinfo()</code> manual page for acceptable values for both of
-these parameters.
+<code>[port]</code> should be a decimal port number or a service name.
 </p>
 <p>
 The <code>listen</code> directive is entirely optional; if it is omitted,
