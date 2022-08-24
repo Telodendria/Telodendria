@@ -84,4 +84,16 @@ extern char *
 extern char *
  UtilStringDuplicate(char *);
 
+/*
+ * Sleep for the given number of milliseconds. This is a simple wrapper
+ * for nanosleep() that makes its usage much easier.
+ *
+ * Params:
+ *   (long) The number of milliseconds to sleep for.
+ *
+ * Return: The result of nanosleep().
+ */
+extern int
+ UtilSleepMillis(long);
+
 #endif                             /* TELODENDRIA_UTIL_H */

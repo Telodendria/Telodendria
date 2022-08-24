@@ -105,3 +105,17 @@ UtilStringDuplicate(char *inStr)
 
     return outStr;
 }
+
+int
+UtilSleepMillis(long ms)
+{
+    struct timespec ts;
+    int res;
+
+    ts.tv_sec = ms / 1000;
+    ts.tv_nsec = (ms % 1000) * 1000000;
+
+    res = nanosleep(&ts, &ts);
+
+    return res;
+}
