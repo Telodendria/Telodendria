@@ -119,10 +119,10 @@ QueuePush(Queue * q, void *element)
     {
         q->rear = 0;
     }
-	else
-	{
-    	q->rear = (q->rear + 1) % q->size;
-	}
+    else
+    {
+        q->rear = (q->rear + 1) % q->size;
+    }
 
     q->items[q->rear] = element;
 
