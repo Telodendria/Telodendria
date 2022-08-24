@@ -119,6 +119,7 @@ HttpServerCreate(unsigned short port, unsigned int nThreads, unsigned int maxCon
         free(server);
         return NULL;
     }
+    pthread_mutex_init(&server->connQueueMutex, NULL);
 
     server->sd = socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, 0);
 
@@ -165,6 +166,8 @@ HttpServerFree(HttpServer * server)
     }
 
     close(server->sd);
+    QueueFree(server->connQueue);
+    pthread_mutex_destroy(&server->connQueueMutex);
     free(server);
 }
 
@@ -186,7 +189,9 @@ HttpServerEventThread(void *args)
         struct sockaddr_storage addr;
         socklen_t addrLen = sizeof(addr);
         int connFd;
-        int pollResult = poll(pollFds, 1, 500);
+        int pollResult;
+
+        pollResult = poll(pollFds, 1, 500);
 
         if (pollResult < 0)
         {
