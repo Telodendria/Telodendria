@@ -115,7 +115,15 @@ QueuePush(Queue * q, void *element)
         q->front = 0;
     }
 
-    q->rear = (q->rear + 1) % q->size;
+    if (q->rear == q->size + 1)
+    {
+        q->rear = 0;
+    }
+	else
+	{
+    	q->rear = (q->rear + 1) % q->size;
+	}
+
     q->items[q->rear] = element;
 
     return 1;
