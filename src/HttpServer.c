@@ -130,7 +130,7 @@ HttpServerCreate(unsigned short port, unsigned int nThreads, unsigned int maxCon
     }
 
     sa.sin_family = AF_INET;
-    sa.sin_port = port;
+    sa.sin_port = htons(port);
     sa.sin_addr.s_addr = htonl(INADDR_ANY);
 
     if (bind(server->sd, (struct sockaddr *) & sa, sizeof(sa)) < 0)
