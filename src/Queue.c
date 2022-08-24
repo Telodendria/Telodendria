@@ -23,12 +23,14 @@
  */
 #include <Queue.h>
 
+#include <stdlib.h>
+
 struct Queue
 {
     void **items;
     size_t size;
-    int front;
-    int rear;
+    size_t front;
+    size_t rear;
 };
 
 Queue *
@@ -56,8 +58,10 @@ QueueCreate(size_t size)
     }
 
     q->size = size;
-    q->front = -1;
-    q->rear = -1;
+    q->front = size + 1;
+    q->rear = size + 1;
+
+    return q;
 }
 
 void
@@ -72,7 +76,7 @@ QueueFree(Queue * q)
 }
 
 int
-QueueFull(Queue *)
+QueueFull(Queue * q)
 {
     if (!q)
     {
@@ -83,14 +87,14 @@ QueueFull(Queue *)
 }
 
 int
-QueueEmpty(Queue *)
+QueueEmpty(Queue * q)
 {
     if (!q)
     {
         return 0;
     }
 
-    return q->front == -1;
+    return q->front == q->size + 1;
 }
 
 int
@@ -106,7 +110,7 @@ QueuePush(Queue * q, void *element)
         return 0;
     }
 
-    if (q->front == -1)
+    if (q->front == q->size + 1)
     {
         q->front = 0;
     }

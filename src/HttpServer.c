@@ -24,8 +24,10 @@
 #include <NonPosix.h>
 
 #include <HttpServer.h>
+#include <Queue.h>
 
 #include <pthread.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <errno.h>
@@ -47,7 +49,51 @@ struct HttpServer
 
     HttpHandler *requestHandler;
     void *handlerArgs;
+
+    Queue *connQueue;
+    pthread_mutex_t connQueueMutex;
 };
+
+static int
+QueueConnection(HttpServer * server, int fd)
+{
+    FILE *fp;
+    int result;
+
+    if (!server)
+    {
+        return 0;
+    }
+
+    fp = fdopen(fd, "rw");
+    if (!fp)
+    {
+        return 0;
+    }
+
+    pthread_mutex_lock(&server->connQueueMutex);
+    result = QueuePush(server->connQueue, fp);
+    pthread_mutex_unlock(&server->connQueueMutex);
+
+    return result;
+}
+
+static FILE *
+DequeueConnection(HttpServer * server)
+{
+    FILE *fp;
+
+    if (!server)
+    {
+        return NULL;
+    }
+
+    pthread_mutex_lock(&server->connQueueMutex);
+    fp = QueuePop(server->connQueue);
+    pthread_mutex_unlock(&server->connQueueMutex);
+
+    return fp;
+}
 
 HttpServer *
 HttpServerCreate(unsigned short port, unsigned int nThreads, unsigned int maxConnections,
@@ -64,6 +110,13 @@ HttpServerCreate(unsigned short port, unsigned int nThreads, unsigned int maxCon
     server = malloc(sizeof(HttpServer));
     if (!server)
     {
+        return NULL;
+    }
+
+    server->connQueue = QueueCreate(maxConnections);
+    if (!server->connQueue)
+    {
+        free(server);
         return NULL;
     }
 
@@ -120,6 +173,7 @@ HttpServerEventThread(void *args)
 {
     HttpServer *server = (HttpServer *) args;
     struct pollfd pollFds[1];
+    FILE *fp;
 
     server->isRunning = 1;
     server->stop = 0;
@@ -147,7 +201,14 @@ HttpServerEventThread(void *args)
             continue;
         }
 
-        close(connFd);
+        QueueConnection(server, connFd);
+    }
+
+    /* Wait on all threads in the thread pool */
+
+    while ((fp = DequeueConnection(server)))
+    {
+        fclose(fp);
     }
 
     server->isRunning = 0;

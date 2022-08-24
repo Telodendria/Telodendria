@@ -24,6 +24,8 @@
 #ifndef TELODENDRIA_QUEUE_H
 #define TELODENDRIA_QUEUE_H
 
+#include <stddef.h>
+
 typedef struct Queue Queue;
 
 extern Queue *
