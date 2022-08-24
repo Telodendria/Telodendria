@@ -65,7 +65,7 @@ QueueConnection(HttpServer * server, int fd)
         return 0;
     }
 
-    fp = fdopen(fd, "rw");
+    fp = fdopen(fd, "r+");
     if (!fp)
     {
         return 0;
