@@ -310,7 +310,7 @@ main(int argc, char **argv)
     if (getuid() == 0)
     {
 #ifndef __OpenBSD__
-        if (chroot(tConfig->chroot) == 0)
+        if (chroot(".") == 0)
         {
             Log(lc, LOG_DEBUG, "Changed the root directory to: %s.", tConfig->chroot);
         }
