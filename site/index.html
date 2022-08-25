@@ -1029,30 +1029,62 @@ made, but the information there can be made more accurate by setting
 <code>MXID</code> to your Matrix ID, and <code>DISPLAY_NAME</code> to
 your real name in your environment, or the <code>.env</code> file.
 The <code>Subject</code> should very briefly describe what the patch
-is about. Below these headers, write a more in-depth description of
-the patch.
+is about.
 </p>
 <p>
-Then, send the resulting patch file to
-<code>#telodendria-patches:bancino.net</code>, so it can be
-discussed and reviewed by the community. If you don't have a Matrix
-account, and you <i>really</i> don't want to create one&mdash;ignoring
-how odd it is that you are trying to contribute to a <i>Matrix</i>
-homeserver project&mdash;you can email your patches to
-<a href="mailto:jordan@bancino.net">jordan@bancino.net</a>. However,
-the preferred way of submitting patches is to the official Matrix room,
-so I will upload your patch there along with your email address. If you
-are going to send patches via email, <b>they must be plain text</b> emails,
-and the patch must be in the main body of the email. No MIME, base64, or
-printed-quotable garbage. I will silently reject emails that are not
-purely plain text. I should be able to write a raw copy of your message to
-an <code>mbox</code> file, and then apply it onto my code right from
-there, with no further processing. If you're going to be a regular contributor,
-it would just be easier to create a Matrix account. It doesn't have to be
-on my public homeserver, but it certainly can be. Note that the discussion and
-ultimately the decision on what to do with your patch will all happen in
-the Matrix room, so if you submit patches using email, you'll miss out on
-any feedback.
+You'll also notice these lines:
+</p>
+<div class="code">
+[ ] I have read the Telodendria Project developer certificiate of
+    origin, and certify that I have permission to submit this patch
+	under the conditions specified in it.
+</div>
+<p>
+This is a checkbox that tells me whether or not you actually have
+the rights to submit your patch, and that once you submit the patch,
+your code is bound by the Telodendria license. The full text of the
+developer certificate of origin is as follows:
+</p>
+<ol>
+<li>The contribution was created in whole or in part by me, and I have
+the right to submit it under the open source license of the Telodendria
+project; or</li>
+<li>The contribution is based upon a previous work that, to the best
+of my knowledge, is covered under an appropriate open-source license
+and I have the right under that license to submit that work with
+modifications, whether created in whole or in part by me, under the
+Telodendria project license; or</li>
+<li>The contribution was provided directly to me by some other person
+who certified (1), (2), or (3), and I have not modified it.</li>
+<li>I understand and agree that this project and the contribution are
+public and that a record of the contribution&mdash;including all
+personal information I submit with it&mdash;is maintained indefinitely
+and may be redistributed consistent with this project or the open-source
+licenses involved.</li>
+</ol>
+<p>
+After the headers, but before the checkbox, write a more thorough
+description of the patch and why it was created. Then, send the
+resulting patch file to <code>#telodendria-patches:bancino.net</code>,
+so it can be discussed and reviewed by the community. If you don't
+have a Matrix account, and you <i>really</i> don't want to create
+one&mdash;ignoring how odd it is that you are trying to contribute
+to a <i>Matrix</i> homeserver project&mdash;you can email your
+patches to <a href="mailto:jordan@bancino.net">jordan@bancino.net</a>.
+However, the preferred way of submitting patches is to the official
+Matrix room, so I will upload your patch there along with your email
+address. If you are going to send patches via email, <b>they must
+be plain text</b> emails, and the patch must be in the main body
+of the email. No MIME, base64, or printed-quotable garbage. I will
+silently reject emails that are not purely plain text. I should be
+able to write a raw copy of your message to an <code>mbox</code>
+file, and then apply it onto my code right from there, with no
+further processing. If you're going to be a regular contributor,
+it would just be easier to create a Matrix account. It doesn't have
+to be on my public homeserver, but it certainly can be. Note that
+the discussion and ultimately the decision on what to do with your
+patch will all happen in the Matrix room, so if you submit patches
+using email, you'll miss out on any feedback.
 </p>
 <p>
 Try to keep your patches on topic&mdash;make one patch file per feature

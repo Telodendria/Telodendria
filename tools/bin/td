@@ -234,6 +234,10 @@ recipe_patch() {
 		echo "Date: $(date)"
 		echo "Subject: "
 		echo
+		echo "[ ] I have read the Telodendria Project developer certificate"
+		echo "    of origin, and certify that I have permission to submit"
+		echo "    this patch under the conditions specified in it."
+		echo
 		cvs -q diff -uNp $PATCHSET | grep -v '^\? '
 	) > "$PATCH_FILE"
 
