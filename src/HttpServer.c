@@ -58,6 +58,18 @@ struct HttpServer
     Array *threadPool;
 };
 
+struct HttpServerContext
+{
+    HashMap *requestHeaders;
+    HttpRequestMethod requestMethod;
+    char *requestPath;
+
+    HashMap *responseHeaders;
+    HttpStatus responseStatus;
+
+    FILE *stream;
+};
+
 static int
 QueueConnection(HttpServer * server, int fd)
 {
