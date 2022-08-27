@@ -42,7 +42,7 @@
 HttpServer *httpServer = NULL;
 
 static void
-TelodendriaHttpHandler(HttpRequest * req, HttpResponse * res, void *args)
+TelodendriaHttpHandler(HttpServerContext *, void *args)
 {
 
 }
@@ -380,7 +380,6 @@ main(int argc, char **argv)
     /* Block this thread until the server is terminated by a signal
      * handler */
     HttpServerJoin(httpServer);
-    HttpServerFree(httpServer);
 
 finish:
     Log(lc, LOG_TASK, "Shutting down...");

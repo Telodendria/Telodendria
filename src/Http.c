@@ -23,10 +23,12 @@
  */
 #include <Http.h>
 
+#include <string.h>
+
 const char *
-HttpRequestMethodToString(const HttpStatus status)
+HttpRequestMethodToString(const HttpRequestMethod method)
 {
-    switch (status)
+    switch (method)
     {
             case HTTP_GET:
             return "GET";
@@ -176,7 +178,7 @@ HttpStatusToString(const HttpStatus status)
         case HTTP_EXPECTATION_FAILED:
             return "Expectation Failed";
         case HTTP_TEAPOT:
-    return "I'm a Teapot":
+            return "I'm a Teapot";
         case HTTP_UPGRADE_REQUIRED:
             return "Upgrade Required";
         case HTTP_PRECONDITION_REQUIRED:

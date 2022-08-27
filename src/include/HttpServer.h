@@ -26,9 +26,14 @@
 
 #include <Http.h>
 
+#include <stdio.h>
+
 #include <HashMap.h>
 
 typedef struct HttpServer HttpServer;
+
+typedef struct HttpServerContext HttpServerContext;
+typedef void (HttpHandler) (HttpServerContext *, void *);
 
 extern HttpServer *
  HttpServerCreate(unsigned short, unsigned int, unsigned int, HttpHandler *, void *);
@@ -45,14 +50,11 @@ extern void
 extern void
  HttpServerStop(HttpServer *);
 
-typedef struct HttpServerContext HttpServerContext;
-typedef void (HttpHandler) (HttpServerContext *, void *);
-
 extern HashMap *
  HttpRequestHeaders(HttpServerContext *);
 
 extern HttpRequestMethod
- HttpRequestMethod(HttpServerContext *);
+ HttpRequestMethodGet(HttpServerContext *);
 
 extern char *
  HttpRequestPath(HttpServerContext *);
