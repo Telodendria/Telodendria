@@ -70,6 +70,53 @@ struct HttpServerContext
     FILE *stream;
 };
 
+static HttpServerContext *
+HttpServerContextCreate(HttpRequestMethod requestMethod,
+	char *requestPath, FILE *stream)
+{
+	HttpServerContext *c;
+
+	c = malloc(sizeof(HttpServerContext));
+	if (!c)
+	{
+		return NULL;
+	}
+
+	c->requestHeaders = HashMapCreate();
+	if (!c->requestHeaders)
+	{
+		free(c);
+		return NULL;
+	}
+
+	c->responseHeaders = HashMapCreate();
+	if (!c->responseHeaders)
+	{
+		free(c->requestHeaders);
+		free(c);
+		return NULL;
+	}
+
+	c->requestMethod = requestMethod;
+	c->requestPath = requestPath;
+	c->stream = stream;
+
+	return c;
+}
+
+static void
+HttpServerContextFree(HttpServerContext *c)
+{
+	if (!c)
+	{
+		return;
+	}
+
+	HashMapFree(c->requestHeaders);
+	HashMapFree(c->responseHeaders);
+	free(c->requestPath);
+	fclose(c->stream);
+
 static int
 QueueConnection(HttpServer * server, int fd)
 {
