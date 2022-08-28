@@ -338,10 +338,7 @@ error:
             QueueFree(server->connQueue);
         }
 
-        if (server->connQueueMutex)
-        {
-            pthread_mutex_destroy(&server->connQueueMutex);
-        }
+        pthread_mutex_destroy(&server->connQueueMutex);
 
         if (server->threadPool)
         {
