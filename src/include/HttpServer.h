@@ -59,8 +59,11 @@ extern HttpRequestMethod
 extern char *
  HttpRequestPath(HttpServerContext *);
 
-extern void
- HttpResponseHeader(HttpServerContext *, const char *, const char *);
+extern HashMap *
+ HttpRequestParams(HttpServerContext *);
+
+extern char *
+ HttpResponseHeader(HttpServerContext *, char *, char *);
 
 extern void
  HttpResponseStatus(HttpServerContext *, HttpStatus);

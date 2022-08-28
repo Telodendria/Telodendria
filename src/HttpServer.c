@@ -109,15 +109,118 @@ HttpServerContextCreate(HttpRequestMethod requestMethod,
 static void
 HttpServerContextFree(HttpServerContext * c)
 {
+    char *key;
+    void *val;
+
     if (!c)
     {
         return;
     }
 
+    while (HashMapIterate(c->requestHeaders, &key, &val))
+    {
+        free(key);
+        free(val);
+    }
     HashMapFree(c->requestHeaders);
+
+    /* It is up to the handler to free its values */
     HashMapFree(c->responseHeaders);
+
     free(c->requestPath);
     fclose(c->stream);
+}
+
+HashMap *
+HttpRequestHeaders(HttpServerContext * c)
+{
+    if (!c)
+    {
+        return NULL;
+    }
+
+    return c->requestHeaders;
+}
+
+HttpRequestMethod
+HttpRequestMethodGet(HttpServerContext * c)
+{
+    if (!c)
+    {
+        return HTTP_METHOD_UNKNOWN;
+    }
+
+    return c->requestMethod;
+}
+
+char *
+HttpRequestPath(HttpServerContext * c)
+{
+    if (!c)
+    {
+        return NULL;
+    }
+
+    return c->requestPath;
+}
+
+HashMap *
+HttpRequestParams(HttpServerContext * c)
+{
+    /* TODO: Implement param parsing */
+    (void) c;
+    return NULL;
+}
+
+char *
+HttpResponseHeader(HttpServerContext * c, char *key, char *val)
+{
+    if (!c)
+    {
+        return NULL;
+    }
+
+    return HashMapSet(c->responseHeaders, key, val);
+}
+
+void
+HttpResponseStatus(HttpServerContext * c, HttpStatus status)
+{
+    if (!c)
+    {
+        return;
+    }
+
+    c->responseStatus = status;
+}
+
+FILE *
+HttpStream(HttpServerContext * c)
+{
+    if (!c)
+    {
+        return NULL;
+    }
+
+    return c->stream;
+}
+
+void
+HttpSendHeaders(HttpServerContext * c)
+{
+    FILE *fp = c->stream;
+
+    char *key;
+    char *val;
+
+    fprintf(fp, "HTTP/1.0 %d %s\n", c->responseStatus, HttpStatusToString(c->responseStatus));
+
+    while (HashMapIterate(c->responseHeaders, &key, (void **) &val))
+    {
+        fprintf(fp, "%s: %s\n", key, val);
+    }
+
+    fprintf(fp, "\n");
 }
 
 static int

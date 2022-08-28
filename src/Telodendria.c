@@ -38,14 +38,9 @@
 #include <HashMap.h>
 #include <Config.h>
 #include <HttpServer.h>
+#include <Matrix.h>
 
 HttpServer *httpServer = NULL;
-
-static void
-TelodendriaHttpHandler(HttpServerContext *, void *args)
-{
-
-}
 
 static void
 TelodendriaSignalHandler(int signalNo)
@@ -116,6 +111,8 @@ main(int argc, char **argv)
 
     /* Signal handling */
     struct sigaction sigAction;
+
+    MatrixHttpHandlerArgs *matrixArgs;
 
     lc = LogConfigCreate();
 
@@ -296,9 +293,19 @@ main(int argc, char **argv)
         Log(lc, LOG_DEBUG, "Found user/group information using getpwnam() and getgrnam().");
     }
 
+    matrixArgs = malloc(sizeof(MatrixHttpHandlerArgs));
+    if (!matrixArgs)
+    {
+        Log(lc, LOG_ERROR, "Unable to allocate memory for HTTP handler arguments.");
+        exit = EXIT_FAILURE;
+        goto finish;
+    }
+
+    matrixArgs->lc = lc;
+
     /* Bind the socket before possibly dropping permissions */
     httpServer = HttpServerCreate(tConfig->listenPort, tConfig->threads, tConfig->maxConnections,
-                                  TelodendriaHttpHandler, NULL);
+                                  MatrixHttpHandler, matrixArgs);
     if (!httpServer)
     {
         Log(lc, LOG_ERROR, "Unable to create HTTP server on port %d: %s",
