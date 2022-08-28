@@ -102,6 +102,7 @@ HttpServerContextCreate(HttpRequestMethod requestMethod,
     c->requestMethod = requestMethod;
     c->requestPath = requestPath;
     c->stream = stream;
+	c->responseStatus = HTTP_OK;
 
     return c;
 }
