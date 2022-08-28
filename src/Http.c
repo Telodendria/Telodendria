@@ -101,7 +101,7 @@ HttpRequestMethodFromString(const char *str)
         return HTTP_PATCH;
     }
 
-    return -1;
+    return HTTP_METHOD_UNKNOWN;
 }
 
 const char *

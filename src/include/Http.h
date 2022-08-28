@@ -26,6 +26,7 @@
 
 typedef enum HttpRequestMethod
 {
+    HTTP_METHOD_UNKNOWN,
     HTTP_GET,
     HTTP_HEAD,
     HTTP_POST,

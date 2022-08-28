@@ -34,6 +34,8 @@
 #include <unistd.h>
 #include <errno.h>
 #include <poll.h>
+#include <string.h>
+#include <ctype.h>
 
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -72,50 +74,51 @@ struct HttpServerContext
 
 static HttpServerContext *
 HttpServerContextCreate(HttpRequestMethod requestMethod,
-	char *requestPath, FILE *stream)
+                        char *requestPath, FILE * stream)
 {
-	HttpServerContext *c;
+    HttpServerContext *c;
 
-	c = malloc(sizeof(HttpServerContext));
-	if (!c)
-	{
-		return NULL;
-	}
+    c = malloc(sizeof(HttpServerContext));
+    if (!c)
+    {
+        return NULL;
+    }
 
-	c->requestHeaders = HashMapCreate();
-	if (!c->requestHeaders)
-	{
-		free(c);
-		return NULL;
-	}
+    c->requestHeaders = HashMapCreate();
+    if (!c->requestHeaders)
+    {
+        free(c);
+        return NULL;
+    }
 
-	c->responseHeaders = HashMapCreate();
-	if (!c->responseHeaders)
-	{
-		free(c->requestHeaders);
-		free(c);
-		return NULL;
-	}
+    c->responseHeaders = HashMapCreate();
+    if (!c->responseHeaders)
+    {
+        free(c->requestHeaders);
+        free(c);
+        return NULL;
+    }
 
-	c->requestMethod = requestMethod;
-	c->requestPath = requestPath;
-	c->stream = stream;
+    c->requestMethod = requestMethod;
+    c->requestPath = requestPath;
+    c->stream = stream;
 
-	return c;
+    return c;
 }
 
 static void
-HttpServerContextFree(HttpServerContext *c)
+HttpServerContextFree(HttpServerContext * c)
 {
-	if (!c)
-	{
-		return;
-	}
+    if (!c)
+    {
+        return;
+    }
 
-	HashMapFree(c->requestHeaders);
-	HashMapFree(c->responseHeaders);
-	free(c->requestPath);
-	fclose(c->stream);
+    HashMapFree(c->requestHeaders);
+    HashMapFree(c->responseHeaders);
+    free(c->requestPath);
+    fclose(c->stream);
+}
 
 static int
 QueueConnection(HttpServer * server, int fd)
@@ -274,6 +277,19 @@ HttpServerWorkerThread(void *args)
     while (!server->stop)
     {
         FILE *fp = DequeueConnection(server);
+        HttpServerContext *context;
+
+        char *line = NULL;
+        size_t lineSize = 0;
+        ssize_t lineLen = 0;
+
+        char *requestMethodPtr;
+        char *pathPtr;
+        char *requestPath;
+        char *requestProtocol;
+
+        ssize_t i = 0;
+        HttpRequestMethod requestMethod;
 
         if (!fp)
         {
@@ -283,12 +299,139 @@ HttpServerWorkerThread(void *args)
             continue;
         }
 
-        fprintf(fp, "HTTP/1.1 500 Internal Server Error\n");
-        fprintf(fp, "Server: Telodendria v" TELODENDRIA_VERSION "\n");
-        fprintf(fp, "Content-Type: application/json\n");
-        fprintf(fp, "\n");
-        fprintf(fp, "{}\n");
+        /* Get the first line of the request */
+        lineLen = getline(&line, &lineSize, fp);
+        if (lineLen == -1)
+        {
+            goto bad_request;
+        }
 
+
+        requestMethodPtr = line;
+        for (i = 0; i < lineLen; i++)
+        {
+            if (line[i] == ' ')
+            {
+                line[i] = '\0';
+                break;
+            }
+        }
+
+        if (i == lineLen)
+        {
+            goto bad_request;
+        }
+
+        requestMethod = HttpRequestMethodFromString(requestMethodPtr);
+        if (requestMethod == HTTP_METHOD_UNKNOWN)
+        {
+            goto bad_request;
+        }
+
+        pathPtr = line + i + 1;
+
+        for (i = 0; i < (line + lineLen) - pathPtr; i++)
+        {
+            if (pathPtr[i] == ' ')
+            {
+                pathPtr[i] = '\0';
+                break;
+            }
+        }
+
+        requestPath = malloc((i * sizeof(char)) + 1);
+        strcpy(requestPath, pathPtr);
+
+        requestProtocol = &pathPtr[i + 1];
+        line[lineLen - 2] = '\0';  /* Get rid of \r and \n */
+
+        if (strcmp(requestProtocol, "HTTP/1.1") != 0 && strcmp(requestProtocol, "HTTP/1.0") != 0)
+        {
+            printf("Bad protocol: [%s]\n", requestProtocol);
+            goto bad_request;
+        }
+
+        context = HttpServerContextCreate(requestMethod, requestPath, fp);
+        if (!context)
+        {
+            goto internal_error;
+        }
+
+        while ((lineLen = getline(&line, &lineSize, fp)) != -1)
+        {
+            char *headerKey;
+            char *headerValue;
+            char *headerPtr;
+            ssize_t i;
+
+            if (strcmp(line, "\r\n") == 0)
+            {
+                break;
+            }
+
+            for (i = 0; i < lineLen; i++)
+            {
+                if (line[i] == ':')
+                {
+                    line[i] = '\0';
+                    break;
+                }
+
+                line[i] = tolower(line[i]);
+            }
+
+            headerKey = malloc((i * sizeof(char)) + 1);
+            if (!headerKey)
+            {
+                goto internal_error;
+            }
+
+            strcpy(headerKey, line);
+
+            headerPtr = line + i + 1;
+
+            while (isspace(*headerPtr))
+            {
+                headerPtr++;
+            }
+
+            for (i = lineLen - 1; i > (line + lineLen) - headerPtr; i--)
+            {
+                if (!isspace(line[i]))
+                {
+                    break;
+                }
+                line[i] = '\0';
+            }
+
+            headerValue = malloc(strlen(headerPtr) + 1);
+            if (!headerValue)
+            {
+                goto internal_error;
+            }
+
+            strcpy(headerValue, headerPtr);
+
+            HashMapSet(context->requestHeaders, headerKey, headerValue);
+        }
+
+        server->requestHandler(context, server->handlerArgs);
+
+        HttpServerContextFree(context);
+        goto finish;
+
+internal_error:
+        fprintf(fp, "HTTP/1.0 500 Internal Server Error\n");
+        fprintf(fp, "Connection: close\n");
+        goto finish;
+
+bad_request:
+        fprintf(fp, "HTTP/1.0 400 Bad Request\n");
+        fprintf(fp, "Connection: close\n");
+        goto finish;
+
+finish:
+        free(line);
         fclose(fp);
     }
 
