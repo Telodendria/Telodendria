@@ -58,11 +58,6 @@ database. This has a number of advantages:
 <li>
 It allows <b>Telodendria</b> to run on systems with fewer resources.
 </li>
-<li>
-It provides both runtime and data safety and stability. Since no
-database is running, there's fewer things that could go wrong because
-there's a lot less code running on the system.
-</li>
 </ul>
 </li>
 <li>
@@ -708,9 +703,7 @@ don't get lost.
 <h3 id="developing">Developing</h3>
 <p>
 The primary language used to write <b>Telodendria</b> code is ANSI C.
-Yes, that's the original C standard from 1989. The reason this standard
-is chosen, and the reason that it will not be changed, is because the
-original C is the most portable. Other languages you'll find in the
+Other languages you'll find in the
 <b>Telodendria</b> repository are shell scripts and HTML. If you have
 any experience at all with any of these languages, your contributions
 are valuable. Please follow the guidelines in this section to ensure
@@ -1071,25 +1064,7 @@ licenses involved.</li>
 After the headers, but before the checkbox, write a more thorough
 description of the patch and why it was created. Then, send the
 resulting patch file to <code>#telodendria-patches:bancino.net</code>,
-so it can be discussed and reviewed by the community. If you don't
-have a Matrix account, and you <i>really</i> don't want to create
-one&mdash;ignoring how odd it is that you are trying to contribute
-to a <i>Matrix</i> homeserver project&mdash;you can email your
-patches to <a href="mailto:jordan@bancino.net">jordan@bancino.net</a>.
-However, the preferred way of submitting patches is to the official
-Matrix room, so I will upload your patch there along with your email
-address. If you are going to send patches via email, <b>they must
-be plain text</b> emails, and the patch must be in the main body
-of the email. No MIME, base64, or printed-quotable garbage. I will
-silently reject emails that are not purely plain text. I should be
-able to write a raw copy of your message to an <code>mbox</code>
-file, and then apply it onto my code right from there, with no
-further processing. If you're going to be a regular contributor,
-it would just be easier to create a Matrix account. It doesn't have
-to be on my public homeserver, but it certainly can be. Note that
-the discussion and ultimately the decision on what to do with your
-patch will all happen in the Matrix room, so if you submit patches
-using email, you'll miss out on any feedback.
+so it can be discussed and reviewed by the community.
 </p>
 <p>
 Try to keep your patches on topic&mdash;make one patch file per feature
