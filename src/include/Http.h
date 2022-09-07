@@ -109,4 +109,10 @@ extern HttpRequestMethod
 extern const char *
  HttpRequestMethodToString(const HttpRequestMethod);
 
+extern char *
+ HttpUrlEncode(char *);
+
+extern char *
+ HttpUrlDecode(char *);
+
 #endif

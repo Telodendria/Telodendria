@@ -23,6 +23,8 @@
  */
 #include <Http.h>
 
+#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 const char *
@@ -210,4 +212,151 @@ HttpStatusToString(const HttpStatus status)
         default:
             return NULL;
     }
+}
+
+char *
+HttpUrlEncode(char *str)
+{
+    size_t size;
+    size_t len;
+    char *encoded;
+
+    if (!str)
+    {
+        return NULL;
+    }
+
+    size = 16;
+    len = 0;
+    encoded = malloc(size);
+    if (!encoded)
+    {
+        return NULL;
+    }
+
+    while (*str)
+    {
+        char c = *str;
+
+        if (len >= size - 4)
+        {
+            char *tmp;
+
+            size *= 2;
+            tmp = realloc(encoded, size);
+            if (!tmp)
+            {
+                free(encoded);
+                return NULL;
+            }
+
+            encoded = tmp;
+        }
+
+        /* Control characters and extended characters */
+        if (c <= 0x1F || c >= 0x7F)
+        {
+            goto percentEncode;
+        }
+
+        /* Reserved and unsafe characters */
+        switch (c)
+        {
+            case '$':
+            case '&':
+            case '+':
+            case ',':
+            case '/':
+            case ':':
+            case ';':
+            case '=':
+            case '?':
+            case '@':
+            case ' ':
+            case '"':
+            case '<':
+            case '>':
+            case '#':
+            case '%':
+            case '{':
+            case '}':
+            case '|':
+            case '\\':
+            case '^':
+            case '~':
+            case '[':
+            case ']':
+            case '`':
+                goto percentEncode;
+                break;
+            default:
+                encoded[len] = c;
+                len++;
+                str++;
+                continue;
+        }
+
+percentEncode:
+        encoded[len] = '%';
+        len++;
+        snprintf(encoded + len, 3, "%2X", c);
+        len += 2;
+
+        str++;
+    }
+
+    encoded[len] = '\0';
+    return encoded;
+}
+
+char *
+HttpUrlDecode(char *str)
+{
+    size_t i;
+    size_t inputLen;
+    char *decoded;
+
+    if (!str)
+    {
+        return NULL;
+    }
+
+    i = 0;
+    inputLen = strlen(str);
+    decoded = malloc(inputLen);
+
+    if (!decoded)
+    {
+        return NULL;
+    }
+
+    while (*str)
+    {
+        char c = *str;
+
+        if (c == '%')
+        {
+            if (sscanf(str + 1, "%2X", (unsigned int *) &c) != 1)
+            {
+                /* Decoding error */
+                free(decoded);
+                return NULL;
+            }
+            str += 2;
+
+            if (!c)
+            {
+                /* Null character given, don't put that in the string. */
+                str++;
+                continue;
+            }
+        }
+
+        decoded[i] = c;
+        i++;
+
+        str++;
+    }
+
+    return decoded;
 }
