@@ -372,7 +372,7 @@ JsonEncodeString(const char *str, FILE * out)
                  */
                 if (c <= 0x001F)
                 {
-                    printf("\\u%04x", c);
+                    fprintf(out, "\\u%04x", c);
                 }
                 else
                 {
