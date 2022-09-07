@@ -750,11 +750,11 @@ $ cvs -q update -dP
 You should now have the latest <b>Telodendria</b> source code. Follow
 the <a href="#code-style">Code Style</a> as you make your changes. If
 the <code>cvs</code> command fails with a <code>Connection refused</code>
-error message, then try setting the <code>SSH_RSH</code> environment
+error message, then try setting the <code>CVS_RSH</code> environment
 variable to <code>ssh</code>, like this:
 </p>
 <div class="code">
-$ export SSH_RSH=ssh
+$ export CVS_RSH=ssh
 </div>
 <p>
 Then run the checkout again. Some versions of CVS don't use SSH to checkout
