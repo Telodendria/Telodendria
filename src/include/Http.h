@@ -24,6 +24,8 @@
 #ifndef TELODENDRIA_HTTP_H
 #define TELODENDRIA_HTTP_H
 
+#include <HashMap.h>
+
 typedef enum HttpRequestMethod
 {
     HTTP_METHOD_UNKNOWN,
@@ -114,5 +116,11 @@ extern char *
 
 extern char *
  HttpUrlDecode(char *);
+
+extern HashMap *
+ HttpParamDecode(char *);
+
+extern char *
+ HttpParamEncode(HashMap *);
 
 #endif

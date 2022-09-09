@@ -27,6 +27,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <Constants.h>
+#include <HashMap.h>
+
 const char *
 HttpRequestMethodToString(const HttpRequestMethod method)
 {
@@ -226,7 +229,7 @@ HttpUrlEncode(char *str)
         return NULL;
     }
 
-    size = 16;
+    size = TELODENDRIA_STRING_CHUNK;
     len = 0;
     encoded = malloc(size);
     if (!encoded)
@@ -242,7 +245,7 @@ HttpUrlEncode(char *str)
         {
             char *tmp;
 
-            size *= 2;
+            size += TELODENDRIA_STRING_CHUNK;
             tmp = realloc(encoded, size);
             if (!tmp)
             {
@@ -359,4 +362,88 @@ HttpUrlDecode(char *str)
     }
 
     return decoded;
+}
+
+HashMap *
+HttpParamDecode(char *str)
+{
+	HashMap *decoded;
+
+	if (!str)
+	{
+		return NULL;
+	}
+
+	decoded = HashMapCreate();
+	if (!decoded)
+	{
+		return NULL;
+	}
+
+	while (*str)
+	{
+		char *key;
+		char *val;
+		char *decVal;
+
+		decVal = HttpParamDecode(val);
+		if (!decVal)
+		{
+			/* Memory error */
+		}
+
+		free(val);
+		str++;
+	}
+
+	return decoded;
+}
+
+char *
+HttpParamEncode(HashMap *params)
+{
+	char *key;
+	char *val;
+
+	size_t len;
+	size_t size = TELODENDRIA_STRING_CHUNK;
+	char *encoded;
+
+	if (!params)
+	{
+		return NULL;
+	}
+
+	len = 0;
+	encoded = malloc(size);
+
+	if (!encoded)
+	{
+		return NULL;
+	}
+
+	while (HashMapIterate(params, &key, (void *) &val))
+	{
+		/* Print key */
+
+		/* Print = */
+
+		/* Print encoded value */
+
+		char *encVal = HttpParamEncode(val);
+		if (!encVal)
+		{
+			/* Memory error */
+			free(encoded);
+			return NULL;
+		}
+
+		free(encVal);
+
+		/* Print & */
+	}
+
+	/* Overwrite last & */
+
+	return encoded;
 }
