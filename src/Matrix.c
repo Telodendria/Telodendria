@@ -76,9 +76,9 @@ MatrixHttpHandler(HttpServerContext * context, void *argp)
         goto finish;
     }
 
-	HttpSendHeaders(context);
-	stream = HttpStream(context);
-	fprintf(stream, "{}\n");
+    HttpSendHeaders(context);
+    stream = HttpStream(context);
+    fprintf(stream, "{}\n");
 
 finish:
     stream = HttpStream(context);

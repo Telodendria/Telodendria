@@ -367,83 +367,84 @@ HttpUrlDecode(char *str)
 HashMap *
 HttpParamDecode(char *str)
 {
-	HashMap *decoded;
+    HashMap *decoded;
 
-	if (!str)
-	{
-		return NULL;
-	}
+    if (!str)
+    {
+        return NULL;
+    }
 
-	decoded = HashMapCreate();
-	if (!decoded)
-	{
-		return NULL;
-	}
+    decoded = HashMapCreate();
+    if (!decoded)
+    {
+        return NULL;
+    }
 
-	while (*str)
-	{
-		char *key;
-		char *val;
-		char *decVal;
+    while (*str)
+    {
+        char *key;
+        char *val;
+        char *decVal;
 
-		decVal = HttpParamDecode(val);
-		if (!decVal)
-		{
-			/* Memory error */
-		}
+        decVal = HttpParamDecode(val);
+        if (!decVal)
+        {
+            /* Memory error */
+        }
 
-		free(val);
-		str++;
-	}
+        free(val);
+        str++;
+    }
 
-	return decoded;
+    return decoded;
 }
 
 char *
-HttpParamEncode(HashMap *params)
+HttpParamEncode(HashMap * params)
 {
-	char *key;
-	char *val;
+    char *key;
+    char *val;
 
-	size_t len;
-	size_t size = TELODENDRIA_STRING_CHUNK;
-	char *encoded;
+    size_t len;
+    size_t size = TELODENDRIA_STRING_CHUNK;
+    char *encoded;
 
-	if (!params)
-	{
-		return NULL;
-	}
+    if (!params)
+    {
+        return NULL;
+    }
 
-	len = 0;
-	encoded = malloc(size);
+    len = 0;
+    encoded = malloc(size);
 
-	if (!encoded)
-	{
-		return NULL;
-	}
+    if (!encoded)
+    {
+        return NULL;
+    }
 
-	while (HashMapIterate(params, &key, (void *) &val))
-	{
-		/* Print key */
+    while (HashMapIterate(params, &key, (void *) &val))
+    {
+        /* Print key */
 
-		/* Print = */
+        /* Print = */
 
-		/* Print encoded value */
+        /* Print encoded value */
 
-		char *encVal = HttpParamEncode(val);
-		if (!encVal)
-		{
-			/* Memory error */
-			free(encoded);
-			return NULL;
-		}
+        char *encVal = HttpParamEncode(val);
 
-		free(encVal);
+        if (!encVal)
+        {
+            /* Memory error */
+            free(encoded);
+            return NULL;
+        }
 
-		/* Print & */
-	}
+        free(encVal);
 
-	/* Overwrite last & */
+        /* Print & */
+    }
 
-	return encoded;
+    /* Overwrite last & */
+
+    return encoded;
 }
