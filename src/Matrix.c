@@ -54,15 +54,34 @@ MatrixHttpHandler(HttpServerContext * context, void *argp)
     }
     LogConfigUnindent(lc);
 
-
     HttpResponseStatus(context, HTTP_OK);
     HttpResponseHeader(context, "Server", "Telodendria v" TELODENDRIA_VERSION);
     HttpResponseHeader(context, "Content-Type", "application/json");
 
-    HttpSendHeaders(context);
+    /* CORS */
+    HttpResponseHeader(context, "Access-Control-Allow-Origin", "*");
+    HttpResponseHeader(context, "Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+    HttpResponseHeader(context, "Access-Control-Allow-Headers", "X-Requested-With, Content-Type, Authorization");
 
+    /*
+     * Web Browser Clients: Servers MUST expect that clients will approach them
+     * with OPTIONS requests... the server MUST NOT perform any logic defined
+     * for the endpoints when approached with an OPTIONS request.
+     */
+    if (HttpRequestMethodGet(context) == HTTP_OPTIONS)
+    {
+        HttpResponseStatus(context, HTTP_NO_CONTENT);
+        HttpSendHeaders(context);
+
+        goto finish;
+    }
+
+	HttpSendHeaders(context);
+	stream = HttpStream(context);
+	fprintf(stream, "{}\n");
+
+finish:
     stream = HttpStream(context);
-    fprintf(stream, "{}\n");
     fclose(stream);
 
     LogConfigUnindent(lc);
