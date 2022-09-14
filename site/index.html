@@ -447,7 +447,15 @@ out if you want things to go quicker. Please see the
 <a href="#contributing">Contributing</a> section for details on how you
 can get involved.
 </p>
+<p>
+The <b>Telodendria</b> roadmap is organized into phases, with each phase
+representing a new milestone in the project's lifetime.
+</p>
 <h3 id="phase-1">Phase 1: Getting Off The Ground</h3>
+<p>
+A new open-source project needs a few basic things before development
+can begin. This phase covers the pre-development stage of <b>Telodendria</b>.
+</p>
 <ul>
 <li><s>Name this project</s></li>
 <li><s>Set up a CVS repository</s></li>
@@ -459,6 +467,14 @@ can get involved.
 <li><s>Add table of contents to this document</s></li>
 </ul>
 <h3 id="phase-2">Phase 2: Building A Foundation</h3>
+<p>
+Matrix homeservers require a few prerequisites. In this phase, we build up
+all the tools required to properly implement a Matrix homeserver. This includes
+basic data structures, exchange format parsers, and more. We also build up a
+command line application, multi-threaded HTTP server, and architect a flat-file
+database framework.
+</p>
+</p>
 <ul>
 <li><s>Implement an array</s></li>
 <li><s>Implement a logging facility</s></li>
@@ -508,6 +524,11 @@ Design the server architecture
 </li>
 </ul>
 <h3 id="phase-3">Phase 3: Welcome To Matrix</h3>
+<p>
+When the foundations are laid, we can start implementing a real Matrix
+homeserver. This phase tracks our current progress in implementing the Matrix
+specification.
+</p>
 <ul>
 <li>
 Client-Server API
@@ -537,6 +558,14 @@ Room Versions
 </li>
 </ul>
 <h3 id="phase-4">Phase 4: A Real Homeserver</h3>
+<p>
+The Matrix specification is only a part of what it takes to be a production-ready
+Matrix homeserver. While the spec details how clients and homeservers interact with
+each other, we still need a way to administer our homeserver. This phase tracks our
+progress on getting <b>Telodendria</b> packaged, as well as writing some useful
+administrative tools. Only when these things are completed can we call <b>Telodendria</b>
+"production-ready."
+</p>
 <ul>
 <li>
 Create an OpenBSD package and get it submitted to ports
