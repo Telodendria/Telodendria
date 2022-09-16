@@ -78,6 +78,6 @@ extern void
  MatrixHttpHandler(HttpServerContext *, void *);
 
 extern HashMap *
- MatrixCreateError(MatrixError);
+ MatrixErrorCreate(MatrixError);
 
 #endif
