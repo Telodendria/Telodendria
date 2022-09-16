@@ -41,10 +41,11 @@ MatrixHttpHandler(HttpServerContext * context, void *argp)
     char *key;
     char *val;
 
+    HashMap *response;
+
     Log(lc, LOG_MESSAGE, "%s %s",
         HttpRequestMethodToString(HttpRequestMethodGet(context)),
         HttpRequestPath(context));
-
 
     LogConfigIndent(lc);
     Log(lc, LOG_DEBUG, "Request headers:");
@@ -78,9 +79,16 @@ MatrixHttpHandler(HttpServerContext * context, void *argp)
         goto finish;
     }
 
+    /* TODO: Route requests here */
+
     HttpSendHeaders(context);
     stream = HttpStream(context);
-    fprintf(stream, "{}\n");
+
+    response = MatrixErrorCreate(M_UNKNOWN);
+    JsonEncode(response, stream);
+    fprintf(stream, "\n");
+
+    JsonFree(response);
 
 finish:
     stream = HttpStream(context);
@@ -90,7 +98,7 @@ finish:
 }
 
 HashMap *
-MatrixCreateError(MatrixError errorArg)
+MatrixErrorCreate(MatrixError errorArg)
 {
     HashMap *errorObj;
     char *errcode;
