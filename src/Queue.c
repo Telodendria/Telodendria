@@ -148,8 +148,8 @@ QueuePop(Queue * q)
 
     if (q->front == q->rear)
     {
-        q->front = -1;
-        q->rear = -1;
+        q->front = q->size + 1;
+        q->rear = q->size + 1;
     }
     else
     {
