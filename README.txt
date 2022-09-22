@@ -7,9 +7,9 @@
 Copyright (C) 2022 Jordan Bancino <@jordan:bancino.net>
 
 This is the source code for Telodendria, a Matrix homeserver written
-in C. All of the documentation is available at https://telodendria.io,
-or in site/index.html.
+in C. All of the documentation is available as man pages in the
+docs/ directory, or online at https://telodendria.io
 
-If information is missing from those documents, please feel free to
-reach out to #telodendria-general:bancino.net on Matrix.
+If information is missing from the documentation, please feel free
+to reach out to #telodendria-general:bancino.net on Matrix.
 
