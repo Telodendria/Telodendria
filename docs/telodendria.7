@@ -68,6 +68,94 @@ Room;Description
 #telodendria-issues:bancino.net;Report bugs and issues.
 #telodendria-patches:bancino.net;Submit code patches to the project.
 .TE
+.Sh RATIONALE
+I want a lightweight Matrix homeserver designed specifically for OpenBSD,
+and other Unix-like operating systems. I want a homeserver that can be
+developed and compiled with built-in tools. I want it to function entirely
+on a base OS install without having to install any packages whatsoever. I've
+found that as far as these goals are concerned, the existing homeserver
+implementations fall short. This project aims to prove that Matrix homeservers
+can be lightweight and written in such a way that very few, if any, third-party
+libraries need to be pulled in.
+.sp
+I also want to learn how Matrix works, and I want to understand the code I'm
+running on my server, which is why I'm writing every component from scratch,
+even the HTTP server and router.
+.sp
+The advantage of using a flat-file database instead of a real database is that
+your data remains in a format that is incredibly easy to digest. Backups are
+incredibly easy as well\(emjust
+.Xr tar 1
+up the data directory and you're good to go.
+.Sh PROJECT GOALS
+The goals of this project are generally divided into user goals and developer
+goals, depending on who they impact the most. This isn't an exaustive list
+of
+.Nm 's
+goals, but it is a list of things that I want to prioritize, because other
+server implementations lack them.
+.sp
+The user goals are as follows:
+.Bl -bullet
+.It
+To implement the latest Matrix specification as fully and completely as possible.
+All features defined by the specification should eventually be present in
+.Nm .
+.It
+To be a production-ready Matrix server capable of handling a lot of users.
+.Nm
+should have good performance in many diverse environments. It should scale up
+well for large instances, such as the
+.Pa matrix.org
+instance, and yet also be able to scale down to an embedded or peer-to-peer
+device.
+.It
+To be easier to get up and running, and yet also be more configurable than other
+Matrix homeserver implementations. The configuration file should be flexible,
+well-documented, and easy to understand and modify. An intuitive command-line
+tool for administrative tasks should also be available.
+.El
+.sp
+The developer goals are as follows:
+.Bl -bullet
+.It
+To have as few build and runtime dependencies as possible. It should be possible
+to compile and run
+.Nm
+on any POSIX operating system right out of the box. 
+.Nm
+should be fully statically-linked, so it can run under a
+.Xr chroot 3 .
+Furthermore, it should be possible to read all the documentation offline, and
+without any overly complicated tools. You'll notice that this documentation is
+a collection of
+.Xr man 1
+pages, not HTML or Markdown, to remove the dependency on a browser or Markdown
+parser. Any Unix-like system has a manual page viewer, which makes the
+documentation more accessible, even on remote systems that have no graphical
+interface to read the documentation. This ensures that you can read the
+documentation for the installed version of
+.Nm
+without having to go online.
+.It
+To have a simple yet elegant workflow, and not depend on any large or complex
+development tools such as code forges. The entire development workflow should
+be able to be successfully and efficiently completed on a base OpenBSD install.
+Of course, you don't have to use OpenBSD for development, but the point is that
+the workflow should require fairly standardized and simple tools.
+.It
+To write clean, elegant, well-tested, and well-documented code. The goal is to build
+a Matrix homeserver from the ground up, not just because I don't like the way existing
+homeservers are implemented, but also because I want to learn how Matrix works,
+make it more accessible, and potentially teach others a little bit along the way.
+.It
+To foster a welcoming community. Many big communities such as Linux and OpenBSD
+have hostile leaders.
+.Nm
+shouldn't have a hostile leader. I want to be as understanding as I can, and talk
+through issues politely and in a civil manner. If I'm failing in this way, don't
+be afraid to call me out!
+.El
 .Sh SEE ALSO
 .Xr telodendria 8 ,
 .Xr telodendria.conf 5 ,
