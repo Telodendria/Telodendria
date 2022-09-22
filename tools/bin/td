@@ -166,6 +166,11 @@ recipe_site() {
 
 	# In the future, this might do more.
 	cp -v site/* "$TELODENDRIA_PUB/"
+
+	find docs/ -name '*.[1-9]' | while IFS= read -r $man; do
+		html=$(basename "$man")
+		mandoc -Thtml "$man" > "$TELODENDRIA_PUB/$html.html"
+	done
 }
 
 # Generate a release tarball, checksum and sign it, and push it to

@@ -213,52 +213,20 @@ information.
 <p>
 You can check out the change log <a href="#change-log">here</a>.
 </p>
-<h2 id="building-the-source">Building The Source</h4>
+<h2 id="documentation">Documentation</h2>
 <p>
-<b>Telodendria</b> is designed to be light enough that it can be built
-from source on just about any operating system. It only has the
-following requirements, all of which should be already available to
-you on a sufficiently complete operating system:
+<b>Telodendria</b>'s documentation is distributed with the source
+code as <code>man</code> pages, which contain all of the information
+on how to build the source, configure it, as well as contribute to
+the project. The <code>man</code> pages are also available online
+for convenience:
 </p>
 <ul>
-<li>
-A standards-compliant C compiler with a POSIX standard library and
-access to a <code>chroot()</code> system call (which is available in all
-UNIX-like operating systems, but is not POSIX.) Because <b>Telodendria</b>
-is written in ANSI C and sticks almost entirely to POSIX features, it
-should compile on almost any compiler and operating system with minimal
-effort, but the following compilers and operating systems are known to work:
-<ul>
-<li>GCC on Linux</li>
-<li>Clang on OpenBSD, Linux, and WSL</li>
-<li>
-Tiny C Compiler (<b>Note:</b> must remove
-<code>-Wl,-static -Wl,-gc-sections</code> from <code>LDFLAGS</code>)
-on OpenBSD.
-</li>
+<li><a href="telodendria.7.html">telodendria(7)</a> - Introduction</li>
+<li><a href="telodendria.8.html">telodendria(8)</a> - Command line</li>
+<li><a href="telodendria.conf.5.html">telodendria.conf(5)</a> - Configuration</li>
+<li><a href="td.8.html">td(8)</a> - Build script and patch instructions</li>
 </ul>
-Other compilers should work as well, but you may have to play with the
-flags.
-</li>
-<li>
-POSIX base utilities, including <code>find</code>, <code>stat</code>,
-<code>env</code>, and compliant <code>sh</code>-like shell.
-</li>
-</ul>
-<div class="code">
-$ . tools/env.sh
-$ td build
-</div>
-<p>
-If everything went well, that will produce <code>build/telodendria</code>,
-which you can then place wherever you want, and run as a system daemon.
-See the <code>contrib</code> folder for configuration examples.
-</p>
-<p>
-If you're going to be doing more than just building the code, see
-<a href="#the-build-script">The Build Script</a> for full documentation on
-what the <code>td</code> script can do.
-</p>
 <h2 id="configure">Configure Telodendria</h3>
 <p>
 <b>Telodendria</b> is designed to be extremely configurable. As such, it has
@@ -848,183 +816,6 @@ that I should run <code>indent(1)</code> on the code after applying it.
 I'll likely run my <code>indent(1)</code> on the code anyway though,
 just to make sure the spacing is consistent, if nothing else.
 </p>
-<h4 id="the-build-script">The Build Script</h4>
-<p>
-<b>Telodendria</b> uses a custom build script called <code>td</code>,
-for <i>Telodendria developer</i>. The <code>td</code> script is not only
-a build script, however. It does all kinds of cool things like
-format the source code, and generate patch files. <code>td</code> is
-the only supported way to develop <b>Telodendria</b>.
-</p>
-<p>
-I opted to write a custom build script instead of just using
-<code>make</code>, because I felt that there is really no way to make
-a truly portable <code>Makefile</code> that could do everything I
-need. I was doing a lot of research on the differences between the
-GNU and BSD versions of <code>make</code>, and I felt it just wasn't
-worth it when I could write a small POSIX script that would run on
-both GNU systems and BSD systems without a fuss.
-</p>
-<p>
-The <code>td</code> script is fairly intuitive. It operates somewhat
-like <code>make</code>, in that it has recipes that you specify
-on the command line. To start using it, just run the following
-command in your <b>Telodendria</b> directory:
-</p>
-<div class="code">
-$ . tools/env.sh
-</div>
-<p>
-<b>Note:</b> You will have to run the above command every time you
-start a new terminal session, as nothing is persisted to your system.
-I believe in non-invasive, fully self-contained tooling, so it is up to
-you to hook the Telodendria tools into your environment if you want them
-to persist.
-</p>
-<p>
-If you're going to be submitting patches, you should also configure
-a <code>.env</code> file in the project directory root, which
-<code>td</code> will include automatically for you. For the best
-experience, you'll want at least these values:
-</p>
-<div class="code">
-MXID=@your:matrix-id.net
-DISPLAY_NAME="Your Display Name"
-EDITOR=gedit # Or whatever your preferred editor is.
-</div>
-<p>
-If you don't provide these values, <code>td</code> will deduce them
-from your environment. It uses your system username and hostname to
-create the <code>MXID</code>, and reads the password database to
-get your configured display name. It also uses <code>vi</code> as
-the default editor, which may not be suitable for all developers.
-</p>
-<p>
-You can invoke <code>td</code> recipes with the following syntax:
-</p>
-<div class="code">
-$ td &lt;recipe&gt; ...
-</div>
-<p>
-Multiple recipes can be invoked in a single run of <code>td</code>.
-At the moment, recipes are run unconditionally; that is, even if parts
-of a recipe fail, all following recipes still run.
-</p>
-<p>
-Here is a complete list of recipes currently supported by
-<code>td</code>, and a description of what they do. Some recipes can
-alter their behavior based on certain environment variables. Those
-variables are also documented here.
-</p>
-<ul>
-<li>
-<code>build</code>: Build the source code, and generate the
-<code>build/telodendria</code> binary. This is the <i>default</i>
-recipe; that is, it runs if no recipes are given as arguments to
-<code>td</code>. The build recipe is incremental; it only rebuilds
-sources that have been modified since the last build, which makes
-builds faster. This recipe makes use of many environment variables:
-<ul>
-<li><code>CFLAGS</code>: Compiler flags to generate object files.</li>
-<li><code>LDFLAGS</code>: Compiler flags to link the output binary</li>
-<li><code>CC</code>: The compiler to use.</li>
-<li><code>PROG</code>: The name of the output binary</li>
-<li><code>DEFINES</code>: Global preprocessor definitions</li>
-<li><code>INCLUDES</code>: Header directories to make available</li>
-<li><code>DEBUG</code>: If set to "1", append some debug flags to
-<code>CFLAGS</code>, and wipe out any <code>LDFLAGS</code> that
-would cause the output binary to be optimized. Also appends "-debug"
-to <code>PROG</code>.</li>
-</ul>
-<code>TELODENDRIA_VERSION</code> also makes its way into the output
-binary, but it is primarily used for generating releases.
-</li>
-<li>
-<code>run</code>: Run a built <b>Telodendria</b> binary with the
-development configuration in <code>contrib/</code>. This recipe can
-be used for quick testing during development. It is <i>not</i> the
-recommended way to run <b>Telodendria</b> in a production environment;
-it should be used only for development.
-</li>
-<li>
-<code>clean</code>: Remove the <code>build/</code> directory, which
-effectively cleans the source tree. Note that <code>build</code> does
-not place anything outside of <code>build/</code>, so this is
-functionally equivalent to running <code>rm -r build</code>.
-</li>
-<li>
-<code>format</code>: Make sure the source code copyright headers are
-up to date, and format the source code using the system's
-<code>indent(1)</code> command. This should be run before generating
-patch files, to ensure that the code follows the project conventions.
-Note that the provided <code>.indent.pro</code> assumes an OpenBSD
-<code>indent</code>, which may cause the GNU implementation to choke.
-</li>
-<li>
-<code>test</code>: Run all of the unit tests, and report the results.
-It is highly recommended to ensure that the tests all pass before
-submitting a patch, because patches that break the tests are likely
-to be rejected.
-</li>
-<li>
-<code>site</code>: Deploy the <b>Telodendria</b> website by copying the
-required files to a web root. The web root is defined by the
-<code>TELODENDRIA_PUB</code> environment variable. This is mainly
-used to deploy the official website, but it can be used to set up a
-local development site if absolutely neccessary.
-</li>
-<li>
-<code>release</code>: Generate a release tarball, checksum and sign it,
-and push it into the web root. The web root is defined by the
-<code>TELODENDRIA_PUB</code> environment variable. You may also have
-to set <code>CVSROOT</code> to the official CVS repository of
-<b>Telodendria</b>. If you want to create a release tarball for an
-older version, set <code>TELODENDRIA_VERSION</code>. If you want to
-generate a release tarball for the latest code, set
-<code>CVS_TAG</code> to <code>HEAD</code>. If you want to sign the
-generated tarball, set <code>TELODENDRIA_SIGNIFY_SECRET</code> to a
-<code>signify</code> private key file. This is mainly used to deploy
-releases to the official website, but it can be used to independently
-mirror <b>Telodendria</b> releases from the official CVS repository.
-</li>
-<li>
-<code>patch</code>: Generate a formatted patch file. The
-<b>Telodendria</b> project isn't super picky about how patches look
-as long as they apply cleanly, but this recipe generates patches in
-the format we like them. It makes them easy to read. This recipe will
-use the <code>EDITOR</code> variable to open your formatted patch in
-your preferred editor. If no <code>EDITOR</code> is specified, then
-<code>vi</code> is used. For more details on how this recipe works,
-read <a href="#submitting-patches">Submitting Patches</a>. This
-recipe also makes use of <code>PATCHSET</code>, <code>MXID</code>,
-and <code>DISPLAY_NAME</code>.
-</li>
-<li>
-<code>diff</code>: Generate a temporary preview patch that is
-opened in the default pager. This recipe uses the <code>PAGER</code>
-variable to preview patches. If no <code>PAGER</code> is set, then
-<code>less -F</code> is used as the default. This can be used for
-quickly previewing patches. Setting <code>PATCHSET</code> allows you
-to only preview certain changes; see
-<a href="#submitting-patches">Submitting Patches</a> for more
-information on how <code>PATCHSET</code> works.
-</li>
-</ul>
-<p>
-Any environment variables noted above that <code>td</code> recipes
-use can be specified in a <code>.env</code> file in the root of the
-<code>Telodendria</code> directory. This saves you from constantly
-having to set the environment variables in your shell, as well as
-from having to pollute your user environment with <b>Telodendria</b>
-variables. <code>td</code> will automatically include the
-<code>.env</code> file on every run.
-</p>
-<div class="msg-err">
-<code>td</code> will source the <code>.env</code> file, which means
-it executes it like a shell script. Any shell code inside of
-<code>.env</code> will be executed every time <code>td</code> is
-run.
-</div>
 <h4 id="submitting-patches">Submitting Patches</h4>
 <p>
 <b>Telodendria</b> aims at remaining as minimal as possible. This doesn't
@@ -1143,59 +934,6 @@ send a message.
 <p>
 You're always welcome to inquire about rejected patches, and request they be
 reviewed again, or you can use them as a starting point for future patches.
-</p>
-<h2 id="license">License</h2>
-<p>
-All of the code for <b>Telodendria</b> is licensed under a modified
-MIT license. Please consult the <code>src/header.txt</code> file for
-the actual license text. The <b>Telodendria</b> license text differs
-from the MIT license in the following ways:
-</p>
-<ul>
-<li>
-Where the MIT license states that the copyright notice and permission
-notice shall be included in all copies or <i>substantial</i> portions
-of the software, the <b>Telodendria</b> license requires the copyright
-notice and permission notice be included in <i>all</i>
-portions&mdash;regardless of size&mdash;of the software by omitting
-the word <i>substantial</i>.
-</li>
-</ul>
-<p>
-The documentation for <b>Telodendria</b> is also licensed under the
-modified MIT license that lives in <code>src/header.txt</code>. Whether
-you obtain the documentation by printing, or otherwise downloading
-this page, or by checking it out from the CVS source, it is licensed
-the same as the code.
-<p>
-The <b>Telodendria</b> logo, however, belongs solely to the
-<b>Telodendria</b> project. It must only be used to represent the
-official <b>Telodendria</b> project, and may only appear in official
-<b>Telodendria</b> media. If <b>Telodendria</b> is forked, the logo
-must be removed from the project and optionally replaced by a different
-one. The logo may not be modified in any way or for any purpose.
-</p>
-<h2 id="contributors">Contributors</h2>
-<p>
-<b>Telodendria</b> would not be possible without the support of the
-following people:
-</p>
-<ul>
-<li>
-<b>Project Manager:</b>
-Jordan Bancino &lt;@jordan:bancino.net&gt;
-</li>
-<li>
-<b>Logo/site design:</b>
-Jonah
-</li>
-</ul>
-<h2 id="change-log">Change Log</h2>
-<p>
-At this time, Telodendria does not have any tagged releases because it
-is not yet functional as a Matrix homeserver. Please check out the <a
-href="#project-status">Project Status</a> to see where things are
-currently at.
 </p>
 <h2 id="resources">Resources</h2>
 <ul>
