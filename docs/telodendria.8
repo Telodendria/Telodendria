@@ -1,0 +1,53 @@
+.Dd September 21, 2022
+.Dt TELODENDRIA 8
+.Os Telodendria Project
+.Sh NAME
+.Nm telodendria
+.Nd Matrix homeserver daemon
+.Sh SYNOPSIS
+.Nm
+.Op Fl hnVv
+.Op Fl f Ar file
+.Sh DESCRIPTION
+.Nm
+is a Matrix homeserver written entirely from scratch in ANSI C.
+It is designed to be lightweight and simple, yet functional.
+.sp
+The options are as follows:
+.Bl -tag -width Ds
+.It Fl f Ar file
+Specify an alternate configuration file. The default is
+.Pa /etc/telodendria.conf .
+.It Fl h
+Show a brief help message. This message will be very short; for
+full documentation, consult this manual page.
+.It Fl n
+Configtest mode. Only check the configuration file for validity.
+.It Fl V
+Only print the version information header.
+.It Fl v
+Verbose mode. This overrides the configuration file and sets the
+log level to
+.Em LOG_DEBUG
+.El
+.Sh ENVIRONMENT
+.Sh FILES
+.Sh EXIT STATUS
+.Sh SEE ALSO
+.Xr telodendria.conf 5
+.Sh STANDARDS
+.Nm
+conforms to the Matrix Specification v1.3.
+.Sh HISTORY
+.Sh AUTHORS
+.Nm
+was started by
+.An Jordan Bancino Aq Mt @jordan:bancino.net .
+Contributions to the code, website, documentation, or other
+components of
+.Nm
+were made by the following people:
+.sp
+.An Jonah Evans Aq Mt @jonah:bancino.net
+.Sh CAVEATS
+.Sh BUGS

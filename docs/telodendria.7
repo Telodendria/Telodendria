@@ -1,0 +1,131 @@
+.Dd September 21, 2022
+.Dt TELODENDRIA 7
+.Os Telodendria Project
+.Sh NAME
+.Nm Telodendria
+.Nd The terminal branches of an axon.
+.Sh DESCRIPTION
+.Nm
+is a Matrix homeserver written entirely from scratch in ANSI C.
+It is designed to be lightweight and simple, yet functional.
+.sp
+.Sy Note:
+.Nm
+is under
+.Sy heavy
+development. Please see
+.Em PROJECT STATUS .
+.sp
+.Nm
+differentiates itself from the other Matrix homeserver
+implementations because it:
+.Bl -bullet
+.It
+Is written in C, a stable, low-level programming language with a
+long history, low build and runtime overhead, and wide compatibility.
+.It
+Is written with minimalism as a primary design goal. Whenever possible
+and practical, no third-party libraries are pulled into the source code.
+Everything
+.Nm
+needs is custom written. As a result,
+.Nm
+depends only on a standard C compiler and a POSIX C library to be built,
+both of which should come with any good Unix-style operating system already,
+which means you shouldn't have to install anything extra.
+.It
+Uses a flat-file directory structure to store data instead of a database.
+This has a number of advantages:
+.Bl -bullet
+.It
+It makes setup and maintenance much easier.
+.It
+It allows
+.Nm
+to run on systems with fewer resources.
+.El
+.It
+Is packaged as a single small, statically-linked and highly-optimized binary
+that can be run just about anywhere. It is designed to be extremely easy to
+set up and consume as few resources as possible.
+.It
+Is permissively licensed.
+.Nm
+is licensed under a modified MIT license, which imposes very few restrictions
+on what you can do with it.
+.El
+.sp
+.Nm
+is on Matrix! Check out the official Matrix rooms:
+.sp
+.TS
+tab(;);
+l l.
+Room;Description
+----;-----------
+#telodendria-releases:bancino.net;Get notified of new releases.
+#telodendria-general:bancino.net;General discussion and support.
+#telodendria-issues:bancino.net;Report bugs and issues.
+#telodendria-patches:bancino.net;Submit code patches to the project.
+.TE
+.Sh SEE ALSO
+.Xr telodendria 8 ,
+.Xr telodendria.conf 5 ,
+.Xr td 8
+.Sh STANDARDS
+.Nm
+conforms to the Matrix Specification v1.3.
+.Sh HISTORY
+At this time,
+.Nm
+does not have any tagged releases because it is not yet functional
+as a Matrix homeserver. Please checkout out
+.Em PROJECT STATUS
+to see where things are currently at. When
+.Nm
+is mature enough to have a change log, it will go in this section.
+.Sh AUTHORS
+.Nm
+was started by
+.An Jordan Bancino Aq Mt @jordan:bancino.net .
+Contributions to the code, website, documentation, or other
+components of
+.Nm
+were made by the following people:
+.sp
+.An Jonah Evans Aq Mt @jonah:bancino.net
+.Sh LICENSE
+All of the code and documentation for
+.Nm
+is licensed under a modified MIT license. Please consult the
+.Pa src/header.txt
+file for the actual license text. The
+.Nm
+license text differs from the MIT license in the following ways:
+.Bl -bullet
+.It
+Where the MIT license states that the copyright notice and permission
+notice shall be included in all copies or
+.Pa substantial
+portions of the software, the
+.Nm
+license requires the copyright notice and permission notice be included
+with
+.Pa all
+portions, regardless of the size, of the software by omitting the word
+.Pa substantial .
+.El
+.sp
+The
+.Nm
+logo, however, belongs solely to the
+.Nm
+project. It must only be used to represent the official
+.Nm
+project, and may only appear in official
+.Nm
+media. If
+.Nm
+is forked, the logo must be removed completely from the project, and
+optionally replaced with a different one. The logo may not be modified
+in any way or for any purpose.
