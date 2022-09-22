@@ -110,6 +110,7 @@ recipe_run() {
 # build recipe.
 recipe_clean() {
 	rm -rv build
+	find . -name '*.orig' -delete
 }
 
 # Format the source code by updating the copyright headers and
