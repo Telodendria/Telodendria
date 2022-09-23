@@ -29,7 +29,7 @@
 </p>
 <div class="msg-error">
 <b><i>Note:</i></b> <b>Telodendria</b> is under <i>heavy</i> development.
-Please see the <a href="#project-status">Project Status</a>.
+Please see the <a href="telodendria.7.html#PROJECT-STATUS">Project Status</a>.
 </div>
 <p>
 <b>Telodendria</b> is a Matrix homeserver implementation written from
@@ -159,7 +159,7 @@ Signify
 <tr>
 <td colspan="4" style="text-align: center;">
 No downloads here yet. See the
-<a href="#project-status">Project Status</a> for more
+<a href="telodendria.7.html#PROJECT-STATUS">Project Status</a> for more
 information.
 </td>
 </tr>
@@ -182,185 +182,7 @@ pages are also available online for convenience:
 <li><a href="contributing.7.html">contributing(7)</a> - Contributing guide</li>
 <li><a href="td.8.html">td(8)</a> - Build script and patch instructions</li>
 </ul>
-<h2 id="project-status">Project Status</h2>
-<p>
-<b>Telodendria</b> is a very ambitious project. There's a lot that needs
-to happen yet before it is usable. At the moment, there's nothing that
-even remotely ressembles a Matrix homeserver here; I'm still
-getting off the ground and building a foundation.
-</p>
-<p>
-But just because there's nothing here yet doesn't mean you should go away!
-I could always use help, so you are more than welcome to help
-out if you want things to go quicker. Please see the
-<a href="contributing.7.html">contributing(7)</a> page for details on how you
-can get involved.
-</p>
-<p>
-The <b>Telodendria</b> roadmap is organized into phases, with each phase
-representing a new milestone in the project's lifetime.
-</p>
-<h3 id="phase-1">Phase 1: Getting Off The Ground</h3>
-<p>
-A new open-source project needs a few basic things before development
-can begin. This phase covers the pre-development stage of <b>Telodendria</b>.
-</p>
-<ul>
-<li><s>Name this project</s></li>
-<li><s>Set up a CVS repository</s></li>
-<li><s>Make CVS repository public</s></li>
-<li><s>Write a coding style guide</s></li>
-<li><s>Write a build script</s></li>
-<li><s>Add a license</s></li>
-<li><s>Add support and issue reporting guide</s></li>
-<li><s>Add table of contents to this document</s></li>
-</ul>
-<h3 id="phase-2">Phase 2: Building A Foundation</h3>
-<p>
-Matrix homeservers require a few prerequisites. In this phase, we build up
-all the tools required to properly implement a Matrix homeserver. This includes
-basic data structures, exchange format parsers, and more. We also build up a
-command line application, multi-threaded HTTP server, and architect a flat-file
-database framework.
-</p>
-</p>
-<ul>
-<li><s>Implement an array</s></li>
-<li><s>Implement a logging facility</s></li>
-<li><s>Implement argument parsing (<code>-c file -Vh</code>)</s></li>
-<li><s>Implement a hash map</s></li>
-<li><s>Combine library code files</s></li>
-<li><s>Implement configuration file parsing using the hash map</s></li>
-<li><s>Base64 encoding/decoding with padded/unpadded support</s></li>
-<li><s>Write a release script</s></li>
-<li><s>UTF-8 encoder</s></li>
-<li>
-<s>Implement a JSON library using the hash map and array</s>
-<ul>
-<li><s>Basic encoding from HashMap/Array/strings, etc.</s></li>
-<li><s>Basic decoding to HashMap/Array/strings, etc.</s></li>
-<li><s>Proper string encoding</s></li>
-<li><s>Proper string decoding</s></li>
-<li>
-<s><q>Canonical JSON</q></s>
-<ul>
-<li><s>Keys are sorted lexicographically</s></li>
-<li><s>Floats are not allowed (ignore any float values)</s></li>
-<li><s>Encode as UTF-8 instead of using <code>\u</code> escapes</s></li>
-<li><s>Decode encoded strings to UTF-8</s></li>
-</ul>
-</li>
-</ul>
-</li>
-<li><s>Write a function that gets the current Unix timestamp in milliseconds.</s></code>
-<li><s>Figure out how to w</s>Write unit tests for array/hashmap/etc</li>
-<li><s>Parse the <b>Telodendria</b> config file</s></li>
-<li>Add <s>license/</s>documentation comments to all source files</li>
-<li><s>Implement a simple HTTP server</s>
-<ul>
-<li>Implement param parser</li>
-<li><s>URL encoder/decoder</s></li>
-</ul>
-</li>
-<li>
-Design the server architecture
-<ul>
-<li>Route requests</li>
-<li><s>Handle requests</s></li>
-<li>Data abstraction layer</li>
-<li><s>Error generation</s></li>
-</ul>
-</li>
-</ul>
-<h3 id="phase-3">Phase 3: Welcome To Matrix</h3>
-<p>
-When the foundations are laid, we can start implementing a real Matrix
-homeserver. This phase tracks our current progress in implementing the Matrix
-specification.
-</p>
-<ul>
-<li>
-Client-Server API
-<ul>
-<li><s>Error responses</s></li>
-<li><code>/_matrix/client/versions</code></li>
-<li><s>CORS Headers</s></li>
-<li>Well-known URIs</li>
-<li>Client Authentication</li>
-<li>Capabilities negotiation</li>
-</ul>
-</li>
-<li>
-Server-Server API
-</li>
-<li>
-Application Service API
-</li>
-<li>
-Identity Service API
-</li>
-<li>
-Push Gateway API
-</li>
-<li>
-Room Versions
-</li>
-</ul>
-<h3 id="phase-4">Phase 4: A Real Homeserver</h3>
-<p>
-The Matrix specification is only a part of what it takes to be a production-ready
-Matrix homeserver. While the spec details how clients and homeservers interact with
-each other, we still need a way to administer our homeserver. This phase tracks our
-progress on getting <b>Telodendria</b> packaged, as well as writing some useful
-administrative tools. Only when these things are completed can we call <b>Telodendria</b>
-"production-ready."
-</p>
-<ul>
-<li>
-Create an OpenBSD package and get it submitted to ports
-</li>
-<li>
-Create a command line tool to manage Telodendria
-<ul>
-<li>Configuration file generation</li>
-<li>User management</li>
-<li>Room management</li>
-</ul>
-</li>
-<li>
-Migrate from Synapse. I run a Synapse homeserver right now, so somehow
-I have to get all my data into the Telodendria format.
-</li>
-</ul>
-<h2 id="documentation-status">Documentation Status</h2>
-<p>
-This documentation needs just a little work. Here's the things
-on my list for that:
-</p>
-<ul>
-<li><s>Update Rationale section</s></li>
-<li><s>Update Project description (no longer a CGI binary)</s></li>
-<li><s>Update project code requirements (ANSI C, POSIX.1c)</s></li>
-<li><s>Clean up dark mode colors (tables, background, code snippets)</s></li>
-<li><s>Add logo (possibly center title?)</s></li>
-<li><s>Update Code Style to not include indent or line rules, but to use
-<code>indent(1)</code> instead.</s></li>
-<li><s>Fix typo "Subitting Patches" in Table of Contents</s></li>
-<li><s>Make a note in Getting The Code that the password for the
-<code>anoncvs</code> account is just <code>anoncvs</code>.</s></li>
-<li><s>Add Contributors list</s></li>
-<li><s>Add list of <code>make.sh</code> recipes, and what they do</s></li>
-<li>Improve Google Lighthouse score
-<ul>
-<li>Image elements do not have explicit width and height</li>
-<li>Background and foreground colors do not have a sufficient contrast ratio. (<code>msg-error</code> div)</li>
-<li><s>Lists do not contain only <code>li</code> elements.</s></li>
-</ul>
-</li>
-<li>Add other message <code>div</code>s for notes and warnings.</li>
-</ul>
-<h2 id="getting-support">Getting Support</h2>
-<p>
+<h2>Getting Support</h2>
 <b>Telodendria</b> is designed to be fairly straightforward, but that
 doesn't mean there won't be hiccups along the way. If you are struggling
 to get <b>Telodendria</b> up and running, you're more than welcome to
