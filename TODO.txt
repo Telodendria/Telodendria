@@ -1,0 +1,97 @@
+Telodendria To-Do List
+
+Key:
+
+[ ] Not Started
+[x] Done
+[~] In Progress
+
+Phase 1: Getting off the ground
+
+[x] Name this project
+[x] Set up a CVS repository
+[x] Make CVS repository public
+[x] Write a build script
+[x] Write a coding style guide
+[x] Add a license
+[x] Add support and issue reporting guide
+[x] Add table of contents to website
+
+Phase 2: Building a foundation
+
+[x] Implement an array
+[x] Implement a logging facility
+[x] Implement a hash map
+[x] Combine library code files
+[x] Implement configuration file parsing using hash map
+[x] Base64 encoding/decoding with padded/unpadded support
+[x] Write a release script
+[x] UTF-8 encoder
+[x] Implement a JSON library using the hash map and array
+	[x] Basic encoding from HashMap/Array/strings, etc.
+	[x] Basic decoding to HashMap/Array/strings, etc.
+	[x] Proper string encoding
+	[x] Proper string decoding
+	[x] Canonical JSON
+		[x] Keys are sorted lexiconographically
+		[x] Floats are not allowed (ignore any float values)
+		[x] Encode as UTF-8 instead of using \u escapes
+		[x] Decode encoded strings to UTF-8
+[x] Write a function that gets the current Unix timestamp in milliseconds
+[ ] Figure out how to write unit tests for array/hashmap/etc
+[x] Parse the Telodendria config file
+[x] Add license header to all files
+[ ] Add documentation for all public APIs
+[x] Implement a simple HTTP server
+	[ ] Implement param parser
+	[x] URL encoder/decoder
+[ ] Design server architecture
+	[ ] Route requests
+	[x] Handle requests
+	[ ] Data abstraction layer
+	[x] Error generation
+
+Phase 3: Welcome to Matrix
+
+[ ] client-Server API
+	[x] Error responses
+	[x] CORS headers
+	[ ] /_matrix/client/versions
+	[ ] Well-known URIs
+	[ ] Client authentication
+	[ ] Capabilities negotiation
+[ ] Server-Server API
+[ ] Application Service API
+[ ] Identity Service API
+[ ] Push Gateway API
+[ ] Room Versions
+
+Phase 4:
+
+[ ] Create an OpenBSD package and get it submitted to ports
+[ ] Create a command line tool to manage Telodendria
+	[ ] Configuration file generation
+	[ ] User management
+	[ ] Room management
+[ ] Migrate from Synapse or Dendrite, whichever is more mainstream by the time we get here
+
+Documentation
+
+[x] Update rationale section
+[x] Update project description (no longer a CGI binary)
+[x] Clean up dark mode colors (tables, background, code snippets)
+[x] Add logo (possibly center title?)
+[x] Update code style to not include indent or line rules, but use indent(1) instead
+[x] fix typo "Subitting Patches" in Table of Contents
+[x] Make a note in Getting the Code that the password for the anoncvs account is just anoncvs
+[x] Add contributors list
+[x] Add list of make.sh recipes and what they do
+[ ] Improve Google Lighthouse score on website
+	[ ] Image elements do not have explicit width and height
+	[ ] Background and foreground colors do not have sufficient contrast ratio (msg-error div)
+	[x] Lists do not contain only <li> elements
+[ ] Add other message divs for notes and warnings
+
+[x] Convert documentation to man pages
+	[ ] Clean up dark mode in man page CSS (links)
+	[ ] Synopsis table should not be styled
