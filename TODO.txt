@@ -93,5 +93,5 @@ Documentation
 [ ] Add other message divs for notes and warnings
 
 [x] Convert documentation to man pages
-	[ ] Clean up dark mode in man page CSS (links)
-	[ ] Synopsis table should not be styled
+	[x] Clean up dark mode in man page CSS (links)
+	[x] Synopsis table should not be styled

@@ -211,7 +211,7 @@ h2.Ss {
 }
 
 .Xr {
-	color: black;
+	color: var(--color-text);
 	font-weight: bold;
 }
 
@@ -392,6 +392,7 @@ h2.Ss {
 table.Nm,
 table.Nm td {
 	border: none;
+	width: fit-content;
 }
 
 code.Nm {

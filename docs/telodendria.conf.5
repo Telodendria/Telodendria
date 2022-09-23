@@ -1,4 +1,4 @@
-.Dd $Mdocdate: September 22 2022 $
+.Dd $Mdocdate: September 23 2022 $
 .Dt TELODENDRIA.CONF 5
 .Os Telodendria Project
 .Sh NAME
@@ -25,8 +25,10 @@ Macro names must start with a letter, digit, or underscore, and may
 contain only those characters. Macros are not expanded inside quotes.
 .sp
 For example:
-.D1 macro1 = "value1";
-.D1 directive $macro1;
+.Bd -literal -offset indent
+macro1 = "value1";
+directive $macro1;
+.Ed
 .Sh GLOBAL OPTIONS
 Here are the settings that can be set globally:
 .Bl -tag -width Ds
