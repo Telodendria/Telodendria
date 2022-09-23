@@ -105,7 +105,6 @@ table {
     width: 100%;
     border-collapse: separate;
 	border-spacing: 0px;
-	border-radius: var(--border-radius);
 }
 
 td, th {
@@ -390,8 +389,11 @@ h2.Ss {
 
 /* Semantic markup for command line utilities. */
 
-table.Nm {
+table.Nm,
+table.Nm td {
+	border: none;
 }
+
 code.Nm {
     font-style: normal;
     font-weight: bold;
