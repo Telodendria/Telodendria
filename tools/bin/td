@@ -169,7 +169,7 @@ recipe_site() {
 
 	find docs/ -name '*.[1-9]' | while IFS= read -r man; do
 		html=$(basename "$man")
-		mandoc -Thtml "$man" > "$TELODENDRIA_PUB/$html.html"
+		mandoc -Thtml -O style=style.css "$man" > "$TELODENDRIA_PUB/$html.html"
 		echo "$man -> $TELODENDRIA_PUB/$html.html"
 	done
 }

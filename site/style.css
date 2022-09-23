@@ -59,7 +59,6 @@ body {
 code {
 	background-color: var(--color-snippet);
 	border-radius: calc(var(--border-radius) / 2);
-	font-size: 1.3em;
 }
 
 kbd {
@@ -142,3 +141,465 @@ tr:last-of-type td:last-of-type {
 	width: 50vw;
 	max-width: 400px;
 }
+
+/****************************************
+ * MAN PAGE STYLES
+ ***************************************/
+
+dl {
+    margin-top: 0em;
+    margin-bottom: 0em;
+}
+dt {
+    margin-top: 1em;
+}
+pre {
+    font-family: inherit;
+}
+
+.permalink {
+    border-bottom: thin dotted;
+    color: inherit;
+    font: inherit;
+    text-decoration: inherit;
+}
+* {
+    clear: both;
+}
+
+/* Header and footer lines. */
+
+table.head {
+    width: 100%;
+    margin-bottom: 1em;
+    font-size: smaller;
+}
+
+td.head-vol {
+    text-align: center;
+}
+
+td.head-rtitle {
+    text-align: right;
+}
+
+.head td, .foot td {
+	border: none;
+}
+
+table.foot {
+    width: 100%;
+    margin-top: 1em;
+    font-size: smaller;
+	border: none;
+}
+td.foot-os {
+    text-align: right;
+}
+
+/* Sections and paragraphs. */
+
+.manual-text {
+    margin-left: 3.8em;
+}
+.Nd {
+}
+section.Sh {
+}
+h1.Sh {
+	text-align: left;
+	border-bottom: none;
+    margin-top: 1.2em;
+    margin-bottom: 0.6em;
+    margin-left: -3.2em;
+}
+section.Ss {
+}
+h2.Ss {
+    margin-top: 1.2em;
+    margin-bottom: 0.6em;
+    margin-left: -1.2em;
+    font-size: 105%;
+}
+.Pp {
+    margin: 0.6em 0em;
+}
+.Sx {
+}
+
+.Xr {
+	color: black;
+	font-weight: bold;
+}
+
+.Xr:hover {
+	text-decoration: none;
+}
+
+/* Displays and lists. */
+
+.Bd {
+}
+.Bd-indent {
+    margin-left: 3.8em;
+}
+
+.Bl-bullet {
+    list-style-type: disc;
+    padding-left: 1em;
+}
+.Bl-bullet > li {
+}
+.Bl-dash {
+    list-style-type: none;
+    padding-left: 0em;
+}
+.Bl-dash > li:before {
+    content: "\2014  ";
+}
+.Bl-item {
+    list-style-type: none;
+    padding-left: 0em;
+}
+.Bl-item > li {
+}
+.Bl-compact > li {
+    margin-top: 0em;
+}
+
+.Bl-enum {
+    padding-left: 2em;
+}
+.Bl-enum > li {
+}
+.Bl-compact > li {
+    margin-top: 0em;
+}
+
+.Bl-diag {
+}
+.Bl-diag > dt {
+    font-style: normal;
+    font-weight: bold;
+}
+.Bl-diag > dd {
+    margin-left: 0em;
+}
+.Bl-hang {
+}
+.Bl-hang > dt {
+}
+.Bl-hang > dd {
+    margin-left: 5.5em;
+}
+.Bl-inset {
+}
+.Bl-inset > dt {
+}
+.Bl-inset > dd {
+    margin-left: 0em;
+}
+.Bl-ohang {
+}
+.Bl-ohang > dt {
+}
+.Bl-ohang > dd {
+    margin-left: 0em;
+}
+.Bl-tag {
+    margin-top: 0.6em;
+    margin-left: 5.5em;
+}
+.Bl-tag > dt {
+    float: left;
+    margin-top: 0em;
+    margin-left: -5.5em;
+    padding-right: 0.5em;
+    vertical-align: top;
+}
+.Bl-tag > dd {
+    clear: right;
+    column-count: 1; /* Force block formatting context. */
+    width: 100%;
+    margin-top: 0em;
+    margin-left: 0em;
+    margin-bottom: 0.6em;
+    vertical-align: top;
+}
+.Bl-compact {
+    margin-top: 0em;
+}
+.Bl-compact > dd {
+    margin-bottom: 0em;
+}
+.Bl-compact > dt {
+    margin-top: 0em;
+}
+
+.Bl-column {
+}
+.Bl-column > tbody > tr {
+}
+.Bl-column > tbody > tr > td {
+    margin-top: 1em;
+}
+.Bl-compact > tbody > tr > td {
+    margin-top: 0em;
+}
+
+.Rs {
+    font-style: normal;
+    font-weight: normal;
+}
+.RsA {
+}
+.RsB {
+    font-style: italic;
+    font-weight: normal;
+}
+.RsC {
+}
+.RsD {
+}
+.RsI {
+    font-style: italic;
+    font-weight: normal;
+}
+.RsJ {
+    font-style: italic;
+    font-weight: normal;
+}
+.RsN {
+}
+.RsO {
+}
+.RsP {
+}
+.RsQ {
+}
+.RsR {
+}
+.RsT {
+    text-decoration: underline;
+}
+.RsU {
+}
+.RsV {
+}
+
+.eqn {
+}
+.tbl td {
+    vertical-align: middle;
+}
+
+.HP {
+    margin-left: 3.8em;
+    text-indent: -3.8em;
+}
+
+/* Semantic markup for command line utilities. */
+
+table.Nm {
+}
+code.Nm {
+    font-style: normal;
+    font-weight: bold;
+    font-family: inherit;
+}
+.Fl {
+    font-style: normal;
+    font-weight: bold;
+    font-family: inherit;
+}
+.Cm {
+    font-style: normal;
+    font-weight: bold;
+    font-family: inherit;
+}
+.Ar {
+    font-style: italic;
+    font-weight: normal;
+}
+.Op {
+    display: inline flow;
+}
+.Ic {
+    font-style: normal;
+    font-weight: bold;
+    font-family: inherit;
+}
+.Ev {
+    font-style: normal;
+    font-weight: normal;
+    font-family: monospace;
+}
+.Pa {
+    font-style: italic;
+    font-weight: normal;
+}
+
+/* Semantic markup for function libraries. */
+
+.Lb {
+}
+code.In {
+    font-style: normal;
+    font-weight: bold;
+    font-family: inherit;
+}
+a.In {
+}
+.Fd {
+    font-style: normal;
+    font-weight: bold;
+    font-family: inherit;
+}
+.Ft {
+    font-style: italic;
+    font-weight: normal;
+}
+.Fn {
+    font-style: normal;
+    font-weight: bold;
+    font-family: inherit;
+}
+.Fa {
+    font-style: italic;
+    font-weight: normal;
+}
+.Vt {
+    font-style: italic;
+    font-weight: normal;
+}
+.Va {
+    font-style: italic;
+    font-weight: normal;
+}
+.Dv {
+    font-style: normal;
+    font-weight: normal;
+    font-family: monospace;
+}
+.Er {
+    font-style: normal;
+    font-weight: normal;
+    font-family: monospace;
+}
+
+/* Various semantic markup. */
+
+.An {
+}
+.Lk {
+}
+.Mt {
+}
+.Cd {
+    font-style: normal;
+    font-weight: bold;
+    font-family: inherit;
+}
+.Ad {
+    font-style: italic;
+    font-weight: normal;
+}
+.Ms {
+    font-style: normal;
+    font-weight: bold;
+}
+.St {
+}
+.Ux {
+}
+
+/* Physical markup. */
+
+.Bf {
+    display: inline flow;
+}
+.No {
+    font-style: normal;
+    font-weight: normal;
+}
+.Em {
+    font-style: italic;
+    font-weight: normal;
+}
+.Sy {
+    font-style: normal;
+    font-weight: bold;
+}
+.Li {
+    font-style: normal;
+    font-weight: normal;
+    font-family: monospace;
+}
+
+/* Tooltip support. */
+
+h1.Sh,
+h2.Ss {
+    position: relative;
+}
+.An,
+.Ar,
+.Cd,
+.Cm,
+.Dv,
+.Em,
+.Er,
+.Ev,
+.Fa,
+.Fd,
+.Fl,
+.Fn,
+.Ft,
+.Ic,
+code.In,
+.Lb,
+.Lk,
+.Ms,
+.Mt,
+.Nd,
+code.Nm,
+.Pa,
+.Rs,
+.St,
+.Sx,
+.Sy,
+.Va,
+.Vt,
+.Xr {
+    display: inline flow;
+    position: relative;
+}
+
+/* Overrides to avoid excessive margins on small devices. */
+
+@media (max-width: 37.5em) {
+    .manual-text {
+        margin-left: 0.5em;
+    }
+    h1.Sh,
+    h2.Ss {
+        margin-left: 0em;
+    }
+    .Bd-indent {
+        margin-left: 2em;
+    }
+    .Bl-hang > dd {
+        margin-left: 2em;
+    }
+    .Bl-tag {
+        margin-left: 2em;
+    }
+    .Bl-tag > dt {
+        margin-left: -2em;
+    }
+    .HP {
+        margin-left: 2em;
+        text-indent: -2em;
+    }
+}
+
