@@ -43,9 +43,14 @@ MatrixHttpHandler(HttpServerContext * context, void *argp)
 
     HashMap *response;
 
+	char *requestPath;
+	Array *pathParts;
+
+	requestPath = HttpRequestPath(context);
+
     Log(lc, LOG_MESSAGE, "%s %s",
         HttpRequestMethodToString(HttpRequestMethodGet(context)),
-        HttpRequestPath(context));
+        requestPath);
 
     LogConfigIndent(lc);
     Log(lc, LOG_DEBUG, "Request headers:");
@@ -78,6 +83,10 @@ MatrixHttpHandler(HttpServerContext * context, void *argp)
 
         goto finish;
     }
+
+	pathParts = ArrayCreate();
+
+
 
     /* TODO: Route requests here */
 
