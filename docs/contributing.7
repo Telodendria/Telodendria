@@ -7,4 +7,246 @@
 .Sh DESCRIPTION
 Telodendria is an open source project. As such, it welcomes
 contributions. There are many ways you can contribute, and any
-way you can is greatly appreciated.
+way you can is greatly appreciated. This page contains some of
+the ways you can help out.
+.Sh REPORTING ISSUES
+Please reach out to the Matrix rooms mentioned at the top of
+.Xr telodendria 7 .
+All issue tracking takes place in those rooms. Start by reaching
+out to the general room, and if you think there's a legitimate
+problem with Telodendria itself, then stick the issue in the
+issues room, where it can be discussed further. Issues usually
+remain in the Matrix rooms, but severe enough issues may be put
+in a
+.Pa TODO
+file in the
+.Xr cvs 1
+repository so that they don't get lost.
+.Sh DEVELOPING
+The primary language used to write Telodendria code is ANSI C.
+Other languages you'll find in the Telodendria repository include
+shell scripts, 
+.Xr mdoc 7 ,
+and a little bit of HTML and CSS. If you have any experience with
+any of these languages, your contributions are valuable! Please follow
+the guidelines on this page to ensure the contribution workflow goes
+as smoothly as possible.
+.Ss Getting the Code
+If you'd like to hack on Telodendria, you'll need the following tools
+in addition to a C compiler and POSIX shell:
+.Bl -tag
+.It Xr cvs 1
+For checking out and updating your local copy of the source code.
+.It Xr indent 1
+For formatting your code before generating patches.
+.It Xr patch 1
+For applying patches to your local copy of the source code.
+.El
+.sp
+All of these tools are built into OpenBSD. While you don't have to
+use OpenBSD to develop Telodendria, it may make the process a bit
+easier. In fact, these tools where chosen precisely because they
+were built into my operating system of choice.
+.sp
+You can download an official release tarball from the website if
+you would really like, but the preferred way to get the source
+code for development is to check it out from CVS. This makes generating
+patches a lot easier.
+.Bd -literal -offset indent
+$ cvs -d anoncvs@bancino.net:/cvs checkout -P Telodendria
+$ cd Telodendria
+.Ed
+.sp
+If you already checked out the code previously, make sure you update
+your local copy before you start developing:
+.Bd -literal -offset indent
+$ cvs -q update -dP
+.Ed
+.sp
+You should now have the latest source code. Follow the
+.Sx CODE STYLE
+as you make your changes. If the
+.Xr cvs 1
+command fails with a "Connection refused" error message, try setting
+the
+.Ev CVS_RSH
+environment variable to "ssh", like this:
+.Bd -literal -offset indent
+$ export CVS_RSH=ssh
+.Ed
+.sp
+Then run the checkout command again. Some versions of CVS on some
+systems don't use SSH to checkout by default, so if yours doesn't,
+you might want to put the above line into your shell init script.
+.Ss Submitting Patches
+Telodendria aims at remaining as minimal as possible. This doesn't just
+mean minimal code, it also means a minimal development process, which is
+why Telodendria doesn't use GitHub, GitLab, or even SourceHut. Instead,
+the contribution workflow operates on submitting patch files to a public
+Matrix room, sort of like the OpenBSD project operates on patch files
+sent to a public mailing list.
+.sp
+If you're not used to manually creating and submitting patches instead of
+just opening a "pull request," you should be pleased to hear that submitting
+patches is fairly easy to do if you've got the CVS sources checked out. In
+fact, I find it easier than having to make a GitHub account, forking a
+project's repository, and then making a pull request for it. Once you have
+made your changes in your local copy of the code, and you've configured your
+environment properly as noted in the manual for
+.Xr td 8 ,
+just run the patch recipe:
+.Bd -literal -offset indent
+$ td patch
+.Ed
+.sp
+This will automatically generate a patch file for all your changes, and then
+open it in your preferred editor. You can also generate a patch file for only
+certain files and directories. To do that, set
+.Ev PATCHSET ,
+like this:
+.Bd -literal -offset indent
+# Only write a patch for README.txt and the files in docs/
+$ PATCHSET="README.txt docs/" td patch
+.Ed
+.sp
+As you'll notice, the top of the patch file should have some email-style
+headers that look like this:
+.Bd -literal -offset indent
+From: Jordan Bancino <@jordan:bancino.net>
+Date: Fri Jul 29 03:21:21 PM EDT 2022
+Subject: Document Patch Procedure
+.Ed
+.sp
+As much information should be filled out for you, such as the date. An
+attempt to fill out the From header was also made by
+.Xr td 8 ,
+but the information there can be modifed as necessary. Consult the manual
+for
+.Xr td 8
+for more details. The Subject should very briefly describe what the patch
+is about.
+.sp
+You'll also notice these lines in the patch:
+.Bd -literal -offset indent
+[ ] I have read the Telodendria Project development certificate of
+    origin, and certify that I have permission to submit this patch
+    under the conditions specified in it.
+.Ed
+.sp
+This is a checkbox that tells me whether or not you actually have the
+rights to submit your patch, and that once you submit your patch, your
+code is bound by the Telodendria project license, which you can and
+should view in
+.Xr telodendria 7 .
+The full text of the developer certificate of origin is as follows:
+.Bl -enum
+.It
+The contribution was created in whole or in part by me, and I have the right
+to submit it under the open source licenses of the Telodendria project; or
+.It
+The contribution is based upon a previous work that, to the best of my knowledge,
+is covered under an appropriate open source license and I have the right under
+that license to submit that work with modifications, whether created in whole
+or in part by me, under the Telodendria project license; or
+.It
+The contribution whas provided directly to me by some other person who certified
+(1), (2), or (3), and I have not modifed it.
+.It
+I understand and agree that this project and the contribution are made public
+and that a record of the contribution\(emincluding all personal information
+I submit with it\(emis maintained indefinitely and may be redistributed
+consistent with this project or the open source licenses involved.
+.El
+.sp
+If you agree to the above, fill in the square brackets with an 'x', and then after
+the headers, but before the checkbox, write a more thorough description of the
+patch and why it was created. Then, send the resulting patch file to the public
+Matrix room, as noted in
+.Xr telodendria 7 ,
+so it can be discussed and reviewed by the community.
+.sp
+Try to keep your patches on topic\(emmake one patch file per feature or bug fix
+being implemented. It is okay if your patches depend on previous patches, just
+indicate that in the patch description. Note that it may take a while for
+patches to be committed, and some patches may not be comitted at all. In either
+case, all sent patches are queued from the Matrix room into the public patch
+directory, so they can be referenced easier in the future. If you want to
+reference a submitted patch in a Matrix message, email, or other digital medium,
+it might be a good idea to link to it in the public patch directory.
+.sp
+The public patch directory works as follows: when you send your patch to the
+Matrix room, it is downloaded by Telodendria Bot and placed in the
+.Pa ingress/
+directory, named as the message ID. Then, it is assigned a patch ID and
+copied to the
+.Pa p/
+directory as just "%d.patch", where "%d" is obviously the patch ID. This is
+a permanent link that will always reference your patch. Then, your patch will
+be symlinked into the 
+.Pa queue/
+directory. I have a script that automatically ingresses patches and queues them
+for me, and I use this to review patches. If your patch is accepted, the queue
+symlink will be moved to
+.Pa accepted/
+and the submitted patch will be committed to the official CVS repository.
+If your patch is rejected for some reason, its symlink will be moved to the
+.Pa rejected/
+directory. Regardless of the state of your patch, it will always remain
+permalinked in the
+.Pa p/
+directory, and when it is accepted or rejected, Telodendria Bot will send a
+message to the Matrix room.
+.sp
+You're always welcome to inquire about rejected patches, and request that they
+be reviewed again, or you can use them as a starting point for future patches.
+.sp
+The public patch directory is located at
+.Lk https://telodendria.io/patches/
+.Sh CODE STYLE
+In general, these are the conventions used by the code base. This guide
+may be slightly outdated or subject to change, but it should be a good
+start. The source code itself is always the absolute source of truth, so
+as long as you make your code look like the code surrounding it, you should
+be fine.
+.Bl -bullet
+.It
+All function, enumeration, structure, and header names are CamelCase. This
+is preferred to snake_case because it is more compact.
+.It
+All variable names are lowerCamelCase. This is preferred to snake_case
+because it is more compact.
+.It
+enumerations and structures are always typedef-ed to their same name. The
+typedef should occur in the public API header, and the actual declaration
+should live in the implementation file.
+.It
+A feature of the code base lives in a single C source file that has a
+matching header. The header file should only export public symbols;
+everything else in the C source should be static.
+.It
+Except where absolutely necessary, global variables are forbidden to
+prevent problems with threads and whatnot. Every variable a function
+needs should be passed to it either through a structure, or as a
+separate argument.
+.It
+Anywhere curly braces are optional, there still must be curly braces. This
+makes it easier to add on to the code later, and just makes things a bit
+less ambiguous.
+.El
+.sp
+As far as actually formatting the code goes, such as where to put brackets,
+and whether or not to use tabs or spaces, use
+.Xr indent 1
+to take care of all of that. The root of the CVS repository has a
+.Pa .indent.pro
+that should automatically be loaded by
+.Xr indent 1
+to set the correct rules. If you don't have a working
+.Xr indent 1 ,
+then just indicate in your patch that I should run my
+.Xr indent 1
+on the code after applying it. Although in reality, I'll likely
+run my own
+.Xr indent 1
+on the code anyway, just to make sure the spacing is consistent, if nothing
+else.
