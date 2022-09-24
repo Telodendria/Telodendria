@@ -52,7 +52,8 @@ TelodendriaSignalHandler(int signalNo)
 typedef enum ArgFlag
 {
     ARG_VERSION = (1 << 0),
-    ARG_USAGE = (1 << 1)
+    ARG_CONFIGTEST = (1 << 1),
+    ARG_VERBOSE = (1 << 2)
 } ArgFlag;
 
 static void
@@ -77,15 +78,6 @@ TelodendriaPrintHeader(LogConfig * lc)
     Log(lc, LOG_MESSAGE, "");
 }
 
-static void
-TelodendriaPrintUsage(LogConfig * lc)
-{
-    Log(lc, LOG_MESSAGE, "Usage:");
-    Log(lc, LOG_MESSAGE, "  -c <file>    Configuration file ('-' for stdin).");
-    Log(lc, LOG_MESSAGE, "  -V           Print the header, then exit.");
-    Log(lc, LOG_MESSAGE, "  -h           Print this usage, then exit.");
-}
-
 int
 main(int argc, char **argv)
 {
@@ -95,7 +87,7 @@ main(int argc, char **argv)
     /* Arg parsing */
     int opt;
     int flags = 0;
-    char *configArg = NULL;
+    char *configArg = "/etc/telodendria.conf";
 
     /* Config file */
     FILE *configFile = NULL;
@@ -135,18 +127,25 @@ main(int argc, char **argv)
     }
 #endif
 
-    while ((opt = getopt(argc, argv, "c:Vh")) != -1)
+    while ((opt = getopt(argc, argv, "f:Vvn")) != -1)
     {
         switch (opt)
         {
-            case 'c':
+            case 'f':
                 configArg = optarg;
                 break;
             case 'V':
                 flags |= ARG_VERSION;
                 break;
-            case 'h':
-                flags |= ARG_USAGE;
+            case 'v':
+                flags |= ARG_VERBOSE;
+                break;
+            case 'n':
+                flags |= ARG_CONFIGTEST;
+                break;
+            case '?':
+                exit = EXIT_FAILURE;
+                goto finish;
             default:
                 break;
         }
@@ -154,20 +153,6 @@ main(int argc, char **argv)
 
     if (flags & ARG_VERSION)
     {
-        goto finish;
-    }
-
-    if (flags & ARG_USAGE)
-    {
-        TelodendriaPrintUsage(lc);
-        goto finish;
-    }
-
-    if (!configArg)
-    {
-        Log(lc, LOG_ERROR, "No configuration file specified.");
-        TelodendriaPrintUsage(lc);
-        exit = EXIT_FAILURE;
         goto finish;
     }
 
@@ -219,6 +204,12 @@ main(int argc, char **argv)
 
     ConfigFree(config);
 
+    if (flags & ARG_CONFIGTEST)
+    {
+        Log(lc, LOG_MESSAGE, "Configuration is OK.");
+        goto finish;
+    }
+
 #ifdef __OpenBSD__
     if (unveil(tConfig->chroot, "rwc") != 0)
     {
@@ -238,7 +229,7 @@ main(int argc, char **argv)
         LogConfigFlagClear(lc, LOG_FLAG_COLOR);
     }
 
-    LogConfigLevelSet(lc, tConfig->logLevel);
+    LogConfigLevelSet(lc, flags & ARG_VERBOSE ? LOG_DEBUG : tConfig->logLevel);
 
     if (tConfig->logOut)
     {

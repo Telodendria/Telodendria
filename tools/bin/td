@@ -100,7 +100,7 @@ recipe_build() {
 
 recipe_run() {
 	if [ -f "build/$PROG" ]; then
-		"build/$PROG" -c contrib/development.conf
+		"build/$PROG" -f contrib/development.conf
 	else
 		echo "build/$PROG does not exist; build it first."
 	fi

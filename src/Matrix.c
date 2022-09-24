@@ -43,10 +43,10 @@ MatrixHttpHandler(HttpServerContext * context, void *argp)
 
     HashMap *response;
 
-	char *requestPath;
-	Array *pathParts;
+    char *requestPath;
+    Array *pathParts;
 
-	requestPath = HttpRequestPath(context);
+    requestPath = HttpRequestPath(context);
 
     Log(lc, LOG_MESSAGE, "%s %s",
         HttpRequestMethodToString(HttpRequestMethodGet(context)),
@@ -84,7 +84,7 @@ MatrixHttpHandler(HttpServerContext * context, void *argp)
         goto finish;
     }
 
-	pathParts = ArrayCreate();
+    pathParts = ArrayCreate();
 
 
 
