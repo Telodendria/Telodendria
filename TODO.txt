@@ -50,6 +50,7 @@ Phase 2: Building a foundation
 	[x] Handle requests
 	[ ] Data abstraction layer
 	[x] Error generation
+[ ] Properly implement the command line options as stated in telodendria(8)
 
 Phase 3: Welcome to Matrix
 
