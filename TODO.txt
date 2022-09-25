@@ -96,3 +96,4 @@ Documentation
 [x] Convert documentation to man pages
 	[x] Clean up dark mode in man page CSS (links)
 	[x] Synopsis table should not be styled
+	[ ] Internal API docs
