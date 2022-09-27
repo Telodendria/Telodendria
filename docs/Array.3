@@ -1,4 +1,4 @@
-.Dd $Mdocdate: September 25 2022 $
+.Dd $Mdocdate: September 27 2022 $
 .Dt ARRAY 3
 .Os Telodendria Project
 .Sh NAME
@@ -87,7 +87,9 @@ the opposite: the second element should appear after the first in the array.
 is used to get the element at the specified index.
 .Sh RETURN VALUES
 .Fn ArrayCreate
-returns a pointer on the heap to a newly allocated array structure.
+returns a pointer on the heap to a newly allocated array structure, or
+.Dv NULL
+if the allocation fails.
 .Pp
 .Fn ArrayGet
 and
