@@ -24,6 +24,9 @@
 
 #include <Matrix.h>
 
+#include <string.h>
+#include <stdlib.h>
+
 #include <HttpServer.h>
 #include <Json.h>
 #include <Util.h>
@@ -40,11 +43,13 @@ MatrixHttpHandler(HttpServerContext * context, void *argp)
 
     char *key;
     char *val;
+    size_t i;
 
     HashMap *response;
 
     char *requestPath;
     Array *pathParts;
+    char *pathPart;
 
     requestPath = HttpRequestPath(context);
 
@@ -85,8 +90,14 @@ MatrixHttpHandler(HttpServerContext * context, void *argp)
     }
 
     pathParts = ArrayCreate();
+    key = requestPath;
 
+    while ((pathPart = strtok_r(key, "/", &key)))
+    {
+        char *decoded = HttpUrlDecode(pathPart);
 
+        ArrayAdd(pathParts, decoded);
+    }
 
     /* TODO: Route requests here */
 
@@ -96,6 +107,13 @@ MatrixHttpHandler(HttpServerContext * context, void *argp)
     response = MatrixErrorCreate(M_UNKNOWN);
     JsonEncode(response, stream);
     fprintf(stream, "\n");
+
+    for (i = 0; i < ArraySize(pathParts); i++)
+    {
+        free(ArrayGet(pathParts, i));
+    }
+
+    ArrayFree(pathParts);
 
     JsonFree(response);
 

@@ -339,20 +339,26 @@ HttpUrlDecode(char *str)
 
         if (c == '%')
         {
-            if (sscanf(str + 1, "%2X", (unsigned int *) &c) != 1)
+            unsigned int d;
+
+            str++;
+
+            if (sscanf(str, "%2X", &d) != 1)
             {
                 /* Decoding error */
                 free(decoded);
                 return NULL;
             }
-            str += 2;
 
-            if (!c)
+            if (!d)
             {
                 /* Null character given, don't put that in the string. */
-                str++;
                 continue;
             }
+
+            c = (char) d;
+
+            str++;
         }
 
         decoded[i] = c;
@@ -360,6 +366,8 @@ HttpUrlDecode(char *str)
 
         str++;
     }
+
+    decoded[i] = '\0';
 
     return decoded;
 }
