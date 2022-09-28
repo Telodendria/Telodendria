@@ -9,8 +9,8 @@
 	--color-table-border: #d0d7de;
 	--color-table-accent: #f6f8fa;
 
-	--color-error-bg: #ffdce0;
-	--color-error: #bd181e;
+	--color-error-bg: #f44336;
+	--color-error: white;
 }
 
 @media(prefers-color-scheme: dark) {
@@ -23,7 +23,8 @@
 		--color-table-border: #30363d;
 		--color-table-accent: #161b22;
 
-		--color-error-bg: #3f1e23;
+		--color-error-bg: #b71c1c;
+		--color-error: white;
 	}
 }
 
@@ -43,6 +44,12 @@ body {
 	color: var(--color-error);
 	border-radius: var(--border-radius);
 	padding: 20px;
+}
+
+.msg-error a {
+	color: var(--color-error);
+	font-weight: bold;
+	text-decoration: underline
 }
 
 .code {
