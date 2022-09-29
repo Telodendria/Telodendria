@@ -116,6 +116,45 @@ TelodendriaConfigParse(HashMap * config, LogConfig * lc)
     ASSERT_VALUES("server-name", 1);
     COPY_VALUE(tConfig->serverName, 0);
 
+    directive = (ConfigDirective *) HashMapGet(config, "base-url");
+    children = ConfigChildrenGet(directive);
+    value = ConfigValuesGet(directive);
+
+    if (directive)
+    {
+        ASSERT_NO_CHILDREN("base-url");
+        ASSERT_VALUES("base-url", 1);
+        COPY_VALUE(tConfig->baseUrl, 0);
+    }
+    else
+    {
+        Log(lc, LOG_WARNING, "Base URL not specified. Assuming it's 'https://%s'.", tConfig->serverName);
+        tConfig->baseUrl = malloc(strlen(tConfig->serverName) + 10);
+        if (!tConfig->baseUrl)
+        {
+            Log(lc, LOG_ERROR, "Error allocating memory for default config value 'base-url'.");
+            goto error;
+        }
+
+        sprintf(tConfig->baseUrl, "https://%s", tConfig->serverName);
+    }
+
+    directive = (ConfigDirective *) HashMapGet(config, "identity-server");
+    children = ConfigChildrenGet(directive);
+    value = ConfigValuesGet(directive);
+
+    if (directive)
+    {
+        ASSERT_NO_CHILDREN("identity-server");
+        ASSERT_VALUES("identity-server", 1);
+        COPY_VALUE(tConfig->identityServer, 0);
+    }
+    else
+    {
+        Log(lc, LOG_WARNING, "Identity server not specified. No identity server will be advertised.");
+        tConfig->identityServer = NULL;
+    }
+
     GET_DIRECTIVE("chroot");
     ASSERT_NO_CHILDREN("chroot");
     ASSERT_VALUES("chroot", 1);
@@ -138,7 +177,7 @@ TelodendriaConfigParse(HashMap * config, LogConfig * lc)
             Log(lc, LOG_ERROR,
                 "Wrong value count in directive 'id': got '%d', but expected 1 or 2.",
                 ArraySize(value));
-            break;
+            goto error;
     }
 
     GET_DIRECTIVE("data-dir");
@@ -348,6 +387,9 @@ TelodendriaConfigFree(TelodendriaConfig * tConfig)
     }
 
     free(tConfig->serverName);
+    free(tConfig->baseUrl);
+    free(tConfig->identityServer);
+
     free(tConfig->chroot);
     free(tConfig->uid);
     free(tConfig->gid);

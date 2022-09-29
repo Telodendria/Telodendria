@@ -31,6 +31,8 @@
 #include <Json.h>
 #include <Util.h>
 
+#include <Routes.h>
+
 void
 MatrixHttpHandler(HttpServerContext * context, void *argp)
 {
@@ -99,15 +101,39 @@ MatrixHttpHandler(HttpServerContext * context, void *argp)
         ArrayAdd(pathParts, decoded);
     }
 
-    /* TODO: Route requests here */
+    pathPart = MATRIX_PATH_POP(pathParts);
+
+    if (MATRIX_PATH_EQUALS(pathPart, ".well-known"))
+    {
+        response = RouteWellKnown(args, context, pathParts);
+    }
+    else if (MATRIX_PATH_EQUALS(pathPart, "_matrix"))
+    {
+        response = RouteMatrix(args, context, pathParts);
+    }
+    else
+    {
+        HttpResponseStatus(context, HTTP_NOT_FOUND);
+        response = MatrixErrorCreate(M_NOT_FOUND);
+    }
+
+    free(pathPart);
 
     HttpSendHeaders(context);
     stream = HttpStream(context);
 
-    response = MatrixErrorCreate(M_UNKNOWN);
+    if (!response)
+    {
+        Log(lc, LOG_WARNING, "A route handler returned NULL.");
+        HttpResponseStatus(context, HTTP_INTERNAL_SERVER_ERROR);
+        response = MatrixErrorCreate(M_UNKNOWN);
+    }
+
     JsonEncode(response, stream);
     fprintf(stream, "\n");
 
+    /* By this point, ArraySize(pathParts) should be 0, but just in
+     * case some elements remain, free them up now */
     for (i = 0; i < ArraySize(pathParts); i++)
     {
         free(ArrayGet(pathParts, i));

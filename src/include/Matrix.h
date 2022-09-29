@@ -28,6 +28,12 @@
 #include <Log.h>
 #include <HashMap.h>
 
+#include <TelodendriaConfig.h>
+
+#define MATRIX_PATH_POP(arr) ArrayDelete(arr, 0)
+
+#define MATRIX_PATH_EQUALS(pathPart, str) ((pathPart != NULL) && (strcmp(pathPart, str) == 0))
+
 typedef enum MatrixError
 {
     M_FORBIDDEN,
@@ -72,6 +78,7 @@ typedef enum MatrixError
 typedef struct MatrixHttpHandlerArgs
 {
     LogConfig *lc;
+    TelodendriaConfig *config;
 } MatrixHttpHandlerArgs;
 
 extern void

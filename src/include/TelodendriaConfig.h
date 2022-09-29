@@ -53,6 +53,9 @@ typedef enum TelodendriaConfigFlag
 typedef struct TelodendriaConfig
 {
     char *serverName;
+    char *baseUrl;
+    char *identityServer;
+
     char *chroot;
     char *uid;
     char *gid;

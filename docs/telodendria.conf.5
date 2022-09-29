@@ -1,4 +1,4 @@
-.Dd $Mdocdate: September 23 2022 $
+.Dd $Mdocdate: September 29 2022 $
 .Dt TELODENDRIA.CONF 5
 .Os Telodendria Project
 .Sh NAME
@@ -55,6 +55,29 @@ over.
 .Ar name
 should be a DNS name that can be publically resolved. This directive
 is required.
+.It Ic base-url Ar url
+Set the server's base URL.
+.Ar url
+should be a valid URL, complete with the protocol. It does not need to
+be the same as the server name; in fact, it is common for a subdomain of
+the server name to be the base URL for the Matrix homeserver.
+.Pp
+This URL is the URL at which Matrix clients will connect to the server,
+and is thus served as a part of the
+.Pa .well-known
+manifest.
+.Pp
+This directive is optional. If it is not specified, it is automatically
+deduced from the server name.
+.It Ic identity-server Ar url
+The identity server that clients should use to perform identity lookups.
+.Pp
+.Ar url
+follows the same rules as
+.Ic base-url .
+.Pp
+This directive is optional. If it is not specified, it is automatically
+set to be the same as the base URL.
 .It Ic chroot Ar directory
 Change the root directory to the specified directory as soon as possible.
 Note that all other paths and files specified in

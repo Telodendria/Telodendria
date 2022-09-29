@@ -55,11 +55,13 @@ Phase 2: Building a foundation
 
 Phase 3: Welcome to Matrix
 
-[ ] client-Server API
+[~] client-Server API
 	[x] Error responses
 	[x] CORS headers
-	[ ] /_matrix/client/versions
-	[ ] Well-known URIs
+	[x] /_matrix/client/versions
+	[x] Well-known URIs
+		[x] Make base-url optional in config
+		[x] Make identity-server optional in config
 	[ ] Client authentication
 	[ ] Capabilities negotiation
 [ ] Server-Server API
@@ -88,7 +90,7 @@ Documentation
 [x] Make a note in Getting the Code that the password for the anoncvs account is just anoncvs
 [x] Add contributors list
 [x] Add list of make.sh recipes and what they do
-[ ] Improve Google Lighthouse score on website
+[x] Improve Google Lighthouse score on website
 	[!] Image elements do not have explicit width and height
 	[x] Background and foreground colors do not have sufficient contrast ratio (msg-error div)
 	[x] Lists do not contain only <li> elements

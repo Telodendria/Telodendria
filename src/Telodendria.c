@@ -104,7 +104,7 @@ main(int argc, char **argv)
     /* Signal handling */
     struct sigaction sigAction;
 
-    MatrixHttpHandlerArgs *matrixArgs;
+    MatrixHttpHandlerArgs matrixArgs;
 
     lc = LogConfigCreate();
 
@@ -250,6 +250,8 @@ main(int argc, char **argv)
     LogConfigIndent(lc);
     Log(lc, LOG_DEBUG, "Listen On: %d", tConfig->listenPort);
     Log(lc, LOG_DEBUG, "Server Name: %s", tConfig->serverName);
+    Log(lc, LOG_DEBUG, "Base URL: %s", tConfig->baseUrl);
+    Log(lc, LOG_DEBUG, "Identity Server: %s", tConfig->identityServer);
     Log(lc, LOG_DEBUG, "Chroot: %s", tConfig->chroot);
     Log(lc, LOG_DEBUG, "Run As: %s:%s", tConfig->uid, tConfig->gid);
     Log(lc, LOG_DEBUG, "Data Directory: %s", tConfig->dataDir);
@@ -284,19 +286,13 @@ main(int argc, char **argv)
         Log(lc, LOG_DEBUG, "Found user/group information using getpwnam() and getgrnam().");
     }
 
-    matrixArgs = malloc(sizeof(MatrixHttpHandlerArgs));
-    if (!matrixArgs)
-    {
-        Log(lc, LOG_ERROR, "Unable to allocate memory for HTTP handler arguments.");
-        exit = EXIT_FAILURE;
-        goto finish;
-    }
-
-    matrixArgs->lc = lc;
+    /* Arguments to pass into the HTTP handler */
+    matrixArgs.lc = lc;
+    matrixArgs.config = tConfig;
 
     /* Bind the socket before possibly dropping permissions */
     httpServer = HttpServerCreate(tConfig->listenPort, tConfig->threads, tConfig->maxConnections,
-                                  MatrixHttpHandler, matrixArgs);
+                                  MatrixHttpHandler, &matrixArgs);
     if (!httpServer)
     {
         Log(lc, LOG_ERROR, "Unable to create HTTP server on port %d: %s",

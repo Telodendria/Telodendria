@@ -78,7 +78,7 @@ ArrayDelete(Array * array, size_t index)
     size_t i;
     void *element;
 
-    if (!array)
+    if (!array || array->size <= index)
     {
         return NULL;
     }
