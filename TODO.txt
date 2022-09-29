@@ -73,6 +73,7 @@ Phase 3: Welcome to Matrix
 Phase 4:
 
 [ ] Create an OpenBSD package and get it submitted to ports
+[ ] Add relayd examples to contrib/
 [ ] Create a command line tool to manage Telodendria
 	[ ] Configuration file generation
 	[ ] User management
@@ -100,3 +101,9 @@ Documentation
 	[x] Clean up dark mode in man page CSS (links)
 	[x] Synopsis table should not be styled
 	[ ] Internal API docs
+
+[ ] Add onboarding documentation
+	[ ] Building from source
+	[ ] Writing config file
+	[ ] Setting up chroot
+	[ ] Setting up relayd

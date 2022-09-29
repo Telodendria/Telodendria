@@ -1,4 +1,4 @@
-.Dd $Mdocdate: September 27 2022 $
+.Dd $Mdocdate: September 29 2022 $
 .Dt TELODENDRIA 7
 .Os Telodendria Project
 .Sh NAME
@@ -98,13 +98,13 @@ To implement the latest Matrix specification as fully and completely as possible
 All features defined by the specification should eventually be present in
 .Nm .
 .It
-To be a production-ready Matrix server capable of handling a lot of users.
+To be a production-ready Matrix server capable of working in constrained environments,
+such as embedded devices, cheap VPSs, or a peer-to-peer device.
 .Nm
-should have good performance in many diverse environments. It should scale up
-well for large instances, such as the
-.Pa matrix.org
-instance, and yet also be able to scale down to an embedded or peer-to-peer
-device.
+should also work on traditional setups as well, and be able to handle a decent
+amount of users. It should work well for personal Matrix homeservers that also
+host a few friends and/or family members.
+.Nm
 .It
 To be easier to get up and running, and yet also be more configurable than other
 Matrix homeserver implementations. The configuration file should be flexible,
