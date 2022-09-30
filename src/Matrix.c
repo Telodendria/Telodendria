@@ -45,7 +45,6 @@ MatrixHttpHandler(HttpServerContext * context, void *argp)
 
     char *key;
     char *val;
-    size_t i;
 
     HashMap *response;
 
@@ -132,15 +131,16 @@ MatrixHttpHandler(HttpServerContext * context, void *argp)
     JsonEncode(response, stream);
     fprintf(stream, "\n");
 
-    /* By this point, ArraySize(pathParts) should be 0, but just in
-     * case some elements remain, free them up now */
-    for (i = 0; i < ArraySize(pathParts); i++)
+    /*
+     * By this point, there should be no path parts remaining, but if
+     * there are, free them up now.
+     */
+    while ((pathPart = MATRIX_PATH_POP(pathParts)) != NULL)
     {
-        free(ArrayGet(pathParts, i));
+        free(pathPart);
     }
 
     ArrayFree(pathParts);
-
     JsonFree(response);
 
 finish:
