@@ -1,4 +1,4 @@
-.Dd $Mdocdate: September 29 2022 $
+.Dd $Mdocdate: September 30 2022 $
 .Dt TELODENDRIA 7
 .Os Telodendria Project
 .Sh NAME
@@ -98,6 +98,14 @@ To implement the latest Matrix specification as fully and completely as possible
 All features defined by the specification should eventually be present in
 .Nm .
 .It
+To be as privacy-friendly as possible.
+.Nm
+should not store any information it does not absolutely need to function as a
+Matrix homeserver. While
+.Nm
+strives to be feature-complete, it should not implement anything not explicitly
+defined in the Matrix specification.
+.It
 To be a production-ready Matrix server capable of working in constrained environments,
 such as embedded devices, cheap VPSs, or a peer-to-peer device.
 .Nm
@@ -172,8 +180,10 @@ of crossing the item off the list yourself.
 .Xr telodendria.conf 5 ,
 .Xr td 8
 .Sh STANDARDS
+The installed version of
 .Nm
-conforms to the Matrix Specification v1.3.
+conforms to the latest Matrix specification available at the time
+of its release.
 .Sh HISTORY
 At this time,
 .Nm
@@ -185,14 +195,15 @@ to see where things are currently at. When
 is mature enough to have a change log, it will go in this section.
 .Sh AUTHORS
 .Nm
-was started by
-.An Jordan Bancino Aq Mt @jordan:bancino.net .
+was started by Jordan Bancino <@jordan:bancino.net>.
 Contributions to the code, website, documentation, or other
 components of
 .Nm
 were made by the following people:
-.sp
-.An Jonah Evans Aq Mt @jonah:bancino.net
+.Bl -bullet
+.It
+Jonah Evans <@jonah:bancino.net>
+.El
 .Sh LICENSE
 All of the code and documentation for
 .Nm
