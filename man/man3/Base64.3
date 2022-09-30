@@ -1,0 +1,81 @@
+.Dd $Mdocdate: September 30 2022 $
+.Dt BASE64 3
+.Os Telodendria Project
+.Sh NAME
+.Nm Base64
+.Nd A simple base64 encoder/decoder with "unpadded base64" support.
+.Sh SYNOPSIS
+.In Base64.h
+.Ft size_t
+.Fn Base64EncodedSize "size_t"
+.Ft size_t
+.Fn Base64DecodedSize "const char *" "size_t"
+.Ft char *
+.Fn Base64Encode "const char *" "size_t"
+.Ft char *
+.Fn Base64Decode "const char *" "size_t"
+.Ft void
+.Fn Base64Unpad "char *" "size_t"
+.Ft int
+.Fn Base64Pad "char **" "size_t"
+.Sh DESCRIPTION
+This is an efficient yet simple base64 encoding and decoding
+library that supports regular base64, as well as the Matrix
+specification's extension to base64, called "unpadded base64."
+.Nm provides the ability to convert between the two, instead of
+just implementing "unpadded base64."
+.Pp
+.Fn Base64EncodedSize
+and
+.Fn Base64DecodedSize
+compute the amount of characters needed to store an encoded or
+decoded message, respectively. Both functions take the size of
+the message being encoded or decoded, but
+.Fn Base64DecodedSize
+also takes a pointer to an encoded string, because a few bytes of
+the string need to be read in order to compute the size.
+.Pp
+.Fn Base64Encode
+and
+.Fn Base64Decode
+do the actual work of encoding and decoding base64 data. They both
+take a string and its length.
+.Pp
+.Fn Base64Unpad
+and
+.Fn Base64Pad
+are used to implement Matrix unpadded base64.
+.Fn Base64Unpad
+takes a valid base64 string and strips off the trailing equal signs,
+as per the specification.
+.Fn Base64Pad
+does the opposite; it takes an unpadded base64 input string, and pads
+it with equal signs as necessary, so that it can be properly decoded
+with
+.Fn Base64Decode
+if necessary. However, the Matrix specification envisons unpadded base64
+as opaque; that is, once it's encoded, it never needs to be decoded.
+In practice, a homeserver might need to decode an unpadded base64 string.
+.Sh RETURN VALUES
+.Fn Base64EncodedSize
+and
+.Fn Base64DecodedSize
+simply return unsigned integers representing a number of bytes generated
+from a simple computation.
+.Pp
+.Fn Base64Encode
+and
+.Fn Base64Decode
+return pointers to new strings, allocated on the heap, or
+.Dv NULL
+if a heap allocation fails. These pointers must be
+.Xr free 3 -ed
+at some point when they are no longer needed.
+.Pp
+.Fn Base64Unpad
+modifies the passed string in-place. It thus has no return value, because
+it cannot fail. If the passed pointer is invalid, the behavior is undefined.
+.Fn Base64Pad
+returns a boolean value indicating whether the pad operation was successful.
+In practice, this function will only fail if a bigger string is necessary, but
+could not be automatically allocated on the heap.

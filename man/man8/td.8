@@ -1,0 +1,238 @@
+.Dd $Mdocdate: September 30 2022 $
+.Dt TD 8
+.Os Telodendria Project
+.Sh NAME
+.Nm td
+.Nd Telodendria build script
+.Sh SYNOPSIS
+.Nm
+.Op recipe
+.Sh DESCRIPTION
+Telodendria uses a custom build script called
+.Nm .
+The
+.Nm
+script is not only a build script, however. It does all kinds of
+cool things like format the source code, and generate patch files.
+.Nm
+is the only supported way to develop Telodendria.
+.sp
+I opted to write a custom build script instead of just writing a
+.Pa Makefile
+because I felt that there is really no way to make a truly portable
+.Pa Makefile
+that could do everything I wanted, with the flexibility I wanted. I
+was doing a lot of research on the differences between the GNU and BSD
+versions, and I felt it just wasn't worth trying to reconsile the two
+when I could write a small and relatively robust POSIX shell script that
+would run on both GNU and BSD systems without any problems. I also
+think that shell scripts are a lot easier to read than complex
+.Pa Makefiles.
+They're easier to follow because they're not so cryptic.
+.sp
+The
+.Nm
+script is fairly intuitive. It operates somewhat like
+.Xr make 1
+in that it has recipes that you specify on the command line. To start
+using it, just run the following command in the Telodendria source
+directory:
+.Bd -literal -offset indent
+$ . tools/env.sh
+.Ed
+.sp
+.Sy Note:
+You will have to run the above command every time you start a new
+terminal session, as nothing is persisted to your system. I believe in
+non-invasive, fully self-contained tooling, so it is up to you to hook the
+Telodendria tools into your environment as you see fit if you want them to
+persist.
+.sp
+If you're going to be submitting patches, you should also configure a
+.Pa .env
+file in the project directory root, which
+.Nm
+will include automatically for you. See
+.Em FILES
+and
+.Em ENVIRONMENT .
+.sp
+Telodendria is designed to be light enough that it can be built from source
+on just about any operating system. It only requires an ANSI C compiler and a
+standard POSIX environment. To build the Telodendria binary, run
+.Nm
+with no arguments, or with the
+.Pa build
+recipe. This will produce
+.Pa build/telodendria ,
+which you can then install to your system and run as a daemon.
+.sp
+A complete list of recipes is below. Note that you can run multiple recipes
+with a single invocation of
+.Nm ,
+but recipes are run unconditionally; that is, even if a recipe fails, all the
+following recipes are still executed.
+.Bl -tag
+.It build
+Build the source code and generate the output binary. This is the default recipe,
+which means it runs if no other recipes are specified. This recipe is incremental;
+it only rebuilds sources that have been modifed since the last build, making
+subsequent builds faster.
+.It run
+Run the build binary with the development configuration in the
+.Pa contrib/
+directory. This recipe is used for quick testing during development. It is
+.Sy not
+the recommended way to run Telodendria in a production environment; it should only
+be used for development.
+.It clean
+Remove the
+.Pa build/
+directory and any ephemeral files in the source tree, such as
+.Pa .orig
+files. The build recipe does not place anything outside of
+.Pa build/ ,
+so you can usually just delete that directory and get the same effect.
+.It format
+Make sure the source code copyright headers are up to date, and format the code
+using the system's
+.Xr indent 1 .
+This should be run before generating patch files, to ensure that the code follows
+the project conventions. Note that the provided
+.Pa .indent.pro
+assumes an OpenBSD indent, which may cause the GNU implementation to choke. In
+that case, don't send patch files with totally different formatting; just submit
+the patch as-is and they will get formatted before committing.
+.It test
+Run all of the unit tests and report the results. It is highly recommended to
+ensure that all the tests pass before submitting a patch, because patches that
+break the tests are likely to be rejected.
+.It site
+Deploy the Telodendria website by generating HTML files for the documentation,
+and copying them along with the front page to the specified web root. This is
+used to deploy the official website, but it could be used to deploy a local
+development site as necessary. See
+.Em ENVIRONMENT .
+.It release
+Generate a release tarball, checksum and sign it, and push it to the web root.
+See the relevant environment variables below.
+.It patch
+Generate a formatted patch file. The Telodendria project isn't super picky about
+how patches look as long as they apply cleanly, but this recipe generates patches
+in the format we like them, and is therefore recommended. It makes patches easy
+to read. This recipe will use your configured editor to open your formatted patch
+so you can review and edit it as necessary before sending it off.
+.It diff
+Generate a temporary preview patch that is opened in the system pager. This can
+be used for quickly quickly previewing your changes and the patch file you'll
+be creating.
+.El
+.sp
+.Sh ENVIRONMENT
+Any of the following environment variables are used in the build recipes.
+They can all be specified in your shell when invoking
+.Nm ,
+or they can be placed in a
+.Pa .env
+file. For most of these variables, if you would like to append or prepend
+to the default values, do so in the
+.Pa .env
+file, which is sourced after the defaults are set, allowing you to reference
+the default values in your new value.
+.Bl -tag
+.It Ev CC
+The C compiler to use. This defaults to
+.Pa cc,
+which is usually a symlink to your system's preferred compiler. If for some
+reason you want to use a diferent compiler, do so with this environment
+variable.
+.It Ev CFLAGS
+The compiler flags used to generate object files.
+.Nm
+comes with reasonable defaults that shouldn't need to be changed in most
+scenarios, but if you do need to change the compiler flags, you can do
+so with this environment variable. 
+.It Ev LDFLAGS
+The compiler flags used to link the object files to create an output
+binary.
+.Nm
+comes with reasonable defaults that shouldn't need to be changed in most
+scenarios, but if you need to change the linker flags, you do so with this
+environment variable.
+.It Ev PROG
+The name of the output binary. This defaults to
+.Pa build/telodendria.
+.It Ev DEFINES
+Global preprocessor definitions to append to
+.Ev CFLAGS.
+This is just kept separate to keep things organized.
+.It Ev INCLUDES
+Header directories to make available. This is appended to
+.Ev CFLAGS,
+it is just kept separate to keep things organized.
+.It Ev DEBUG
+If set to "1", append some debug flags to
+.Ev CFLAGS
+and whipe out any
+.Ev LDFLAGS
+that awould cause the output binary to be optimized in any way. This also
+depends "-debug" to
+.Ev PROG .
+.It Ev TELODENDRIA_VERSION
+This variable does make its way into the output binary, but it is primarily
+used for generating and publishing releases. This variable affects the
+.Sy release
+recipe.
+.It Ev TELODENDRIA_PUB
+The web root where the Telodendria website lives. This is where the site
+is pushed to, and where generated releases go.
+.It Ev PATCHSET
+This variable restricts the files that
+.Nm
+operates on when generating patches or diffs. If you only want to generate
+a diff or patch for a certain file, directory, or collection of files and
+directories, set this variable to those files and directories, separated
+by a space. You can mix files and directories as necessary.
+.It Ev MXID
+Your Matrix ID in standard format. This is used when generating patches,
+so that you can be assigned credit for your patches, as well as be contacted
+about your patches.
+.Nm
+will automatically deduce this from your system, but it will most
+likely get it wrong. Please make sure you are reachable at this ID.
+.It Ev DISPLAY_NAME
+The display name you want to appear on your patches. This should probably
+match your Matrix display name, although it doesn't necessarily have to.
+.Nm
+will deduce this from your system, and if you set it up properly, you may
+not even have to set this variable. If
+.Nm
+gets it wrong, this allows you to override your display name.
+.It Ev EDITOR
+Your preferred editor for writing patch file descriptions. This can be a
+GUI or terminal editor. If unset, this defaults to the system's
+.Xr vi 1
+editor.
+.It Ev PAGER
+Your preferred pager for previewing patches. If left unset, this defaults
+to
+.Xr less 1 .
+.Sh FILES
+.Bl -tag
+.It Pa .env
+An environment file that contains lines in the form of
+.Pa VARIABLE=value
+with environment variables to set in the
+.Nm
+script. See
+.Em ENVIRONMENT .
+Note that
+.Nm
+simply sources this file, which means that any shell code in it will be
+executed each time
+.Nm
+is invoked.
+.Sh EXIT STATUS
+.Sh HISTORY
+.Sh CAVEATS
+.Sh BUGS

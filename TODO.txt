@@ -75,7 +75,6 @@ Phase 4:
 [ ] Create an OpenBSD package and get it submitted to ports
 [ ] Add relayd examples to contrib/
 [ ] Create a command line tool to manage Telodendria
-	[ ] Configuration file generation
 	[ ] User management
 	[ ] Room management
 [ ] Migrate from Synapse or Dendrite, whichever is more mainstream by the time we get here
@@ -100,7 +99,24 @@ Documentation
 [x] Convert documentation to man pages
 	[x] Clean up dark mode in man page CSS (links)
 	[x] Synopsis table should not be styled
-	[ ] Internal API docs
+	[x] Make available on MANPATH in tools/env.sh
+	[~] Internal API docs
+		[x] Array
+		[x] Base64
+		[ ] CanonicalJson
+		[ ] Config
+		[ ] Constants
+		[ ] HashMap
+		[ ] Http
+		[ ] HttpServer
+		[ ] Json
+		[ ] Log
+		[ ] Matrix
+		[ ] NonPosix
+		[ ] Queue
+		[ ] Routes
+		[ ] TelodendriaConfig
+		[ ] Util
 
 [ ] Add onboarding documentation
 	[ ] Building from source

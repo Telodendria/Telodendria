@@ -1,0 +1,248 @@
+.Dd $Mdocdate: September 30 2022 $
+.Dt TELODENDRIA 7
+.Os Telodendria Project
+.Sh NAME
+.Nm Telodendria
+.Nd The terminal branches of an axon.
+.Sh DESCRIPTION
+.Nm
+is an open source Matrix homeserver written entirely from scratch in ANSI C.
+It is designed to be lightweight and simple, yet functional.
+.Pp
+.Sy Note:
+.Nm
+is under
+.Sy heavy
+development. Please see
+.Sx PROJECT STATUS .
+.Pp
+.Nm
+differentiates itself from the other Matrix homeserver
+implementations because it:
+.Bl -bullet
+.It
+Is written in C, a stable, low-level programming language with a
+long history, low build and runtime overhead, and wide compatibility.
+.It
+Is written with minimalism as a primary design goal. Whenever possible
+and practical, no third-party libraries are pulled into the source code.
+Everything
+.Nm
+needs is custom written. As a result,
+.Nm
+depends only on a standard C compiler and a POSIX C library to be built,
+both of which should come with any good Unix-style operating system already,
+which means you shouldn't have to install anything extra.
+.It
+Uses a flat-file directory structure to store data instead of a database.
+This has a number of advantages:
+.Bl -bullet
+.It
+It makes setup and maintenance much easier.
+.It
+It allows
+.Nm
+to run on systems with fewer resources.
+.El
+.It
+Is packaged as a single small, statically-linked and highly-optimized binary
+that can be run just about anywhere. It is designed to be extremely easy to
+set up and consume as few resources as possible.
+.It
+Is permissively licensed.
+.Nm
+is licensed under a modified MIT license, which imposes very few restrictions
+on what you can do with it.
+.El
+.Pp
+.Nm
+is on Matrix! Check out the official Matrix rooms:
+.Pp
+.TS
+box tab(;);
+l l.
+#telodendria:bancino.net;The public "space" room.
+#telodendria-releases:bancino.net;Get notified of new releases.
+#telodendria-general:bancino.net;General discussion and support.
+#telodendria-issues:bancino.net;Report bugs and issues.
+#telodendria-patches:bancino.net;Submit code patches to the project.
+.TE
+.Nm
+is designed to be fairly straightforward, but that doesn't mean there
+won't be hiccups along the way. If you're struggling to get
+.Nm
+up and running, you're more than welcome to reach out for support. Just
+hop into the appropriate Matrix rooms and talk to me!
+.Sh RATIONALE
+I want a lightweight Matrix homeserver designed specifically for OpenBSD,
+and other Unix-like operating systems. I want a homeserver that can be
+developed and compiled with built-in tools. I want it to function entirely
+on a base OS install without having to install any packages whatsoever. I've
+found that as far as these goals are concerned, the existing homeserver
+implementations fall short. This project aims to prove that Matrix homeservers
+can be lightweight and written in such a way that very few, if any, third-party
+libraries need to be pulled in.
+.Pp
+I also want to learn how Matrix works, and I want to understand the code I'm
+running on my server, which is why I'm writing every component from scratch,
+even the HTTP server and router.
+.Pp
+The advantage of using a flat-file database instead of a real database is that
+your data remains in a format that is incredibly easy to digest. Backups are
+incredibly easy as well\(emjust
+.Xr tar 1
+up the data directory and you're good to go.
+.Sh PROJECT GOALS
+The goals of this project are generally divided into user goals and developer
+goals, depending on who they impact the most. This isn't an exaustive list
+of the project's goals, but it is a list of things that I want to prioritize,
+because other server implementations lack them.
+.Pp
+The user goals are as follows:
+.Bl -bullet
+.It
+To implement the latest Matrix specification as fully and completely as possible.
+All features defined by the specification should eventually be present in
+.Nm .
+.It
+To be as privacy-friendly as possible.
+.Nm
+should not store any information it does not absolutely need to function as a
+Matrix homeserver. While
+.Nm
+strives to be feature-complete, it should not implement anything not explicitly
+defined in the Matrix specification.
+.It
+To be a production-ready Matrix server capable of working in constrained environments,
+such as embedded devices, cheap VPSs, or a peer-to-peer device.
+.Nm
+should also work on traditional setups as well, and be able to handle a decent
+amount of users. It should work well for personal Matrix homeservers that also
+host a few friends and/or family members.
+.It
+To be easier to get up and running, and yet also be more configurable than other
+Matrix homeserver implementations. The configuration file should be flexible,
+well-documented, and easy to understand and modify. An intuitive command-line
+tool for administrative tasks should also be available.
+.El
+.Pp
+The developer goals are as follows:
+.Bl -bullet
+.It
+To have as few build and runtime dependencies as possible. It should be possible
+to compile and run
+.Nm
+on any POSIX operating system right out of the box. 
+.Nm
+should be fully statically-linked, so it can run under a
+.Xr chroot 3 .
+Furthermore, it should be possible to read all the documentation offline, and
+without any overly complicated tools. You'll notice that this documentation is
+a collection of
+.Xr man 1
+pages, not HTML or Markdown, to remove the dependency on a browser or Markdown
+parser. Any Unix-like system has a manual page viewer, which makes the
+documentation more accessible, even on remote systems that have no graphical
+interface to read the documentation. This ensures that you can read the
+documentation for the installed version of
+.Nm
+without having to go online.
+.It
+To have a simple yet elegant workflow, and not depend on any large or complex
+development tools such as code forges. The entire development workflow should
+be able to be successfully and efficiently completed on a base OpenBSD install.
+Of course, you don't have to use OpenBSD for development, but the point is that
+the workflow should require fairly standardized and simple tools.
+.It
+To write clean, elegant, well-tested, and well-documented code. The goal is to build
+a Matrix homeserver from the ground up, not just because I don't like the way existing
+homeservers are implemented, but also because I want to learn how Matrix works,
+make it more accessible, and potentially teach others a little bit along the way.
+.It
+To foster a welcoming community. Many big communities such as Linux and OpenBSD
+have hostile leaders.
+.Nm
+shouldn't have a hostile leader. I want to be as understanding as I can, and talk
+through issues politely and in a civil manner. If I'm failing in this way, don't
+be afraid to call me out!
+.El
+.Sh PROJECT STATUS
+Telodendria is a very ambitious project. There's a lot that needs to happen yet
+before it is usable. At the moment, there's nothing here that even remotely resembles
+a Matrix homeserver. I'm still getting off the ground and building a foundation.
+.Pp
+But just because there's nothing here yet doesn't mean you should go away! I could
+always use help, so you are more than welcome to help out if you want things to go
+quicker. Please see the
+.Xr contributing 7
+page for details on how you can get involved. The CVS repository has a file called
+.Pa TODO.txt ,
+which contains a checklist of what has been done so far, and what's on the radar
+to be done. You can take a look at it once you've checked out the source code.
+If you'd like to help out, feel free to grab an item on the list that's not done
+yet and start getting patches written. When you're done, enjoy the satisfaction
+of crossing the item off the list yourself.
+.Sh SEE ALSO
+.Xr telodendria 8 ,
+.Xr telodendria.conf 5 ,
+.Xr td 8
+.Sh STANDARDS
+The installed version of
+.Nm
+conforms to the latest Matrix specification available at the time
+of its release.
+.Sh HISTORY
+At this time,
+.Nm
+does not have any tagged releases because it is not yet functional
+as a Matrix homeserver. Please checkout out
+.Sx PROJECT STATUS
+to see where things are currently at. When
+.Nm
+is mature enough to have a change log, it will go in this section.
+.Sh AUTHORS
+.Nm
+was started by Jordan Bancino <@jordan:bancino.net>.
+Contributions to the code, website, documentation, or other
+components of
+.Nm
+were made by the following people:
+.Bl -bullet
+.It
+Jonah Evans <@jonah:bancino.net>
+.El
+.Sh LICENSE
+All of the code and documentation for
+.Nm
+is licensed under a modified MIT license. Please consult the
+.Pa LICENSE.txt
+file for the actual license text. The
+.Nm
+license text differs from the MIT license in the following ways:
+.Bl -bullet
+.It
+Where the MIT license states that the copyright notice and permission
+notice shall be included in all copies or
+.Pa substantial
+portions of the software, the
+.Nm
+license requires the copyright notice and permission notice be included
+with
+.Pa all
+portions, regardless of the size, of the software by omitting the word
+.Pa substantial .
+.El
+.Pp
+The
+.Nm
+logo, however, belongs solely to the
+.Nm
+project. It must only be used to represent the official
+.Nm
+project, and may only appear in official
+.Nm
+media. If
+.Nm
+is forked, the logo must be removed completely from the project, and
+optionally replaced with a different one. The logo may not be modified
+in any way or for any purpose.

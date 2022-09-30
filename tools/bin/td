@@ -164,13 +164,15 @@ recipe_site() {
 		exit 1
 	fi
 
-	# In the future, this might do more.
 	cp -v site/* "$TELODENDRIA_PUB/"
 
-	find docs/ -name '*.[1-9]' | while IFS= read -r man; do
+	find man/ -name '*.[1-9]' | while IFS= read -r man; do
+		dir=$(dirname "$man")
 		html=$(basename "$man")
-		mandoc -Thtml -O style=style.css "$man" > "$TELODENDRIA_PUB/$html.html"
-		echo "$man -> $TELODENDRIA_PUB/$html.html"
+
+		mkdir -p "$TELODENDRIA_PUB/$dir/"
+		mandoc -Thtml -O style=/style.css "$man" > "$TELODENDRIA_PUB/$dir/$html.html"
+		echo "$man -> $TELODENDRIA_PUB/$dir/$html.html"
 	done
 }
 
