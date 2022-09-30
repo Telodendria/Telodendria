@@ -242,7 +242,7 @@ main(int argc, char **argv)
             goto finish;
         }
 
-        Log(lc, LOG_DEBUG, "Redirecting future output to '%s'.", tConfig->logOut);
+        Log(lc, LOG_MESSAGE, "Logging to '%s'. Check there for all future messages.", tConfig->logOut);
         LogConfigOutputSet(lc, logFile);
     }
 
