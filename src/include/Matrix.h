@@ -30,8 +30,19 @@
 
 #include <TelodendriaConfig.h>
 
-#define MATRIX_PATH_POP(arr) ArrayDelete(arr, 0)
-
+/*
+ * Abstract away the underlying data structure of the path so that
+ * routes don't have to care what it is.
+ *
+ * This will be helpful, for instance, if we decide to switch to a
+ * queue (which can be easily done with the current implementation if
+ * we just add a function that computes how many elements are in a
+ * queue.) An array isn't the most efficient data structure for this
+ * purpose; a queue would be much better. This allows us to change that
+ * down the road without having to rewrite all the routes.
+ */
+#define MATRIX_PATH_POP(path) ArrayDelete(path, 0)
+#define MATRIX_PATH_PARTS(path) ArraySize(path)
 #define MATRIX_PATH_EQUALS(pathPart, str) ((pathPart != NULL) && (strcmp(pathPart, str) == 0))
 
 typedef enum MatrixError

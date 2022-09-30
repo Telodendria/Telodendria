@@ -34,7 +34,7 @@ ROUTE(RouteWellKnown)
     HashMap *response = NULL;
     char *pathPart = MATRIX_PATH_POP(path);
 
-    if (!MATRIX_PATH_EQUALS(pathPart, "matrix") || ArraySize(path) != 1)
+    if (!MATRIX_PATH_EQUALS(pathPart, "matrix") || MATRIX_PATH_PARTS(path) != 1)
     {
         free(pathPart);
         HttpResponseStatus(context, HTTP_NOT_FOUND);

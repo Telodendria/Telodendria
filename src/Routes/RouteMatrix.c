@@ -34,9 +34,9 @@ ROUTE(RouteMatrix)
     HashMap *response = NULL;
     char *pathPart = MATRIX_PATH_POP(path);
 
-	(void) args;
+    (void) args;
 
-    if (!MATRIX_PATH_EQUALS(pathPart, "client") || ArraySize(path) != 1)
+    if (!MATRIX_PATH_EQUALS(pathPart, "client") || MATRIX_PATH_PARTS(path) != 1)
     {
         free(pathPart);
         HttpResponseStatus(context, HTTP_NOT_FOUND);
@@ -48,11 +48,11 @@ ROUTE(RouteMatrix)
 
     if (MATRIX_PATH_EQUALS(pathPart, "versions"))
     {
-		Array *versions = ArrayCreate();
+        Array *versions = ArrayCreate();
 
         free(pathPart);
 
-		ArrayAdd(versions, JsonValueString(UtilStringDuplicate("v1.4")));
+        ArrayAdd(versions, JsonValueString(UtilStringDuplicate("v1.4")));
 
         response = HashMapCreate();
         HashMapSet(response, "versions", JsonValueArray(versions));
