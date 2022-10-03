@@ -373,86 +373,41 @@ HttpUrlDecode(char *str)
 }
 
 HashMap *
-HttpParamDecode(char *str)
+HttpParamDecode(FILE *in)
 {
-    HashMap *decoded;
-
-    if (!str)
-    {
-        return NULL;
-    }
-
-    decoded = HashMapCreate();
-    if (!decoded)
-    {
-        return NULL;
-    }
-
-    while (*str)
-    {
-        char *key;
-        char *val;
-        char *decVal;
-
-        decVal = HttpParamDecode(val);
-        if (!decVal)
-        {
-            /* Memory error */
-        }
-
-        free(val);
-        str++;
-    }
-
-    return decoded;
+	/* TODO */
+	(void) in;
+	return NULL;
 }
 
-char *
-HttpParamEncode(HashMap * params)
+void
+HttpParamEncode(HashMap * params, FILE * out)
 {
     char *key;
     char *val;
 
-    size_t len;
-    size_t size = TELODENDRIA_STRING_CHUNK;
-    char *encoded;
-
-    if (!params)
+    if (!params || ! out)
     {
-        return NULL;
-    }
-
-    len = 0;
-    encoded = malloc(size);
-
-    if (!encoded)
-    {
-        return NULL;
+        return;
     }
 
     while (HashMapIterate(params, &key, (void *) &val))
     {
-        /* Print key */
+		char *encKey;
+		char *encVal;
 
-        /* Print = */
+		encKey = HttpUrlEncode(key);
+		encVal = HttpUrlEncode(val);
 
-        /* Print encoded value */
-
-        char *encVal = HttpParamEncode(val);
-
-        if (!encVal)
+        if (!encKey || !encVal)
         {
             /* Memory error */
-            free(encoded);
-            return NULL;
+            return;
         }
 
+		fprintf(out, "%s=%s&", encKey, encVal);
+
+		free(encKey);
         free(encVal);
-
-        /* Print & */
     }
-
-    /* Overwrite last & */
-
-    return encoded;
 }
