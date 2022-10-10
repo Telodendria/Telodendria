@@ -25,93 +25,43 @@
 <img id="logo" src="/assets/Telodendria-500x500.png" alt="Telodendria Logo"/>
 <h1 id="telodendria">Telodendria</h1>
 <p>
-<b>Telodendria:</b> The terminal branches of an axon.
+<b>Tel-&#601;-'den-dr&#275;-&#601;</b> The terminal aborizations of an axon.
+</p>
+<p>
+<b>Telodendria</b> is an open source Matrix homeserver implementation written from
+scratch in ANSI C and designed to be lightweight and simple, yet
+functional.
 </p>
 <div class="msg-error">
 <b><i>Note:</i></b> <b>Telodendria</b> is under <i>heavy</i> development.
 Please see the <a href="/man/man7/telodendria.7.html#PROJECT_STATUS">Project Status</a>.
 </div>
+<h2 id="documentation">Documentation</h2>
 <p>
-<b>Telodendria</b> is an open source Matrix homeserver implementation written from
-scratch in ANSI C. It is designed to be lightweight and simple, yet
-functional. <b>Telodendria</b> differentiates itself from other Matrix
-homeserver implementations because it:
-<ul>
-<li>
-Is written in C, a stable, low-level programming language with a long
-history, low build and runtime overhead, and wide compatibility.
-</li>
-<li>
-Is written with minimalism as a primary design goal. Whenever possible
-and practical, no third-party libraries are pulled in to the source
-code. Everything <b>Telodendria</b> needs is custom written. As a
-result, <b>Telodendria</b> depends only on a standard C compiler and
-POSIX C library to be built, both of which are built in to a good
-Unix-style operating system already, which means you shouldn't have
-to install anything extra.
-</li>
-<li>
-Uses a flat-file directory structure to store data instead of a
-database. This has a number of advantages:
-<ul>
-<li>It makes setup and maintenance much easier.</li>
-<li>
-It allows <b>Telodendria</b> to run on systems with fewer resources.
-</li>
-</ul>
-</li>
-<li>
-Is packaged as a single small, statically-linked and highly-optimized
-binary that can be run just about anywhere. It is designed to be
-extremely easy to set up and consume as few resources as possible.
-</li>
-<li>
-Is permissively licensed. <b>Telodendria</b> is licensed under a
-modified MIT license, which imposes few restrictions on what you can do with
-it.
-</li>
-</ul>
-<p>
-<b>Telodendria</b> is on Matrix! Check out the official Matrix rooms:
+<b>Telodendria</b>'s documentation is distributed with the source
+code as <code>man</code> pages, which contain all of the information
+on what <b>Telodendria</b> is, what its goals are, how to build the source,
+configure it, as well as contribute to the project. The <code>man</code>
+pages are also available online for convenience:
 </p>
-<table>
-<tr>
-<th>Room</th>
-<th>Description</th>
-</tr>
-<tr>
-<td>
-<code>#telodendria-releases:bancino.net</code>
-</td>
-<td>
-Get notified of new releases.
-</td>
-</tr>
-<tr>
-<td>
-<code>#telodendria-general:bancino.net</code>
-</td>
-<td>
-General discussion and support for <b>Telodendria</b>.
-</td>
-</tr>
-<tr>
-<td>
-<code>#telodendria-issues:bancino.net</code>
-</td>
-<td>
-Report issues with <b>Telodendria</b>.
-</td>
-</tr>
-<tr>
-<td>
-<code>#telodendria-patches:bancino.net</code>
-</td>
-<td>
-Submit code patches to the <b>Telodendria</b> project.
-</td>
-</tr>
-</table>
+<p>
+User documentation:
+</p>
+<ul>
+<li><b>Start here:</b> <a href="/man/man7/telodendria.7.html">telodendria(7)</a> - Introduction and project information, including project status, contact information, and
+licensing.</li>
+<li><a href="/man/man8/telodendria.8.html">telodendria(8)</a> - Command line usage</li>
+<li><a href="/man/man5/telodendria.conf.5.html">telodendria.conf(5)</a> - Configuration file</li>
+<li><a href="/man/man7/contributing.7.html">contributing(7)</a> - Contributing guide</li>
+<li><a href="/man/man8/td.8.html">td(8)</a> - Build script and patch instructions</li>
+</ul>
+<p>
+Developer documentation:
+</p>
+<ul>
+<li><a href="/man/man3/Array.3.html">Array(3)</a> - Dynamic array structure</li>
+<li><a href="/man/man3/Base64.3.html">Base64(3)</a> - Base64 encoder/decoder with unpadded support</li>
+</ul>
 <h2 id="download">Download</h2>
 <p>
 <b>Telodendria</b> is distributed as source tarballs, in true Unix
@@ -167,31 +117,6 @@ information.
 <p>
 You can find the change log in the documentation.
 </p>
-<h2 id="documentation">Documentation</h2>
-<p>
-<b>Telodendria</b>'s documentation is distributed with the source
-code as <code>man</code> pages, which contain all of the information
-on what <b>Telodendria</b> is, what its goals are, how to build the source,
-configure it, as well as contribute to the project. The <code>man</code>
-pages are also available online for convenience:
-</p>
-<p>
-User documentation:
-</p>
-<ul>
-<li><a href="/man/man7/telodendria.7.html">telodendria(7)</a> - Introduction and project information, including project status and licensing information</li>
-<li><a href="/man/man8/telodendria.8.html">telodendria(8)</a> - Command line usage</li>
-<li><a href="/man/man5/telodendria.conf.5.html">telodendria.conf(5)</a> - Configuration file</li>
-<li><a href="/man/man7/contributing.7.html">contributing(7)</a> - Contributing guide</li>
-<li><a href="/man/man8/td.8.html">td(8)</a> - Build script and patch instructions</li>
-</ul>
-<p>
-Developer documentation:
-</p>
-<ul>
-<li><a href="/man/man3/Array.3.html">Array(3)</a> - Dynamic array structure</li>
-<li><a href="/man/man3/Base64.3.html">Base64(3)</a> - Base64 encoder/decoder with unpadded support</li>
-</ul>
 <h2 id="resources">Resources</h2>
 <ul>
 <li><a target="_blank" href="/pub">Old <b>Telodendria</b> Versions</a></li>
