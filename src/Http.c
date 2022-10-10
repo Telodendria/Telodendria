@@ -373,11 +373,11 @@ HttpUrlDecode(char *str)
 }
 
 HashMap *
-HttpParamDecode(FILE *in)
+HttpParamDecode(FILE * in)
 {
-	/* TODO */
-	(void) in;
-	return NULL;
+    /* TODO */
+    (void) in;
+    return NULL;
 }
 
 void
@@ -386,18 +386,18 @@ HttpParamEncode(HashMap * params, FILE * out)
     char *key;
     char *val;
 
-    if (!params || ! out)
+    if (!params || !out)
     {
         return;
     }
 
     while (HashMapIterate(params, &key, (void *) &val))
     {
-		char *encKey;
-		char *encVal;
+        char *encKey;
+        char *encVal;
 
-		encKey = HttpUrlEncode(key);
-		encVal = HttpUrlEncode(val);
+        encKey = HttpUrlEncode(key);
+        encVal = HttpUrlEncode(val);
 
         if (!encKey || !encVal)
         {
@@ -405,9 +405,9 @@ HttpParamEncode(HashMap * params, FILE * out)
             return;
         }
 
-		fprintf(out, "%s=%s&", encKey, encVal);
+        fprintf(out, "%s=%s&", encKey, encVal);
 
-		free(encKey);
+        free(encKey);
         free(encVal);
     }
 }
