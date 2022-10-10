@@ -23,6 +23,7 @@ Phase 2: Building a foundation
 [x] Implement an array
 [x] Implement a logging facility
 [x] Implement a hash map
+	[ ] Allow custom hash functions for each hash map
 [x] Combine library code files
 [x] Implement configuration file parsing using hash map
 [x] Base64 encoding/decoding with padded/unpadded support
