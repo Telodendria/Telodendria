@@ -1,0 +1,100 @@
+.Dd $Mdocdate: October 10 2022 $
+.Dt QUEUE 3
+.Os Telodendria Project
+.Sh NAME
+.Nm Array
+.Nd A simple static queue data structure.
+.Sh SYNOPSIS
+.In Queue.h
+.Ft Queue *
+.Fn QueueCreate "void"
+.Ft void
+.Fn QueueFree "Array *"
+.Ft int
+.Fn QueuePush "Queue *" "void *"
+.Ft void *
+.Fn QueuePop "Queue *"
+.Ft void *
+.Fn QueuePeek "Queue *"
+.Ft int
+.Fn QueueFull "Queue *"
+.Ft int
+.Fn QueueEmpty "Queue *"
+.Sh DESCRIPTION
+These functions implement a simple queue data structure that
+is statically sized.
+This implementation does not actually store the values of the
+items in it; it only stores pointers to the data. As such, you will
+still have to manually maintain all your data. The advantage of this
+is that these functions don't have to copy data, and thus don't care
+how big the data is. Furthermore, arbitrary data can be stored in the
+queue.
+.Pp
+This queue implementation operates on the heap. It is a circular
+queue, and it does not grow as it is used. Once the size is set, the
+queue never gets any bigger.
+.Pp
+These functions operate on a queue structure which is opaque to the
+caller.
+.Pp
+.Fn QueueCreate
+and
+.Fn QueueFree
+allocate and deallocate a queue, respectively.
+Note that
+.Fn QueueFree
+does not free any of the values stored in the queue; it is the caller's
+job to manage the memory for each item. Typically, the caller would
+dequeue all the items in the queue and free them before freeing
+the queue itself.
+.Pp
+.Fn QueuePush
+and
+.Fn QueuePop
+are the main functions used to modify the array. They enqueue and dequeue
+elements from the queue structure, respectively.
+.Pp
+.Fn QueuePeek
+simply returns the pointer that is next up in the queue without actually
+discarding it, such that the next call to
+.Fn QueuePeek
+or
+.Fn QueuePop
+return the same pointer.
+.Pp
+.Fn QueueFull
+and
+.Fn QueueEmpty
+return a boolean value that indicates whether or not the queue is full
+or empty, respectively.
+.Sh RETURN VALUES
+.Pp
+.Fn QueueCreate
+returns a queue structure, or
+.Dv NULL
+if there was a memory allocation error.
+.Pp
+.Fn QueuePush
+as well as
+.Fn QueueFull
+and
+.Fn QueueEmpty
+all return boolean values. In the case of
+.Fn QueuePush
+whether or not the push was actually successful is returned. This will
+only happen if the queue is already full, or a
+.Dv NULL
+pointer is passed.
+.Pp
+.Fn QueuePop
+and
+.Fn QueuePeek
+both return caller-managed pointers that would have been at some point
+pushed into the queue with the
+.Fn QueuePush
+function. They may also return
+.Dv NULL
+if the queue is empty.
+.Sh SEE ALSO
+.Xr Array 3 ,
+.Xr HashMap 3

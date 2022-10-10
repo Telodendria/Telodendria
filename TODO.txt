@@ -105,6 +105,8 @@ Documentation
 		[x] Base64
 		[ ] CanonicalJson
 		[ ] Config
+			[ ] API (Config.3)
+			[ ] File format (Config.5)
 		[ ] Constants
 		[ ] HashMap
 		[ ] Http
@@ -113,7 +115,7 @@ Documentation
 		[ ] Log
 		[ ] Matrix
 		[ ] NonPosix
-		[ ] Queue
+		[x] Queue
 		[ ] Routes
 		[ ] TelodendriaConfig
 		[ ] Util
