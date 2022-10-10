@@ -101,6 +101,7 @@ Documentation
 	[x] Clean up dark mode in man page CSS (links)
 	[x] Synopsis table should not be styled
 	[x] Make available on MANPATH in tools/env.sh
+	[x] Convert list of man pages into a table on home page
 	[~] Internal API docs
 		[x] Array
 		[x] Base64
@@ -109,7 +110,7 @@ Documentation
 			[ ] API (Config.3)
 			[ ] File format (Config.5)
 		[ ] Constants
-		[ ] HashMap
+		[x] HashMap
 		[ ] Http
 		[ ] HttpServer
 		[ ] Json

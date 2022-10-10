@@ -1,0 +1,136 @@
+.Dd $Mdocdate: October 10 2022 $
+.Dt HASHMAP 3
+.Os Telodendria Project
+.Sh NAME
+.Nm HashMap
+.Nd A simple hash map implementation.
+.Sh SYNOPSIS
+.In HashMap.h
+.Ft HashMap *
+.Fn HashMapCreate "void"
+.Ft void
+.Fn HashMapFree "HashMap *"
+.Ft void
+.Fn HashMapLoadSet "HashMap *" "float"
+.Ft void *
+.Fn HashMapSet "HashMap *" "char *" "void *"
+.Ft void *
+.Fn HashMapGet "HashMap *" "char *"
+.Ft void *
+.Fn HashMapDelete "HashMap *" "char *"
+.Ft int
+.Fn HashMapIterate "HashMap *" "char **" "void **"
+.Sh DESCRIPTION
+This is the public interface for Telodendria's hash map implementation.
+This hash map is designed to be simple, well documented, and generally
+readable and understandable, yet also performant enough to be useful,
+because it is used extensively in Telodendria.
+.Pp
+Fundamentally, this is an entirely generic map implementation. It can
+be used for many general purposes, but it is designed to only implement
+the features that Telodendria needs to function well. One example of a
+Telodendria-specific feature is that keys are
+.Dv NULL -terminated
+strings, not any arbitrary data.
+.Pp
+These functions operate on an opaque
+.Dv HashMap
+structure, which the caller has no knowledge about.
+.Pp
+.Fn HashMapCreate
+creates a new hash map that is ready to be used with the rest of the
+hash map functions.
+.Fn HashMapFree
+frees this hash map, such that it becomes invalid and any future use
+with the functions in this API results in undefined behavior. Note that
+it does not free the keys or values stored in the hash map, since this
+implementation has no way of knowing what is actually stored in it, and
+where it is located. You should use
+.Fn HashMapIterate
+to free the values appropriately.
+.Pp
+.Fn HashMapMaxLoadSet
+controls the maximum load of the hash map before it is expanded.
+When the hash map reaches the given capacity, it is grown. You don't
+want to only grow hash maps when they are full,  because that makes
+them perform very poorly. The maximum load value is a percentage of how
+full the hash map is, and it should be between 0
+and 1, where 0 means that no elements will cause the map to be expanded,
+and 1 means that the hash map must be completely full before it is
+expanded. The default maximum load on a new
+.Dv HashMap
+object is 0.75, which should be good enough for most purposes, but
+if you need finer tuning, feel free to play with the max load with
+this function. The changes take effect on the next insert.
+.Pp
+.Fn HashMapSet
+sets the given string key to the given value. Note neither the key nor the
+value is copied into the hash map's own memory space; only pointers are
+stored. It is the caller's job to ensure that the key and value memory
+remains valid for the life of the HashMap, and are freed when they are no
+longer needed.
+.Fn HashMapGet
+retrieves the value for the given key and .Fn HashMapDelete
+removes a value from a given key.
+.Pp
+.Fn HashMapIterate
+iterates over all the keys and values of a hash map. This function works
+very similarly to
+.Xr getopt 3 ,
+where calls are repeatedly made in a
+.Dv while
+loop until there are no more items to go over. The difference is that this
+function does not rely on globals; it takes pointer pointers, and stores all
+necessary state inside the hash map structure itself. Note that this does not
+make this function thread-safe; two threads cannot be iterating over any given
+hash map at the same time, though they can be iterating over different hash
+maps at the same time.
+.Pp
+This function can be tricky to use in some scenarios, as it continues where
+it left off on each call, until there are no more elements to go through in
+the hash map. If you are not iterating over the entire map in one go, and
+happen to  break the loop, then the next time you attempt to iterate the
+hash map, you'll start somewhere in the middle. Thus, it's recommended to
+always iterate over the entire hash map if you're going to use this
+function. Also note that the behavior of this function is undefined if
+insertions or deletions occur during the iteration. It may work fine; it may
+not. That functionality has not been tested.
+.Pp
+.Fn HashMapIterate
+takes a pointer to a string ponter, and a pointer to a value pointer. When
+iterating over the keys and values of the hash map, it sets these pointers
+to the current position in the map so that the caller can use them for his
+own purposes.
+.Sh RETURN VALUES
+.Fn HashMapCreate
+may return
+.Dv NULL
+if memory could not be allocated on the heap. Otherwise, it returns a
+valid pointer to a
+.Dv HashMap
+structure which can be used with the other functions in this API.
+.Pp
+.Fn HashMapSet
+returns the previous value at the passed key, or
+.Dv NULL
+if no such value exists. All keys must have values; you can't set a key
+to
+.Dv NULL .
+To delete a key, use the
+.Fn HashMapDelete
+function.
+.Pp
+.Fn HashMapDelete
+returns the value that was deleted from the hash map at the given key,
+or
+.Dv NULL
+if no such value exists.
+.Pp
+.Fn HashMapIterate
+returns 1 if there are still elements left in the current iteration of the
+hash map, or 0 if no valid hash map was provided, or there are no more elements
+in it for the current iteration. Note that as soon as this function returns 0
+on a hash map, subsequent iterations will start from the beginning.
+.Sh SEE ALSO
+.Xr HashMap 3 ,
+.Xr Queue 3
