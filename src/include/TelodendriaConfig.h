@@ -56,7 +56,6 @@ typedef struct TelodendriaConfig
     char *baseUrl;
     char *identityServer;
 
-    char *chroot;
     char *uid;
     char *gid;
     char *dataDir;

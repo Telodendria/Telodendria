@@ -155,11 +155,6 @@ TelodendriaConfigParse(HashMap * config, LogConfig * lc)
         tConfig->identityServer = NULL;
     }
 
-    GET_DIRECTIVE("chroot");
-    ASSERT_NO_CHILDREN("chroot");
-    ASSERT_VALUES("chroot", 1);
-    COPY_VALUE(tConfig->chroot, 0);
-
     GET_DIRECTIVE("id");
     ASSERT_NO_CHILDREN("id");
     COPY_VALUE(tConfig->uid, 0);
@@ -390,7 +385,6 @@ TelodendriaConfigFree(TelodendriaConfig * tConfig)
     free(tConfig->baseUrl);
     free(tConfig->identityServer);
 
-    free(tConfig->chroot);
     free(tConfig->uid);
     free(tConfig->gid);
     free(tConfig->dataDir);

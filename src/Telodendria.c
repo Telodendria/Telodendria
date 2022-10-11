@@ -211,7 +211,7 @@ main(int argc, char **argv)
     }
 
 #ifdef __OpenBSD__
-    if (unveil(tConfig->chroot, "rwc") != 0)
+    if (unveil(tConfig->dataDir, "rwc") != 0)
     {
         Log(lc, LOG_ERROR, "Unveil of data directory failed: %s", strerror(errno));
         exit = EXIT_FAILURE;
@@ -252,14 +252,13 @@ main(int argc, char **argv)
     Log(lc, LOG_DEBUG, "Server Name: %s", tConfig->serverName);
     Log(lc, LOG_DEBUG, "Base URL: %s", tConfig->baseUrl);
     Log(lc, LOG_DEBUG, "Identity Server: %s", tConfig->identityServer);
-    Log(lc, LOG_DEBUG, "Chroot: %s", tConfig->chroot);
     Log(lc, LOG_DEBUG, "Run As: %s:%s", tConfig->uid, tConfig->gid);
     Log(lc, LOG_DEBUG, "Data Directory: %s", tConfig->dataDir);
     Log(lc, LOG_DEBUG, "Threads: %d", tConfig->threads);
     Log(lc, LOG_DEBUG, "Flags: %x", tConfig->flags);
     LogConfigUnindent(lc);
 
-    if (chdir(tConfig->chroot) != 0)
+    if (chdir(tConfig->dataDir) != 0)
     {
         Log(lc, LOG_ERROR, "Unable to change into data directory: %s.", strerror(errno));
         exit = EXIT_FAILURE;
@@ -267,7 +266,7 @@ main(int argc, char **argv)
     }
     else
     {
-        Log(lc, LOG_DEBUG, "Changed working directory to: %s", tConfig->chroot);
+        Log(lc, LOG_DEBUG, "Changed working directory to: %s", tConfig->dataDir);
     }
 
     Log(lc, LOG_DEBUG, "Running as uid:gid: %d:%d.", getuid(), getgid());
@@ -306,11 +305,11 @@ main(int argc, char **argv)
 #ifndef __OpenBSD__
         if (chroot(".") == 0)
         {
-            Log(lc, LOG_DEBUG, "Changed the root directory to: %s.", tConfig->chroot);
+            Log(lc, LOG_DEBUG, "Changed the root directory to: %s.", tConfig->dataDir);
         }
         else
         {
-            Log(lc, LOG_WARNING, "Unable to chroot into directory: %s.", tConfig->chroot);
+            Log(lc, LOG_WARNING, "Unable to chroot into directory: %s.", tConfig->dataDir);
         }
 #else
         Log(lc, LOG_DEBUG, "Not attempting chroot() after pledge() and unveil().");
@@ -341,11 +340,11 @@ main(int argc, char **argv)
 
     /* These config values are no longer needed; don't hold them in
      * memory anymore */
-    free(tConfig->chroot);
+    free(tConfig->dataDir);
     free(tConfig->uid);
     free(tConfig->gid);
 
-    tConfig->chroot = NULL;
+    tConfig->dataDir = NULL;
     tConfig->uid = NULL;
     tConfig->gid = NULL;
 
@@ -380,6 +379,7 @@ finish:
     if (httpServer)
     {
         HttpServerFree(httpServer);
+		Log(lc, LOG_DEBUG, "Freed HTTP Server.");
     }
     Log(lc, LOG_DEBUG, "Exiting with code '%d'.", exit);
     TelodendriaConfigFree(tConfig);
