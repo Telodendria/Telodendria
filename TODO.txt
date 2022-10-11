@@ -56,6 +56,7 @@ Phase 2: Building a foundation
 [ ] Remove "chroot" option, just chroot into the data dir, and make the log
     file live there as well.
 [ ] Allow logging to the syslog
+[ ] Fix bug where the socket stays open after quit.
 
 Phase 3: Welcome to Matrix
 

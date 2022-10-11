@@ -1,4 +1,4 @@
-.Dd $Mdocdate: September 30 2022 $
+.Dd $Mdocdate: October 11 2022 $
 .Dt TELODENDRIA.CONF 5
 .Os Telodendria Project
 .Sh NAME
@@ -78,18 +78,6 @@ follows the same rules as
 .Pp
 This directive is optional. If it is not specified, it is automatically
 set to be the same as the base URL.
-.It Ic chroot Ar directory
-Change the root directory to the specified directory as soon as possible.
-Note that all other paths and files specified in
-.Nm
-must be accessible relative from this directory. This directive only
-takes effect if Telodendria is running as root. If it isn't, then a
-warning is printed to the log, and no
-.Xr chroot 2
-call is made. In that case, Telodendria will still change into the
-specified directory, so that the other paths referenced can be made
-relative to this one. This directive is required. It is expected that
-the homeserver data and logs will be stored in a subdirectory of this one.
 .It Ic id Ar uid Ar gid
 The effective UNIX user and group to drop to after binding to the socket
 and changing the filesystem root. This only works if Telodendria is
@@ -104,13 +92,15 @@ The data directory into which Telodendria will write all user and event
 information. Telodendria doesn't use a database like other Matrix homeserver
 implementations; it uses a flat-file directory structure, similar to how an
 SMTP server uses Maildirs to deliver email. This directive is required.
+.Pp
+Telodendria will
+.Xr chroot 2
+into this directory as soon as possible for security reasons. If the
+.Ic log
+directive is configured to write to a file, the log file will be written
+in the data directory.
 .Ar directory
-should be a path relative to the
-.Ic chroot
-directory. Don't depend on the
-.Ic chroot
-option working, because there may be legitimate cases when Telodendria will
-not be started as root, thus causing the chroot to fail.
+should be an absolute path, under which all Telodendria data will live.
 .It Ic federation Ar true|false
 Whether to enable federation with other Matrix homeservers or not. Matrix is
 by its very nature a federated protocol,  but if you just want to run your
@@ -133,10 +123,10 @@ to run their own homeserver, you can aset this to
 which will allow anyone to create an account. Telodendria should be capable of handling
 a large amount of users without difficulty or security issues. This directive is
 required.
-.It Ic log Ar file|stdout
-The log configuration. Telodendria uses its own logging facility, which can output to
-either standard output or a file. A number of child directives can be added to this
-directive to customize the log output:
+.It Ic log Ar stdout|file
+The log configuration. Telodendria uses its own logging facility, which can output
+logs to standard output or a file. A number of child directives can
+be added to this directive to customize the log output:
 .Bl -tag -width Ds
 .It Ic level Ar error|warning|task|message|debug
 The level of messages to log at. Each level shows all the levels above it. For
@@ -156,11 +146,19 @@ altogether, you can do so via this option. Acceptable values are
 .Ar default ,
 or a formatter string as described by your system's
 .Xr strftime 3 .
+In the future, logging to the syslog may also be an option. In that case, this
+option only applies if
+.Ic log
+is "stdout" or "file".
 .It Ic color Ar true|false
 Whether or not to enable colored output on TTYs. Note that ANSI color sequences
 will not be written to a log file, only a real terminal, so this option only
 applies if the log is being written to a standard output which is connected to
 a terminal.
+.Pp
+This option only applies if
+.Ic log
+is "stdout".
 .El
 .It Ic threads Ar count
 How many worker threads to spin up to handle requests. This should generally be
@@ -176,7 +174,7 @@ The default
 .Xr telodendria 8
 configuration file.
 .It Pa /var/telodendria
-The recommended chroot directory.
+The recommended data directory.
 .El
 .Sh EXAMPLES
 Please consult the default

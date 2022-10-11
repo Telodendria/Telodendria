@@ -223,28 +223,60 @@ main(int argc, char **argv)
 
     LogConfigTimeStampFormatSet(lc, tConfig->logTimestamp);
 
-    /* Color is enabled by default in the logger. */
-    if (!(tConfig->flags & TELODENDRIA_LOG_COLOR))
+    if (tConfig->flags & TELODENDRIA_LOG_COLOR)
     {
+		LogConfigFlagSet(lc, LOG_FLAG_COLOR);
+	}
+	else
+	{
         LogConfigFlagClear(lc, LOG_FLAG_COLOR);
     }
 
     LogConfigLevelSet(lc, flags & ARG_VERBOSE ? LOG_DEBUG : tConfig->logLevel);
 
-    if (tConfig->logOut)
+    if (chdir(tConfig->dataDir) != 0)
     {
-        FILE *logFile = fopen(tConfig->logOut, "w");
+        Log(lc, LOG_ERROR, "Unable to change into data directory: %s.", strerror(errno));
+        exit = EXIT_FAILURE;
+        goto finish;
+    }
+    else
+    {
+        Log(lc, LOG_DEBUG, "Changed working directory to: %s", tConfig->dataDir);
+    }
+
+
+    if (tConfig->flags & TELODENDRIA_LOG_FILE)
+    {
+        FILE *logFile = fopen("telodendria.log", "a");
 
         if (!logFile)
         {
-            Log(lc, LOG_ERROR, "Unable to open log file '%s' for writing.", tConfig->logOut);
+            Log(lc, LOG_ERROR, "Unable to open log file for appending.");
             exit = EXIT_FAILURE;
             goto finish;
         }
 
-        Log(lc, LOG_MESSAGE, "Logging to '%s'. Check there for all future messages.", tConfig->logOut);
+        Log(lc, LOG_MESSAGE, "Logging to the log file. Check there for all future messages.");
         LogConfigOutputSet(lc, logFile);
     }
+	else if (tConfig->flags & TELODENDRIA_LOG_STDOUT)
+	{
+		Log(lc, LOG_DEBUG, "Already logging to standard output.");
+	}
+	else if (tConfig->flags & TELODENDRIA_LOG_SYSLOG)
+	{
+		Log(lc, LOG_ERROR, "Logging to the syslog is not yet supported.");
+		exit = EXIT_FAILURE;
+		goto finish;
+	}
+	else
+	{
+		Log(lc, LOG_ERROR, "Unknown logging method in flags: '%d'", tConfig->flags);
+		Log(lc, LOG_ERROR, "This is a programmer error; please report it.");
+		exit = EXIT_FAILURE;
+		goto finish;
+	}
 
     Log(lc, LOG_DEBUG, "Configuration:");
     LogConfigIndent(lc);
@@ -257,17 +289,6 @@ main(int argc, char **argv)
     Log(lc, LOG_DEBUG, "Threads: %d", tConfig->threads);
     Log(lc, LOG_DEBUG, "Flags: %x", tConfig->flags);
     LogConfigUnindent(lc);
-
-    if (chdir(tConfig->dataDir) != 0)
-    {
-        Log(lc, LOG_ERROR, "Unable to change into data directory: %s.", strerror(errno));
-        exit = EXIT_FAILURE;
-        goto finish;
-    }
-    else
-    {
-        Log(lc, LOG_DEBUG, "Changed working directory to: %s", tConfig->dataDir);
-    }
 
     Log(lc, LOG_DEBUG, "Running as uid:gid: %d:%d.", getuid(), getgid());
 
