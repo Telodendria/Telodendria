@@ -1,4 +1,4 @@
-.Dd $Mdocdate: September 30 2022 $
+.Dd $Mdocdate: October 11 2022 $
 .Dt TD 8
 .Os Telodendria Project
 .Sh NAME
@@ -234,5 +234,8 @@ executed each time
 is invoked.
 .Sh EXIT STATUS
 .Sh HISTORY
-.Sh CAVEATS
 .Sh BUGS
+.Nm
+unconditionally exits with code 0, even if errors occurred. Furthermore,
+recipes are run unconditionally, regardless of whether or not any recipes
+before have failed.

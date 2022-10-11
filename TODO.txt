@@ -43,7 +43,7 @@ Phase 2: Building a foundation
 [ ] Figure out how to write unit tests for array/hashmap/etc
 [x] Parse the Telodendria config file
 [x] Add license header to all files
-[ ] Add documentation for all public APIs
+[!] Add documentation for all public APIs (See below)
 [x] Implement a simple HTTP server
 	[ ] Implement param parser
 	[x] URL encoder/decoder
@@ -53,6 +53,8 @@ Phase 2: Building a foundation
 	[ ] Data abstraction layer
 	[x] Error generation
 [x] Properly implement the command line options as stated in telodendria(8)
+[ ] Remove "chroot" option, just chroot into the data dir, and make the log
+    file live there as well.
 
 Phase 3: Welcome to Matrix
 
@@ -122,8 +124,6 @@ Documentation
 		[ ] TelodendriaConfig
 		[ ] Util
 
-[ ] Add onboarding documentation
-	[ ] Building from source
-	[ ] Writing config file
-	[ ] Setting up chroot
-	[ ] Setting up relayd
+[x] Add onboarding documentation
+	[x] Building from source
+	[!] Writing config file (see Config.5)
