@@ -33,6 +33,9 @@ extern HashMap *
 extern void
  HashMapMaxLoadSet(HashMap *, float);
 
+extern void
+HashMapFunctionSet(HashMap *, unsigned long (*) (const char *));
+
 extern void *
  HashMapSet(HashMap *, char *, void *);
 

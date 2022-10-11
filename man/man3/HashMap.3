@@ -1,4 +1,4 @@
-.Dd $Mdocdate: October 10 2022 $
+.Dd $Mdocdate: October 11 2022 $
 .Dt HASHMAP 3
 .Os Telodendria Project
 .Sh NAME
@@ -12,6 +12,8 @@
 .Fn HashMapFree "HashMap *"
 .Ft void
 .Fn HashMapLoadSet "HashMap *" "float"
+.Ft void
+.Fn HashMapFunctionSet "HashMap *" "unsigned long (*) (const char *)"
 .Ft void *
 .Fn HashMapSet "HashMap *" "char *" "void *"
 .Ft void *
@@ -62,6 +64,14 @@ expanded. The default maximum load on a new
 object is 0.75, which should be good enough for most purposes, but
 if you need finer tuning, feel free to play with the max load with
 this function. The changes take effect on the next insert.
+.Pp
+.Fn HashMapFunctionSet
+allows the given hash map to use a custom hashing function. New hash
+maps have a sane hashing function that should work okay for most use
+cases, but if you have a better hash function, it can be specified with
+this function. Do not change the hash function after keys have been
+added; doing so results in undefined behavior. Only set the hash
+function immediately after constructing a new hash map.
 .Pp
 .Fn HashMapSet
 sets the given string key to the given value. Note neither the key nor the

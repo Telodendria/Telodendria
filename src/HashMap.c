@@ -39,6 +39,8 @@ struct HashMap
     size_t capacity;
     HashMapBucket **entries;
 
+	unsigned long (*hashFunc) (const char *);
+
     float maxLoad;
     size_t iterator;
 };
@@ -59,7 +61,6 @@ HashMapHashKey(const char *key)
 
     return hash;
 }
-
 
 static int
 HashMapGrow(HashMap * map)
@@ -136,6 +137,7 @@ HashMapCreate(void)
     map->count = 0;
     map->capacity = 16;
     map->iterator = 0;
+	map->hashFunc = HashMapHashKey;
 
     map->entries = calloc(map->capacity, sizeof(HashMapBucket *));
     if (!map->entries)
@@ -158,7 +160,7 @@ HashMapDelete(HashMap * map, const char *key)
         return NULL;
     }
 
-    hash = HashMapHashKey(key);
+    hash = map->hashFunc(key);
     index = hash % map->capacity;
 
     for (;;)
@@ -212,7 +214,7 @@ HashMapGet(HashMap * map, const char *key)
         return NULL;
     }
 
-    hash = HashMapHashKey(key);
+    hash = map->hashFunc(key);
     index = hash % map->capacity;
 
     for (;;)
@@ -280,6 +282,16 @@ HashMapMaxLoadSet(HashMap * map, float load)
     map->maxLoad = load;
 }
 
+void
+HashMapFunctionSet(HashMap * map, unsigned long (*hashFunc) (const char *))
+{
+	if (!map || !hashFunc)
+	{
+		return;
+	}
+
+	map->hashFunc = hashFunc;
+}
 
 void *
 HashMapSet(HashMap * map, char *key, void *value)
@@ -297,7 +309,7 @@ HashMapSet(HashMap * map, char *key, void *value)
         HashMapGrow(map);
     }
 
-    hash = HashMapHashKey(key);
+    hash = map->hashFunc(key);
     index = hash % map->capacity;
 
     for (;;)
