@@ -3,6 +3,13 @@
 
 #include <stddef.h>
 
+typedef enum MemoryAction
+{
+	MEMORY_ALLOCATE,
+	MEMORY_REALLOCATE,
+	MEMORY_FREE
+} MemoryAction;
+
 #define Malloc(x) MemoryAllocate(x, __FILE__, __LINE__, __FUNCTION__)
 #define Realloc(x, s) MemoryReallocate(x, s)
 #define Free(x) MemoryFree(x)
@@ -25,5 +32,7 @@ extern int MemoryInfoGetLine(MemoryInfo *);
 extern void * MemoryInfoGetPointer(MemoryInfo *);
 
 extern void MemoryIterate(void (*)(MemoryInfo *, void *), void *);
+
+extern void MemoryHook(void (*)(MemoryAction, MemoryInfo *, void *), void *);
 
 #endif

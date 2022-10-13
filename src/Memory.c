@@ -18,6 +18,8 @@ struct MemoryInfo
 
 static pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
 static MemoryInfo *lastAllocation = NULL;
+static void (*hook)(MemoryAction, MemoryInfo *, void *) = NULL;
+static void *hookArgs = NULL;
 
 void *
 MemoryAllocate(size_t size, const char *file, int line, const char *func)
@@ -57,6 +59,11 @@ MemoryAllocate(size_t size, const char *file, int line, const char *func)
 
 	lastAllocation = a;
 
+	if (hook)
+	{
+		hook(MEMORY_ALLOCATE, a, hookArgs);
+	}
+
 	pthread_mutex_unlock(&lock);
 	return p;
 }
@@ -79,6 +86,11 @@ MemoryReallocate(void *p, size_t size)
 			{
 				a->pointer = new;
 				a->size = size;
+
+				if (hook)
+				{
+					hook(MEMORY_REALLOCATE, a, hookArgs);
+				}
 			}
 
 			break;
@@ -121,6 +133,11 @@ MemoryFree(void *p)
 			else
 			{
 				lastAllocation = a->prev;
+			}
+
+			if (hook)
+			{
+				hook(MEMORY_FREE, a, hookArgs);
 			}
 
 			free(a);
@@ -268,5 +285,14 @@ MemoryIterate(void (*iterFunc)(MemoryInfo *, void *), void *args)
 		a = a->prev;
 	}
 
+	pthread_mutex_unlock(&lock);
+}
+
+void
+MemoryHook(void (*memHook)(MemoryAction, MemoryInfo *, void *), void *args)
+{
+	pthread_mutex_lock(&lock);
+	hook = memHook;
+	hookArgs = args;
 	pthread_mutex_unlock(&lock);
 }
