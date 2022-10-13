@@ -25,8 +25,8 @@
 #include <Matrix.h>
 
 #include <string.h>
-#include <stdlib.h>
 
+#include <Memory.h>
 #include <HttpServer.h>
 #include <Json.h>
 #include <Util.h>
@@ -116,7 +116,7 @@ MatrixHttpHandler(HttpServerContext * context, void *argp)
         response = MatrixErrorCreate(M_NOT_FOUND);
     }
 
-    free(pathPart);
+    Free(pathPart);
 
     HttpSendHeaders(context);
     stream = HttpStream(context);
@@ -137,7 +137,7 @@ MatrixHttpHandler(HttpServerContext * context, void *argp)
      */
     while ((pathPart = MATRIX_PATH_POP(pathParts)) != NULL)
     {
-        free(pathPart);
+        Free(pathPart);
     }
 
     ArrayFree(pathParts);

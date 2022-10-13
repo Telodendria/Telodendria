@@ -406,9 +406,9 @@ main(int argc, char **argv)
 
     /* These config values are no longer needed; don't hold them in
      * memory anymore */
-    free(tConfig->dataDir);
-    free(tConfig->uid);
-    free(tConfig->gid);
+    Free(tConfig->dataDir);
+    Free(tConfig->uid);
+    Free(tConfig->gid);
 
     tConfig->dataDir = NULL;
     tConfig->uid = NULL;
@@ -455,5 +455,7 @@ finish:
 
     Log(lc, LOG_DEBUG, "Exiting with code '%d'.", exit);
     LogConfigFree(lc);
+
+    MemoryFreeAll();
     return exit;
 }
