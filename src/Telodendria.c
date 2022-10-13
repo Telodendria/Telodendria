@@ -33,6 +33,7 @@
 #include <grp.h>
 #include <pwd.h>
 
+#include <Memory.h>
 #include <TelodendriaConfig.h>
 #include <Log.h>
 #include <HashMap.h>
@@ -40,7 +41,48 @@
 #include <HttpServer.h>
 #include <Matrix.h>
 
-HttpServer *httpServer = NULL;
+static void TelodendriaMemoryHook(MemoryAction a, MemoryInfo *i, void *args)
+{
+	LogConfig *lc = (LogConfig *) args;
+	char *action;
+
+	switch (a)
+	{
+		case MEMORY_ALLOCATE:
+			action = "Allocated";
+			break;
+		case MEMORY_REALLOCATE:
+			action = "Re-allocated";
+			break;
+		case MEMORY_FREE:
+			action = "Freed";
+			break;
+		default:
+			action = "Unknown operation on";
+			break;
+	}
+
+	Log(lc, LOG_DEBUG, "%s:%d %s(): %s %lu bytes of memory at %p.",
+		MemoryInfoGetFile(i), MemoryInfoGetLine(i),
+		MemoryInfoGetFunc(i), action, MemoryInfoGetSize(i),
+		MemoryInfoGetPointer(i));
+}
+
+static void
+TelodendriaMemoryIterator(MemoryInfo *i, void *args)
+{
+	LogConfig *lc = (LogConfig *) args;
+
+	/* We haven't freed the logger memory yet */
+	if (MemoryInfoGetPointer(i) != lc)
+	{
+		Log(lc, LOG_DEBUG, "%lu bytes of memory leaked from %s() (%s:%d)",
+			MemoryInfoGetSize(i), MemoryInfoGetFunc(i),
+			MemoryInfoGetFile(i), MemoryInfoGetLine(i));
+	}
+}
+
+static HttpServer *httpServer = NULL;
 
 static void
 TelodendriaSignalHandler(int signalNo)
@@ -113,6 +155,8 @@ main(int argc, char **argv)
         printf("Fatal error: unable to allocate memory for logger.\n");
         return EXIT_FAILURE;
     }
+
+	MemoryHook(TelodendriaMemoryHook, lc);
 
     TelodendriaPrintHeader(lc);
 
@@ -402,8 +446,13 @@ finish:
         HttpServerFree(httpServer);
 		Log(lc, LOG_DEBUG, "Freed HTTP Server.");
     }
-    Log(lc, LOG_DEBUG, "Exiting with code '%d'.", exit);
     TelodendriaConfigFree(tConfig);
+
+	Log(lc, LOG_DEBUG, "");
+	MemoryIterate(TelodendriaMemoryIterator, lc);
+	Log(lc, LOG_DEBUG, "");
+
+    Log(lc, LOG_DEBUG, "Exiting with code '%d'.", exit);
     LogConfigFree(lc);
     return exit;
 }
