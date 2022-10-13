@@ -23,7 +23,7 @@
  */
 #include <Base64.h>
 
-#include <stdlib.h>
+#include <Memory.h>
 
 static const char Base64EncodeMap[] =
 "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
@@ -94,7 +94,7 @@ Base64Encode(const char *input, size_t len)
     }
 
     outLen = Base64EncodedSize(len);
-    out = malloc(outLen + 1);
+    out = Malloc(outLen + 1);
     if (!out)
     {
         return NULL;
@@ -171,7 +171,7 @@ Base64Decode(const char *input, size_t len)
         }
     }
 
-    out = malloc(outLen + 1);
+    out = Malloc(outLen + 1);
     if (!out)
     {
         return NULL;
@@ -226,7 +226,7 @@ Base64Pad(char **base64Ptr, size_t length)
 
     newSize = length + (4 - (length % 4));
 
-    tmp = realloc(*base64Ptr, newSize + 100);;
+    tmp = Realloc(*base64Ptr, newSize + 100);;
     if (!tmp)
     {
         return 0;                  /* Memory error */

@@ -23,6 +23,8 @@
  */
 #include <Util.h>
 
+#include <Memory.h>
+
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
@@ -45,7 +47,7 @@ UtilUtf8Encode(unsigned long utf8)
 {
     char *str;
 
-    str = malloc(5 * sizeof(char));
+    str = Malloc(5 * sizeof(char));
     if (!str)
     {
         return NULL;
@@ -96,7 +98,7 @@ UtilStringDuplicate(char *inStr)
     char *outStr;
 
     len = strlen(inStr);
-    outStr = malloc(len + 1);      /* For the null terminator */
+    outStr = Malloc(len + 1);      /* For the null terminator */
     if (!outStr)
     {
         return NULL;

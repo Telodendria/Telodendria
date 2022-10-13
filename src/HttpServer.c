@@ -24,6 +24,7 @@
 #include <NonPosix.h>
 
 #include <HttpServer.h>
+#include <Memory.h>
 #include <Queue.h>
 #include <Array.h>
 #include <Util.h>
@@ -78,7 +79,7 @@ HttpServerContextCreate(HttpRequestMethod requestMethod,
 {
     HttpServerContext *c;
 
-    c = malloc(sizeof(HttpServerContext));
+    c = Malloc(sizeof(HttpServerContext));
     if (!c)
     {
         return NULL;
@@ -87,15 +88,15 @@ HttpServerContextCreate(HttpRequestMethod requestMethod,
     c->requestHeaders = HashMapCreate();
     if (!c->requestHeaders)
     {
-        free(c);
+        Free(c);
         return NULL;
     }
 
     c->responseHeaders = HashMapCreate();
     if (!c->responseHeaders)
     {
-        free(c->requestHeaders);
-        free(c);
+        Free(c->requestHeaders);
+        Free(c);
         return NULL;
     }
 
@@ -120,15 +121,15 @@ HttpServerContextFree(HttpServerContext * c)
 
     while (HashMapIterate(c->requestHeaders, &key, &val))
     {
-        free(key);
-        free(val);
+        Free(key);
+        Free(val);
     }
     HashMapFree(c->requestHeaders);
 
     /* It is up to the handler to free its values */
     HashMapFree(c->responseHeaders);
 
-    free(c->requestPath);
+    Free(c->requestPath);
     fclose(c->stream);
 }
 
@@ -277,11 +278,13 @@ HttpServerCreate(unsigned short port, unsigned int nThreads, unsigned int maxCon
         return NULL;
     }
 
-    server = calloc(1, sizeof(HttpServer));
+    server = Malloc(sizeof(HttpServer));
     if (!server)
     {
         goto error;
     }
+
+    memset(server, 0, sizeof(HttpServer));
 
     server->threadPool = ArrayCreate();
     if (!server->threadPool)
@@ -350,7 +353,7 @@ error:
             close(server->sd);
         }
 
-        free(server);
+        Free(server);
     }
     return NULL;
 }
@@ -367,7 +370,7 @@ HttpServerFree(HttpServer * server)
     QueueFree(server->connQueue);
     pthread_mutex_destroy(&server->connQueueMutex);
     ArrayFree(server->threadPool);
-    free(server);
+    Free(server);
 }
 
 static void *
@@ -440,7 +443,7 @@ HttpServerWorkerThread(void *args)
             }
         }
 
-        requestPath = malloc((i * sizeof(char)) + 1);
+        requestPath = Malloc((i * sizeof(char)) + 1);
         strcpy(requestPath, pathPtr);
 
         requestProtocol = &pathPtr[i + 1];
@@ -481,7 +484,7 @@ HttpServerWorkerThread(void *args)
                 line[i] = tolower(line[i]);
             }
 
-            headerKey = malloc((i * sizeof(char)) + 1);
+            headerKey = Malloc((i * sizeof(char)) + 1);
             if (!headerKey)
             {
                 goto internal_error;
@@ -505,7 +508,7 @@ HttpServerWorkerThread(void *args)
                 line[i] = '\0';
             }
 
-            headerValue = malloc(strlen(headerPtr) + 1);
+            headerValue = Malloc(strlen(headerPtr) + 1);
             if (!headerValue)
             {
                 goto internal_error;
@@ -532,7 +535,7 @@ bad_request:
         goto finish;
 
 finish:
-        free(line);
+        Free(line);
         fclose(fp);
     }
 
@@ -555,7 +558,7 @@ HttpServerEventThread(void *args)
 
     for (i = 0; i < server->nThreads; i++)
     {
-        pthread_t *workerThread = malloc(sizeof(pthread_t));
+        pthread_t *workerThread = Malloc(sizeof(pthread_t));
 
         if (!workerThread)
         {
@@ -604,7 +607,7 @@ HttpServerEventThread(void *args)
         pthread_t *workerThread = ArrayGet(server->threadPool, i);
 
         pthread_join(*workerThread, NULL);
-        free(workerThread);
+        Free(workerThread);
     }
 
     while ((fp = DequeueConnection(server)))

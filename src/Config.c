@@ -23,6 +23,8 @@
  */
 #include <Config.h>
 
+#include <Memory.h>
+
 #include <stdlib.h>
 #include <ctype.h>
 #include <string.h>
@@ -99,7 +101,7 @@ ConfigParseResultFree(ConfigParseResult * result)
      * Note that if the parse was valid, the hash map
      * needs to be freed separately.
      */
-    free(result);
+    Free(result);
 }
 
 Array *
@@ -126,14 +128,14 @@ ConfigDirectiveFree(ConfigDirective * directive)
 
     for (i = 0; i < ArraySize(directive->values); i++)
     {
-        free(ArrayGet(directive->values, i));
+        Free(ArrayGet(directive->values, i));
     }
 
     ArrayFree(directive->values);
 
     ConfigFree(directive->children);
 
-    free(directive);
+    Free(directive);
 }
 
 void
@@ -145,7 +147,7 @@ ConfigFree(HashMap * conf)
     while (HashMapIterate(conf, &key, &value))
     {
         ConfigDirectiveFree((ConfigDirective *) value);
-        free(key);
+        Free(key);
     }
 
     HashMapFree(conf);
@@ -154,7 +156,7 @@ ConfigFree(HashMap * conf)
 static ConfigParserState *
 ConfigParserStateCreate(FILE * stream)
 {
-    ConfigParserState *state = malloc(sizeof(ConfigParserState));
+    ConfigParserState *state = Malloc(sizeof(ConfigParserState));
 
     if (!state)
     {
@@ -165,7 +167,7 @@ ConfigParserStateCreate(FILE * stream)
 
     if (!state->macroMap)
     {
-        free(state);
+        Free(state);
         return NULL;
     }
 
@@ -191,17 +193,17 @@ ConfigParserStateFree(ConfigParserState * state)
     }
 
 
-    free(state->token);
+    Free(state->token);
 
     while (HashMapIterate(state->macroMap, &key, &value))
     {
-        free(key);
-        free(value);
+        Free(key);
+        Free(value);
     }
 
     HashMapFree(state->macroMap);
 
-    free(state);
+    Free(state);
 }
 
 static int
@@ -265,7 +267,7 @@ ConfigTokenSeek(ConfigParserState * state)
         if (!state->token)
         {
             state->tokenSize = CONFIG_BUFFER_BLOCK;
-            state->token = malloc(CONFIG_BUFFER_BLOCK);
+            state->token = Malloc(CONFIG_BUFFER_BLOCK);
         }
         state->token[state->tokenLen] = c;
         state->tokenLen++;
@@ -278,7 +280,7 @@ ConfigTokenSeek(ConfigParserState * state)
             if (state->tokenLen >= state->tokenSize)
             {
                 state->tokenSize += CONFIG_BUFFER_BLOCK;
-                state->token = realloc(state->token,
+                state->token = Realloc(state->token,
                                        state->tokenSize);
             }
         }
@@ -334,7 +336,7 @@ ConfigTokenSeek(ConfigParserState * state)
                     if (state->tokenLen >= state->tokenSize)
                     {
                         state->tokenSize += CONFIG_BUFFER_BLOCK;
-                        state->token = realloc(state->token,
+                        state->token = Realloc(state->token,
                                                state->tokenSize);
                     }
                 }
@@ -361,7 +363,7 @@ ConfigTokenSeek(ConfigParserState * state)
                     if (state->tokenLen >= state->tokenSize)
                     {
                         state->tokenSize += CONFIG_BUFFER_BLOCK;
-                        state->token = realloc(state->token,
+                        state->token = Realloc(state->token,
                                                state->tokenSize);
                     }
                 }
@@ -381,7 +383,7 @@ ConfigTokenSeek(ConfigParserState * state)
     if (state->tokenLen)
     {
         state->tokenSize = state->tokenLen;
-        state->token = realloc(state->token, state->tokenSize);
+        state->token = Realloc(state->token, state->tokenSize);
     }
 }
 
@@ -401,7 +403,7 @@ ConfigParseBlock(ConfigParserState * state, int level)
 
     while (ConfigExpect(state, TOKEN_NAME))
     {
-        char *name = malloc(state->tokenLen + 1);
+        char *name = Malloc(state->tokenLen + 1);
 
         strcpy(name, state->token);
 
@@ -410,7 +412,7 @@ ConfigParseBlock(ConfigParserState * state, int level)
         {
             ConfigDirective *directive;
 
-            directive = malloc(sizeof(ConfigDirective));
+            directive = Malloc(sizeof(ConfigDirective));
             directive->children = NULL;
             directive->values = ArrayCreate();
 
@@ -440,7 +442,7 @@ ConfigParseBlock(ConfigParserState * state, int level)
 
                 /* dval is a pointer which is overwritten with the next
                  * token. */
-                dvalCpy = malloc(strlen(dval) + 1);
+                dvalCpy = Malloc(strlen(dval) + 1);
                 strcpy(dvalCpy, dval);
 
                 ArrayAdd(directive->values, dvalCpy);
@@ -473,10 +475,10 @@ ConfigParseBlock(ConfigParserState * state, int level)
             ConfigTokenSeek(state);
             if (ConfigExpect(state, TOKEN_VALUE))
             {
-                char *valueCopy = malloc(strlen(state->token) + 1);
+                char *valueCopy = Malloc(strlen(state->token) + 1);
 
                 strcpy(valueCopy, state->token);
-                free(HashMapSet(state->macroMap, name, valueCopy));
+                Free(HashMapSet(state->macroMap, name, valueCopy));
                 ConfigTokenSeek(state);
             }
             else
@@ -522,7 +524,7 @@ ConfigParse(FILE * stream)
     HashMap *conf;
     ConfigParserState *state;
 
-    result = malloc(sizeof(ConfigParseResult));
+    result = Malloc(sizeof(ConfigParseResult));
     state = ConfigParserStateCreate(stream);
     conf = ConfigParseBlock(state, 0);
 

@@ -23,7 +23,7 @@
  */
 #include <Queue.h>
 
-#include <stdlib.h>
+#include <Memory.h>
 
 struct Queue
 {
@@ -44,16 +44,16 @@ QueueCreate(size_t size)
         return NULL;
     }
 
-    q = malloc(sizeof(Queue));
+    q = Malloc(sizeof(Queue));
     if (!q)
     {
         return NULL;
     }
 
-    q->items = malloc(size * sizeof(void *));
+    q->items = Malloc(size * sizeof(void *));
     if (!q->items)
     {
-        free(q);
+        Free(q);
         return NULL;
     }
 
@@ -69,10 +69,10 @@ QueueFree(Queue * q)
 {
     if (q)
     {
-        free(q->items);
+        Free(q->items);
     }
 
-    free(q);
+    Free(q);
 }
 
 int

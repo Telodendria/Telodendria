@@ -23,8 +23,10 @@
  */
 #include <HashMap.h>
 
+#include <Memory.h>
+
 #include <stddef.h>
-#include <stdlib.h>
+#include <string.h>
 
 typedef struct HashMapBucket
 {
@@ -77,11 +79,13 @@ HashMapGrow(HashMap * map)
     oldCapacity = map->capacity;
     map->capacity *= 2;
 
-    newEntries = calloc(map->capacity, sizeof(HashMapBucket *));
+    newEntries = Malloc(map->capacity * sizeof(HashMapBucket *));
     if (!newEntries)
     {
         return 0;
     }
+
+    memset(&newEntries, 0, map->capacity * sizeof(HashMapBucket *));
 
     for (i = 0; i < oldCapacity; i++)
     {
@@ -97,7 +101,7 @@ HashMapGrow(HashMap * map)
                 {
                     if (!newEntries[index]->hash)
                     {
-                        free(newEntries[index]);
+                        Free(newEntries[index]);
                         newEntries[index] = map->entries[i];
                         break;
                     }
@@ -114,11 +118,11 @@ HashMapGrow(HashMap * map)
         else
         {
             /* Either NULL or a tombstone */
-            free(map->entries[i]);
+            Free(map->entries[i]);
         }
     }
 
-    free(map->entries);
+    Free(map->entries);
     map->entries = newEntries;
     return 1;
 }
@@ -126,7 +130,7 @@ HashMapGrow(HashMap * map)
 HashMap *
 HashMapCreate(void)
 {
-    HashMap *map = malloc(sizeof(HashMap));
+    HashMap *map = Malloc(sizeof(HashMap));
 
     if (!map)
     {
@@ -139,12 +143,14 @@ HashMapCreate(void)
     map->iterator = 0;
     map->hashFunc = HashMapHashKey;
 
-    map->entries = calloc(map->capacity, sizeof(HashMapBucket *));
+    map->entries = Malloc(map->capacity * sizeof(HashMapBucket *));
     if (!map->entries)
     {
-        free(map);
+        Free(map);
         return NULL;
     }
+
+    memset(map->entries, 0, map->capacity * sizeof(HashMapBucket *));
 
     return map;
 }
@@ -195,11 +201,11 @@ HashMapFree(HashMap * map)
         {
             if (map->entries[i])
             {
-                free(map->entries[i]);
+                Free(map->entries[i]);
             }
         }
-        free(map->entries);
-        free(map);
+        Free(map->entries);
+        Free(map);
     }
 }
 
@@ -318,7 +324,7 @@ HashMapSet(HashMap * map, char *key, void *value)
 
         if (!bucket)
         {
-            bucket = malloc(sizeof(HashMapBucket));
+            bucket = Malloc(sizeof(HashMapBucket));
             if (!bucket)
             {
                 break;
@@ -359,11 +365,11 @@ HashMapIterateFree(char *key, void *value)
 {
     if (key)
     {
-        free(key);
+        Free(key);
     }
 
     if (value)
     {
-        free(value);
+        Free(value);
     }
 }

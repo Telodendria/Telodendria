@@ -24,8 +24,8 @@
 #include <Routes.h>
 
 #include <string.h>
-#include <stdlib.h>
 
+#include <Memory.h>
 #include <Json.h>
 #include <HashMap.h>
 
@@ -38,19 +38,19 @@ ROUTE(RouteMatrix)
 
     if (!MATRIX_PATH_EQUALS(pathPart, "client") || MATRIX_PATH_PARTS(path) != 1)
     {
-        free(pathPart);
+        Free(pathPart);
         HttpResponseStatus(context, HTTP_NOT_FOUND);
         return MatrixErrorCreate(M_NOT_FOUND);
     }
 
-    free(pathPart);
+    Free(pathPart);
     pathPart = MATRIX_PATH_POP(path);
 
     if (MATRIX_PATH_EQUALS(pathPart, "versions"))
     {
         Array *versions = ArrayCreate();
 
-        free(pathPart);
+        Free(pathPart);
 
         ArrayAdd(versions, JsonValueString(UtilStringDuplicate("v1.4")));
 
@@ -61,7 +61,7 @@ ROUTE(RouteMatrix)
     }
     else
     {
-        free(pathPart);
+        Free(pathPart);
         HttpResponseStatus(context, HTTP_NOT_FOUND);
         return MatrixErrorCreate(M_NOT_FOUND);
     }

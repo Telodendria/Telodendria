@@ -27,6 +27,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <Memory.h>
 #include <Constants.h>
 #include <HashMap.h>
 
@@ -231,7 +232,7 @@ HttpUrlEncode(char *str)
 
     size = TELODENDRIA_STRING_CHUNK;
     len = 0;
-    encoded = malloc(size);
+    encoded = Malloc(size);
     if (!encoded)
     {
         return NULL;
@@ -246,10 +247,10 @@ HttpUrlEncode(char *str)
             char *tmp;
 
             size += TELODENDRIA_STRING_CHUNK;
-            tmp = realloc(encoded, size);
+            tmp = Realloc(encoded, size);
             if (!tmp)
             {
-                free(encoded);
+                Free(encoded);
                 return NULL;
             }
 
@@ -326,7 +327,7 @@ HttpUrlDecode(char *str)
 
     i = 0;
     inputLen = strlen(str);
-    decoded = malloc(inputLen);
+    decoded = Malloc(inputLen);
 
     if (!decoded)
     {
@@ -346,7 +347,7 @@ HttpUrlDecode(char *str)
             if (sscanf(str, "%2X", &d) != 1)
             {
                 /* Decoding error */
-                free(decoded);
+                Free(decoded);
                 return NULL;
             }
 
@@ -407,7 +408,7 @@ HttpParamEncode(HashMap * params, FILE * out)
 
         fprintf(out, "%s=%s&", encKey, encVal);
 
-        free(encKey);
-        free(encVal);
+        Free(encKey);
+        Free(encVal);
     }
 }

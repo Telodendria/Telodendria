@@ -23,6 +23,7 @@
  */
 #include <Json.h>
 
+#include <Memory.h>
 #include <Util.h>
 
 #include <stdio.h>
@@ -85,7 +86,7 @@ JsonValueType(JsonValue * value)
 static JsonValue *
 JsonValueAllocate(void)
 {
-    return malloc(sizeof(JsonValue));
+    return Malloc(sizeof(JsonValue));
 }
 
 JsonValue *
@@ -315,13 +316,13 @@ JsonValueFree(JsonValue * value)
             ArrayFree(arr);
             break;
         case JSON_STRING:
-            free(value->as.string);
+            Free(value->as.string);
             break;
         default:
             break;
     }
 
-    free(value);
+    Free(value);
 }
 
 void
@@ -405,7 +406,7 @@ JsonDecodeString(FILE * in)
     len = 0;
     allocated = strBlockSize;
 
-    str = malloc(allocated * sizeof(char));
+    str = Malloc(allocated * sizeof(char));
     if (!str)
     {
         return NULL;
@@ -416,7 +417,7 @@ JsonDecodeString(FILE * in)
         if (c <= 0x001F)
         {
             /* Bad byte; these must  be escaped */
-            free(str);
+            Free(str);
             return NULL;
         }
 
@@ -461,7 +462,7 @@ JsonDecodeString(FILE * in)
                         if (fscanf(in, "%04lx", &utf8) != 1)
                         {
                             /* Bad hex value */
-                            free(str);
+                            Free(str);
                             return NULL;
                         }
 
@@ -489,18 +490,18 @@ JsonDecodeString(FILE * in)
                         if (!utf8Ptr)
                         {
                             /* Mem error */
-                            free(str);
+                            Free(str);
                             return NULL;
                         }
 
                         /* Move the output of UtilUtf8Encode() into our
                          * local buffer */
                         strcpy(a, utf8Ptr);
-                        free(utf8Ptr);
+                        Free(utf8Ptr);
                         break;
                     default:
                         /* Bad escape value */
-                        free(str);
+                        Free(str);
                         return NULL;
                 }
                 break;
@@ -519,10 +520,10 @@ JsonDecodeString(FILE * in)
                 char *tmp;
 
                 allocated += strBlockSize;
-                tmp = realloc(str, allocated * sizeof(char));
+                tmp = Realloc(str, allocated * sizeof(char));
                 if (!tmp)
                 {
-                    free(str);
+                    Free(str);
                     return NULL;
                 }
 
@@ -535,7 +536,7 @@ JsonDecodeString(FILE * in)
         }
     }
 
-    free(str);
+    Free(str);
     return NULL;
 }
 
@@ -673,7 +674,7 @@ JsonTokenSeek(JsonParserState * state)
 
     if (state->token)
     {
-        free(state->token);
+        Free(state->token);
         state->token = NULL;
     }
 
@@ -713,7 +714,7 @@ JsonTokenSeek(JsonParserState * state)
                 size_t allocated = 16;
 
                 state->tokenLen = 1;
-                state->token = malloc(allocated);
+                state->token = Malloc(allocated);
                 if (!state->token)
                 {
                     state->tokenType = TOKEN_EOF;
@@ -748,7 +749,7 @@ JsonTokenSeek(JsonParserState * state)
 
                         allocated += 16;
 
-                        tmp = realloc(state->token, allocated);
+                        tmp = Realloc(state->token, allocated);
                         if (!tmp)
                         {
                             state->tokenType = TOKEN_EOF;
@@ -781,7 +782,7 @@ JsonTokenSeek(JsonParserState * state)
             else
             {
                 state->tokenLen = 8;
-                state->token = malloc(state->tokenLen);
+                state->token = Malloc(state->tokenLen);
                 if (!state->token)
                 {
                     state->tokenType = TOKEN_EOF;
@@ -875,7 +876,7 @@ JsonDecodeValue(JsonParserState * state)
             value = JsonValueArray(JsonDecodeArray(state));
             break;
         case TOKEN_STRING:
-            strValue = malloc(state->tokenLen);
+            strValue = Malloc(state->tokenLen);
             if (!strValue)
             {
                 return NULL;
@@ -919,7 +920,7 @@ JsonDecodeObject(JsonParserState * state)
         JsonTokenSeek(state);
         if (JsonExpect(state, TOKEN_STRING))
         {
-            char *key = malloc(state->tokenLen);
+            char *key = Malloc(state->tokenLen);
             JsonValue *value;
 
             if (!key)

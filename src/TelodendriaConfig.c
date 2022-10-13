@@ -22,6 +22,7 @@
  * SOFTWARE.
  */
 #include <TelodendriaConfig.h>
+#include <Memory.h>
 #include <Config.h>
 #include <HashMap.h>
 #include <Log.h>
@@ -83,11 +84,13 @@ TelodendriaConfigParse(HashMap * config, LogConfig * lc)
         return NULL;
     }
 
-    tConfig = calloc(1, sizeof(TelodendriaConfig));
+    tConfig = Malloc(sizeof(TelodendriaConfig));
     if (!tConfig)
     {
         return NULL;
     }
+
+    memset(tConfig, 0, sizeof(TelodendriaConfig));
 
     directive = (ConfigDirective *) HashMapGet(config, "listen");
     children = ConfigChildrenGet(directive);
@@ -129,7 +132,7 @@ TelodendriaConfigParse(HashMap * config, LogConfig * lc)
     else
     {
         Log(lc, LOG_WARNING, "Base URL not specified. Assuming it's 'https://%s'.", tConfig->serverName);
-        tConfig->baseUrl = malloc(strlen(tConfig->serverName) + 10);
+        tConfig->baseUrl = Malloc(strlen(tConfig->serverName) + 10);
         if (!tConfig->baseUrl)
         {
             Log(lc, LOG_ERROR, "Error allocating memory for default config value 'base-url'.");
@@ -391,13 +394,13 @@ TelodendriaConfigFree(TelodendriaConfig * tConfig)
         return;
     }
 
-    free(tConfig->serverName);
-    free(tConfig->baseUrl);
-    free(tConfig->identityServer);
+    Free(tConfig->serverName);
+    Free(tConfig->baseUrl);
+    Free(tConfig->identityServer);
 
-    free(tConfig->uid);
-    free(tConfig->gid);
-    free(tConfig->dataDir);
+    Free(tConfig->uid);
+    Free(tConfig->gid);
+    Free(tConfig->dataDir);
 
-    free(tConfig);
+    Free(tConfig);
 }

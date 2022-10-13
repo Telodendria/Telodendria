@@ -41,7 +41,7 @@
 #include <HttpServer.h>
 #include <Matrix.h>
 
-static void 
+static void
 TelodendriaMemoryHook(MemoryAction a, MemoryInfo * i, void *args)
 {
     LogConfig *lc = (LogConfig *) args;

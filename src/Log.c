@@ -23,7 +23,9 @@
  */
 #include <Log.h>
 
-#include <stdlib.h>
+#include <Memory.h>
+
+#include <string.h>
 #include <time.h>
 #include <unistd.h>
 #include <ctype.h>
@@ -48,12 +50,14 @@ LogConfigCreate(void)
 {
     LogConfig *config;
 
-    config = calloc(1, sizeof(LogConfig));
+    config = Malloc(sizeof(LogConfig));
 
     if (!config)
     {
         return NULL;
     }
+
+    memset(config, 0, sizeof(LogConfig));
 
     LogConfigLevelSet(config, LOG_MESSAGE);
     LogConfigIndentSet(config, 0);
@@ -106,7 +110,7 @@ LogConfigFree(LogConfig * config)
     }
 
     fclose(config->out);
-    free(config);
+    Free(config);
 }
 
 void

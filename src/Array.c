@@ -28,7 +28,7 @@
 #endif
 
 #include <stddef.h>
-#include <stdlib.h>
+#include <Memory.h>
 
 struct Array
 {
@@ -52,7 +52,7 @@ ArrayAdd(Array * array, void *value)
 Array *
 ArrayCreate(void)
 {
-    Array *array = malloc(sizeof(Array));
+    Array *array = Malloc(sizeof(Array));
 
     if (!array)
     {
@@ -61,11 +61,11 @@ ArrayCreate(void)
 
     array->size = 0;
     array->allocated = ARRAY_BLOCK;
-    array->entries = malloc(sizeof(void *) * ARRAY_BLOCK);
+    array->entries = Malloc(sizeof(void *) * ARRAY_BLOCK);
 
     if (!array->entries)
     {
-        free(array);
+        Free(array);
         return NULL;
     }
 
@@ -100,8 +100,8 @@ ArrayFree(Array * array)
 {
     if (array)
     {
-        free(array->entries);
-        free(array);
+        Free(array->entries);
+        Free(array);
     }
 }
 
@@ -139,7 +139,7 @@ ArrayInsert(Array * array, void *value, size_t index)
 
         tmp = array->entries;
 
-        array->entries = realloc(array->entries,
+        array->entries = Realloc(array->entries,
                                  sizeof(void *) * newSize);
 
         if (!array->entries)
@@ -186,7 +186,7 @@ ArrayTrim(Array * array)
 
     tmp = array->entries;
 
-    array->entries = realloc(array->entries,
+    array->entries = Realloc(array->entries,
                              sizeof(void *) * array->size);
 
     if (!array->entries)

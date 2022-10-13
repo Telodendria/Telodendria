@@ -24,8 +24,8 @@
 #include <Routes.h>
 
 #include <string.h>
-#include <stdlib.h>
 
+#include <Memory.h>
 #include <Json.h>
 #include <HashMap.h>
 
@@ -36,19 +36,19 @@ ROUTE(RouteWellKnown)
 
     if (!MATRIX_PATH_EQUALS(pathPart, "matrix") || MATRIX_PATH_PARTS(path) != 1)
     {
-        free(pathPart);
+        Free(pathPart);
         HttpResponseStatus(context, HTTP_NOT_FOUND);
         return MatrixErrorCreate(M_NOT_FOUND);
     }
 
-    free(pathPart);
+    Free(pathPart);
     pathPart = MATRIX_PATH_POP(path);
 
     if (MATRIX_PATH_EQUALS(pathPart, "client"))
     {
         HashMap *homeserver = HashMapCreate();
 
-        free(pathPart);
+        Free(pathPart);
 
         response = HashMapCreate();
 
@@ -67,7 +67,7 @@ ROUTE(RouteWellKnown)
     }
     else
     {
-        free(pathPart);
+        Free(pathPart);
         HttpResponseStatus(context, HTTP_NOT_FOUND);
         return MatrixErrorCreate(M_NOT_FOUND);
     }
