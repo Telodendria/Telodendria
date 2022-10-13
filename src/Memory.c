@@ -1,3 +1,26 @@
+/*
+ * Copyright (C) 2022 Jordan Bancino <@jordan:bancino.net>
+ *
+ * Permission is hereby granted, free of charge, to any person
+ * obtaining a copy of this software and associated documentation files
+ * (the "Software"), to deal in the Software without restriction,
+ * including without limitation the rights to use, copy, modify, merge,
+ * publish, distribute, sublicense, and/or sell copies of the Software,
+ * and to permit persons to whom the Software is furnished to do so,
+ * subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be
+ * included in all copies or portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT.  IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS
+ * BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
+ * ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
 #include <Memory.h>
 
 #include <stdio.h>
@@ -6,293 +29,293 @@
 
 struct MemoryInfo
 {
-	size_t size;
-	const char *file;
-	const char *func;
-	int line;
-	void *pointer;
+    size_t size;
+    const char *file;
+    const char *func;
+    int line;
+    void *pointer;
 
-	MemoryInfo *next;
-	MemoryInfo *prev;
+    MemoryInfo *next;
+    MemoryInfo *prev;
 };
 
 static pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
 static MemoryInfo *lastAllocation = NULL;
-static void (*hook)(MemoryAction, MemoryInfo *, void *) = NULL;
+static void (*hook) (MemoryAction, MemoryInfo *, void *) = NULL;
 static void *hookArgs = NULL;
 
 void *
 MemoryAllocate(size_t size, const char *file, int line, const char *func)
 {
-	void *p;
-	MemoryInfo *a;
+    void *p;
+    MemoryInfo *a;
 
-	pthread_mutex_lock(&lock);
+    pthread_mutex_lock(&lock);
 
-	p = malloc(size);
-	if (!p)
-	{
-		pthread_mutex_unlock(&lock);
-		return NULL;
-	}
+    p = malloc(size);
+    if (!p)
+    {
+        pthread_mutex_unlock(&lock);
+        return NULL;
+    }
 
-	a = malloc(sizeof(MemoryInfo));
-	if (!a)
-	{
-		free(p);
-		pthread_mutex_unlock(&lock);
-		return NULL;
-	}
+    a = malloc(sizeof(MemoryInfo));
+    if (!a)
+    {
+        free(p);
+        pthread_mutex_unlock(&lock);
+        return NULL;
+    }
 
-	a->size = size;
-	a->file = file;
-	a->line = line;
-	a->func = func;
-	a->pointer = p;
-	a->next = NULL;
-	a->prev = lastAllocation;
+    a->size = size;
+    a->file = file;
+    a->line = line;
+    a->func = func;
+    a->pointer = p;
+    a->next = NULL;
+    a->prev = lastAllocation;
 
-	if (lastAllocation)
-	{
-		lastAllocation->next = a;
-	}
+    if (lastAllocation)
+    {
+        lastAllocation->next = a;
+    }
 
-	lastAllocation = a;
+    lastAllocation = a;
 
-	if (hook)
-	{
-		hook(MEMORY_ALLOCATE, a, hookArgs);
-	}
+    if (hook)
+    {
+        hook(MEMORY_ALLOCATE, a, hookArgs);
+    }
 
-	pthread_mutex_unlock(&lock);
-	return p;
+    pthread_mutex_unlock(&lock);
+    return p;
 }
 
 void *
 MemoryReallocate(void *p, size_t size)
 {
-	MemoryInfo *a;
-	void *new = NULL;
+    MemoryInfo *a;
+    void *new = NULL;
 
-	pthread_mutex_lock(&lock);
+    pthread_mutex_lock(&lock);
 
-	a = lastAllocation;
-	while (a)
-	{
-		if (a->pointer == p)
-		{
-			new = realloc(p, size);
-			if (new)
-			{
-				a->pointer = new;
-				a->size = size;
+    a = lastAllocation;
+    while (a)
+    {
+        if (a->pointer == p)
+        {
+            new = realloc(p, size);
+            if (new)
+            {
+                a->pointer = new;
+                a->size = size;
 
-				if (hook)
-				{
-					hook(MEMORY_REALLOCATE, a, hookArgs);
-				}
-			}
+                if (hook)
+                {
+                    hook(MEMORY_REALLOCATE, a, hookArgs);
+                }
+            }
 
-			break;
-		}
+            break;
+        }
 
-		a = a->prev;
-	}
+        a = a->prev;
+    }
 
-	pthread_mutex_unlock(&lock);
+    pthread_mutex_unlock(&lock);
 
-	return new;
+    return new;
 }
 
 void
 MemoryFree(void *p)
 {
-	MemoryInfo *a;
+    MemoryInfo *a;
 
-	pthread_mutex_lock(&lock);
+    pthread_mutex_lock(&lock);
 
-	a = lastAllocation;
+    a = lastAllocation;
 
-	while (a)
-	{
-		if (a->pointer == p)
-		{
-			if (a->prev)
-			{
-				a->prev->next = a->next;
-			}
-			else
-			{
-				lastAllocation = a->next;
-			}
+    while (a)
+    {
+        if (a->pointer == p)
+        {
+            if (a->prev)
+            {
+                a->prev->next = a->next;
+            }
+            else
+            {
+                lastAllocation = a->next;
+            }
 
-			if (a->next)
-			{
-				a->next->prev = a->prev;
-			}
-			else
-			{
-				lastAllocation = a->prev;
-			}
+            if (a->next)
+            {
+                a->next->prev = a->prev;
+            }
+            else
+            {
+                lastAllocation = a->prev;
+            }
 
-			if (hook)
-			{
-				hook(MEMORY_FREE, a, hookArgs);
-			}
+            if (hook)
+            {
+                hook(MEMORY_FREE, a, hookArgs);
+            }
 
-			free(a);
-			free(p);
+            free(a);
+            free(p);
 
-			break;
-		}
-			
-		a = a->prev;
-	}
+            break;
+        }
 
-	pthread_mutex_unlock(&lock);
+        a = a->prev;
+    }
+
+    pthread_mutex_unlock(&lock);
 }
 
 size_t
 MemoryAllocated(void)
 {
-	MemoryInfo *a;
-	size_t total = 0;
+    MemoryInfo *a;
+    size_t total = 0;
 
-	pthread_mutex_lock(&lock);
+    pthread_mutex_lock(&lock);
 
-	a = lastAllocation;
-	while (a)
-	{
-		total += a->size;
-		a = a->prev;
-	}
+    a = lastAllocation;
+    while (a)
+    {
+        total += a->size;
+        a = a->prev;
+    }
 
-	pthread_mutex_unlock(&lock);
+    pthread_mutex_unlock(&lock);
 
-	return total;
+    return total;
 }
 
 void
 MemoryFreeAll(void)
 {
-	MemoryInfo *a;
+    MemoryInfo *a;
 
-	pthread_mutex_lock(&lock);
+    pthread_mutex_lock(&lock);
 
-	a = lastAllocation;
-	while (a)
-	{
-		MemoryInfo *prev = a->prev;
+    a = lastAllocation;
+    while (a)
+    {
+        MemoryInfo *prev = a->prev;
 
-		free(a->pointer);
-		free(a);
+        free(a->pointer);
+        free(a);
 
-		a = prev;
-	}
+        a = prev;
+    }
 
-	lastAllocation = NULL;
+    lastAllocation = NULL;
 
-	pthread_mutex_unlock(&lock);
+    pthread_mutex_unlock(&lock);
 }
 
 MemoryInfo *
 MemoryInfoGet(void *p)
 {
-	MemoryInfo *a;
+    MemoryInfo *a;
 
-	pthread_mutex_lock(&lock);
+    pthread_mutex_lock(&lock);
 
-	a = lastAllocation;
-	while (a)
-	{
-		if (a->pointer == p)
-		{
-			break;
-		}
+    a = lastAllocation;
+    while (a)
+    {
+        if (a->pointer == p)
+        {
+            break;
+        }
 
-		a = a->prev;
-	}
+        a = a->prev;
+    }
 
-	return a;
+    return a;
 }
 
 size_t
-MemoryInfoGetSize(MemoryInfo *a)
+MemoryInfoGetSize(MemoryInfo * a)
 {
-	if (!a)
-	{
-		return 0;
-	}
+    if (!a)
+    {
+        return 0;
+    }
 
-	return a->size;
+    return a->size;
 }
 
 const char *
-MemoryInfoGetFile(MemoryInfo *a)
+MemoryInfoGetFile(MemoryInfo * a)
 {
-	if (!a)
-	{
-		return NULL;
-	}
+    if (!a)
+    {
+        return NULL;
+    }
 
-	return a->file;
+    return a->file;
 }
 
 const char *
-MemoryInfoGetFunc(MemoryInfo *a)
+MemoryInfoGetFunc(MemoryInfo * a)
 {
-	if (!a)
-	{
-		return NULL;
-	}
+    if (!a)
+    {
+        return NULL;
+    }
 
-	return a->func;
+    return a->func;
 }
 
 int
-MemoryInfoGetLine(MemoryInfo *a)
+MemoryInfoGetLine(MemoryInfo * a)
 {
-	if (!a)
-	{
-		return -1;
-	}
+    if (!a)
+    {
+        return -1;
+    }
 
-	return a->line;
+    return a->line;
 }
 
 void *
-MemoryInfoGetPointer(MemoryInfo *a)
+MemoryInfoGetPointer(MemoryInfo * a)
 {
-	if (!a)
-	{
-		return NULL;
-	}
+    if (!a)
+    {
+        return NULL;
+    }
 
-	return a->pointer;
+    return a->pointer;
 }
 
 void
-MemoryIterate(void (*iterFunc)(MemoryInfo *, void *), void *args)
+ MemoryIterate(void (*iterFunc) (MemoryInfo *, void *), void *args)
 {
-	MemoryInfo *a;
+    MemoryInfo *a;
 
-	pthread_mutex_lock(&lock);
+    pthread_mutex_lock(&lock);
 
-	a = lastAllocation;
-	while (a)
-	{
-		iterFunc(a, args);
-		a = a->prev;
-	}
+    a = lastAllocation;
+    while (a)
+    {
+        iterFunc(a, args);
+        a = a->prev;
+    }
 
-	pthread_mutex_unlock(&lock);
+    pthread_mutex_unlock(&lock);
 }
 
 void
-MemoryHook(void (*memHook)(MemoryAction, MemoryInfo *, void *), void *args)
+ MemoryHook(void (*memHook) (MemoryAction, MemoryInfo *, void *), void *args)
 {
-	pthread_mutex_lock(&lock);
-	hook = memHook;
-	hookArgs = args;
-	pthread_mutex_unlock(&lock);
+    pthread_mutex_lock(&lock);
+    hook = memHook;
+    hookArgs = args;
+    pthread_mutex_unlock(&lock);
 }

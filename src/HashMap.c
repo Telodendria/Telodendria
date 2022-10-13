@@ -39,7 +39,7 @@ struct HashMap
     size_t capacity;
     HashMapBucket **entries;
 
-	unsigned long (*hashFunc) (const char *);
+    unsigned long (*hashFunc) (const char *);
 
     float maxLoad;
     size_t iterator;
@@ -137,7 +137,7 @@ HashMapCreate(void)
     map->count = 0;
     map->capacity = 16;
     map->iterator = 0;
-	map->hashFunc = HashMapHashKey;
+    map->hashFunc = HashMapHashKey;
 
     map->entries = calloc(map->capacity, sizeof(HashMapBucket *));
     if (!map->entries)
@@ -285,12 +285,12 @@ HashMapMaxLoadSet(HashMap * map, float load)
 void
 HashMapFunctionSet(HashMap * map, unsigned long (*hashFunc) (const char *))
 {
-	if (!map || !hashFunc)
-	{
-		return;
-	}
+    if (!map || !hashFunc)
+    {
+        return;
+    }
 
-	map->hashFunc = hashFunc;
+    map->hashFunc = hashFunc;
 }
 
 void *

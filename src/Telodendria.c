@@ -41,45 +41,46 @@
 #include <HttpServer.h>
 #include <Matrix.h>
 
-static void TelodendriaMemoryHook(MemoryAction a, MemoryInfo *i, void *args)
+static void 
+TelodendriaMemoryHook(MemoryAction a, MemoryInfo * i, void *args)
 {
-	LogConfig *lc = (LogConfig *) args;
-	char *action;
+    LogConfig *lc = (LogConfig *) args;
+    char *action;
 
-	switch (a)
-	{
-		case MEMORY_ALLOCATE:
-			action = "Allocated";
-			break;
-		case MEMORY_REALLOCATE:
-			action = "Re-allocated";
-			break;
-		case MEMORY_FREE:
-			action = "Freed";
-			break;
-		default:
-			action = "Unknown operation on";
-			break;
-	}
+    switch (a)
+    {
+        case MEMORY_ALLOCATE:
+            action = "Allocated";
+            break;
+        case MEMORY_REALLOCATE:
+            action = "Re-allocated";
+            break;
+        case MEMORY_FREE:
+            action = "Freed";
+            break;
+        default:
+            action = "Unknown operation on";
+            break;
+    }
 
-	Log(lc, LOG_DEBUG, "%s:%d %s(): %s %lu bytes of memory at %p.",
-		MemoryInfoGetFile(i), MemoryInfoGetLine(i),
-		MemoryInfoGetFunc(i), action, MemoryInfoGetSize(i),
-		MemoryInfoGetPointer(i));
+    Log(lc, LOG_DEBUG, "%s:%d %s(): %s %lu bytes of memory at %p.",
+        MemoryInfoGetFile(i), MemoryInfoGetLine(i),
+        MemoryInfoGetFunc(i), action, MemoryInfoGetSize(i),
+        MemoryInfoGetPointer(i));
 }
 
 static void
-TelodendriaMemoryIterator(MemoryInfo *i, void *args)
+TelodendriaMemoryIterator(MemoryInfo * i, void *args)
 {
-	LogConfig *lc = (LogConfig *) args;
+    LogConfig *lc = (LogConfig *) args;
 
-	/* We haven't freed the logger memory yet */
-	if (MemoryInfoGetPointer(i) != lc)
-	{
-		Log(lc, LOG_DEBUG, "%lu bytes of memory leaked from %s() (%s:%d)",
-			MemoryInfoGetSize(i), MemoryInfoGetFunc(i),
-			MemoryInfoGetFile(i), MemoryInfoGetLine(i));
-	}
+    /* We haven't freed the logger memory yet */
+    if (MemoryInfoGetPointer(i) != lc)
+    {
+        Log(lc, LOG_DEBUG, "%lu bytes of memory leaked from %s() (%s:%d)",
+            MemoryInfoGetSize(i), MemoryInfoGetFunc(i),
+            MemoryInfoGetFile(i), MemoryInfoGetLine(i));
+    }
 }
 
 static HttpServer *httpServer = NULL;
@@ -156,7 +157,7 @@ main(int argc, char **argv)
         return EXIT_FAILURE;
     }
 
-	MemoryHook(TelodendriaMemoryHook, lc);
+    MemoryHook(TelodendriaMemoryHook, lc);
 
     TelodendriaPrintHeader(lc);
 
@@ -269,10 +270,10 @@ main(int argc, char **argv)
 
     if (tConfig->flags & TELODENDRIA_LOG_COLOR)
     {
-		LogConfigFlagSet(lc, LOG_FLAG_COLOR);
-	}
-	else
-	{
+        LogConfigFlagSet(lc, LOG_FLAG_COLOR);
+    }
+    else
+    {
         LogConfigFlagClear(lc, LOG_FLAG_COLOR);
     }
 
@@ -304,23 +305,23 @@ main(int argc, char **argv)
         Log(lc, LOG_MESSAGE, "Logging to the log file. Check there for all future messages.");
         LogConfigOutputSet(lc, logFile);
     }
-	else if (tConfig->flags & TELODENDRIA_LOG_STDOUT)
-	{
-		Log(lc, LOG_DEBUG, "Already logging to standard output.");
-	}
-	else if (tConfig->flags & TELODENDRIA_LOG_SYSLOG)
-	{
-		Log(lc, LOG_ERROR, "Logging to the syslog is not yet supported.");
-		exit = EXIT_FAILURE;
-		goto finish;
-	}
-	else
-	{
-		Log(lc, LOG_ERROR, "Unknown logging method in flags: '%d'", tConfig->flags);
-		Log(lc, LOG_ERROR, "This is a programmer error; please report it.");
-		exit = EXIT_FAILURE;
-		goto finish;
-	}
+    else if (tConfig->flags & TELODENDRIA_LOG_STDOUT)
+    {
+        Log(lc, LOG_DEBUG, "Already logging to standard output.");
+    }
+    else if (tConfig->flags & TELODENDRIA_LOG_SYSLOG)
+    {
+        Log(lc, LOG_ERROR, "Logging to the syslog is not yet supported.");
+        exit = EXIT_FAILURE;
+        goto finish;
+    }
+    else
+    {
+        Log(lc, LOG_ERROR, "Unknown logging method in flags: '%d'", tConfig->flags);
+        Log(lc, LOG_ERROR, "This is a programmer error; please report it.");
+        exit = EXIT_FAILURE;
+        goto finish;
+    }
 
     Log(lc, LOG_DEBUG, "Configuration:");
     LogConfigIndent(lc);
@@ -444,13 +445,13 @@ finish:
     if (httpServer)
     {
         HttpServerFree(httpServer);
-		Log(lc, LOG_DEBUG, "Freed HTTP Server.");
+        Log(lc, LOG_DEBUG, "Freed HTTP Server.");
     }
     TelodendriaConfigFree(tConfig);
 
-	Log(lc, LOG_DEBUG, "");
-	MemoryIterate(TelodendriaMemoryIterator, lc);
-	Log(lc, LOG_DEBUG, "");
+    Log(lc, LOG_DEBUG, "");
+    MemoryIterate(TelodendriaMemoryIterator, lc);
+    Log(lc, LOG_DEBUG, "");
 
     Log(lc, LOG_DEBUG, "Exiting with code '%d'.", exit);
     LogConfigFree(lc);

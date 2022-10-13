@@ -39,9 +39,9 @@ typedef enum TelodendriaConfigFlag
     TELODENDRIA_FEDERATION = (1 << 0),
     TELODENDRIA_REGISTRATION = (1 << 1),
     TELODENDRIA_LOG_COLOR = (1 << 2),
-	TELODENDRIA_LOG_FILE = (1 << 3),
-	TELODENDRIA_LOG_STDOUT = (1 << 4),
-	TELODENDRIA_LOG_SYSLOG = (1 << 5)
+    TELODENDRIA_LOG_FILE = (1 << 3),
+    TELODENDRIA_LOG_STDOUT = (1 << 4),
+    TELODENDRIA_LOG_SYSLOG = (1 << 5)
 } TelodendriaConfigFlag;
 
 /*

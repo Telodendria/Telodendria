@@ -356,21 +356,21 @@ TelodendriaConfigParse(HashMap * config, LogConfig * lc)
     /* Set the actual log output file last */
     if (strcmp(ArrayGet(value, 0), "stdout") == 0)
     {
-		tConfig->flags |= TELODENDRIA_LOG_STDOUT;
+        tConfig->flags |= TELODENDRIA_LOG_STDOUT;
     }
-	else if (strcmp(ArrayGet(value, 0), "file") == 0)
-	{
-		tConfig->flags |= TELODENDRIA_LOG_FILE;
-	}
-	else if (strcmp(ArrayGet(value, 0), "syslog") == 0)
-	{
-		tConfig->flags |= TELODENDRIA_LOG_SYSLOG;
-	}
+    else if (strcmp(ArrayGet(value, 0), "file") == 0)
+    {
+        tConfig->flags |= TELODENDRIA_LOG_FILE;
+    }
+    else if (strcmp(ArrayGet(value, 0), "syslog") == 0)
+    {
+        tConfig->flags |= TELODENDRIA_LOG_SYSLOG;
+    }
     else
     {
-		Log(lc, LOG_ERROR, "Unknown log value '%s', expected 'stdout', 'file', or 'syslog'.",
-			ArrayGet(value, 0));
-		goto error;
+        Log(lc, LOG_ERROR, "Unknown log value '%s', expected 'stdout', 'file', or 'syslog'.",
+            ArrayGet(value, 0));
+        goto error;
     }
 
     return tConfig;
