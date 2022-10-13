@@ -127,6 +127,7 @@ Documentation
 		[ ] Routes
 		[ ] TelodendriaConfig
 		[ ] Util
+		[ ] Memory
 
 [x] Add onboarding documentation
 	[x] Building from source
