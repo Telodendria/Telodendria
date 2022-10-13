@@ -77,8 +77,8 @@ TelodendriaMemoryIterator(MemoryInfo * i, void *args)
     /* We haven't freed the logger memory yet */
     if (MemoryInfoGetPointer(i) != lc)
     {
-        Log(lc, LOG_DEBUG, "%lu bytes of memory leaked from %s() (%s:%d)",
-            MemoryInfoGetSize(i), MemoryInfoGetFunc(i),
+        Log(lc, LOG_DEBUG, "%lu bytes of memory at %p leaked from %s() (%s:%d)",
+            MemoryInfoGetSize(i), MemoryInfoGetPointer(i), MemoryInfoGetFunc(i),
             MemoryInfoGetFile(i), MemoryInfoGetLine(i));
     }
 }
