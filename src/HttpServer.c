@@ -126,11 +126,18 @@ HttpServerContextFree(HttpServerContext * c)
     }
     HashMapFree(c->requestHeaders);
 
-    /* It is up to the handler to free its values */
+    while (HashMapIterate(c->responseHeaders, &key, &val))
+    {
+        Free(key);
+        Free(val);
+    }
+
     HashMapFree(c->responseHeaders);
 
     Free(c->requestPath);
     fclose(c->stream);
+
+    Free(c);
 }
 
 HashMap *
