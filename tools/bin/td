@@ -51,7 +51,7 @@ fi
 mod_time() {
     if [ -n "$1" ] && [ -f "$1" ]; then
         case "$(uname)" in
-            Linux)
+            Linux|CYGWIN_NT*)
                 stat -c %Y "$1" 
                 ;;
             *BSD)
