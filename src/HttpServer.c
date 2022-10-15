@@ -507,14 +507,14 @@ HttpServerWorkerThread(void *args)
 
             headerPtr = line + i + 1;
 
-            while (isspace(*headerPtr))
+            while (isspace((unsigned char) *headerPtr))
             {
                 headerPtr++;
             }
 
             for (i = lineLen - 1; i > (line + lineLen) - headerPtr; i--)
             {
-                if (!isspace(line[i]))
+                if (!isspace((unsigned char) line[i]))
                 {
                     break;
                 }

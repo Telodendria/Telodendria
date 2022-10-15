@@ -38,7 +38,7 @@ IsInteger(char *str)
 {
     while (*str)
     {
-        if (!isdigit(*str))
+        if (!isdigit((unsigned char) *str))
         {
             return 0;
         }

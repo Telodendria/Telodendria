@@ -294,7 +294,7 @@ Log(LogConfig * config, int level, const char *msg,...)
         if (tsLength)
         {
             fputs(tsBuffer, config->out);
-            if (!isspace(tsBuffer[tsLength - 1]))
+            if (!isspace((unsigned char) tsBuffer[tsLength - 1]))
             {
                 fputc(' ', config->out);
             }
