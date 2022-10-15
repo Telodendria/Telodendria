@@ -44,7 +44,7 @@ Phase 2: Building a foundation
 [x] Add license header to all files
 [!] Add documentation for all public APIs (See below)
 [x] Implement a simple HTTP server
-	[ ] Implement param parser
+	[x] Implement param parser
 	[x] URL encoder/decoder
 [~] Design server architecture
 	[x] Route requests
