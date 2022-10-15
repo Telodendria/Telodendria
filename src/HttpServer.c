@@ -65,6 +65,7 @@ struct HttpServerContext
     HashMap *requestHeaders;
     HttpRequestMethod requestMethod;
     char *requestPath;
+	HashMap *requestParams;
 
     HashMap *responseHeaders;
     HttpStatus responseStatus;
@@ -74,7 +75,7 @@ struct HttpServerContext
 
 static HttpServerContext *
 HttpServerContextCreate(HttpRequestMethod requestMethod,
-                        char *requestPath, FILE * stream)
+                        char *requestPath, HashMap *requestParams, FILE * stream)
 {
     HttpServerContext *c;
 
@@ -101,6 +102,7 @@ HttpServerContextCreate(HttpRequestMethod requestMethod,
 
     c->requestMethod = requestMethod;
     c->requestPath = requestPath;
+	c->requestParams = requestParams;
     c->stream = stream;
     c->responseStatus = HTTP_OK;
 
@@ -132,6 +134,14 @@ HttpServerContextFree(HttpServerContext * c)
     }
 
     HashMapFree(c->responseHeaders);
+
+	while (HashMapIterate(c->requestParams, &key, &val))
+	{
+		Free(key);
+		Free(val);
+	}
+
+	HashMapFree(c->requestParams);
 
     Free(c->requestPath);
     fclose(c->stream);
@@ -175,9 +185,12 @@ HttpRequestPath(HttpServerContext * c)
 HashMap *
 HttpRequestParams(HttpServerContext * c)
 {
-    /* TODO: Implement param parsing */
-    (void) c;
-    return NULL;
+	if (!c)
+	{
+		return NULL;
+	}
+
+    return c->requestParams;
 }
 
 char *
@@ -403,12 +416,15 @@ HttpServerWorkerThread(void *args)
         char *requestPath;
         char *requestProtocol;
 
+		HashMap *requestParams;
+		ssize_t requestPathLen;
+
         ssize_t i = 0;
         HttpRequestMethod requestMethod;
 
         if (!fp)
         {
-            /* Block for 1 millisecond before continuting so we don't
+            /* Block for 1 millisecond before continuing so we don't
              * murder the CPU */
             UtilSleepMillis(1);
             continue;
@@ -454,7 +470,8 @@ HttpServerWorkerThread(void *args)
             }
         }
 
-        requestPath = Malloc((i * sizeof(char)) + 1);
+		requestPathLen = i;
+        requestPath = Malloc(((requestPathLen + 1) * sizeof(char)));
         strcpy(requestPath, pathPtr);
 
         requestProtocol = &pathPtr[i + 1];
@@ -462,11 +479,22 @@ HttpServerWorkerThread(void *args)
 
         if (strcmp(requestProtocol, "HTTP/1.1") != 0 && strcmp(requestProtocol, "HTTP/1.0") != 0)
         {
-            printf("Bad protocol: [%s]\n", requestProtocol);
             goto bad_request;
         }
 
-        context = HttpServerContextCreate(requestMethod, requestPath, fp);
+		/* Find request params */
+		for (i = 0; i < requestPathLen; i++)
+		{
+			if (requestPath[i] == '?')
+			{
+				break;
+			}
+		}
+
+		requestPath[i] = '\0';
+		requestParams = HttpParamDecode(requestPath + i + 1);
+
+        context = HttpServerContextCreate(requestMethod, requestPath, requestParams, fp);
         if (!context)
         {
             goto internal_error;

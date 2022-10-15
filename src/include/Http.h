@@ -120,9 +120,9 @@ extern char *
  HttpUrlDecode(char *);
 
 extern HashMap *
- HttpParamDecode(FILE *);
+ HttpParamDecode(char *);
 
-extern void
- HttpParamEncode(HashMap *, FILE *);
+extern char *
+ HttpParamEncode(HashMap *);
 
 #endif
