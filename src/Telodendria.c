@@ -63,9 +63,9 @@ TelodendriaMemoryHook(MemoryAction a, MemoryInfo * i, void *args)
             break;
     }
 
-    Log(lc, LOG_DEBUG, "%s:%d %s(): %s %lu bytes of memory at %p.",
+    Log(lc, LOG_DEBUG, "%s:%d: %s %lu bytes of memory at %p.",
         MemoryInfoGetFile(i), MemoryInfoGetLine(i),
-        MemoryInfoGetFunc(i), action, MemoryInfoGetSize(i),
+        action, MemoryInfoGetSize(i),
         MemoryInfoGetPointer(i));
 }
 
@@ -77,8 +77,8 @@ TelodendriaMemoryIterator(MemoryInfo * i, void *args)
     /* We haven't freed the logger memory yet */
     if (MemoryInfoGetPointer(i) != lc)
     {
-        Log(lc, LOG_DEBUG, "%lu bytes of memory at %p leaked from %s() (%s:%d)",
-            MemoryInfoGetSize(i), MemoryInfoGetPointer(i), MemoryInfoGetFunc(i),
+        Log(lc, LOG_DEBUG, "%lu bytes of memory at %p leaked from %s:%d",
+            MemoryInfoGetSize(i), MemoryInfoGetPointer(i),
             MemoryInfoGetFile(i), MemoryInfoGetLine(i));
     }
 }

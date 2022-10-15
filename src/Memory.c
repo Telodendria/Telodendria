@@ -31,7 +31,6 @@ struct MemoryInfo
 {
     size_t size;
     const char *file;
-    const char *func;
     int line;
     void *pointer;
 
@@ -45,7 +44,7 @@ static void (*hook) (MemoryAction, MemoryInfo *, void *) = NULL;
 static void *hookArgs = NULL;
 
 void *
-MemoryAllocate(size_t size, const char *file, int line, const char *func)
+MemoryAllocate(size_t size, const char *file, int line)
 {
     void *p;
     MemoryInfo *a;
@@ -70,7 +69,6 @@ MemoryAllocate(size_t size, const char *file, int line, const char *func)
     a->size = size;
     a->file = file;
     a->line = line;
-    a->func = func;
     a->pointer = p;
     a->next = NULL;
     a->prev = lastAllocation;
@@ -259,17 +257,6 @@ MemoryInfoGetFile(MemoryInfo * a)
     }
 
     return a->file;
-}
-
-const char *
-MemoryInfoGetFunc(MemoryInfo * a)
-{
-    if (!a)
-    {
-        return NULL;
-    }
-
-    return a->func;
 }
 
 int
