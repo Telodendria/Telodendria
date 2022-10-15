@@ -9,4 +9,3 @@ makewhatis "$(pwd)/man"
 export PATH="$(pwd)/tools/bin:$PATH"
 export MANPATH="$(pwd)/man:$MANPATH"
 
-PS1="(td) $PS1"

@@ -79,7 +79,7 @@ recipe_build() {
 		obj=$(echo "$src" | sed -e 's/^src/build/' -e 's/\.c$/\.o/')
 		objs="$objs $obj"
     
-		if [ $(mod_time "$src") -gt $(mod_time "$obj") ]; then
+		if [ $(mod_time "$src") -ge $(mod_time "$obj") ]; then
 			echo "CC $obj"
 			obj_dir=$(dirname "$obj")
 			mkdir -p "$obj_dir"
