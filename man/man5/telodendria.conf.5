@@ -1,4 +1,4 @@
-.Dd $Mdocdate: October 11 2022 $
+.Dd $Mdocdate: October 15 2022 $
 .Dt TELODENDRIA.CONF 5
 .Os Telodendria Project
 .Sh NAME
@@ -123,9 +123,16 @@ to run their own homeserver, you can aset this to
 which will allow anyone to create an account. Telodendria should be capable of handling
 a large amount of users without difficulty or security issues. This directive is
 required.
-.It Ic log Ar stdout|file
+.It Ic log Ar stdout|file|syslog
 The log configuration. Telodendria uses its own logging facility, which can output
-logs to standard output or a file. A number of child directives can
+logs to standard output, a file, or the syslog. If set to
+.Ar file ,
+Telodendria will log to
+.Pa telodendria.log
+inside the
+.Ic data-dir .
+.Pp
+A number of child directives can
 be added to this directive to customize the log output:
 .Bl -tag -width Ds
 .It Ic level Ar error|warning|task|message|debug
@@ -146,8 +153,7 @@ altogether, you can do so via this option. Acceptable values are
 .Ar default ,
 or a formatter string as described by your system's
 .Xr strftime 3 .
-In the future, logging to the syslog may also be an option. In that case, this
-option only applies if
+This option only applies if
 .Ic log
 is "stdout" or "file".
 .It Ic color Ar true|false

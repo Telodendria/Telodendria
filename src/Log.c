@@ -36,7 +36,7 @@
 
 struct LogConfig
 {
-    LogLevel level;
+    int level;
     size_t indent;
     FILE *out;
     int flags;
@@ -133,7 +133,7 @@ LogConfigIndentSet(LogConfig * config, size_t indent)
     config->indent = indent;
 }
 
-LogLevel
+int
 LogConfigLevelGet(LogConfig * config)
 {
     if (!config)
@@ -145,7 +145,7 @@ LogConfigLevelGet(LogConfig * config)
 }
 
 void
-LogConfigLevelSet(LogConfig * config, LogLevel level)
+LogConfigLevelSet(LogConfig * config, int level)
 {
     if (!config)
     {
@@ -202,7 +202,7 @@ LogConfigUnindent(LogConfig * config)
 }
 
 void
-Log(LogConfig * config, LogLevel level, const char *msg,...)
+Log(LogConfig * config, int level, const char *msg,...)
 {
     size_t i;
     int doColor;
@@ -228,6 +228,16 @@ Log(LogConfig * config, LogLevel level, const char *msg,...)
 
     pthread_mutex_lock(&config->lock);
 
+    if (LogConfigFlagGet(config, LOG_FLAG_SYSLOG))
+    {
+        /* No further print logic is needed; syslog will handle it all
+         * for us. */
+        va_start(argp, msg);
+        vsyslog(level, msg, argp);
+        va_end(argp);
+        pthread_mutex_unlock(&config->lock);
+        return;
+    }
 
     doColor = LogConfigFlagGet(config, LOG_FLAG_COLOR)
             && isatty(fileno(config->out));
@@ -238,7 +248,10 @@ Log(LogConfig * config, LogLevel level, const char *msg,...)
 
         switch (level)
         {
-            case LOG_ERROR:
+            case LOG_EMERG:
+            case LOG_ALERT:
+            case LOG_CRIT:
+            case LOG_ERR:
                 /* Bold Red */
                 ansi = "\033[1;31m";
                 break;
@@ -246,11 +259,11 @@ Log(LogConfig * config, LogLevel level, const char *msg,...)
                 /* Bold Yellow */
                 ansi = "\033[1;33m";
                 break;
-            case LOG_TASK:
+            case LOG_NOTICE:
                 /* Bold Magenta */
                 ansi = "\033[1;35m";
                 break;
-            case LOG_MESSAGE:
+            case LOG_INFO:
                 /* Bold Green */
                 ansi = "\033[1;32m";
                 break;
@@ -289,6 +302,15 @@ Log(LogConfig * config, LogLevel level, const char *msg,...)
 
     switch (level)
     {
+        case LOG_EMERG:
+            indicator = '#';
+            break;
+        case LOG_ALERT:
+            indicator = '@';
+            break;
+        case LOG_CRIT:
+            indicator = 'X';
+            break;
         case LOG_ERROR:
             indicator = 'x';
             break;

@@ -311,9 +311,13 @@ main(int argc, char **argv)
     }
     else if (tConfig->flags & TELODENDRIA_LOG_SYSLOG)
     {
-        Log(lc, LOG_ERROR, "Logging to the syslog is not yet supported.");
-        exit = EXIT_FAILURE;
-        goto finish;
+        Log(lc, LOG_MESSAGE, "Logging to the syslog. Check there for all future messages.");
+        LogConfigFlagSet(lc, LOG_FLAG_SYSLOG);
+
+        openlog("telodendria", LOG_PID | LOG_NDELAY, LOG_DAEMON);
+        /* Always log everything, because the Log API will control what
+         * messages get passed to the syslog */
+        setlogmask(LOG_UPTO(LOG_DEBUG));
     }
     else
     {

@@ -44,20 +44,19 @@
 
 #include <stdio.h>
 #include <stddef.h>
+#include <syslog.h>
 
 /*
- * There are five log "levels," each one showing more information than
- * the previous one. A level of LOG_ERROR shows only errors, while a
- * level of LOG_DEBUG shows all output possible.
+ * I used to define all my own constants, but now I use
+ * those defined in syslog.h. Instead of replacing all the
+ * references, I just map the old names to the new ones. If
+ * you're ever bored one day, you can remove these, and then
+ * go fix all the compiler errors that arise. Should be pretty
+ * easy, just mind numbing.
  */
-typedef enum LogLevel
-{
-    LOG_ERROR,
-    LOG_WARNING,
-    LOG_TASK,
-    LOG_MESSAGE,
-    LOG_DEBUG
-} LogLevel;
+#define LOG_ERROR LOG_ERR
+#define LOG_TASK LOG_NOTICE
+#define LOG_MESSAGE LOG_INFO
 
 /*
  * The possible flags that can be applied to alter the behavior of
@@ -65,7 +64,9 @@ typedef enum LogLevel
  */
 typedef enum LogFlag
 {
-    LOG_FLAG_COLOR = (1 << 0)      /* Enable color output on TTYs */
+    LOG_FLAG_COLOR = (1 << 0),     /* Enable color output on TTYs */
+    LOG_FLAG_SYSLOG = (1 << 1)     /* Log to the syslog instead of a
+                                    * file */
 } LogFlag;
 
 /*
@@ -110,10 +111,10 @@ extern void
  * Params:
  *
  *   (LogConfig *) The log configuration to set the log level on.
- *   (LogLevel)    The log level to set.
+ *   (int)    The log level to set.
  */
 extern void
- LogConfigLevelSet(LogConfig *, LogLevel);
+ LogConfigLevelSet(LogConfig *, int);
 
 /*
  * Indent the log output by two spaces. This can be helpful in
@@ -185,12 +186,12 @@ extern void
  * Params:
  *
  *   (LogConfig *)  The logging configuration.
- *   (LogLevel)     The level of the message to log.
+ *   (int)     The level of the message to log.
  *   (const char *) The format string, or a plain message string.
  *   (...)          Any items to map into the format string, printf()
  *                  style.
  */
 extern void
- Log(LogConfig *, LogLevel, const char *,...);
+ Log(LogConfig *, int, const char *,...);
 
 #endif

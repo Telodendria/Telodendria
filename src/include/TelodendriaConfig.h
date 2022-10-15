@@ -69,7 +69,7 @@ typedef struct TelodendriaConfig
     unsigned int maxConnections;
 
     char *logTimestamp;
-    LogLevel logLevel;
+    int logLevel;
 } TelodendriaConfig;
 
 /*
