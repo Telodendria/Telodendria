@@ -374,126 +374,116 @@ HttpUrlDecode(char *str)
 }
 
 HashMap *
-HttpParamDecode(char * in)
+HttpParamDecode(char *in)
 {
-	HashMap *params;
+    HashMap *params;
 
-	if (!in)
-	{
-		return NULL;
-	}
+    if (!in)
+    {
+        return NULL;
+    }
 
-	printf("HttpParamDecode(%s)\n", in);
-	fflush(stdout);
+    params = HashMapCreate();
+    if (!params)
+    {
+        return NULL;
+    }
 
-	params = HashMapCreate();
-	if (!params)
-	{
-		return NULL;
-	}
+    while (*in)
+    {
+        char *buf;
+        size_t allocated;
+        size_t len;
 
-	while (*in)
-	{
-		char *buf;
-		size_t allocated;
-		size_t len;
+        char *decKey;
+        char *decVal;
 
-		char *decKey;
-		char *decVal;
+        /* Read in key */
 
-		/* Read in key */
+        allocated = TELODENDRIA_STRING_CHUNK;
+        buf = Malloc(allocated);
+        len = 0;
 
-		allocated = TELODENDRIA_STRING_CHUNK;
-		buf = Malloc(allocated);
-		len = 0;
+        while (*in && *in != '=')
+        {
+            if (len >= allocated - 1)
+            {
+                allocated += TELODENDRIA_STRING_CHUNK;
+                buf = Realloc(buf, allocated);
+            }
 
-		while (*in && *in != '=')
-		{
-			if (len >= allocated)
-			{
-				allocated += TELODENDRIA_STRING_CHUNK;
-				buf = Realloc(buf, allocated);
-			}
+            buf[len] = *in;
+            len++;
+            in++;
+        }
 
-			buf[len] = *in;
-			len++;
-			in++;
-		}
+        buf[len] = '\0';
 
-		/* Sanity check */
-		if (*in != '=')
-		{
-			/* Malformed param */
-			Free(buf);
-			Free(params);
-			return NULL;
-		}
+        /* Sanity check */
+        if (*in != '=')
+        {
+            /* Malformed param */
+            Free(buf);
+            Free(params);
+            return NULL;
+        }
 
-		in++;
+        in++;
 
-		/* Decode key */
-		decKey = HttpUrlDecode(buf);
-		Free(buf);
+        /* Decode key */
+        decKey = HttpUrlDecode(buf);
+        Free(buf);
 
-		if (!decKey)
-		{
-			/* Decoding error */
-			Free(params);
-			return NULL;
-		}
+        if (!decKey)
+        {
+            /* Decoding error */
+            Free(params);
+            return NULL;
+        }
 
-		/* Read in value */
-		allocated = TELODENDRIA_STRING_CHUNK;
-		buf = Malloc(allocated);
-		len = 0;
+        /* Read in value */
+        allocated = TELODENDRIA_STRING_CHUNK;
+        buf = Malloc(allocated);
+        len = 0;
 
-		while (*in && *in != '&')
-		{
-			if (len >= allocated)
-			{
-				allocated += TELODENDRIA_STRING_CHUNK;
-				buf = Realloc(buf, allocated);
-			}
+        while (*in && *in != '&')
+        {
+            if (len >= allocated - 1)
+            {
+                allocated += TELODENDRIA_STRING_CHUNK;
+                buf = Realloc(buf, allocated);
+            }
 
-			buf[len] = *in;
-			len++;
-			in++;
-		}
+            buf[len] = *in;
+            len++;
+            in++;
+        }
 
-		/* Decode value */
-		decVal = HttpUrlDecode(buf);
-		Free(buf);
+        buf[len] = '\0';
 
-		if (!decVal)
-		{
-			/* Decoding error */
-			Free(params);
-			return NULL;
-		}
+        /* Decode value */
+        decVal = HttpUrlDecode(buf);
+        Free(buf);
 
-		HashMapSet(params, decKey, decVal);
+        if (!decVal)
+        {
+            /* Decoding error */
+            Free(params);
+            return NULL;
+        }
 
-		if (*in == '&')
-		{
-			in++;
-			continue;
-		}
-		else
-		{
-			break;
-		}
-	}
+        HashMapSet(params, decKey, decVal);
 
-	printf("Done with decoding, here's what we got:\n");
-	{
-		char *key;
-		char *val;
-
-		while (HashMapIterate(params, &key, (void **) &val))
-		{
-			printf("  [%s]: [%s]\n", key, val);
-		}
-	}
+        if (*in == '&')
+        {
+            in++;
+            continue;
+        }
+        else
+        {
+            break;
+        }
+    }
 
     return params;
 }
@@ -503,7 +493,7 @@ HttpParamEncode(HashMap * params)
 {
     char *key;
     char *val;
-	char *out = NULL;
+    char *out = NULL;
 
     if (!params || !out)
     {
@@ -521,16 +511,16 @@ HttpParamEncode(HashMap * params)
         if (!encKey || !encVal)
         {
             /* Memory error */
-			Free(encKey);
-			Free(encVal);
+            Free(encKey);
+            Free(encVal);
             return NULL;
         }
 
-		/* TODO */
+        /* TODO */
 
         Free(encKey);
         Free(encVal);
     }
 
-	return out;
+    return out;
 }
