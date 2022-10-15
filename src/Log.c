@@ -23,7 +23,6 @@
  */
 #include <Log.h>
 
-#include <NonPosix.h>
 #include <Memory.h>
 
 #include <string.h>

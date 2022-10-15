@@ -21,8 +21,6 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-#include <NonPosix.h>
-
 #include <HttpServer.h>
 #include <Memory.h>
 #include <Queue.h>
