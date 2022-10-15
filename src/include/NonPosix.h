@@ -30,6 +30,8 @@
 #ifndef TELODENDRIA_NONPOSIX_H
 #define TELODENDRIA_NONPOSIX_H
 
+#include <stdarg.h>
+
 /*
  * Pretty much all Unix-like systems have a chroot() function. In fact,
  * chroot() used to be POSIX, so any operating system claiming to be
@@ -39,6 +41,12 @@
  * on a chroot() syscall being available.
  */
 extern int chroot(const char *);
+
+/*
+ * Pretty much every syslog interface has a vsyslog(). Unfortuntately,
+ * it is not POSIX.
+ */
+extern void vsyslog(int, const char *, va_list);
 
 /*
  * Telodendria is primarily developed on OpenBSD; as such, you can
@@ -53,16 +61,6 @@ extern int chroot(const char *);
 #ifdef __OpenBSD__
 extern int pledge(const char *, const char *);
 extern int unveil(const char *, const char *);
-
-/*
- * OpenBSD requires that _BSD_SOURCE be set to use SOCK_NONBLOCK for
- * some reason, even though from everything I can tell, SOCK_NONBLOCK
- * is POSIX.
- */
-#ifndef _BSD_SOURCE
-#define _BSD_SOURCE
-#endif
-
 #endif
 
 #endif

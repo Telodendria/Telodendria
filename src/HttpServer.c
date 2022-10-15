@@ -41,6 +41,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <fcntl.h>
 
 struct HttpServer
 {
@@ -310,9 +311,14 @@ HttpServerCreate(unsigned short port, unsigned int nThreads, unsigned int maxCon
         goto error;
     }
 
-    server->sd = socket(AF_INET, SOCK_STREAM | SOCK_NONBLOCK, 0);
+    server->sd = socket(AF_INET, SOCK_STREAM, 0);
 
     if (server->sd < 0)
+    {
+        goto error;
+    }
+
+    if (fcntl(server->sd, F_SETFL, O_NONBLOCK) == -1)
     {
         goto error;
     }
