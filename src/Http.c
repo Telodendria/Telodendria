@@ -392,6 +392,109 @@ HttpParamDecode(char * in)
 		return NULL;
 	}
 
+	while (*in)
+	{
+		char *buf;
+		size_t allocated;
+		size_t len;
+
+		char *decKey;
+		char *decVal;
+
+		/* Read in key */
+
+		allocated = TELODENDRIA_STRING_CHUNK;
+		buf = Malloc(allocated);
+		len = 0;
+
+		while (*in && *in != '=')
+		{
+			if (len >= allocated)
+			{
+				allocated += TELODENDRIA_STRING_CHUNK;
+				buf = Realloc(buf, allocated);
+			}
+
+			buf[len] = *in;
+			len++;
+			in++;
+		}
+
+		/* Sanity check */
+		if (*in != '=')
+		{
+			/* Malformed param */
+			Free(buf);
+			Free(params);
+			return NULL;
+		}
+
+		in++;
+
+		/* Decode key */
+		decKey = HttpUrlDecode(buf);
+		Free(buf);
+
+		if (!decKey)
+		{
+			/* Decoding error */
+			Free(params);
+			return NULL;
+		}
+
+		/* Read in value */
+		allocated = TELODENDRIA_STRING_CHUNK;
+		buf = Malloc(allocated);
+		len = 0;
+
+		while (*in && *in != '&')
+		{
+			if (len >= allocated)
+			{
+				allocated += TELODENDRIA_STRING_CHUNK;
+				buf = Realloc(buf, allocated);
+			}
+
+			buf[len] = *in;
+			len++;
+			in++;
+		}
+
+		/* Decode value */
+		decVal = HttpUrlDecode(buf);
+		Free(buf);
+
+		if (!decVal)
+		{
+			/* Decoding error */
+			Free(params);
+			return NULL;
+		}
+
+		HashMapSet(params, decKey, decVal);
+
+		if (*in == '&')
+		{
+			in++;
+			continue;
+		}
+		else
+		{
+			break;
+		}
+	}
+
+	printf("Done with decoding, here's what we got:\n");
+	{
+		char *key;
+		char *val;
+
+		while (HashMapIterate(params, &key, (void **) &val))
+		{
+			printf("  [%s]: [%s]\n", key, val);
+		}
+	}
+
     return params;
 }
 
