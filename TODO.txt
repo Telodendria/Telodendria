@@ -40,7 +40,6 @@ Phase 2: Building a foundation
 		[x] Encode as UTF-8 instead of using \u escapes
 		[x] Decode encoded strings to UTF-8
 [x] Write a function that gets the current Unix timestamp in milliseconds
-[ ] Figure out how to write unit tests for array/hashmap/etc
 [x] Parse the Telodendria config file
 [x] Add license header to all files
 [!] Add documentation for all public APIs (See below)
@@ -59,6 +58,7 @@ Phase 2: Building a foundation
     file live there as well.
 [x] Allow logging to the syslog
 [ ] Fix bug where the socket stays open after quit.
+[ ] Figure out how to write unit tests for array/hashmap/etc
 
 Phase 3: Welcome to Matrix
 
@@ -103,7 +103,7 @@ Documentation
 	[x] Lists do not contain only <li> elements
 [!] Add other message divs for notes and warnings
 
-[x] Convert documentation to man pages
+[~] Convert documentation to man pages
 	[x] Clean up dark mode in man page CSS (links)
 	[x] Synopsis table should not be styled
 	[x] Make available on MANPATH in tools/env.sh
