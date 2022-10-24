@@ -29,6 +29,7 @@
 #include <HashMap.h>
 
 #include <TelodendriaConfig.h>
+#include <Db.h>
 
 /*
  * Abstract away the underlying data structure of the path so that
@@ -90,6 +91,7 @@ typedef struct MatrixHttpHandlerArgs
 {
     LogConfig *lc;
     TelodendriaConfig *config;
+    Db *db;
 } MatrixHttpHandlerArgs;
 
 extern void

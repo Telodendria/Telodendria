@@ -38,6 +38,7 @@
 #include <Config.h>
 #include <HttpServer.h>
 #include <Matrix.h>
+#include <Db.h>
 
 static void
 TelodendriaMemoryHook(MemoryAction a, MemoryInfo * i, void *args)
@@ -418,6 +419,20 @@ main(int argc, char **argv)
     tConfig->uid = NULL;
     tConfig->gid = NULL;
 
+    matrixArgs.db = DbOpen(".", tConfig->maxCache);
+
+    if (!tConfig->maxCache)
+    {
+        Log(lc, LOG_WARNING, "Max-cache is set to zero; caching is disabled.");
+    }
+
+    if (!matrixArgs.db)
+    {
+        Log(lc, LOG_ERROR, "Unable to open data directory as a database.");
+        exit = EXIT_FAILURE;
+        goto finish;
+    }
+
     Log(lc, LOG_TASK, "Starting server...");
 
     if (!HttpServerStart(httpServer))
@@ -452,6 +467,7 @@ finish:
         Log(lc, LOG_DEBUG, "Freed HTTP Server.");
     }
     TelodendriaConfigFree(tConfig);
+    DbClose(matrixArgs.db);
 
     Log(lc, LOG_DEBUG, "");
     MemoryIterate(TelodendriaMemoryIterator, lc);
