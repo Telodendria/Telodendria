@@ -31,6 +31,8 @@
 #ifndef TELODENDRIA_UTIL_H
 #define TELODENDRIA_UTIL_H
 
+#include <stddef.h>
+
 /*
  * Get the current type in milliseconds since the Unix epoch. This uses
  * POSIX gettimeofday(2) and time_t, and converts it to a single number,
@@ -50,7 +52,7 @@
  * Return: A long representing the current time in milliseconds since
  * the beginning of the Unix epoch, just as the Matrix spec requires.
  */
-extern long
+extern unsigned long
  UtilServerTs(void);
 
 /*
@@ -95,5 +97,8 @@ extern char *
  */
 extern int
  UtilSleepMillis(long);
+
+extern size_t
+ UtilStringToBytes(char *);
 
 #endif                             /* TELODENDRIA_UTIL_H */

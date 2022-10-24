@@ -334,6 +334,8 @@ main(int argc, char **argv)
     Log(lc, LOG_DEBUG, "Run As: %s:%s", tConfig->uid, tConfig->gid);
     Log(lc, LOG_DEBUG, "Data Directory: %s", tConfig->dataDir);
     Log(lc, LOG_DEBUG, "Threads: %d", tConfig->threads);
+    Log(lc, LOG_DEBUG, "Max Connections: %d", tConfig->maxConnections);
+    Log(lc, LOG_DEBUG, "Max Cache: %ld", tConfig->maxCache);
     Log(lc, LOG_DEBUG, "Flags: %x", tConfig->flags);
     LogConfigUnindent(lc);
 

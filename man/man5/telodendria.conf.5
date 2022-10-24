@@ -1,4 +1,4 @@
-.Dd $Mdocdate: October 15 2022 $
+.Dd $Mdocdate: October 24 2022 $
 .Dt TELODENDRIA.CONF 5
 .Os Telodendria Project
 .Sh NAME
@@ -172,6 +172,17 @@ less than the total CPU core count, to prevent overloading the system. The most
 efficient number of threads ultimately depends on the configuration of the
 machine running Telodendria, so you may just have to play around with different
 values here to see which gives the best performance.
+.It Ic max-connections Ar count
+The maximum number of simultanious connections to allow to the daemon. This option
+prevents the daemon from allocating large amounts of memory in the even that it
+undergoes a denial of service attack. It typically does not need to be adjusted.
+.It Ic max-cache Ar bytes
+The maximum size of the cache. Telodendria relies heavily on caching to speed
+things up. The cache grows as data is loaded from the data directory. All cache
+is stored in memory. This option limits the size of the memory cache. If you have
+a system that has a lot of memory, you'll get better performance if this option
+is set higher. Otherwise, this value should be lowered on systems that have
+minimal memory available.
 .El
 .Sh FILES
 .Bl -tag -width Ds

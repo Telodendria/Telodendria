@@ -27,14 +27,16 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
+#include <math.h>
 #include <time.h>
 #include <sys/time.h>
 
-long
+unsigned long
 UtilServerTs(void)
 {
     struct timeval tv;
-    long ts;
+    unsigned long ts;
 
     gettimeofday(&tv, NULL);
     ts = (tv.tv_sec * 1000) + (tv.tv_usec / 1000);
@@ -121,4 +123,54 @@ UtilSleepMillis(long ms)
     res = nanosleep(&ts, &ts);
 
     return res;
+}
+
+size_t
+UtilStringToBytes(char *str)
+{
+    size_t bytes = 0;
+
+    while (*str)
+    {
+        if (isdigit(*str))
+        {
+            bytes *= 10;
+            bytes += *str - '0';
+        }
+        else
+        {
+            switch (*str)
+            {
+                case 'K':
+                    bytes *= 1024;
+                    break;
+                case 'M':
+                    bytes *= pow(1024, 2);
+                    break;
+                case 'G':
+                    bytes *= pow(1024, 3);
+                    break;
+                case 'k':
+                    bytes *= 1000;
+                    break;
+                case 'm':
+                    bytes *= pow(1000, 2);
+                    break;
+                case 'g':
+                    bytes *= pow(1000, 3);
+                    break;
+                default:
+                    return 0;
+            }
+
+            if (*(str + 1))
+            {
+                return 0;
+            }
+        }
+
+        str++;
+    }
+
+    return bytes;
 }

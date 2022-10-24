@@ -68,6 +68,8 @@ typedef struct TelodendriaConfig
     unsigned int threads;
     unsigned int maxConnections;
 
+    size_t maxCache;
+
     char *logTimestamp;
     int logLevel;
 } TelodendriaConfig;

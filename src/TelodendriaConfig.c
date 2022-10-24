@@ -230,7 +230,10 @@ TelodendriaConfigParse(HashMap * config, LogConfig * lc)
         }
     }
 
-
+    GET_DIRECTIVE("max-cache");
+    ASSERT_NO_CHILDREN("max-cache");
+    ASSERT_VALUES("max-cache", 1);
+    tConfig->maxCache = UtilStringToBytes(ArrayGet(value, 0));
 
     GET_DIRECTIVE("federation");
     ASSERT_NO_CHILDREN("federation");
