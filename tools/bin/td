@@ -110,7 +110,6 @@ recipe_run() {
 # build recipe.
 recipe_clean() {
 	rm -rv build
-	find . -name '*.orig' -delete
 }
 
 # Format the source code by updating the copyright headers and
@@ -121,7 +120,7 @@ recipe_format() {
 		srcHeader=$(grep -n -m 1 '^ \*/' "$src" | cut -d ':' -f 1)
 		head "-n$srcHeader" "$src" |
 			diff -u -p - LICENSE.txt |
-			patch "$src"
+			patch "$src" | grep -v "^Hmm"
 
 		# Format the source code
 		if indent "$src"; then
