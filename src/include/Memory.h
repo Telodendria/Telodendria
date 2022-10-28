@@ -30,7 +30,8 @@ typedef enum MemoryAction
 {
     MEMORY_ALLOCATE,
     MEMORY_REALLOCATE,
-    MEMORY_FREE
+    MEMORY_FREE,
+    MEMORY_BAD_POINTER
 } MemoryAction;
 
 #define Malloc(x) MemoryAllocate(x, __FILE__, __LINE__)

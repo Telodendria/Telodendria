@@ -57,6 +57,9 @@ TelodendriaMemoryHook(MemoryAction a, MemoryInfo * i, void *args)
         case MEMORY_FREE:
             action = "Freed";
             break;
+        case MEMORY_BAD_POINTER:
+            Log(lc, LOG_WARNING, "Bad pointer passed into a memory function.");
+            return;
         default:
             action = "Unknown operation on";
             break;
@@ -76,9 +79,9 @@ TelodendriaMemoryIterator(MemoryInfo * i, void *args)
     /* We haven't freed the logger memory yet */
     if (MemoryInfoGetPointer(i) != lc)
     {
-        Log(lc, LOG_DEBUG, "%lu bytes of memory at %p leaked from %s:%d",
-            MemoryInfoGetSize(i), MemoryInfoGetPointer(i),
-            MemoryInfoGetFile(i), MemoryInfoGetLine(i));
+        Log(lc, LOG_WARNING, "%s:%d: %lu bytes of memory at %p leaked.",
+            MemoryInfoGetFile(i), MemoryInfoGetLine(i),
+            MemoryInfoGetSize(i), MemoryInfoGetPointer(i));
     }
 }
 
@@ -147,6 +150,8 @@ main(int argc, char **argv)
     struct sigaction sigAction;
 
     MatrixHttpHandlerArgs matrixArgs;
+
+    memset(&matrixArgs, 0, sizeof(matrixArgs));
 
     lc = LogConfigCreate();
 
