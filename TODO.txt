@@ -59,6 +59,8 @@ Phase 2: Building a foundation
 [x] Allow logging to the syslog
 [ ] Fix bug where the socket stays open after quit.
 [ ] Figure out how to write unit tests for array/hashmap/etc
+[ ] Fix memory leaks
+[ ] Make memory info access O(1)
 
 Phase 3: Welcome to Matrix
 
