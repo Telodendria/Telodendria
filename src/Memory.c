@@ -32,6 +32,7 @@ struct MemoryInfo
     size_t size;
     const char *file;
     int line;
+    void *pointer;
 
     MemoryInfo *next;
     MemoryInfo *prev;
@@ -45,20 +46,30 @@ static void *hookArgs = NULL;
 void *
 MemoryAllocate(size_t size, const char *file, int line)
 {
+    void *p;
     MemoryInfo *a;
 
     pthread_mutex_lock(&lock);
 
-    a = malloc(sizeof(MemoryInfo) + size);
-    if (!a)
+    p = malloc(size);
+    if (!p)
     {
         pthread_mutex_unlock(&lock);
         return NULL;
     }
 
-    a->size = sizeof(MemoryInfo) + size;
+    a = malloc(sizeof(MemoryInfo));
+    if (!a)
+    {
+        free(p);
+        pthread_mutex_unlock(&lock);
+        return NULL;
+    }
+
+    a->size = size;
     a->file = file;
     a->line = line;
+    a->pointer = p;
     a->next = NULL;
     a->prev = lastAllocation;
 
@@ -75,7 +86,7 @@ MemoryAllocate(size_t size, const char *file, int line)
     }
 
     pthread_mutex_unlock(&lock);
-    return MemoryInfoGetPointer(a);
+    return p;
 }
 
 void *
@@ -84,55 +95,34 @@ MemoryReallocate(void *p, size_t size)
     MemoryInfo *a;
     void *new = NULL;
 
-    a = MemoryInfoGet(p);
-
-    if (!a)
-    {
-        if (hook)
-        {
-            hook(MEMORY_BAD_POINTER, NULL, hookArgs);
-        }
-        pthread_mutex_unlock(&lock);
-        return NULL;
-    }
-
     pthread_mutex_lock(&lock);
 
-    new = realloc(a, sizeof(MemoryInfo) + size);
-    if (!new)
+    a = lastAllocation;
+    while (a)
     {
-        pthread_mutex_unlock(&lock);
-        return NULL;
-    }
-    a = new;
-    a->size = sizeof(MemoryInfo) + size;
+        if (a->pointer == p)
+        {
+            new = realloc(p, size);
+            if (new)
+            {
+                a->pointer = new;
+                a->size = size;
 
-    if (a->prev)
-    {
-        a->prev->next = a;
-    }
-    else
-    {
-        lastAllocation = a;
-    }
+                if (hook)
+                {
+                    hook(MEMORY_REALLOCATE, a, hookArgs);
+                }
+            }
 
-    if (a->next)
-    {
-        a->next->prev = a;
-    }
-    else
-    {
-        lastAllocation = a;
-    }
+            break;
+        }
 
-    if (hook)
-    {
-        hook(MEMORY_REALLOCATE, a, hookArgs);
+        a = a->prev;
     }
 
     pthread_mutex_unlock(&lock);
 
-    return MemoryInfoGetPointer(a);
+    return new;
 }
 
 void
@@ -142,41 +132,43 @@ MemoryFree(void *p)
 
     pthread_mutex_lock(&lock);
 
-    a = MemoryInfoGet(p);
-    if (!a)
+    a = lastAllocation;
+
+    while (a)
     {
-        if (hook)
+        if (a->pointer == p)
         {
-            hook(MEMORY_BAD_POINTER, NULL, hookArgs);
+            if (a->prev)
+            {
+                a->prev->next = a->next;
+            }
+            else
+            {
+                lastAllocation = a->next;
+            }
+
+            if (a->next)
+            {
+                a->next->prev = a->prev;
+            }
+            else
+            {
+                lastAllocation = a->prev;
+            }
+
+            if (hook)
+            {
+                hook(MEMORY_FREE, a, hookArgs);
+            }
+
+            free(a);
+            free(p);
+
+            break;
         }
-        pthread_mutex_unlock(&lock);
-        return;
-    }
 
-    if (a->prev)
-    {
-        a->prev->next = a->next;
+        a = a->prev;
     }
-    else
-    {
-        lastAllocation = a->next;
-    }
-
-    if (a->next)
-    {
-        a->next->prev = a->prev;
-    }
-    else
-    {
-        lastAllocation = a->prev;
-    }
-
-    if (hook)
-    {
-        hook(MEMORY_FREE, a, hookArgs);
-    }
-
-    free(a);
 
     pthread_mutex_unlock(&lock);
 }
@@ -213,7 +205,9 @@ MemoryFreeAll(void)
     {
         MemoryInfo *prev = a->prev;
 
+        free(a->pointer);
         free(a);
+
         a = prev;
     }
 
@@ -227,18 +221,12 @@ MemoryInfoGet(void *p)
 {
     MemoryInfo *a;
 
-    if (!p)
-    {
-        return NULL;
-    }
-
-    p = &(((MemoryInfo *) p)[-1]);
+    pthread_mutex_lock(&lock);
 
     a = lastAllocation;
-
     while (a)
     {
-        if (a == p)
+        if (a->pointer == p)
         {
             break;
         }
@@ -290,7 +278,7 @@ MemoryInfoGetPointer(MemoryInfo * a)
         return NULL;
     }
 
-    return &(a[1]);
+    return a->pointer;
 }
 
 void
