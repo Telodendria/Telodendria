@@ -122,6 +122,7 @@ HttpServerContextFree(HttpServerContext * c)
 
     while (HashMapIterate(c->requestHeaders, &key, &val))
     {
+        /* Since we create these, we know they're always on the heap */
         Free(key);
         Free(val);
     }

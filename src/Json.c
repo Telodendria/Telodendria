@@ -645,6 +645,7 @@ JsonFree(HashMap * object)
 
     while (HashMapIterate(object, &key, (void **) &value))
     {
+        Free(key);
         JsonValueFree(value);
     }
 

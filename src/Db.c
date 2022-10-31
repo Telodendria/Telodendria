@@ -31,12 +31,19 @@ struct Db
 {
     const char *dir;
     size_t cacheSize;
+    size_t maxCache;
     pthread_mutex_t lock;
+
+    HashMap *cache;
 };
 
 struct DbRef
 {
+    HashMap *json;
     pthread_mutex_t lock;
+
+    unsigned long ts;
+    char *file;
 };
 
 Db *
@@ -56,13 +63,17 @@ DbOpen(const char *dir, size_t cache)
     }
 
     db->dir = dir;
-    db->cacheSize = cache;
+    db->maxCache = cache;
 
     pthread_mutex_init(&db->lock, NULL);
 
-    if (db->cacheSize)
+    if (db->maxCache)
     {
-
+        db->cache = HashMapCreate();
+        if (!db->cache)
+        {
+            return NULL;
+        }
     }
 
     return db;
@@ -76,29 +87,54 @@ DbClose(Db * db)
         return;
     }
 
+    pthread_mutex_destroy(&db->lock);
+    HashMapFree(db->cache);
+
     Free(db);
 }
 
 DbRef *
 DbCreate(Db * db, char *prefix, char *key)
 {
+    if (!db || !prefix || !key)
+    {
+        return NULL;
+    }
+
     return NULL;
 }
 
 DbRef *
 DbLock(Db * db, char *prefix, char *key)
 {
+    if (!db || !prefix || !key)
+    {
+        return NULL;
+    }
+
+    pthread_mutex_lock(&db->lock);
+
+    pthread_mutex_unlock(&db->lock);
     return NULL;
 }
 
 void
 DbUnlock(Db * db, DbRef * ref)
 {
+    if (!db || !ref)
+    {
+        return;
+    }
+
+    pthread_mutex_lock(&db->lock);
+
+    pthread_mutex_unlock(&db->lock);
+
     return;
 }
 
 HashMap *
 DbJson(DbRef * ref)
 {
-    return NULL;
+    return ref ? ref->json : NULL;
 }
