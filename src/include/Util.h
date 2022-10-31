@@ -31,7 +31,9 @@
 #ifndef TELODENDRIA_UTIL_H
 #define TELODENDRIA_UTIL_H
 
+#include <stdio.h>
 #include <stddef.h>
+#include <sys/types.h>
 
 /*
  * Get the current type in milliseconds since the Unix epoch. This uses
@@ -100,5 +102,11 @@ extern int
 
 extern size_t
  UtilStringToBytes(char *);
+
+extern ssize_t
+ UtilGetDelim(char **, size_t *, int, FILE *);
+
+extern ssize_t
+ UtilGetLine(char **, size_t *, FILE *);
 
 #endif                             /* TELODENDRIA_UTIL_H */

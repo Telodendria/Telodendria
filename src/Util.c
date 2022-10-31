@@ -25,12 +25,14 @@
 
 #include <Memory.h>
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
 #include <math.h>
 #include <time.h>
 #include <sys/time.h>
+#include <errno.h>
 
 unsigned long
 UtilServerTs(void)
@@ -173,4 +175,87 @@ UtilStringToBytes(char *str)
     }
 
     return bytes;
+}
+
+ssize_t
+UtilGetDelim(char **linePtr, size_t * n, int delim, FILE * stream)
+{
+    char *curPos, *newLinePtr;
+    size_t newLinePtrLen;
+    int c;
+
+    if (!linePtr || !n || !stream)
+    {
+        errno = EINVAL;
+        return -1;
+    }
+
+    if (*linePtr == NULL)
+    {
+        *n = 128;
+
+        if (!(*linePtr = Malloc(*n)))
+        {
+            errno = ENOMEM;
+            return -1;
+        }
+    }
+
+    curPos = *linePtr;
+
+    while (1)
+    {
+        c = getc(stream);
+
+        if (ferror(stream) || (c == EOF && curPos == *linePtr))
+        {
+            return -1;
+        }
+
+        if (c == EOF)
+        {
+            break;
+        }
+
+        if ((*linePtr + *n - curPos) < 2)
+        {
+            if (SSIZE_MAX / 2 < *n)
+            {
+#ifdef EOVERFLOW
+                errno = EOVERFLOW;
+#else
+                errno = ERANGE;
+#endif
+                return -1;
+            }
+
+            newLinePtrLen = *n * 2;
+
+            if (!(newLinePtr = Realloc(*linePtr, newLinePtrLen)))
+            {
+                errno = ENOMEM;
+                return -1;
+            }
+
+            curPos = newLinePtr + (curPos - *linePtr);
+            *linePtr = newLinePtr;
+            *n = newLinePtrLen;
+        }
+
+        *curPos++ = (char) c;
+
+        if (c == delim)
+        {
+            break;
+        }
+    }
+
+    *curPos = '\0';
+    return (ssize_t) (curPos - *linePtr);
+}
+
+ssize_t
+UtilGetLine(char **linePtr, size_t * n, FILE * stream)
+{
+    return UtilGetDelim(linePtr, n, '\n', stream);
 }

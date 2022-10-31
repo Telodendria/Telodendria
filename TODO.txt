@@ -52,7 +52,7 @@ Phase 2: Building a foundation
 	[~] Data abstraction layer
 		[ ] Database upgrades/migration path
 		[ ] Caching and cache control
-		[ ] Make memory info access O(1)
+		[x] Make memory info access O(1)
 	[x] Error generation
 [x] Properly implement the command line options as stated in telodendria(8)
 [x] Remove "chroot" option, just chroot into the data dir, and make the log
@@ -61,6 +61,7 @@ Phase 2: Building a foundation
 [x] Fix memory leaks
 [ ] Fix bug where the socket stays open after quit.
 [ ] Figure out how to write unit tests for array/hashmap/etc
+[ ] Add recipe to td script to upload patches to the Matrix room
 
 Phase 3: Welcome to Matrix
 
@@ -135,3 +136,4 @@ Documentation
 [x] Add onboarding documentation
 	[x] Building from source
 	[!] Writing config file (see Config.5)
+

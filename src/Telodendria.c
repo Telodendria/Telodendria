@@ -58,8 +58,8 @@ TelodendriaMemoryHook(MemoryAction a, MemoryInfo * i, void *args)
             action = "Freed";
             break;
         case MEMORY_BAD_POINTER:
-            Log(lc, LOG_WARNING, "Bad pointer passed into a memory function: %p", (void *) i);
-            return;
+            action = "Bad pointer to";
+            break;
         default:
             action = "Unknown operation on";
             break;
@@ -154,6 +154,7 @@ main(int argc, char **argv)
     memset(&matrixArgs, 0, sizeof(matrixArgs));
 
     lc = LogConfigCreate();
+    LogConfigLevelSet(lc, LOG_DEBUG);
 
     if (!lc)
     {

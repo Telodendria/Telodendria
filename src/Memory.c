@@ -33,15 +33,104 @@ struct MemoryInfo
     const char *file;
     int line;
     void *pointer;
-
-    MemoryInfo *next;
-    MemoryInfo *prev;
 };
 
 static pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
-static MemoryInfo *lastAllocation = NULL;
 static void (*hook) (MemoryAction, MemoryInfo *, void *) = NULL;
 static void *hookArgs = NULL;
+
+static MemoryInfo **allocations = NULL;
+static size_t allocationsSize = 0;
+static size_t allocationsLen = 0;
+
+static size_t
+MemoryHash(void *p)
+{
+    return (((size_t) p) >> 2 * 7) % allocationsSize;
+}
+
+static int
+MemoryInsert(MemoryInfo * a)
+{
+    size_t hash;
+
+    if (!allocations)
+    {
+        allocationsSize = 64;
+        allocations = calloc(allocationsSize, sizeof(void *));
+        if (!allocations)
+        {
+            return 0;
+        }
+    }
+
+    if ((allocationsLen + 1) >= (0.75 * allocationsSize))
+    {
+        size_t i;
+        size_t tmpAllocationsSize = allocationsSize;
+        MemoryInfo **tmpAllocations;
+
+        allocationsSize *= 2;
+        tmpAllocations = calloc(allocationsSize, sizeof(void *));
+
+        if (!tmpAllocations)
+        {
+            return 0;
+        }
+
+        for (i = 0; i < tmpAllocationsSize; i++)
+        {
+            if (allocations[i])
+            {
+                hash = MemoryHash(allocations[i]->pointer);
+
+                while (tmpAllocations[hash])
+                {
+                    hash = (hash + 1) % allocationsSize;
+                }
+
+                tmpAllocations[hash] = allocations[i];
+            }
+        }
+
+        free(allocations);
+        allocations = tmpAllocations;
+    }
+
+    hash = MemoryHash(a->pointer);
+
+    while (allocations[hash])
+    {
+        hash = (hash + 1) % allocationsSize;
+    }
+
+    allocations[hash] = a;
+    allocationsLen++;
+
+    return 1;
+}
+
+static void
+MemoryDelete(MemoryInfo * a)
+{
+    size_t hash = MemoryHash(a->pointer);
+    size_t count = 0;
+
+    while (count <= allocationsSize)
+    {
+        if (allocations[hash] && allocations[hash] == a)
+        {
+            allocations[hash] = NULL;
+            allocationsLen--;
+            return;
+        }
+        else
+        {
+            hash = (hash + 1) % allocationsSize;
+            count++;
+        }
+    }
+}
 
 void *
 MemoryAllocate(size_t size, const char *file, int line)
@@ -70,15 +159,14 @@ MemoryAllocate(size_t size, const char *file, int line)
     a->file = file;
     a->line = line;
     a->pointer = p;
-    a->next = NULL;
-    a->prev = lastAllocation;
 
-    if (lastAllocation)
+    if (!MemoryInsert(a))
     {
-        lastAllocation->next = a;
+        free(a);
+        free(p);
+        pthread_mutex_unlock(&lock);
+        return NULL;
     }
-
-    lastAllocation = a;
 
     if (hook)
     {
@@ -100,99 +188,102 @@ MemoryReallocate(void *p, size_t size, const char *file, int line)
         return MemoryAllocate(size, file, line);
     }
 
-    pthread_mutex_lock(&lock);
-
-    a = lastAllocation;
-    while (a)
+    a = MemoryInfoGet(p);
+    if (a)
     {
-        if (a->pointer == p)
+        pthread_mutex_lock(&lock);
+        new = realloc(a->pointer, size);
+        if (new)
         {
-            new = realloc(p, size);
-            if (new)
-            {
-                a->pointer = new;
-                a->size = size;
-                a->file = file;
-                a->line = line;
+            MemoryDelete(a);
+            a->size = size;
+            a->file = file;
+            a->line = line;
 
-                if (hook)
-                {
-                    hook(MEMORY_REALLOCATE, a, hookArgs);
-                }
+            a->pointer = new;
+            MemoryInsert(a);
+
+            if (hook)
+            {
+                hook(MEMORY_REALLOCATE, a, hookArgs);
             }
 
-            break;
         }
-
-        a = a->prev;
+        pthread_mutex_unlock(&lock);
+    }
+    else if (hook)
+    {
+        a = malloc(sizeof(MemoryInfo));
+        if (a)
+        {
+            a->size = 0;
+            a->file = file;
+            a->line = line;
+            a->pointer = p;
+            hook(MEMORY_BAD_POINTER, a, hookArgs);
+            free(a);
+        }
     }
 
-    pthread_mutex_unlock(&lock);
 
     return new;
 }
 
 void
-MemoryFree(void *p)
+MemoryFree(void *p, const char *file, int line)
 {
     MemoryInfo *a;
 
-    pthread_mutex_lock(&lock);
-
-    a = lastAllocation;
-
-    while (a)
+    if (!p)
     {
-        if (a->pointer == p)
-        {
-            if (a->prev)
-            {
-                a->prev->next = a->next;
-            }
-            else
-            {
-                lastAllocation = a->next;
-            }
-
-            if (a->next)
-            {
-                a->next->prev = a->prev;
-            }
-            else
-            {
-                lastAllocation = a->prev;
-            }
-
-            if (hook)
-            {
-                hook(MEMORY_FREE, a, hookArgs);
-            }
-
-            free(a);
-            free(p);
-
-            break;
-        }
-
-        a = a->prev;
+        return;
     }
 
-    pthread_mutex_unlock(&lock);
+    a = MemoryInfoGet(p);
+    if (a)
+    {
+        pthread_mutex_lock(&lock);
+        if (hook)
+        {
+            a->file = file;
+            a->line = line;
+            hook(MEMORY_FREE, a, hookArgs);
+        }
+        MemoryDelete(a);
+        free(a->pointer);
+        free(a);
+
+        pthread_mutex_unlock(&lock);
+    }
+    else if (hook)
+    {
+        a = malloc(sizeof(MemoryInfo));
+        if (a)
+        {
+            a->file = file;
+            a->line = line;
+            a->size = 0;
+            a->pointer = p;
+            hook(MEMORY_BAD_POINTER, a, hookArgs);
+            free(a);
+        }
+    }
 }
 
 size_t
 MemoryAllocated(void)
 {
-    MemoryInfo *a;
+    size_t i;
     size_t total = 0;
 
     pthread_mutex_lock(&lock);
 
-    a = lastAllocation;
-    while (a)
+    for (i = 0; i < allocationsSize; i++)
     {
-        total += a->size;
-        a = a->prev;
+        if (allocations[i])
+        {
+            total += allocations[i]->size;
+        }
     }
 
     pthread_mutex_unlock(&lock);
@@ -203,22 +294,23 @@ MemoryAllocated(void)
 void
 MemoryFreeAll(void)
 {
-    MemoryInfo *a;
+    size_t i;
 
     pthread_mutex_lock(&lock);
 
-    a = lastAllocation;
-    while (a)
+    for (i = 0; i < allocationsSize; i++)
     {
-        MemoryInfo *prev = a->prev;
-
-        free(a->pointer);
-        free(a);
-
-        a = prev;
+        if (allocations[i])
+        {
+            free(allocations[i]->pointer);
+            free(allocations[i]);
+        }
     }
 
-    lastAllocation = NULL;
+    free(allocations);
+    allocations = NULL;
+    allocationsSize = 0;
+    allocationsLen = 0;
 
     pthread_mutex_unlock(&lock);
 }
@@ -226,22 +318,28 @@ MemoryFreeAll(void)
 MemoryInfo *
 MemoryInfoGet(void *p)
 {
-    MemoryInfo *a;
+    size_t hash, count;
 
     pthread_mutex_lock(&lock);
 
-    a = lastAllocation;
-    while (a)
+    hash = MemoryHash(p);
+
+    count = 0;
+    while (count <= allocationsSize)
     {
-        if (a->pointer == p)
+        if (!allocations[hash] || allocations[hash]->pointer != p)
+        {
+            hash = (hash + 1) % allocationsSize;
+            count++;
+        }
+        else
         {
             break;
         }
-
-        a = a->prev;
     }
 
-    return a;
+    pthread_mutex_unlock(&lock);
+    return allocations[hash];
 }
 
 size_t
@@ -291,15 +389,16 @@ MemoryInfoGetPointer(MemoryInfo * a)
 void
  MemoryIterate(void (*iterFunc) (MemoryInfo *, void *), void *args)
 {
-    MemoryInfo *a;
+    size_t i;
 
     pthread_mutex_lock(&lock);
 
-    a = lastAllocation;
-    while (a)
+    for (i = 0; i < allocationsSize; i++)
     {
-        iterFunc(a, args);
-        a = a->prev;
+        if (allocations[i])
+        {
+            iterFunc(allocations[i], args);
+        }
     }
 
     pthread_mutex_unlock(&lock);
