@@ -424,7 +424,7 @@ HttpParamDecode(char *in)
         {
             /* Malformed param */
             Free(buf);
-            Free(params);
+            HashMapFree(params);
             return NULL;
         }
 

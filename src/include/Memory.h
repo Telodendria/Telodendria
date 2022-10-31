@@ -35,13 +35,13 @@ typedef enum MemoryAction
 } MemoryAction;
 
 #define Malloc(x) MemoryAllocate(x, __FILE__, __LINE__)
-#define Realloc(x, s) MemoryReallocate(x, s)
+#define Realloc(x, s) MemoryReallocate(x, s, __FILE__, __LINE__)
 #define Free(x) MemoryFree(x)
 
 typedef struct MemoryInfo MemoryInfo;
 
 extern void *MemoryAllocate(size_t, const char *, int);
-extern void *MemoryReallocate(void *, size_t);
+extern void *MemoryReallocate(void *, size_t, const char *, int);
 extern void MemoryFree(void *);
 
 extern size_t MemoryAllocated(void);

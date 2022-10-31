@@ -90,10 +90,15 @@ MemoryAllocate(size_t size, const char *file, int line)
 }
 
 void *
-MemoryReallocate(void *p, size_t size)
+MemoryReallocate(void *p, size_t size, const char *file, int line)
 {
     MemoryInfo *a;
     void *new = NULL;
+
+    if (!p)
+    {
+        return MemoryAllocate(size, file, line);
+    }
 
     pthread_mutex_lock(&lock);
 
@@ -107,6 +112,8 @@ MemoryReallocate(void *p, size_t size)
             {
                 a->pointer = new;
                 a->size = size;
+                a->file = file;
+                a->line = line;
 
                 if (hook)
                 {

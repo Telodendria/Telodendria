@@ -82,6 +82,7 @@ HashMapGrow(HashMap * map)
     newEntries = Malloc(map->capacity * sizeof(HashMapBucket *));
     if (!newEntries)
     {
+        map->capacity /= 2;
         return 0;
     }
 
