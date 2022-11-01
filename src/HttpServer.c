@@ -165,7 +165,9 @@ HttpServerContextFree(HttpServerContext * c)
     HashMapFree(c->requestParams);
 
     Free(c->requestPath);
+#if 0
     fclose(c->stream);
+#endif
 
     Free(c);
 }
@@ -513,7 +515,7 @@ HttpServerWorkerThread(void *args)
         }
 
         requestPath[i] = '\0';
-        requestParams = HttpParamDecode(requestPath + i + 1);
+        requestParams = HttpParamDecode(requestPath + i);
 
         context = HttpServerContextCreate(requestMethod, requestPath, requestParams, fp);
         if (!context)
@@ -596,7 +598,9 @@ bad_request:
 
 finish:
         Free(line);
+#if 0
         fclose(fp);
+#endif
     }
 
     return NULL;

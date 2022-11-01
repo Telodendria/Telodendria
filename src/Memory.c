@@ -334,12 +334,13 @@ MemoryInfoGet(void *p)
         }
         else
         {
-            break;
+            pthread_mutex_unlock(&lock);
+            return allocations[hash];
         }
     }
 
     pthread_mutex_unlock(&lock);
-    return allocations[hash];
+    return NULL;
 }
 
 size_t

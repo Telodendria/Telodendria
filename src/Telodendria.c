@@ -154,7 +154,6 @@ main(int argc, char **argv)
     memset(&matrixArgs, 0, sizeof(matrixArgs));
 
     lc = LogConfigCreate();
-    LogConfigLevelSet(lc, LOG_DEBUG);
 
     if (!lc)
     {
@@ -212,6 +211,7 @@ main(int argc, char **argv)
     }
     else
     {
+	fclose(stdin);
 #ifdef __OpenBSD__
         if (unveil(configArg, "r") != 0)
         {
@@ -472,6 +472,16 @@ finish:
         HttpServerFree(httpServer);
         Log(lc, LOG_DEBUG, "Freed HTTP Server.");
     }
+
+    /*
+     * If we're not logging to standard output, then we can close it. Otherwise,
+     * if we are logging to stdout, LogConfigFree() will close it for us.
+     */
+    if (!(tConfig->flags & TELODENDRIA_LOG_STDOUT))
+    {
+        fclose(stdout);
+    }
+
     TelodendriaConfigFree(tConfig);
     DbClose(matrixArgs.db);
 
@@ -483,5 +493,7 @@ finish:
     LogConfigFree(lc);
 
     MemoryFreeAll();
+
+    fclose(stderr);
     return exit;
 }
