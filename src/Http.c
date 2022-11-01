@@ -327,7 +327,7 @@ HttpUrlDecode(char *str)
 
     i = 0;
     inputLen = strlen(str);
-    decoded = Malloc(inputLen);
+    decoded = Malloc(inputLen + 1);
 
     if (!decoded)
     {
