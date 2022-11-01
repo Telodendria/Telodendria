@@ -477,7 +477,7 @@ finish:
      * If we're not logging to standard output, then we can close it. Otherwise,
      * if we are logging to stdout, LogConfigFree() will close it for us.
      */
-    if (!(tConfig->flags & TELODENDRIA_LOG_STDOUT))
+    if (!tConfig || !(tConfig->flags & TELODENDRIA_LOG_STDOUT))
     {
         fclose(stdout);
     }
