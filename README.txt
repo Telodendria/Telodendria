@@ -13,3 +13,15 @@ man/ directory, or online at https://telodendria.io
 If information is missing from the documentation, please feel free
 to reach out to #telodendria-general:bancino.net on Matrix.
 
+This file documents the directory structure of the source code
+repository.
+
+Telodendria/
+	contrib/ - Supplemental files, such as example configs.
+	man/ - The official documentation as man pages.
+	site/ - The official website.
+	src/ - The C source code for Telodendria.
+		include/ - Header files for the source code.
+		Routes/ - Where Matrix API endpoints are implemented
+	tests/ - Unit and integration tests will eventually go here.
+	tools/ - Development environment and tools.
