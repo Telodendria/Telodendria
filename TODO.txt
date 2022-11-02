@@ -59,8 +59,8 @@ Phase 2: Building a foundation
     file live there as well.
 [x] Allow logging to the syslog
 [x] Fix memory leaks
-[ ] Fix bug where the socket stays open after quit.
-	[ ] Possibly related to not closing the connections with fclose()?
+[x] Fix bug where the socket stays open after quit.
+	[x] Possibly related to not closing the connections with fclose()?
 		(see HttpServer.c, grep for fclose)
 [ ] Figure out how to write unit tests for array/hashmap/etc
 [ ] Add recipe to td script to upload patches to the Matrix room

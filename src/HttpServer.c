@@ -41,6 +41,8 @@
 #include <arpa/inet.h>
 #include <fcntl.h>
 
+static const char ENABLE = 1;
+
 struct HttpServer
 {
     int sd;
@@ -357,6 +359,16 @@ HttpServerCreate(unsigned short port, unsigned int nThreads, unsigned int maxCon
         goto error;
     }
 
+	if (setsockopt(server->sd, SOL_SOCKET, SO_REUSEADDR, &ENABLE, sizeof(int)) < 0)
+	{
+		goto error;
+	}
+
+	if (setsockopt(server->sd, SOL_SOCKET, SO_REUSEPORT, &ENABLE, sizeof(int)) < 0)
+	{
+		goto error;
+	}
+
     sa.sin_family = AF_INET;
     sa.sin_port = htons(port);
     sa.sin_addr.s_addr = htonl(INADDR_ANY);
@@ -598,9 +610,7 @@ bad_request:
 
 finish:
         Free(line);
-#if 0
         fclose(fp);
-#endif
     }
 
     return NULL;
