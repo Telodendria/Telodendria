@@ -23,6 +23,8 @@
  */
 #include <Memory.h>
 
+#include <Constants.h>
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h>
@@ -56,7 +58,7 @@ MemoryInsert(MemoryInfo * a)
 
     if (!allocations)
     {
-        allocationsSize = 64;
+        allocationsSize = TELODENDRIA_MEMORY_TABLE_CHUNK;
         allocations = calloc(allocationsSize, sizeof(void *));
         if (!allocations)
         {
@@ -70,7 +72,7 @@ MemoryInsert(MemoryInfo * a)
         size_t tmpAllocationsSize = allocationsSize;
         MemoryInfo **tmpAllocations;
 
-        allocationsSize *= 2;
+        allocationsSize += TELODENDRIA_MEMORY_TABLE_CHUNK;
         tmpAllocations = calloc(allocationsSize, sizeof(void *));
 
         if (!tmpAllocations)
