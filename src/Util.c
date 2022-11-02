@@ -135,7 +135,7 @@ UtilStringToBytes(char *str)
 
     while (*str)
     {
-        if (isdigit(*str))
+        if (isdigit((unsigned char) *str))
         {
             bytes *= 10;
             bytes += *str - '0';

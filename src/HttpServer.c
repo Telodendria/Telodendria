@@ -362,10 +362,12 @@ HttpServerCreate(unsigned short port, unsigned int nThreads, unsigned int maxCon
         goto error;
     }
 
+#ifdef SO_REUSEPORT
     if (setsockopt(server->sd, SOL_SOCKET, SO_REUSEPORT, &ENABLE, sizeof(int)) < 0)
     {
         goto error;
     }
+#endif
 
     sa.sin_family = AF_INET;
     sa.sin_port = htons(port);
