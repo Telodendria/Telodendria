@@ -31,8 +31,9 @@
 #include <ctype.h>
 #include <math.h>
 #include <time.h>
-#include <sys/time.h>
+
 #include <errno.h>
+#include <sys/time.h>
 #include <limits.h>
 
 unsigned long
@@ -179,7 +180,7 @@ UtilStringToBytes(char *str)
 }
 
 ssize_t
-UtilGetDelim(char **linePtr, size_t * n, int delim, FILE * stream)
+UtilGetDelim(char **linePtr, size_t * n, int delim, FILE * stream, int *err)
 {
     char *curPos, *newLinePtr;
     size_t newLinePtrLen;
@@ -187,7 +188,7 @@ UtilGetDelim(char **linePtr, size_t * n, int delim, FILE * stream)
 
     if (!linePtr || !n || !stream)
     {
-        errno = EINVAL;
+        *err = EINVAL;
         return -1;
     }
 
@@ -197,7 +198,7 @@ UtilGetDelim(char **linePtr, size_t * n, int delim, FILE * stream)
 
         if (!(*linePtr = Malloc(*n)))
         {
-            errno = ENOMEM;
+            *err = ENOMEM;
             return -1;
         }
     }
@@ -210,6 +211,7 @@ UtilGetDelim(char **linePtr, size_t * n, int delim, FILE * stream)
 
         if (ferror(stream) || (c == EOF && curPos == *linePtr))
         {
+            *err = errno;
             return -1;
         }
 
@@ -223,9 +225,9 @@ UtilGetDelim(char **linePtr, size_t * n, int delim, FILE * stream)
             if (SSIZE_MAX / 2 < *n)
             {
 #ifdef EOVERFLOW
-                errno = EOVERFLOW;
+                *err = EOVERFLOW;
 #else
-                errno = ERANGE;
+                *err = ERANGE;
 #endif
                 return -1;
             }
@@ -234,7 +236,7 @@ UtilGetDelim(char **linePtr, size_t * n, int delim, FILE * stream)
 
             if (!(newLinePtr = Realloc(*linePtr, newLinePtrLen)))
             {
-                errno = ENOMEM;
+                *err = ENOMEM;
                 return -1;
             }
 
@@ -256,7 +258,7 @@ UtilGetDelim(char **linePtr, size_t * n, int delim, FILE * stream)
 }
 
 ssize_t
-UtilGetLine(char **linePtr, size_t * n, FILE * stream)
+UtilGetLine(char **linePtr, size_t * n, FILE * stream, int *err)
 {
-    return UtilGetDelim(linePtr, n, '\n', stream);
+    return UtilGetDelim(linePtr, n, '\n', stream, err);
 }

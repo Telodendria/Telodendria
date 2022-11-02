@@ -41,6 +41,8 @@
 #include <arpa/inet.h>
 #include <fcntl.h>
 
+#include <errno.h>
+
 static const char ENABLE = 1;
 
 struct HttpServer
@@ -454,24 +456,37 @@ HttpServerWorkerThread(void *args)
         HashMap *requestParams;
         ssize_t requestPathLen;
 
+        int lineError = -1;
+
         ssize_t i = 0;
         HttpRequestMethod requestMethod;
 
         if (!fp)
         {
             /* Block for 1 millisecond before continuing so we don't
-             * murder the CPU */
+             * murder the CPU if the queue is empty. */
             UtilSleepMillis(1);
             continue;
         }
 
-        /* Get the first line of the request */
-        lineLen = UtilGetLine(&line, &lineSize, fp);
+        /* Get the first line of the request.
+         * 
+         * Every once in a while, we're too fast for the client. When this
+         * happens, UtilGetLine() sets lineError to EAGAIN. If we get
+         * EAGAIN, then clear the error on the stream and try again
+         * after 1ms. This is typically more than enough time for the
+         * client to send data. */
+        while ((lineLen = UtilGetLine(&line, &lineSize, fp, &lineError)) == -1
+               && lineError == EAGAIN)
+        {
+            clearerr(fp);
+            UtilSleepMillis(1);
+        }
+
         if (lineLen == -1)
         {
             goto bad_request;
         }
-
 
         requestMethodPtr = line;
         for (i = 0; i < lineLen; i++)
@@ -535,7 +550,7 @@ HttpServerWorkerThread(void *args)
             goto internal_error;
         }
 
-        while ((lineLen = UtilGetLine(&line, &lineSize, fp)) != -1)
+        while ((lineLen = UtilGetLine(&line, &lineSize, fp, &lineError)) != -1)
         {
             char *headerKey;
             char *headerValue;

@@ -104,9 +104,9 @@ extern size_t
  UtilStringToBytes(char *);
 
 extern ssize_t
- UtilGetDelim(char **, size_t *, int, FILE *);
+ UtilGetDelim(char **, size_t *, int, FILE *, int *);
 
 extern ssize_t
- UtilGetLine(char **, size_t *, FILE *);
+ UtilGetLine(char **, size_t *, FILE *, int *);
 
 #endif                             /* TELODENDRIA_UTIL_H */
