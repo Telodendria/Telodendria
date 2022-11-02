@@ -144,9 +144,6 @@ MatrixHttpHandler(HttpServerContext * context, void *argp)
     JsonFree(response);
 
 finish:
-    stream = HttpStream(context);
-    fclose(stream);
-
     LogConfigUnindent(lc);
 }
 

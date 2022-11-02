@@ -211,7 +211,7 @@ main(int argc, char **argv)
     }
     else
     {
-	fclose(stdin);
+        fclose(stdin);
 #ifdef __OpenBSD__
         if (unveil(configArg, "r") != 0)
         {

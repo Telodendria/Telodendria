@@ -167,9 +167,7 @@ HttpServerContextFree(HttpServerContext * c)
     HashMapFree(c->requestParams);
 
     Free(c->requestPath);
-#if 0
     fclose(c->stream);
-#endif
 
     Free(c);
 }
@@ -359,15 +357,15 @@ HttpServerCreate(unsigned short port, unsigned int nThreads, unsigned int maxCon
         goto error;
     }
 
-	if (setsockopt(server->sd, SOL_SOCKET, SO_REUSEADDR, &ENABLE, sizeof(int)) < 0)
-	{
-		goto error;
-	}
+    if (setsockopt(server->sd, SOL_SOCKET, SO_REUSEADDR, &ENABLE, sizeof(int)) < 0)
+    {
+        goto error;
+    }
 
-	if (setsockopt(server->sd, SOL_SOCKET, SO_REUSEPORT, &ENABLE, sizeof(int)) < 0)
-	{
-		goto error;
-	}
+    if (setsockopt(server->sd, SOL_SOCKET, SO_REUSEPORT, &ENABLE, sizeof(int)) < 0)
+    {
+        goto error;
+    }
 
     sa.sin_family = AF_INET;
     sa.sin_port = htons(port);
@@ -596,6 +594,8 @@ HttpServerWorkerThread(void *args)
         server->requestHandler(context, server->handlerArgs);
 
         HttpServerContextFree(context);
+        fp = NULL;                 /* The above call will close this
+                                    * FILE */
         goto finish;
 
 internal_error:
@@ -610,7 +610,10 @@ bad_request:
 
 finish:
         Free(line);
-        fclose(fp);
+        if (fp)
+        {
+            fclose(fp);
+        }
     }
 
     return NULL;
