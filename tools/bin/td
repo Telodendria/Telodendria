@@ -54,7 +54,7 @@ mod_time() {
             Linux|CYGWIN_NT*)
                 stat -c %Y "$1" 
                 ;;
-            *BSD)
+            *BSD|DragonFly)
                 stat -f %m "$1" 
                 ;;
             *)
