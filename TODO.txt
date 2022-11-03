@@ -1,4 +1,5 @@
 Telodendria To-Do List
+======================
 
 Key:
 
@@ -7,112 +8,26 @@ Key:
 [~] In Progress
 [!] Won't Fix
 
-Phase 1: Getting off the ground
+Milestone: v0.1.0
+Due: January 1, 2023
+---------------------
 
-[x] Name this project
-[x] Set up a CVS repository
-[x] Make CVS repository public
-[x] Write a build script
-[x] Write a coding style guide
-[x] Add a license
-[x] Add support and issue reporting guide
-[x] Add table of contents to website
+[~] Data abstraction layer
+	[ ] Database upgrades/migration path
+	[ ] Caching and cache control
+	[x] Make memory info access O(1)
+[ ] Make config option 'id' optional; print warning if not present started as root.
+[ ] Write install and uninstall scripts
+[ ] Add relayd example to contrib/
+[ ] Refactor man pages to be prefaced with 'telodendria-'
 
-Phase 2: Building a foundation
+Milestone: v0.2.0
+Due: July 1, 2023
+-----------------
 
-[x] Implement an array
-[x] Implement a logging facility
-[x] Implement a hash map
-	[x] Allow custom hash functions for each hash map
-[x] Combine library code files
-[x] Implement configuration file parsing using hash map
-[x] Base64 encoding/decoding with padded/unpadded support
-[x] Write a release script
-[x] UTF-8 encoder
-[x] Implement a JSON library using the hash map and array
-	[x] Basic encoding from HashMap/Array/strings, etc.
-	[x] Basic decoding to HashMap/Array/strings, etc.
-	[x] Proper string encoding
-	[x] Proper string decoding
-	[x] Canonical JSON
-		[x] Keys are sorted lexiconographically
-		[x] Floats are not allowed (ignore any float values)
-		[x] Encode as UTF-8 instead of using \u escapes
-		[x] Decode encoded strings to UTF-8
-[x] Write a function that gets the current Unix timestamp in milliseconds
-[x] Parse the Telodendria config file
-[x] Add license header to all files
-[!] Add documentation for all public APIs (See below)
-[x] Implement a simple HTTP server
-	[x] Implement param parser
-	[x] URL encoder/decoder
-[~] Design server architecture
-	[x] Route requests
-	[x] Handle requests
-	[~] Data abstraction layer
-		[ ] Database upgrades/migration path
-		[ ] Caching and cache control
-		[x] Make memory info access O(1)
-	[x] Error generation
-[x] Properly implement the command line options as stated in telodendria(8)
-[x] Remove "chroot" option, just chroot into the data dir, and make the log
-    file live there as well.
-[x] Allow logging to the syslog
-[x] Fix memory leaks
-[x] Fix bug where the socket stays open after quit.
-	[x] Possibly related to not closing the connections with fclose()?
-		(see HttpServer.c, grep for fclose)
-[ ] Figure out how to write unit tests for array/hashmap/etc
 [ ] Add recipe to td script to upload patches to the Matrix room
-
-Phase 3: Welcome to Matrix
-
-[~] client-Server API
-	[x] Error responses
-	[x] CORS headers
-	[x] /_matrix/client/versions
-	[x] Well-known URIs
-		[x] Make base-url optional in config
-		[x] Make identity-server optional in config
-	[ ] Client authentication
-	[ ] Capabilities negotiation
-[ ] Server-Server API
-[ ] Application Service API
-[ ] Identity Service API
-[ ] Push Gateway API
-[ ] Room Versions
-
-Phase 4:
-
-[ ] Create an OpenBSD package and get it submitted to ports
-[ ] Add relayd examples to contrib/
-[ ] Create a command line tool to manage Telodendria
-	[ ] User management
-	[ ] Room management
-[ ] Migrate from Synapse or Dendrite, whichever is more mainstream by the time we get here
-
-Documentation
-
-[x] Update rationale section
-[x] Update project description (no longer a CGI binary)
-[x] Clean up dark mode colors (tables, background, code snippets)
-[x] Add logo (possibly center title?)
-[x] Update code style to not include indent or line rules, but use indent(1) instead
-[x] fix typo "Subitting Patches" in Table of Contents
-[x] Make a note in Getting the Code that the password for the anoncvs account is just anoncvs
-[x] Add contributors list
-[x] Add list of make.sh recipes and what they do
-[x] Improve Google Lighthouse score on website
-	[!] Image elements do not have explicit width and height
-	[x] Background and foreground colors do not have sufficient contrast ratio (msg-error div)
-	[x] Lists do not contain only <li> elements
-[!] Add other message divs for notes and warnings
-
+[ ] Figure out how to write unit tests for array/hashmap/etc
 [~] Convert documentation to man pages
-	[x] Clean up dark mode in man page CSS (links)
-	[x] Synopsis table should not be styled
-	[x] Make available on MANPATH in tools/env.sh
-	[x] Convert list of man pages into a table on home page
 	[~] Internal API docs
 		[x] Array
 		[x] Base64
@@ -135,7 +50,27 @@ Documentation
 		[ ] Memory
 		[ ] Db
 
-[x] Add onboarding documentation
-	[x] Building from source
-	[!] Writing config file (see Config.5)
+Milestone: v1.0.0
+-----------------
 
+[~] client-Server API
+	[x] Error responses
+	[x] CORS headers
+	[x] /_matrix/client/versions
+	[x] Well-known URIs
+		[x] Make base-url optional in config
+		[x] Make identity-server optional in config
+	[ ] Client authentication
+	[ ] Capabilities negotiation
+[ ] Server-Server API
+[ ] Application Service API
+[ ] Identity Service API
+[ ] Push Gateway API
+[ ] Room Versions
+
+[ ] Create an OpenBSD package and get it submitted to ports
+[ ] Create a command line tool to manage Telodendria
+	[ ] User management
+	[ ] Room management
+[ ] Migrate from Synapse or Dendrite, whichever is more mainstream by
+    the time we get here.
