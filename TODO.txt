@@ -25,6 +25,13 @@ Milestone: v0.2.0
 Due: July 1, 2023
 -----------------
 
+[ ] Clean up memory API
+	[ ] Use double hashing instead of linear probing
+	[!] Store block info inside the block, not as a separate block
+		- This makes it too easy to clobber the memory information. By
+		  making it a separate block, there's less of a chance of the
+		  information getting destroyed. It's worth a few extra bytes of
+		  memory to make accidents harder, I think.
 [ ] Add recipe to td script to upload patches to the Matrix room
 [ ] Figure out how to write unit tests for array/hashmap/etc
 [~] Convert documentation to man pages
