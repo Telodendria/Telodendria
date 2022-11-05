@@ -66,7 +66,9 @@ MemoryInsert(MemoryInfo * a)
         }
     }
 
-    if ((allocationsLen + 1) >= (0.75 * allocationsSize))
+    /* If the next insertion would cause the table to be at least 3/4
+     * full, re-allocate and re-hash. */
+    if ((allocationsLen + 1) >= ((allocationsSize * 3) >> 2))
     {
         size_t i;
         size_t tmpAllocationsSize = allocationsSize;
