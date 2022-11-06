@@ -30,6 +30,8 @@
 : "${LDFLAGS:=-lm -pthread -static -flto -fdata-sections -ffunction-sections -s -Wl,-static -Wl,-gc-sections}"
 : "${PROG:=telodendria}"
 
+: "${PREFIX:=/usr/local}"
+
 # If a .env file exists in the current directory, we load it.
 # As Telodendria's build infrastructure relies heavily on
 # environment variables, we allow users to specify their
@@ -96,6 +98,29 @@ recipe_build() {
 	else
 		echo "Up to date."
 	fi
+}
+
+recipe_install() {
+	cp -v "build/$PROG" "$PREFIX/bin/$PROG"
+	cp -v "contrib/production.conf" "/etc/telodendria.conf"
+	cp -v "contrib/telodendria.rc" "/etc/rc.d/telodendria"
+
+	mkdir "/var/telodendria"
+	useradd _telodendria
+	chown "_telodendria:_telodendria" "/var/telodendria"
+
+	find man -name 'telodendria*\.[1-8]' -exec cp -v {} "$PREFIX/{}" \;
+}
+
+recipe_uninstall() {
+	rm -v "$PREFIX/bin/$PROG"
+	rm -v "/etc/telodendria.conf"
+	rm -v "/etc/rc.d/telodendria"
+
+	userdel "_telodendria"
+	groupdel "_telodendria"
+
+	find "$PREFIX/man" -name 'telodendria*\.[1-8]' -delete
 }
 
 recipe_run() {
