@@ -24,6 +24,7 @@
 #include <Db.h>
 
 #include <Memory.h>
+#include <Json.h>
 
 #include <pthread.h>
 
@@ -45,6 +46,45 @@ struct DbRef
     unsigned long ts;
     char *file;
 };
+
+static ssize_t
+DbComputeSize(HashMap *json)
+{
+	char *key;
+	JsonValue *val;
+	MemoryInfo *a;
+	size_t total;
+
+	if (!json)
+	{
+		return -1;
+	}
+
+	total = 0;
+
+	a = MemoryInfoGet(json);
+	if (a)
+	{
+		total += MemoryInfoGetSize(a);
+	}
+
+	while (HashMapIterate(json, &key, (void **) &val))
+	{
+		a = MemoryInfoGet(key);
+		if (a)
+		{
+			total += MemoryInfoGetSize(a);
+		}
+
+		a = MemoryInfoGet(val);
+		if (a)
+		{
+			total += MemoryInfoGetSize(a);
+		}
+	}
+
+	return total;
+}
 
 Db *
 DbOpen(const char *dir, size_t cache)
