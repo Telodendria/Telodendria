@@ -18,7 +18,7 @@ Due: January 1, 2023
 	[x] Make memory info access O(1)
 [ ] Make config option 'id' optional; print warning if not present started as root.
 [x] Write install and uninstall scripts
-[ ] Add relayd example to contrib/
+[x] Add relayd example to contrib/
 [x] Refactor man pages to be prefaced with 'telodendria-'
 
 Milestone: v0.2.0
