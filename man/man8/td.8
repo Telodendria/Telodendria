@@ -1,4 +1,4 @@
-.Dd $Mdocdate: October 11 2022 $
+.Dd $Mdocdate: November 7 2022 $
 .Dt TD 8
 .Os Telodendria Project
 .Sh NAME
@@ -93,6 +93,12 @@ directory and any ephemeral files in the source tree, such as
 files. The build recipe does not place anything outside of
 .Pa build/ ,
 so you can usually just delete that directory and get the same effect.
+.It install
+Install Telodendria to the system. This recipe assumes you're running a 
+Unix-like system.
+.It uninstall
+Uninstall Telodendria from the system if it was installed with the install
+recipe.
 .It format
 Make sure the source code copyright headers are up to date, and format the code
 using the system's
@@ -146,6 +152,10 @@ The C compiler to use. This defaults to
 which is usually a symlink to your system's preferred compiler. If for some
 reason you want to use a diferent compiler, do so with this environment
 variable.
+.It Ev PREFIX
+When installing/uninstalling Telodendria, the systeme prefix to use. This
+defaults to
+.Pa /usr/local .
 .It Ev CFLAGS
 The compiler flags used to generate object files.
 .Nm
