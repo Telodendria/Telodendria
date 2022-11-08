@@ -1,4 +1,4 @@
-.Dd $Mdocdate: October 24 2022 $
+.Dd $Mdocdate: November 8 2022 $
 .Dt TELODENDRIA.CONF 5
 .Os Telodendria Project
 .Sh NAME
@@ -80,13 +80,12 @@ This directive is optional. If it is not specified, it is automatically
 set to be the same as the base URL.
 .It Ic id Ar uid Ar gid
 The effective UNIX user and group to drop to after binding to the socket
-and changing the filesystem root. This only works if Telodendria is
-running as the root user, and is used as a security mechanism. If Telodendria
-is started as a non-priviledged user, then a warning is printed to the log
-if that user does not match what's specified here. This directive is
-required, even if Telodendria is unable to switch to the given user and
-group. It should be used as a sanity check to make sure the permissions are
-working properly.
+and changing the filesystem root for the process. This only works if
+Telodendria is running as the root user, and is used as a security mechanism.
+If this option is set and Telodendria is started as a non-priviledged user,
+then a warning is printed to the log if that user does not match what's
+specified here. This directive is optional, but should be used as a sanity
+check, if nothing more, to make sure the permissions are working properly.
 .It Ic data-dir Ar directory
 The data directory into which Telodendria will write all user and event
 information. Telodendria doesn't use a database like other Matrix homeserver

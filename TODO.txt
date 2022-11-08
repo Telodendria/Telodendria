@@ -16,7 +16,7 @@ Due: January 1, 2023
 	[ ] Database upgrades/migration path
 	[ ] Caching and cache control
 	[x] Make memory info access O(1)
-[ ] Make config option 'id' optional; print warning if not present started as root.
+[x] Make config option 'id' optional; print warning if not present started as root.
 [x] Write install and uninstall scripts
 [x] Add relayd example to contrib/
 [x] Refactor man pages to be prefaced with 'telodendria-'
@@ -49,7 +49,6 @@ Due: July 1, 2023
 		[ ] Json
 		[ ] Log
 		[ ] Matrix
-		[ ] NonPosix
 		[x] Queue
 		[ ] Routes
 		[ ] TelodendriaConfig
