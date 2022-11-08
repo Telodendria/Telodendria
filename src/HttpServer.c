@@ -77,6 +77,13 @@ struct HttpServerContext
     FILE *stream;
 };
 
+typedef struct HttpServerWorkerThreadArgs
+{
+    HttpServer *server;
+    int id;
+    pthread_t thread;
+} HttpServerWorkerThreadArgs;
+
 static HttpServerContext *
 HttpServerContextCreate(HttpRequestMethod requestMethod,
             char *requestPath, HashMap * requestParams, FILE * stream)
@@ -437,11 +444,12 @@ HttpServerFree(HttpServer * server)
 static void *
 HttpServerWorkerThread(void *args)
 {
-    HttpServer *server = (HttpServer *) args;
+    HttpServerWorkerThreadArgs *wArgs = (HttpServerWorkerThreadArgs *) args;
+    HttpServer *server = wArgs->server;
 
     while (!server->stop)
     {
-        FILE *fp = DequeueConnection(server);
+        FILE *fp;
         HttpServerContext *context;
 
         char *line = NULL;
@@ -461,6 +469,10 @@ HttpServerWorkerThread(void *args)
         ssize_t i = 0;
         HttpRequestMethod requestMethod;
 
+        long firstRead;
+
+        fp = DequeueConnection(server);
+
         if (!fp)
         {
             /* Block for 1 millisecond before continuing so we don't
@@ -476,11 +488,20 @@ HttpServerWorkerThread(void *args)
          * EAGAIN, then clear the error on the stream and try again
          * after 1ms. This is typically more than enough time for the
          * client to send data. */
+        firstRead = UtilServerTs();
         while ((lineLen = UtilGetLine(&line, &lineSize, fp, &lineError)) == -1
                && lineError == EAGAIN)
         {
             clearerr(fp);
-            UtilSleepMillis(1);
+
+            /* If the server is stopped, or it's been a while, just
+             * give up. */
+            if (server->stop || (UtilServerTs() - firstRead) > 1000 * 30)
+            {
+                goto finish;
+            }
+
+            UtilSleepMillis(5);
         }
 
         if (lineLen == -1)
@@ -652,7 +673,7 @@ HttpServerEventThread(void *args)
 
     for (i = 0; i < server->nThreads; i++)
     {
-        pthread_t *workerThread = Malloc(sizeof(pthread_t));
+        HttpServerWorkerThreadArgs *workerThread = Malloc(sizeof(HttpServerWorkerThreadArgs));
 
         if (!workerThread)
         {
@@ -661,7 +682,10 @@ HttpServerEventThread(void *args)
             return NULL;
         }
 
-        if (pthread_create(workerThread, NULL, HttpServerWorkerThread, server) != 0)
+        workerThread->server = server;
+        workerThread->id = i;
+
+        if (pthread_create(&workerThread->thread, NULL, HttpServerWorkerThread, workerThread) != 0)
         {
             /* TODO: Make the event thread return an error to the main
              * thread */
@@ -698,9 +722,9 @@ HttpServerEventThread(void *args)
 
     for (i = 0; i < server->nThreads; i++)
     {
-        pthread_t *workerThread = ArrayGet(server->threadPool, i);
+        HttpServerWorkerThreadArgs *workerThread = ArrayGet(server->threadPool, i);
 
-        pthread_join(*workerThread, NULL);
+        pthread_join(workerThread->thread, NULL);
         Free(workerThread);
     }
 

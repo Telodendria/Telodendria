@@ -98,7 +98,6 @@ TelodendriaConfigParse(HashMap * config, LogConfig * lc)
 
     if (!directive)
     {
-        Log(lc, LOG_WARNING, "No 'listen' directive specified; using default value, which may change.");
         tConfig->listenPort = 8008;
     }
     else

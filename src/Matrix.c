@@ -77,6 +77,8 @@ MatrixHttpHandler(HttpServerContext * context, void *argp)
     HttpResponseHeader(context, "Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
     HttpResponseHeader(context, "Access-Control-Allow-Headers", "X-Requested-With, Content-Type, Authorization");
 
+    HttpResponseHeader(context, "Connection", "close");
+
     /*
      * Web Browser Clients: Servers MUST expect that clients will approach them
      * with OPTIONS requests... the server MUST NOT perform any logic defined

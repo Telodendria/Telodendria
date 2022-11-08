@@ -48,42 +48,42 @@ struct DbRef
 };
 
 static ssize_t
-DbComputeSize(HashMap *json)
+DbComputeSize(HashMap * json)
 {
-	char *key;
-	JsonValue *val;
-	MemoryInfo *a;
-	size_t total;
+    char *key;
+    JsonValue *val;
+    MemoryInfo *a;
+    size_t total;
 
-	if (!json)
-	{
-		return -1;
-	}
+    if (!json)
+    {
+        return -1;
+    }
 
-	total = 0;
+    total = 0;
 
-	a = MemoryInfoGet(json);
-	if (a)
-	{
-		total += MemoryInfoGetSize(a);
-	}
+    a = MemoryInfoGet(json);
+    if (a)
+    {
+        total += MemoryInfoGetSize(a);
+    }
 
-	while (HashMapIterate(json, &key, (void **) &val))
-	{
-		a = MemoryInfoGet(key);
-		if (a)
-		{
-			total += MemoryInfoGetSize(a);
-		}
+    while (HashMapIterate(json, &key, (void **) &val))
+    {
+        a = MemoryInfoGet(key);
+        if (a)
+        {
+            total += MemoryInfoGetSize(a);
+        }
 
-		a = MemoryInfoGet(val);
-		if (a)
-		{
-			total += MemoryInfoGetSize(a);
-		}
-	}
+        a = MemoryInfoGet(val);
+        if (a)
+        {
+            total += MemoryInfoGetSize(a);
+        }
+    }
 
-	return total;
+    return total;
 }
 
 Db *

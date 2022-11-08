@@ -86,7 +86,7 @@ HashMapGrow(HashMap * map)
         return 0;
     }
 
-    memset(&newEntries, 0, map->capacity * sizeof(HashMapBucket *));
+    memset(newEntries, 0, map->capacity * sizeof(HashMapBucket *));
 
     for (i = 0; i < oldCapacity; i++)
     {
