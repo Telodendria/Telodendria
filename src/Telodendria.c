@@ -346,22 +346,6 @@ main(int argc, char **argv)
     Log(lc, LOG_DEBUG, "Flags: %x", tConfig->flags);
     LogConfigUnindent(lc);
 
-    Log(lc, LOG_DEBUG, "Running as uid:gid: %d:%d.", getuid(), getgid());
-
-    userInfo = getpwnam(tConfig->uid);
-    groupInfo = getgrnam(tConfig->gid);
-
-    if (!userInfo || !groupInfo)
-    {
-        Log(lc, LOG_ERROR, "Unable to locate the user/group specified in the configuration.");
-        exit = EXIT_FAILURE;
-        goto finish;
-    }
-    else
-    {
-        Log(lc, LOG_DEBUG, "Found user/group information using getpwnam() and getgrnam().");
-    }
-
     /* Arguments to pass into the HTTP handler */
     matrixArgs.lc = lc;
     matrixArgs.config = tConfig;
@@ -377,9 +361,31 @@ main(int argc, char **argv)
         goto finish;
     }
 
+    Log(lc, LOG_DEBUG, "Running as uid:gid: %d:%d.", getuid(), getgid());
+
+    if (tConfig->uid && tConfig->gid)
+    {
+        userInfo = getpwnam(tConfig->uid);
+        groupInfo = getgrnam(tConfig->gid);
+
+        if (!userInfo || !groupInfo)
+        {
+            Log(lc, LOG_ERROR, "Unable to locate the user/group specified in the configuration.");
+            exit = EXIT_FAILURE;
+            goto finish;
+        }
+        else
+        {
+            Log(lc, LOG_DEBUG, "Found user/group information using getpwnam() and getgrnam().");
+        }
+    }
+    else
+    {
+        Log(lc, LOG_DEBUG, "No user/group info specified in the config.");
+    }
+
     if (getuid() == 0)
     {
-#ifndef __OpenBSD__
         if (chroot(".") == 0)
         {
             Log(lc, LOG_DEBUG, "Changed the root directory to: %s.", tConfig->dataDir);
@@ -388,30 +394,41 @@ main(int argc, char **argv)
         {
             Log(lc, LOG_WARNING, "Unable to chroot into directory: %s.", tConfig->dataDir);
         }
-#else
-        Log(lc, LOG_DEBUG, "Not attempting chroot() after pledge() and unveil().");
-#endif
 
-        if (setgid(groupInfo->gr_gid) != 0 || setuid(userInfo->pw_uid) != 0)
+        if (tConfig->uid && tConfig->gid)
         {
-            Log(lc, LOG_WARNING, "Unable to set process uid/gid.");
+            if (setgid(groupInfo->gr_gid) != 0 || setuid(userInfo->pw_uid) != 0)
+            {
+                Log(lc, LOG_ERROR, "Unable to set process uid/gid.");
+                exit = EXIT_FAILURE;
+                goto finish;
+            }
+            else
+            {
+                Log(lc, LOG_DEBUG, "Set uid/gid to %s:%s.", tConfig->uid, tConfig->gid);
+            }
         }
         else
         {
-            Log(lc, LOG_DEBUG, "Set uid/gid to %s:%s.", tConfig->uid, tConfig->gid);
+            Log(lc, LOG_WARNING, "We are running as root, and we are not dropping to another user");
+            Log(lc, LOG_WARNING, "because none was specified in the configuration file.");
+            Log(lc, LOG_WARNING, "This is probably a security issue.");
         }
     }
     else
     {
-        Log(lc, LOG_DEBUG, "Not changing root directory, because we are not root.");
+        Log(lc, LOG_WARNING, "Not setting root directory, because we are not root.");
 
-        if (getuid() != userInfo->pw_uid || getgid() != groupInfo->gr_gid)
+        if (tConfig->uid && tConfig->gid)
         {
-            Log(lc, LOG_WARNING, "Not running as the uid/gid specified in the configuration.");
-        }
-        else
-        {
-            Log(lc, LOG_DEBUG, "Running as the uid/gid specified in the configuration.");
+            if (getuid() != userInfo->pw_uid || getgid() != groupInfo->gr_gid)
+            {
+                Log(lc, LOG_WARNING, "Not running as the uid/gid specified in the configuration.");
+            }
+            else
+            {
+                Log(lc, LOG_DEBUG, "Running as the uid/gid specified in the configuration.");
+            }
         }
     }
 
