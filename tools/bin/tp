@@ -4,17 +4,7 @@
 #
 # This script is used to manage the patch queue.
 
-if [ -f "$(pwd)/.env" ]; then
-	. "$(pwd)/.env"
-fi
-
-if [ -z "$MXID" ]; then
-	MXID="@(${USER}:$(hostname)"
-fi
-
-if [ -z "$DISPLAY_NAME" ]; then
-	DISPLAY_NAME=$(getent passwd "$USER" | cut -d ':' -f 5 | cut -d ',' -f 1)
-fi
+. "$(pwd)/tools/lib/common.sh"
 
 if [ -z "$TELODENDRIA_PUB" ]; then
 	echo "TELODENDRIA_PUB not set."
@@ -39,13 +29,13 @@ matrix_send() {
 			--arg format "org.matrix.custom.html" \
 			--arg msgtype "m.text" \
 			'{"body":$body,"formatted_body":$formatted_body,"format":$format,"msgtype":$msgtype}' |
-			$CURL -X PUT -d @- "$HOMESERVER/client/v3/rooms/$ROOM_ID/send/m.room.message/$(date +%s)?access_token=$ACCESS_TOKEN"
+			$CURL -X PUT -d @- "$HOMESERVER/client/v3/rooms/$PATCHES_ROOM/send/m.room.message/$(date +%s)?access_token=$ACCESS_TOKEN"
 	fi
 }
 
 matrix_get_files() {
 	$CURL "$HOMESERVER/client/v3/sync?access_token=$ACCESS_TOKEN" |
-	jq ".rooms.join.\"$ROOM_ID\".timeline.events[] | select(.type==\"m.room.message\") | .content | select(.msgtype==\"m.file\") | [.body,.info.size,.url] | @tsv" |
+	jq ".rooms.join.\"$PATCHES_ROOM\".timeline.events[] | select(.type==\"m.room.message\") | .content | select(.msgtype==\"m.file\") | [.body,.info.size,.url] | @tsv" |
 	cut -d '"' -f 2 |
 	sed 's/\\t/,/g' 
 }

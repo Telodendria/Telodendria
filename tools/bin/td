@@ -32,14 +32,7 @@
 
 : "${PREFIX:=/usr/local}"
 
-# If a .env file exists in the current directory, we load it.
-# As Telodendria's build infrastructure relies heavily on
-# environment variables, we allow users to specify their
-# Telodendria-specific variables in a dedicated .env so they don't
-# have to pollute their environment.
-if [ -f "$(pwd)/.env" ]; then
-	. "$(pwd)/.env"
-fi
+. "$(pwd)/tools/lib/common.sh"
 
 if [ "$DEBUG" = "1" ]; then
 	CFLAGS="$CFLAGS -O0 -g"
