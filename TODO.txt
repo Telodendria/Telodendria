@@ -20,6 +20,7 @@ Due: January 1, 2023
 [x] Write install and uninstall scripts
 [x] Add relayd example to contrib/
 [x] Refactor man pages to be prefaced with 'telodendria-'
+[ ] Document send-patch
 
 Milestone: v0.2.0
 Due: July 1, 2023
