@@ -47,6 +47,71 @@ struct DbRef
     char *file;
 };
 
+static ssize_t DbComputeSize(HashMap *);
+
+static ssize_t
+DbComputeSizeOfValue(JsonValue * val)
+{
+    MemoryInfo *a;
+    ssize_t total = 0;
+
+    size_t i;
+
+    union
+    {
+        char *str;
+        Array *arr;
+    } u;
+
+    if (!val)
+    {
+        return -1;
+    }
+
+    a = MemoryInfoGet(val);
+    if (a)
+    {
+        total += MemoryInfoGetSize(a);
+    }
+
+    switch (JsonValueType(val))
+    {
+        case JSON_OBJECT:
+            total += DbComputeSize(JsonValueAsObject(val));
+            break;
+        case JSON_ARRAY:
+            u.arr = JsonValueAsArray(val);
+            a = MemoryInfoGet(u.arr);
+
+            if (a)
+            {
+                total += MemoryInfoGetSize(a);
+            }
+
+            for (i = 0; i < ArraySize(u.arr); i++)
+            {
+                total += DbComputeSizeOfValue(ArrayGet(u.arr, i));
+            }
+            break;
+        case JSON_STRING:
+            u.str = JsonValueAsString(val);
+            a = MemoryInfoGet(u.str);
+            if (a)
+            {
+                total += MemoryInfoGetSize(a);
+            }
+            break;
+        case JSON_NULL:
+        case JSON_INTEGER:
+        case JSON_FLOAT:
+        case JSON_BOOLEAN:
+        default:
+            /* These don't use any extra heap space */
+            break;
+    }
+    return total;
+}
+
 static ssize_t
 DbComputeSize(HashMap * json)
 {
@@ -76,11 +141,7 @@ DbComputeSize(HashMap * json)
             total += MemoryInfoGetSize(a);
         }
 
-        a = MemoryInfoGet(val);
-        if (a)
-        {
-            total += MemoryInfoGetSize(a);
-        }
+        total += DbComputeSizeOfValue(val);
     }
 
     return total;

@@ -145,6 +145,9 @@ extern Array *
 extern JsonValue *
  JsonValueString(char *string);
 
+extern char *
+JsonValueAsString(JsonValue *);
+
 extern JsonValue *
  JsonValueInteger(long integer);
 
