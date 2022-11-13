@@ -29,7 +29,7 @@ readpwd() {
 curlec() {
 	RETURN="$(curl -w "\n%{http_code}" "$@" 2> /dev/null)"
 	ERROR_CODE="$(echo "$RETURN" | tail -n1)"
-	RETURN="$(echo "$RETURN" | head -n"-1")"
+	RETURN="$(echo "$RETURN" | sed '$d')"
 }
 
 # Prompts user to login and gives out an access token to use
