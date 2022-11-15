@@ -34,6 +34,7 @@
 
 #include <errno.h>
 #include <sys/time.h>
+#include <sys/stat.h>
 #include <limits.h>
 
 unsigned long
@@ -46,6 +47,23 @@ UtilServerTs(void)
     ts = (tv.tv_sec * 1000) + (tv.tv_usec / 1000);
 
     return ts;
+}
+
+unsigned long
+UtilLastModified(char *path)
+{
+    struct stat st;
+    unsigned long ts;
+
+    if (stat(path, &st) == 0)
+    {
+        ts = (st.st_mtim.tv_sec * 1000) + (st.st_mtim.tv_nsec / 1000000);
+        return ts;
+    }
+    else
+    {
+        return 0;
+    }
 }
 
 char *
@@ -113,6 +131,27 @@ UtilStringDuplicate(char *inStr)
     strcpy(outStr, inStr);
 
     return outStr;
+}
+
+char *
+UtilStringConcat(char *str1, char *str2)
+{
+    char *ret;
+
+    size_t str1Len = strlen(str1);
+    size_t str2Len = strlen(str2);
+
+    ret = Malloc(str1Len + str2Len + 1);
+
+    if (!ret)
+    {
+        return NULL;
+    }
+
+    strcpy(ret, str1);
+    strcpy(ret + str1Len, str2);
+
+    return ret;
 }
 
 int

@@ -146,7 +146,7 @@ extern JsonValue *
  JsonValueString(char *string);
 
 extern char *
-JsonValueAsString(JsonValue *);
+ JsonValueAsString(JsonValue *);
 
 extern JsonValue *
  JsonValueInteger(long integer);

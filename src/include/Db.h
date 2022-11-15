@@ -32,7 +32,7 @@ typedef struct Db Db;
 typedef struct DbRef DbRef;
 
 extern Db *
- DbOpen(const char *, size_t);
+ DbOpen(char *, size_t);
 
 extern void
  DbClose(Db *);

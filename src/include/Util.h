@@ -57,6 +57,9 @@
 extern unsigned long
  UtilServerTs(void);
 
+extern unsigned long
+ UtilLastModified(char *);
+
 /*
  * Encode a single UTF-8 codepoint as a string buffer containing
  * between 1 and 4 bytes. The string buffer is allocated on the heap,
@@ -87,6 +90,9 @@ extern char *
  */
 extern char *
  UtilStringDuplicate(char *);
+
+extern char *
+ UtilStringConcat(char *, char *);
 
 /*
  * Sleep for the given number of milliseconds. This is a simple wrapper
