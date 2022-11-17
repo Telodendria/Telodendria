@@ -60,6 +60,9 @@ extern unsigned long
 extern unsigned long
  UtilLastModified(char *);
 
+extern int
+ UtilMkdir(const char *, const mode_t);
+
 /*
  * Encode a single UTF-8 codepoint as a string buffer containing
  * between 1 and 4 bytes. The string buffer is allocated on the heap,

@@ -43,7 +43,7 @@ extern DbRef *
 extern DbRef *
  DbLock(Db *, char *, char *);
 
-extern void
+extern int
  DbUnlock(Db *, DbRef *);
 
 extern HashMap *

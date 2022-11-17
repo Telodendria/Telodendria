@@ -255,10 +255,22 @@ DbCreate(Db * db, char *prefix, char *key)
 
     file = DbFileName(db, prefix, key);
 
-    if (UtilLastModified(file))
+    if (UtilLastModified(file) || UtilMkdir(prefix, 0750) < 0)
+    {
+        Free(file);
+        return NULL;
+    }
+
+    fp = fopen(file, "w");
+    Free(file);
+    if (!fp)
     {
         return NULL;
     }
+
+    fprintf(fp, "{}");
+    fflush(fp);
+    fclose(fp);
 
     return DbLock(db, prefix, key);
 }
@@ -380,7 +392,7 @@ finish:
     return ref;
 }
 
-void
+int
 DbUnlock(Db * db, DbRef * ref)
 {
     FILE *fp;
@@ -388,7 +400,7 @@ DbUnlock(Db * db, DbRef * ref)
 
     if (!db || !ref)
     {
-        return;
+        return 0;
     }
 
     pthread_mutex_lock(&db->lock);
@@ -396,8 +408,8 @@ DbUnlock(Db * db, DbRef * ref)
     file = DbFileName(db, ref->prefix, ref->key);
     fp = fopen(file, "w");
     if (!fp)
-    {                              /* TODO: This seems dangerous */
-        return;
+    {
+        return 0;
     }
 
     JsonEncode(ref->json, fp);
@@ -415,6 +427,8 @@ DbUnlock(Db * db, DbRef * ref)
         pthread_mutex_destroy(&ref->lock);
         Free(ref);
     }
+
+    return 1;
 }
 
 HashMap *

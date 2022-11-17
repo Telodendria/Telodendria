@@ -66,6 +66,77 @@ UtilLastModified(char *path)
     }
 }
 
+int
+UtilMkdir(const char *dir, const mode_t mode)
+{
+    char tmp[PATH_MAX];
+    char *p = NULL;
+
+    struct stat st;
+
+    size_t len;
+
+    len = strnlen(dir, PATH_MAX);
+    if (!len || len == PATH_MAX)
+    {
+        errno = ENAMETOOLONG;
+        return -1;
+    }
+
+    memcpy(tmp, dir, len);
+    tmp[len] = '\0';
+
+    if (tmp[len - 1] == '/')
+    {
+        tmp[len - 1] = '\0';
+    }
+
+    if (stat(tmp, &st) == 0 && S_ISDIR(st.st_mode))
+    {
+        return 0;
+    }
+
+    for (p = tmp + 1; *p; p++)
+    {
+        if (*p == '/')
+        {
+            *p = 0;
+
+            if (stat(tmp, &st) != 0)
+            {
+                if (mkdir(tmp, mode) < 0)
+                {
+                    /* errno already set by mkdir() */
+                    return -1;
+                }
+            }
+            else if (!S_ISDIR(st.st_mode))
+            {
+                errno = ENOTDIR;
+                return -1;
+            }
+
+            *p = '/';
+        }
+    }
+
+    if (stat(tmp, &st) != 0)
+    {
+        if (mkdir(tmp, mode) < 0)
+        {
+            /* errno already set by mkdir() */
+            return -1;
+        }
+    }
+    else if (!S_ISDIR(st.st_mode))
+    {
+        errno = ENOTDIR;
+        return -1;
+    }
+
+    return 0;
+}
+
 char *
 UtilUtf8Encode(unsigned long utf8)
 {
