@@ -707,6 +707,7 @@ JsonTokenSeek(JsonParserState * state)
                 return;
             }
             state->tokenType = TOKEN_STRING;
+            state->tokenLen = strlen(state->token);
             break;
         default:
             if (c == '-' || isdigit(c))
@@ -921,7 +922,7 @@ JsonDecodeObject(JsonParserState * state)
         JsonTokenSeek(state);
         if (JsonExpect(state, TOKEN_STRING))
         {
-            char *key = Malloc(state->tokenLen);
+            char *key = Malloc(state->tokenLen + 1);
             JsonValue *value;
 
             if (!key)
@@ -933,6 +934,7 @@ JsonDecodeObject(JsonParserState * state)
             JsonTokenSeek(state);
             if (!JsonExpect(state, TOKEN_COLON))
             {
+                Free(key);
                 goto error;
             }
 
@@ -941,6 +943,7 @@ JsonDecodeObject(JsonParserState * state)
 
             if (!value)
             {
+                Free(key);
                 goto error;
             }
 
@@ -1028,6 +1031,8 @@ error:
 HashMap *
 JsonDecode(FILE * stream)
 {
+    HashMap *result;
+
     JsonParserState state;
 
     state.stream = stream;
@@ -1039,5 +1044,12 @@ JsonDecode(FILE * stream)
         return NULL;
     }
 
-    return JsonDecodeObject(&state);
+    result = JsonDecodeObject(&state);
+
+    if (state.token)
+    {
+        Free(state.token);
+    }
+
+    return result;
 }

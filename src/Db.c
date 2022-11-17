@@ -353,7 +353,6 @@ DbLock(Db * db, char *prefix, char *key)
         }
 
         ref->json = JsonDecode(fp);
-
         fclose(fp);
 
         if (!ref->json)
@@ -383,10 +382,11 @@ DbLock(Db * db, char *prefix, char *key)
         }
     }
 
-    pthread_mutex_unlock(&db->lock);
     pthread_mutex_lock(&ref->lock);
 
 finish:
+    pthread_mutex_unlock(&db->lock);
+
     Free(file);
     Free(hash);
     return ref;
