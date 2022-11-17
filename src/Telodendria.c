@@ -143,8 +143,8 @@ main(int argc, char **argv)
     TelodendriaConfig *tConfig = NULL;
 
     /* User validation */
-    struct passwd *userInfo;
-    struct group *groupInfo;
+    struct passwd *userInfo = NULL;
+    struct group *groupInfo = NULL;
 
     /* Signal handling */
     struct sigaction sigAction;
@@ -395,7 +395,7 @@ main(int argc, char **argv)
             Log(lc, LOG_WARNING, "Unable to chroot into directory: %s.", tConfig->dataDir);
         }
 
-        if (tConfig->uid && tConfig->gid)
+        if (userInfo && groupInfo)
         {
             if (setgid(groupInfo->gr_gid) != 0 || setuid(userInfo->pw_uid) != 0)
             {
