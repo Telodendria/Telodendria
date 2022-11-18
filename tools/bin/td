@@ -107,13 +107,15 @@ recipe_install() {
 
 recipe_uninstall() {
 	rm -v "$PREFIX/bin/$PROG"
-	rm -v "/etc/telodendria.conf"
 	rm -v "/etc/rc.d/telodendria"
 
 	userdel "_telodendria"
 	groupdel "_telodendria"
 
 	find "$PREFIX/man" -name 'telodendria*\.[1-8]' -delete
+
+	echo "Not removing configuration file at /etc/telodendria.conf"
+	echo "Not removing data directory at /var/telodendria"
 }
 
 recipe_run() {
