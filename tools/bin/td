@@ -147,31 +147,6 @@ recipe_format() {
 	done
 }
 
-# Execute all the unit tests and report any failures.
-recipe_test() {
-	passed=0
-	failed=0
-	mkdir -p "build/tests"
-	for testSrc in $(find tests -name 'Test*.c'); do
-		testBin=$(basename "$testSrc" .c)
-		testBin="build/tests/$testBin"
-
-		if ! $CC $CFLAGS -I src -o "$testBin" "$testSrc"; then
-			failed=$((failed + 1))
-			break;
-		fi
-
-		if ! "$testBin"; then
-			failed=$((failed + 1))
-			break;
-		fi
-
-		passed=$((passed + 1))
-	done
-	echo "Passed: $passed, failed: $failed"
-	echo "Total: $((passed + failed))"
-}
-
 # Deploy the Telodendria website by copying the required files to
 # a web root defined by TELODENDRIA_PUB.
 recipe_site() {
