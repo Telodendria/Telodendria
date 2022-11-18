@@ -151,6 +151,9 @@ extern char *
 extern JsonValue *
  JsonValueInteger(long integer);
 
+extern long
+ JsonValueAsInteger(JsonValue *);
+
 extern JsonValue *
  JsonValueFloat(double floating);
 

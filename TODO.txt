@@ -14,7 +14,8 @@ Due: January 1, 2023
 
 [~] Data abstraction layer
 	[ ] Database upgrades/migration path
-	[ ] Caching and cache control
+	[x] Caching
+	[ ] Cache eviction
 	[x] Make memory info access O(1)
 [x] Make config option 'id' optional; print warning if not present started as root.
 [x] Write install and uninstall scripts

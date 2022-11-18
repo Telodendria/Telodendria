@@ -330,8 +330,6 @@ DbLock(Db * db, char *prefix, char *key)
             ref->json = json;
             ref->ts = diskTs;
             ref->size = DbComputeSize(ref->json);
-            ref->prefix = UtilStringDuplicate(prefix);
-            ref->key = UtilStringDuplicate(key);
         }
     }
     else
@@ -365,8 +363,8 @@ DbLock(Db * db, char *prefix, char *key)
         pthread_mutex_init(&ref->lock, NULL);
         ref->ts = UtilServerTs();
         ref->size = DbComputeSize(ref->json);
-        ref->prefix = prefix;
-        ref->key = key;
+        ref->prefix = UtilStringDuplicate(prefix);
+        ref->key = UtilStringDuplicate(key);
 
         /* If cache is enabled, cache this ref */
         if (db->cache)
@@ -389,6 +387,7 @@ finish:
 
     Free(file);
     Free(hash);
+
     return ref;
 }
 
@@ -407,8 +406,11 @@ DbUnlock(Db * db, DbRef * ref)
 
     file = DbFileName(db, ref->prefix, ref->key);
     fp = fopen(file, "w");
+    Free(file);
+
     if (!fp)
     {
+        pthread_mutex_unlock(&db->lock);
         return 0;
     }
 
@@ -427,7 +429,15 @@ DbUnlock(Db * db, DbRef * ref)
         pthread_mutex_destroy(&ref->lock);
         Free(ref);
     }
+    else
+    {
+        /* This ref should be in the cache, just update it's size */
+        db->cacheSize -= ref->size;
+        ref->size = DbComputeSize(ref->json);
+        db->cacheSize += ref->size;
+    }
 
+    pthread_mutex_unlock(&db->lock);
     return 1;
 }
 
