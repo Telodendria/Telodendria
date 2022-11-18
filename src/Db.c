@@ -32,11 +32,14 @@
 struct Db
 {
     char *dir;
-    size_t cacheSize;
-    size_t maxCache;
     pthread_mutex_t lock;
 
+    size_t cacheSize;
+    size_t maxCache;
     HashMap *cache;
+
+    DbRef *mostRecent;
+    DbRef *leastRecent;
 };
 
 struct DbRef
@@ -49,6 +52,9 @@ struct DbRef
 
     char *prefix;
     char *key;
+
+    DbRef *prev;
+    DbRef *next;
 };
 
 static ssize_t DbComputeSize(HashMap *);
@@ -175,6 +181,33 @@ DbFileName(Db * db, char *prefix, char *key)
     return tmp5;
 }
 
+static void
+DbCacheEvict(Db * db)
+{
+    DbRef *ref = db->leastRecent;
+
+    while (ref && db->cacheSize > db->maxCache)
+    {
+        char *hash = DbHashKey(ref->prefix, ref->key);
+
+        JsonFree(ref->json);
+        pthread_mutex_destroy(&ref->lock);
+
+        HashMapDelete(db->cache, hash);
+        Free(hash);
+        Free(ref->prefix);
+        Free(ref->key);
+
+        db->cacheSize -= ref->size;
+        db->leastRecent = ref->next;
+        db->leastRecent->prev = NULL;
+
+        Free(ref);
+
+        ref = db->leastRecent;
+    }
+}
+
 Db *
 DbOpen(char *dir, size_t cache)
 {
@@ -208,6 +241,9 @@ DbOpen(char *dir, size_t cache)
     {
         db->cache = NULL;
     }
+
+    db->mostRecent = NULL;
+    db->leastRecent = NULL;
 
     return db;
 }
@@ -330,6 +366,30 @@ DbLock(Db * db, char *prefix, char *key)
             ref->json = json;
             ref->ts = diskTs;
             ref->size = DbComputeSize(ref->json);
+
+            if (db->cache)
+            {
+                /* Float this ref to mostRecent */
+                if (ref->next)
+                {
+                    ref->next->prev = ref->prev;
+                    ref->prev->next = ref->next;
+
+                    if (!ref->prev)
+                    {
+                        db->leastRecent = ref->next;
+                    }
+
+                    ref->prev = db->mostRecent;
+                    ref->next = NULL;
+                    db->mostRecent = ref;
+                }
+
+                /* The file on disk may be larger than what we have in
+                 * memory, which may require items in cache to be
+                 * evicted. */
+                DbCacheEvict(db);
+            }
         }
     }
     else
@@ -372,11 +432,13 @@ DbLock(Db * db, char *prefix, char *key)
             HashMapSet(db->cache, hash, ref);
             db->cacheSize += ref->size;
 
-            /* Cache is full; evict old items */
-            if (db->cacheSize > db->maxCache)
-            {
-                /* TODO */
-            }
+            ref->next = NULL;
+            ref->prev = db->mostRecent;
+            db->mostRecent = ref;
+
+            /* Adding this item to the cache may case it to grow too
+             * large, requiring some items to be evicted */
+            DbCacheEvict(db);
         }
     }
 
@@ -435,6 +497,11 @@ DbUnlock(Db * db, DbRef * ref)
         db->cacheSize -= ref->size;
         ref->size = DbComputeSize(ref->json);
         db->cacheSize += ref->size;
+
+        /* If this ref has grown significantly since we last computed
+         * its size, it may have filled the cache and require some
+         * items to be evicted. */
+        DbCacheEvict(db);
     }
 
     pthread_mutex_unlock(&db->lock);
