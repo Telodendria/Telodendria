@@ -728,7 +728,7 @@ JsonTokenSeek(JsonParserState * state)
                 {
                     if (c == '.')
                     {
-                        if (state->tokenLen > 1)
+                        if (state->tokenLen > 1 && !isFloat)
                         {
                             isFloat = 1;
                         }
@@ -738,8 +738,7 @@ JsonTokenSeek(JsonParserState * state)
                             return;
                         }
                     }
-
-                    if (!isdigit(c))
+                    else if (!isdigit(c))
                     {
                         ungetc(c, state->stream);
                         break;
@@ -791,10 +790,12 @@ JsonTokenSeek(JsonParserState * state)
                     return;
                 }
 
+                state->token[0] = c;
+
                 switch (c)
                 {
                     case 't':
-                        if (!fgets(state->token, 5, state->stream))
+                        if (!fgets(state->token + 1, 4, state->stream))
                         {
                             state->tokenType = TOKEN_EOF;
                             return;
@@ -811,7 +812,7 @@ JsonTokenSeek(JsonParserState * state)
                         }
                         break;
                     case 'f':
-                        if (!fgets(state->token, 6, state->stream))
+                        if (!fgets(state->token + 1, 5, state->stream))
                         {
                             state->tokenType = TOKEN_EOF;
                             return;
@@ -828,7 +829,7 @@ JsonTokenSeek(JsonParserState * state)
                         }
                         break;
                     case 'n':
-                        if (!fgets(state->token, 5, state->stream))
+                        if (!fgets(state->token + 1, 4, state->stream))
                         {
                             state->tokenType = TOKEN_EOF;
                             return;
@@ -918,7 +919,6 @@ JsonDecodeObject(JsonParserState * state)
 
     do
     {
-
         JsonTokenSeek(state);
         if (JsonExpect(state, TOKEN_STRING))
         {
@@ -1018,7 +1018,7 @@ JsonDecodeArray(JsonParserState * state)
         goto error;
     } while (!JsonExpect(state, TOKEN_EOF));
 
-    return NULL;
+    return arr;
 error:
     for (i = 0; i < ArraySize(arr); i++)
     {
