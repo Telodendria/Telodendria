@@ -165,7 +165,7 @@ recipe_site() {
 		html=$(basename "$man")
 
 		mkdir -p "$TELODENDRIA_PUB/$dir/"
-		mandoc -Thtml -O style=/style.css "$man" > "$TELODENDRIA_PUB/$dir/$html.html"
+		mandoc -Thtml -O style=/style.css,man=/man/man%S/%N.%S.html "$man" > "$TELODENDRIA_PUB/$dir/$html.html"
 		echo "$man -> $TELODENDRIA_PUB/$dir/$html.html"
 	done
 }
