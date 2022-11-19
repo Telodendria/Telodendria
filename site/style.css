@@ -105,6 +105,7 @@ table {
 	border-spacing: 0px;
 }
 
+
 td, th {
     border: 1px solid var(--color-table-border);
     text-align: left;
@@ -113,6 +114,17 @@ td, th {
 
 tr:nth-child(even) {
     background-color: var(--color-table-accent);
+}
+
+/* The above styles are nice for real tables, but not for
+ * a man page synopsis. */
+
+.Nm {
+	width: fit-content;
+}
+
+.Nm td, .Nm th {
+	border: none;
 }
 
 /* Thanks Jonah! */
