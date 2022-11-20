@@ -1,0 +1,92 @@
+.Dd $Mdocdate: November 20 2022 $
+.Dt PACKAGE 7
+.Os Telodendria Project
+.Sh NAME
+.Nm package
+.Nd Some guidelines for packaging Telodendria for your system.
+.Sh DESCRIPTION
+.Pp
+Telodendria is distributed at source code, and does not offer a convenient
+install process. This is intentional; the Telodendria project is primarily
+concerned with developing Telodendria itself, not packaging it for the
+hundreds of different operating systems and Linux distributions that exist.
+It is my firm belief that distributing an open source project is not the
+job of the open source developer; that's the reason software distributions
+exist, to collect and distribute software.
+.Pp
+It would be impossible to package Telodendria for every platform, because
+each platform has very different expectations for software. Even different
+Linux distributions have different conventions for where manual pages,
+binaries, and configuration files go.
+.Pp
+That being said, this page aims to assist those who want to package
+Telodendria, or just install it from source, though that's not recommended.
+.Pp
+See
+.Xr td 8
+for instructions on how to build Telodendria. Only proceed with packaging
+Telodendria after you have successfully built it on your operating system.
+.Pp
+To package Telodendria, you should collect the following files, and figure
+out where they should be installed for your system:
+.Bl -bullet
+.It
+The telodendria server binary itself:
+.Pa build/telodendria
+.It
+All manual pages in the
+.Pa man/
+directory that are prefixed with "telodendria". These are the user documentation
+pages. All pages that do not have the "telodendria" prefix are intended only
+for developers, and so do not need to be installed to the system.
+.It
+An init script. People that wish to install Telodendria to their system
+expect it to be integrated enough that Telodendria can be easily started at
+boot, and otherwise managed by the system's daemon tools, be it systemd, or
+another init system. An init script suitable for your platform might be
+available in
+.Pa contrib/ ,
+but if not, it should be trivial to write your own. If you do end up making
+an official package for your system, feel free to submit your init script
+to be added to the
+.Pa contrib/
+directory.
+.It
+A sample
+.Pa telodendria.conf
+file. Whether this file is placed at the actual configuration file location,
+or a directory containing configuration file samples is entirely up to the
+packager. You can use or adapt any of the configuration files in
+.Pa contrib/ ,
+or write your own specifically for your package.
+.El
+.Pp
+Once you have collected the files that need to be installed, make sure your
+package performs the following tasks on install:
+.Bl -bullet
+.It
+If necessary, depending on the config used, create a new system user for
+the Telodendria daemon to run as.
+.It
+If conventional for your system, enable the Telodendria init script so
+that Telodendria is started on system boot.
+.It
+Insruct the user to carefully read the sample
+.Pa telodendria.conf
+as well as the
+.Xr telodendria.conf 5
+manual page before starting Telodendria.
+.El
+.Pp
+The goal of a package should be to get everything as ready-to-run as possible.
+The user should only have to change one or two default options in the configuration
+file before Telodendria can be started.
+.Pp
+Remember to publicly document the setup of Telodendria on your platform so
+that users can easily get Telodendria running. If you're packaging Telodendria
+for a containerization system such as Docker, you can omit the things that
+containers typically do not have, such as the init script and man pages.
+.Sh SEE ALSO
+.Xr telodendria-contributing 7 ,
+.Xr td 8 ,
+.Xr telodendria 7
