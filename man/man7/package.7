@@ -43,14 +43,10 @@ for developers, and so do not need to be installed to the system.
 An init script. People that wish to install Telodendria to their system
 expect it to be integrated enough that Telodendria can be easily started at
 boot, and otherwise managed by the system's daemon tools, be it systemd, or
-another init system. An init script suitable for your platform might be
-available in
-.Pa contrib/ ,
-but if not, it should be trivial to write your own. If you do end up making
-an official package for your system, feel free to submit your init script
-to be added to the
-.Pa contrib/
-directory.
+another init system. Consult your system's documentation for writing an
+init script. Do note that Telodendria does not fork itself to the background;
+the init script should do that. Also note that Telodendria responds to SIGINT,
+so a SIGINT should be sent to stop Telodendria instead of a SIGTERM or SIGKILL.
 .It
 A sample
 .Pa telodendria.conf

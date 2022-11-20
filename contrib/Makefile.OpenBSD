@@ -1,0 +1,7 @@
+build:
+	sh tools/bin/td
+
+install:
+	install build/telodendria $(PREFIX)/bin/telodendria
+	install -D contrib/production.conf $(PREFIX)/share/examples/telodendria/telodendria.conf
+	find man -name 'telodendria*\.[1-8]' -exec install {} $(PREFIX)/{} \;
