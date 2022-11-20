@@ -3,5 +3,6 @@ all:
 
 install:
 	install build/telodendria $(PREFIX)/bin/telodendria
-	install -D contrib/production.conf $(PREFIX)/share/examples/telodendria/telodendria.conf
+	mkdir -p $(PREFIX)/share/examples/telodendria
+	install contrib/production.conf $(PREFIX)/share/examples/telodendria/telodendria.conf
 	find man -name 'telodendria*\.[1-8]' -exec install {} $(PREFIX)/{} \;
