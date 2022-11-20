@@ -1,4 +1,4 @@
-build:
+all:
 	sh tools/bin/td
 
 install:
