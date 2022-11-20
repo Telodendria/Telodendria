@@ -386,6 +386,7 @@ main(int argc, char **argv)
 
     if (getuid() == 0)
     {
+#ifndef __OpenBSD__ /* chroot() is only useful without unveil() */
         if (chroot(".") == 0)
         {
             Log(lc, LOG_DEBUG, "Changed the root directory to: %s.", tConfig->dataDir);
@@ -394,6 +395,7 @@ main(int argc, char **argv)
         {
             Log(lc, LOG_WARNING, "Unable to chroot into directory: %s.", tConfig->dataDir);
         }
+#endif
 
         if (userInfo && groupInfo)
         {
