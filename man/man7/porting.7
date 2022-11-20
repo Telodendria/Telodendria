@@ -1,0 +1,159 @@
+.Dd $Mdocdate: November 20 2022 $
+.Dt PORTING 7
+.Os Telodendria Project
+.Sh NAME
+.Nm porting
+.Nd Some guidelines for packaging Telodendria for your operating system.
+.Sh DESCRIPTION
+.Pp
+Telodendria is distributed at source code, and does not offer a convenient
+install process. This is intentional; the Telodendria project is primarily
+concerned with developing Telodendria itself, not packaging it for the
+hundreds of different operating systems and Linux distributions that exist.
+It is my firm belief that distributing an open source project is not the
+job of the open source developer; that's the reason software distributions
+exist, to collect and distribute software.
+.Pp
+It would be impossible to single-handedly package Telodendria for every
+platform, because each platform has very different expectations for
+software. Even different Linux distributions have different conventions
+for where manual pages, binaries, and configuration files go.
+.Pp
+That being said, this page aims to assist those who want to package
+Telodendria for their operating system or software distribution.
+.Pp
+See
+.Xr td 8
+for instructions on how to build Telodendria. Only proceed with packaging
+Telodendria after you have successfully built it on your operating system.
+.Pp
+To package Telodendria, you should collect the following files, and figure
+out where they should be installed for your system:
+.Bl -bullet
+.It
+The telodendria server binary itself:
+.Pa build/telodendria
+.It
+All manual pages in the
+.Pa man/
+directory that are prefixed with "telodendria". These are the user documentation
+pages. All pages that do not have the "telodendria" prefix are intended only
+for developers, and so do not need to be installed to the system.
+.It
+An init script. People that wish to install Telodendria to their system
+expect it to be integrated enough that Telodendria can be easily started at
+boot, and otherwise managed by the system's daemon tools, be it systemd, or
+another init system. Consult your system's documentation for writing an
+init script. Do note that Telodendria does not fork itself to the background;
+the init script should do that. Also note that Telodendria responds to SIGINT,
+so a SIGINT should be sent to stop Telodendria instead of a SIGTERM or SIGKILL.
+.It
+A sample
+.Pa telodendria.conf
+file. Whether this file is placed at the actual configuration file location,
+or a directory containing configuration file samples is entirely up to the
+packager. You can use or adapt any of the configuration files in
+.Pa contrib/ ,
+or write your own specifically for your package.
+.El
+.Pp
+Once you have collected the files that need to be installed, make sure your
+package performs the following tasks on install:
+.Bl -bullet
+.It
+If necessary, depending on the config used, create a new system user for
+the Telodendria daemon to run as.
+.It
+If conventional for your system, enable the Telodendria init script so
+that Telodendria is started on system boot.
+.It
+Insruct the user to carefully read the sample
+.Pa telodendria.conf
+as well as the
+.Xr telodendria.conf 5
+manual page before starting Telodendria.
+.El
+.Pp
+The goal of a package should be to get everything as ready-to-run as possible.
+The user should only have to change one or two default options in the configuration
+file before Telodendria can be started.
+.Pp
+Remember to publicly document the setup of Telodendria on your platform so
+that users can easily get Telodendria running. If you're packaging Telodendria
+for a containerization system such as Docker, you can omit the things that
+containers typically do not have, such as the init script and man pages.
+.Pp
+Also remember that your port should feel like it belongs on your target system.
+Follow all of your system's conventions when placing files on the filesystem,
+so your users know what to expect. The goal is not to have a unified experience
+across all operating systems, rather, you should cater to the opinions of your
+operating system. Telodendria is architected in such a way that it does not
+impose the developers opinions of where things should go.
+.Sh PORTS REPOSITORY
+.Pp
+The Telodendria project provides a
+.Pa Telodendria-Ports
+repository that is intended to serve as the official staging environment for
+ports and packages of Telodendria to various operating systems. You can
+most likely take inspiration from the files stored in this repository, or even
+straight up copy and modify files for your own port if you'd like. 
+Telodendria-Ports is a convenient resource for new porters. You can grab
+a copy of the ports repository like this:
+.Bd -literal -offset indent
+$ cvs -d anoncvs@bancino.net:/cvs checkout -P Telodendria-Ports
+.Ed
+.Pp
+(It is assumed that you have read
+.Xr telodendria-contributing 7 ,
+so you already have the proper tools for getting the ports repository.)
+.Pp
+The repository is structured in such a way that each operating system or
+software distribution has a directory. For example, the OpenBSD port has an
+.Pa OpenBSD/
+directory. If you make a HaikuOS port, then make a
+.Pa HaikuOS/
+directory.
+.Pp
+The structure of the operating system directories themselves is really defined
+by the conventions of the packaging system you're working with. There's no standard
+structure, as each system does things differently. Just use the directory as a
+working space that stores all the files your packaging system needs to build
+a package for Telodendria.
+.Pp
+The exact procedure for interacting with this repository is also defined by how
+your packaging system works. For OpenBSD, one is required to copy the
+.Pa OpenBSD/
+directory to
+.Pa /usr/ports/net/telodendria ,
+and then copy files back and forth when modifications are made. You may be able
+to get away with building your package in place, without having to copy files
+anywhere. Otherwise, you can try symlinking directories, but OpenBSD ports did
+not like this at all.
+.Pp
+Submitting your port files to Telodendria-Ports is by no means required,
+but it may be helpful to have a public record that you're working on a port,
+and it's definitely helpful to have a consolidated list of all the ports out
+there, making it much easier to determine whether or not a given platform
+has a port, especially if you're unfamilier with that platform's port system.
+If you are capable of managing your port entirely within your packaging system,
+then go for it! I just wanted a staging environment that I have commit access to
+for my ports, allowing me to prototype and test my port before submitting it
+to the actual ports tree.
+.Pp
+It is important to note that I only maintain the OpenBSD port, because that's
+the operating system I use. But, notice that I follow my own rules; nothing
+inherently OpenBSD-specific, besides a few optional files in
+.Pa contrib/ ,
+actually exists in the main repository. All operating-system specific files,
+such as init scripts and the like, should go to Telodendria-Ports. It's also
+important to note that the files placed in Telodendria-Ports are not automatically
+assumed to be official builds. The developer that committed the files to
+Telodendria-Ports will most likely also have to get them submitted upstream,
+because I'm not going to go to all these upstream packagers with the port files
+here, I'll only do that with ports I officially maintain, which is the
+OpenBSD port.
+.Pp
+.Sh SEE ALSO
+.Xr telodendria-contributing 7 ,
+.Xr td 8 ,
+.Xr telodendria 7
