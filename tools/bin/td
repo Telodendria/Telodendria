@@ -26,11 +26,11 @@
 : "${INCLUDES:=-Isrc/include}"
 
 : "${CC:=cc}"
-: "${CFLAGS:=-Wall -Wextra -pedantic -std=c89 -O3 $DEFINES $INCLUDES}"
+: "${CFLAGS:=-Wall -Wextra -pedantic -std=c89 -O3}"
 : "${LDFLAGS:=-lm -pthread -static -flto -fdata-sections -ffunction-sections -s -Wl,-static -Wl,-gc-sections}"
 : "${PROG:=telodendria}"
 
-: "${PREFIX:=/usr/local}"
+CFLAGS="${CFLAGS} ${DEFINES} ${INCLUDES}"
 
 . "$(pwd)/tools/lib/common.sh"
 
