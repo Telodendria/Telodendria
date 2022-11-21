@@ -495,7 +495,7 @@ DbCreate(Db * db, size_t nArgs,...)
 
     file = DbFileName(db, args);
 
-    if (UtilLastModified(file) || UtilMkdir(dir, 0750) < 0)
+    if (UtilLastModified(file))
     {
         Free(file);
         ArrayFree(args);
@@ -510,6 +510,8 @@ DbCreate(Db * db, size_t nArgs,...)
         Free(dir);
         return NULL;
     }
+
+	Free(dir);
 
     fp = fopen(file, "w");
     Free(file);
