@@ -445,7 +445,6 @@ main(int argc, char **argv)
     tConfig->uid = NULL;
     tConfig->gid = NULL;
 
-    matrixArgs.db = DbOpen(".", tConfig->maxCache);
 
     if (!tConfig->maxCache)
     {
@@ -464,6 +463,8 @@ main(int argc, char **argv)
         Log(lc, LOG_WARNING, "Using a max-cache of %d bytes.", DB_MIN_CACHE);
         tConfig->maxCache = DB_MIN_CACHE;
     }
+
+    matrixArgs.db = DbOpen(".", tConfig->maxCache);
 
     if (!matrixArgs.db)
     {
