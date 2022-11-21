@@ -404,12 +404,15 @@ DbLockFromArr(Db * db, Array * args)
         if (ref->next)
         {
             ref->next->prev = ref->prev;
-            ref->prev->next = ref->next;
 
             if (!ref->prev)
             {
                 db->leastRecent = ref->next;
             }
+			else
+			{
+            	ref->prev->next = ref->next;
+			}
 
             ref->prev = db->mostRecent;
             ref->next = NULL;
