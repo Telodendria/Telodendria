@@ -51,8 +51,7 @@ struct DbRef
     unsigned long ts;
     size_t size;
 
-    char *prefix;
-    char *key;
+    Array *name;
 
     DbRef *prev;
     DbRef *next;
@@ -161,27 +160,64 @@ DbComputeSize(HashMap * json)
 }
 
 static char *
-DbHashKey(char *prefix, char *key)
+DbHashKey(Array * args)
 {
-    return UtilStringConcat(prefix, key);
+    size_t i;
+    char *str = NULL;
+
+    for (i = 0; i < ArraySize(args); i++)
+    {
+        char *tmp = UtilStringConcat(str, ArrayGet(args, i));
+
+        Free(str);
+        str = tmp;
+    }
+
+    return str;
 }
 
 static char *
-DbFileName(Db * db, char *prefix, char *key)
+DbDirName(Db * db, Array * args)
 {
-    char *tmp = UtilStringConcat(prefix, "/");
-    char *tmp2 = UtilStringConcat(tmp, key);
-    char *tmp3 = UtilStringConcat(tmp2, ".json");
+    size_t i;
+    char *str = UtilStringConcat(db->dir, "/");
 
-    char *tmp4 = UtilStringConcat(db->dir, "/");
-    char *tmp5 = UtilStringConcat(tmp4, tmp3);
+    for (i = 0; i < ArraySize(args) - 1; i++)
+    {
+        char *tmp, *tmp2;
 
-    Free(tmp);
-    Free(tmp2);
-    Free(tmp3);
-    Free(tmp4);
+        tmp = UtilStringConcat(str, ArrayGet(args, i));
+        tmp2 = UtilStringConcat(tmp, "/");
 
-    return tmp5;
+        Free(str);
+        Free(tmp);
+
+        str = tmp2;
+    }
+
+    return str;
+}
+
+static char *
+DbFileName(Db * db, Array * args)
+{
+    size_t i;
+    char *str = UtilStringConcat(db->dir, "/");
+
+    for (i = 0; i < ArraySize(args); i++)
+    {
+        char *tmp, *tmp2;
+
+        tmp = UtilStringConcat(str, ArrayGet(args, i));
+        tmp2 = UtilStringConcat(tmp, (i < ArraySize(args) - 1) ? "/" : ".json");
+
+        Free(str);
+        Free(tmp);
+
+        str = tmp2;
+    }
+
+    return str;
 }
 
 static void
@@ -192,7 +228,7 @@ DbCacheEvict(Db * db)
 
     while (ref && db->cacheSize > db->maxCache)
     {
-        char *hash = DbHashKey(ref->prefix, ref->key);
+        char *hash = DbHashKey(ref->name);
 
         if (pthread_mutex_trylock(&ref->lock) != 0)
         {
@@ -205,12 +241,11 @@ DbCacheEvict(Db * db)
         pthread_mutex_unlock(&ref->lock);
         pthread_mutex_destroy(&ref->lock);
 
-        hash = DbHashKey(ref->prefix, ref->key);
+        hash = DbHashKey(ref->name);
         HashMapDelete(db->cache, hash);
         Free(hash);
 
-        Free(ref->prefix);
-        Free(ref->key);
+        ArrayFree(ref->name);
 
         db->cacheSize -= ref->size;
 
@@ -281,8 +316,7 @@ DbClose(Db * db)
     {
         Free(key);
         JsonFree(val->json);
-        Free(val->prefix);
-        Free(val->key);
+        ArrayFree(val->name);
         pthread_mutex_destroy(&val->lock);
         Free(val);
     }
@@ -291,41 +325,8 @@ DbClose(Db * db)
     Free(db);
 }
 
-DbRef *
-DbCreate(Db * db, char *prefix, char *key)
-{
-    FILE *fp;
-    char *file;
-
-    if (!db || !prefix || !key)
-    {
-        return NULL;
-    }
-
-    file = DbFileName(db, prefix, key);
-
-    if (UtilLastModified(file) || UtilMkdir(prefix, 0750) < 0)
-    {
-        Free(file);
-        return NULL;
-    }
-
-    fp = fopen(file, "w");
-    Free(file);
-    if (!fp)
-    {
-        return NULL;
-    }
-
-    fprintf(fp, "{}");
-    fflush(fp);
-    fclose(fp);
-
-    return DbLock(db, prefix, key);
-}
-
-DbRef *
-DbLock(Db * db, char *prefix, char *key)
+static DbRef *
+DbLockFromArr(Db * db, Array * args)
 {
     char *file;
     char *hash;
@@ -333,7 +334,7 @@ DbLock(Db * db, char *prefix, char *key)
     FILE *fp;
     struct flock lock;
 
-    if (!db || !prefix || !key)
+    if (!db || !args)
     {
         return NULL;
     }
@@ -344,9 +345,12 @@ DbLock(Db * db, char *prefix, char *key)
     pthread_mutex_lock(&db->lock);
 
     /* Check if the item is in the cache */
-    hash = DbHashKey(prefix, key);
+    hash = DbHashKey(args);
     ref = HashMapGet(db->cache, hash);
-    file = DbFileName(db, prefix, key);
+    file = DbFileName(db, args);
+
+    printf("Object hash: %s\n", hash);
+    printf("File name: %s\n", file);
 
     /* Open the file for reading and writing so we can lock it */
     fp = fopen(file, "r+");
@@ -443,8 +447,7 @@ DbLock(Db * db, char *prefix, char *key)
 
         ref->ts = UtilServerTs();
         ref->size = DbComputeSize(ref->json);
-        ref->prefix = UtilStringDuplicate(prefix);
-        ref->key = UtilStringDuplicate(key);
+        ref->name = ArrayDuplicate(args);
 
         HashMapSet(db->cache, hash, ref);
         db->cacheSize += ref->size;
@@ -465,6 +468,90 @@ finish:
     Free(hash);
 
     return ref;
+}
+
+DbRef *
+DbCreate(Db * db, size_t nArgs,...)
+{
+    FILE *fp;
+    char *file;
+    char *dir;
+    va_list ap;
+    Array *args;
+
+    if (!db)
+    {
+        return NULL;
+    }
+
+    va_start(ap, nArgs);
+    args = ArrayFromVarArgs(nArgs, ap);
+    va_end(ap);
+
+    if (!args)
+    {
+        return NULL;
+    }
+
+    file = DbFileName(db, args);
+
+    if (UtilLastModified(file) || UtilMkdir(dir, 0750) < 0)
+    {
+        Free(file);
+        ArrayFree(args);
+        return NULL;
+    }
+
+    dir = DbDirName(db, args);
+    if (UtilMkdir(dir, 0750) < 0)
+    {
+        Free(file);
+        ArrayFree(args);
+        Free(dir);
+        return NULL;
+    }
+
+    fp = fopen(file, "w");
+    Free(file);
+    if (!fp)
+    {
+        ArrayFree(args);
+        return NULL;
+    }
+
+    fprintf(fp, "{}");
+    fflush(fp);
+    fclose(fp);
+
+    return DbLockFromArr(db, args);
+}
+
+DbRef *
+DbLock(Db * db, size_t nArgs,...)
+{
+    va_list ap;
+    Array *args;
+    DbRef *ret;
+
+    va_start(ap, nArgs);
+    args = ArrayFromVarArgs(nArgs, ap);
+    va_end(ap);
+
+    printf("Enter DbLock()\n");
+
+    if (!args)
+    {
+        printf("Failed to parse varargs\n");
+        return NULL;
+    }
+
+    ret = DbLockFromArr(db, args);
+
+    ArrayFree(args);
+
+    printf("Exit DbLock()\n");
+
+    return ret;
 }
 
 int

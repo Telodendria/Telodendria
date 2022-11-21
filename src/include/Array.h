@@ -26,6 +26,7 @@
 #define TELODENDRIA_ARRAY_H
 
 #include <stddef.h>
+#include <stdarg.h>
 
 typedef struct Array Array;
 
@@ -55,5 +56,11 @@ extern void
 
 extern int
  ArrayTrim(Array *);
+
+extern Array *
+ ArrayFromVarArgs(size_t, va_list);
+
+extern Array *
+ ArrayDuplicate(Array *);
 
 #endif                             /* TELODENDRIA_ARRAY_H */

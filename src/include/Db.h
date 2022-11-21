@@ -42,10 +42,10 @@ extern void
  DbClose(Db *);
 
 extern DbRef *
- DbCreate(Db *, char *, char *);
+ DbCreate(Db *, size_t,...);
 
 extern DbRef *
- DbLock(Db *, char *, char *);
+ DbLock(Db *, size_t,...);
 
 extern int
  DbUnlock(Db *, DbRef *);

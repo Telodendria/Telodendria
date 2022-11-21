@@ -247,3 +247,67 @@ ArraySort(Array * array, int (*compare) (void *, void *))
     }
     ArrayQuickSort(array, 0, array->size, compare);
 }
+
+/* Even though the following operations could be done using only the
+ * public Array API defined above, I opted for low-level struct
+ * manipulation because it allows much more efficient copying; we only
+ * allocate what we for sure need upfront, and don't have to
+ * re-allocate during the operation. */
+
+Array *
+ArrayFromVarArgs(size_t n, va_list ap)
+{
+    size_t i;
+    Array *arr = Malloc(sizeof(Array));
+
+    if (!arr)
+    {
+        return NULL;
+    }
+
+    arr->size = n;
+    arr->allocated = n;
+    arr->entries = Malloc(sizeof(void *) * arr->allocated);
+
+    if (!arr->entries)
+    {
+        Free(arr);
+        return NULL;
+    }
+
+    for (i = 0; i < n; i++)
+    {
+        arr->entries[i] = va_arg(ap, void *);
+    }
+
+    return arr;
+}
+
+Array *
+ArrayDuplicate(Array * arr)
+{
+    size_t i;
+    Array *arr2 = Malloc(sizeof(Array));
+
+    if (!arr2)
+    {
+        return NULL;
+    }
+
+    arr2->size = arr->size;
+    arr2->allocated = arr->size;
+    arr2->entries = Malloc(sizeof(void *) * arr->allocated);
+
+    if (!arr2->entries)
+    {
+        Free(arr2);
+        return NULL;
+    }
+
+    for (i = 0; i < arr2->size; i++)
+    {
+        arr2->entries[i] = arr->entries[i];
+    }
+
+    return arr2;
+}

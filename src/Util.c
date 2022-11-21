@@ -208,9 +208,10 @@ char *
 UtilStringConcat(char *str1, char *str2)
 {
     char *ret;
+    size_t str1Len, str2Len;
 
-    size_t str1Len = strlen(str1);
-    size_t str2Len = strlen(str2);
+    str1Len = str1 ? strlen(str1) : 0;
+    str2Len = str2 ? strlen(str2) : 0;
 
     ret = Malloc(str1Len + str2Len + 1);
 
@@ -219,8 +220,26 @@ UtilStringConcat(char *str1, char *str2)
         return NULL;
     }
 
-    strcpy(ret, str1);
-    strcpy(ret + str1Len, str2);
+    if (str1 && str2)
+    {
+        strcpy(ret, str1);
+        strcpy(ret + str1Len, str2);
+    }
+    else
+    {
+        if (str1)
+        {
+            strcpy(ret, str1);
+        }
+        else if (str2)
+        {
+            strcpy(ret, str2);
+        }
+		else
+		{
+			strcpy(ret, "");
+		}
+    }
 
     return ret;
 }
