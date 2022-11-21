@@ -12,8 +12,7 @@ Milestone: v0.1.0
 Due: January 1, 2023
 ---------------------
 
-[~] Data abstraction layer
-	[ ] Database upgrades/migration path
+[x] Data abstraction layer
 	[x] Caching
 	[x] Cache eviction
 	[x] Make memory info access O(1)
@@ -21,24 +20,12 @@ Due: January 1, 2023
 [x] Write install and uninstall scripts
 [x] Add relayd example to contrib/
 [x] Refactor man pages to be prefaced with 'telodendria-'
-[ ] Document send-patch
 
-Milestone: v0.2.0
-Due: July 1, 2023
------------------
-
-[!] Clean up memory API
-	[!] Use double hashing instead of linear probing
-	[!] Store block info inside the block, not as a separate block
-		- This makes it too easy to clobber the memory information. By
-		  making it a separate block, there's less of a chance of the
-		  information getting destroyed. It's worth a few extra bytes of
-		  memory to make accidents harder, I think.
 [x] Add recipe to td script to upload patches to the Matrix room
-[!] Figure out how to write unit tests for array/hashmap/etc
+[ ] Document send-patch
 [~] Convert documentation to man pages
 	[~] Internal API docs
-		[x] Array
+		[~] Array
 		[x] Base64
 		[ ] CanonicalJson
 		[ ] Config
@@ -61,6 +48,8 @@ Due: July 1, 2023
 Milestone: v1.0.0
 -----------------
 
+[ ] Database upgrades/migration path
+
 [~] client-Server API
 	[x] Error responses
 	[x] CORS headers
@@ -76,7 +65,6 @@ Milestone: v1.0.0
 [ ] Push Gateway API
 [ ] Room Versions
 
-[ ] Create an OpenBSD package and get it submitted to ports
 [ ] Create a command line tool to manage Telodendria
 	[ ] User management
 	[ ] Room management
