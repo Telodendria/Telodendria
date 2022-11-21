@@ -168,7 +168,7 @@ main(int argc, char **argv)
 #ifdef __OpenBSD__
     Log(lc, LOG_DEBUG, "Attempting pledge...");
 
-    if (pledge("stdio rpath wpath cpath inet dns getpw id unveil", NULL) != 0)
+    if (pledge("stdio rpath wpath cpath flock inet dns getpw id unveil", NULL) != 0)
     {
         Log(lc, LOG_ERROR, "Pledge failed: %s", strerror(errno));
         exit = EXIT_FAILURE;
@@ -386,7 +386,8 @@ main(int argc, char **argv)
 
     if (getuid() == 0)
     {
-#ifndef __OpenBSD__ /* chroot() is only useful without unveil() */
+#ifndef __OpenBSD__                /* chroot() is only useful without
+                                    * unveil() */
         if (chroot(".") == 0)
         {
             Log(lc, LOG_DEBUG, "Changed the root directory to: %s.", tConfig->dataDir);

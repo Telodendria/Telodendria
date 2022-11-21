@@ -28,6 +28,7 @@
 #include <Util.h>
 
 #include <pthread.h>
+#include <fcntl.h>
 
 struct Db
 {
@@ -55,6 +56,8 @@ struct DbRef
 
     DbRef *prev;
     DbRef *next;
+
+    FILE *fp;
 };
 
 static ssize_t DbComputeSize(HashMap *);
@@ -274,19 +277,16 @@ DbClose(Db * db)
 
     pthread_mutex_destroy(&db->lock);
 
-    if (db->cache)
+    while (HashMapIterate(db->cache, &key, (void **) &val))
     {
-        while (HashMapIterate(db->cache, &key, (void **) &val))
-        {
-            Free(key);
-            JsonFree(val->json);
-            Free(val->prefix);
-            Free(val->key);
-            pthread_mutex_destroy(&val->lock);
-            Free(val);
-        }
-        HashMapFree(db->cache);
+        Free(key);
+        JsonFree(val->json);
+        Free(val->prefix);
+        Free(val->key);
+        pthread_mutex_destroy(&val->lock);
+        Free(val);
     }
+    HashMapFree(db->cache);
 
     Free(db);
 }
@@ -330,6 +330,8 @@ DbLock(Db * db, char *prefix, char *key)
     char *file;
     char *hash;
     DbRef *ref;
+    FILE *fp;
+    struct flock lock;
 
     if (!db || !prefix || !key)
     {
@@ -346,31 +348,43 @@ DbLock(Db * db, char *prefix, char *key)
     ref = HashMapGet(db->cache, hash);
     file = DbFileName(db, prefix, key);
 
+    /* Open the file for reading and writing so we can lock it */
+    fp = fopen(file, "r+");
+    if (!fp)
+    {
+        ref = NULL;
+        goto finish;
+    }
+
+    lock.l_start = 0;
+    lock.l_len = 0;
+    lock.l_type = F_WRLCK;
+    lock.l_whence = SEEK_SET;
+
+    /* Lock the file on the disk */
+    if (fcntl(fileno(fp), F_SETLK, &lock) < 0)
+    {
+        fclose(fp);
+        ref = NULL;
+        goto finish;
+    }
+
     if (ref)                       /* In cache */
     {
         unsigned long diskTs = UtilLastModified(file);
 
         pthread_mutex_lock(&ref->lock);
+        ref->fp = fp;
 
         if (diskTs > ref->ts)
         {
             /* File was modified on disk since it was cached */
-            FILE *fp = fopen(file, "r");
-            HashMap *json;
-
-            if (!fp)
-            {
-                pthread_mutex_unlock(&ref->lock);
-                ref = NULL;
-                goto finish;
-            }
-
-            json = JsonDecode(fp);
-            fclose(fp);
+            HashMap *json = JsonDecode(fp);
 
             if (!json)
             {
                 pthread_mutex_unlock(&ref->lock);
+                fclose(fp);
                 ref = NULL;
                 goto finish;
             }
@@ -380,37 +394,31 @@ DbLock(Db * db, char *prefix, char *key)
             ref->ts = diskTs;
             ref->size = DbComputeSize(ref->json);
 
-            /* Float this ref to mostRecent */
-            if (ref->next)
+        }
+
+        /* Float this ref to mostRecent */
+        if (ref->next)
+        {
+            ref->next->prev = ref->prev;
+            ref->prev->next = ref->next;
+
+            if (!ref->prev)
             {
-                ref->next->prev = ref->prev;
-                ref->prev->next = ref->next;
-
-                if (!ref->prev)
-                {
-                    db->leastRecent = ref->next;
-                }
-
-                ref->prev = db->mostRecent;
-                ref->next = NULL;
-                db->mostRecent = ref;
+                db->leastRecent = ref->next;
             }
 
-            /* The file on disk may be larger than what we have in
-             * memory, which may require items in cache to be evicted. */
-            DbCacheEvict(db);
+            ref->prev = db->mostRecent;
+            ref->next = NULL;
+            db->mostRecent = ref;
         }
+
+        /* The file on disk may be larger than what we have in memory,
+         * which may require items in cache to be evicted. */
+        DbCacheEvict(db);
     }
     else
     {
         /* Not in cache; load from disk */
-        FILE *fp = fopen(file, "r");
-
-        if (!fp)
-        {
-            ref = NULL;
-            goto finish;
-        }
 
         ref = Malloc(sizeof(DbRef));
         if (!ref)
@@ -420,11 +428,12 @@ DbLock(Db * db, char *prefix, char *key)
         }
 
         ref->json = JsonDecode(fp);
-        fclose(fp);
+        ref->fp = fp;
 
         if (!ref->json)
         {
             Free(ref);
+            fclose(fp);
             ref = NULL;
             goto finish;
         }
@@ -461,9 +470,6 @@ finish:
 int
 DbUnlock(Db * db, DbRef * ref)
 {
-    FILE *fp;
-    char *file;
-
     if (!db || !ref)
     {
         return 0;
@@ -471,20 +477,13 @@ DbUnlock(Db * db, DbRef * ref)
 
     pthread_mutex_lock(&db->lock);
 
-    file = DbFileName(db, ref->prefix, ref->key);
-    fp = fopen(file, "w");
-    Free(file);
+    rewind(ref->fp);
+    ftruncate(fileno(ref->fp), 0);
 
-    if (!fp)
-    {
-        pthread_mutex_unlock(&db->lock);
-        return 0;
-    }
+    JsonEncode(ref->json, ref->fp);
 
-    JsonEncode(ref->json, fp);
-    fflush(fp);
-    fclose(fp);
-
+    fflush(ref->fp);
+    fclose(ref->fp);
 
     db->cacheSize -= ref->size;
     ref->size = DbComputeSize(ref->json);
