@@ -449,7 +449,20 @@ main(int argc, char **argv)
 
     if (!tConfig->maxCache)
     {
-        Log(lc, LOG_WARNING, "Max-cache is set to zero; caching is disabled.");
+        Log(lc, LOG_WARNING, "Max-cache is set to zero.");
+        Log(lc, LOG_WARNING,
+            "If this is not what you intended, check the config file");
+        Log(lc, LOG_WARNING,
+            "and ensure that max-cache is a valid number of bytes.");
+    }
+
+    if (tConfig->maxCache < DB_MIN_CACHE)
+    {
+        Log(lc, LOG_WARNING,
+            "Specified max cache size is less than the minimum of %d bytes.",
+            DB_MIN_CACHE);
+        Log(lc, LOG_WARNING, "Using a max-cache of %d bytes.", DB_MIN_CACHE);
+        tConfig->maxCache = DB_MIN_CACHE;
     }
 
     if (!matrixArgs.db)

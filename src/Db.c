@@ -236,7 +236,7 @@ DbOpen(char *dir, size_t cache)
 {
     Db *db;
 
-    if (!dir || cache < 1024)
+    if (!dir || cache < DB_MIN_CACHE)
     {
         return NULL;
     }
