@@ -349,9 +349,6 @@ DbLockFromArr(Db * db, Array * args)
     ref = HashMapGet(db->cache, hash);
     file = DbFileName(db, args);
 
-    printf("Object hash: %s\n", hash);
-    printf("File name: %s\n", file);
-
     /* Open the file for reading and writing so we can lock it */
     fp = fopen(file, "r+");
     if (!fp)
@@ -542,19 +539,14 @@ DbLock(Db * db, size_t nArgs,...)
     args = ArrayFromVarArgs(nArgs, ap);
     va_end(ap);
 
-    printf("Enter DbLock()\n");
-
     if (!args)
     {
-        printf("Failed to parse varargs\n");
         return NULL;
     }
 
     ret = DbLockFromArr(db, args);
 
     ArrayFree(args);
-
-    printf("Exit DbLock()\n");
 
     return ret;
 }
