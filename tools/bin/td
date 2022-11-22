@@ -30,9 +30,9 @@
 : "${LDFLAGS:=-lm -pthread -static -flto -fdata-sections -ffunction-sections -s -Wl,-static -Wl,-gc-sections}"
 : "${PROG:=telodendria}"
 
-CFLAGS="${CFLAGS} ${DEFINES} ${INCLUDES}"
-
 . "$(pwd)/tools/lib/common.sh"
+
+CFLAGS="${CFLAGS} ${DEFINES} ${INCLUDES}"
 
 if [ "$DEBUG" = "1" ]; then
 	CFLAGS="$CFLAGS -O0 -g"
