@@ -29,6 +29,7 @@
 
 #include <pthread.h>
 #include <fcntl.h>
+#include <unistd.h>
 
 struct Db
 {
