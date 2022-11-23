@@ -132,7 +132,7 @@ main(int argc, char **argv)
     /* Arg parsing */
     int opt;
     int flags = 0;
-    char *configArg = "/etc/telodendria.conf";
+    char *configArg = NULL;
 
     /* Config file */
     FILE *configFile = NULL;
@@ -205,7 +205,13 @@ main(int argc, char **argv)
         goto finish;
     }
 
-    if (strcmp(configArg, "-") == 0)
+	if (!configArg)
+	{
+		Log(lc, LOG_ERROR, "No configuration file specified.");
+		exit = EXIT_FAILURE;
+		goto finish;
+	}
+    else if (strcmp(configArg, "-") == 0)
     {
         configFile = stdin;
     }
