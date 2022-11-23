@@ -563,7 +563,11 @@ DbUnlock(Db * db, DbRef * ref)
     pthread_mutex_lock(&db->lock);
 
     rewind(ref->fp);
-    ftruncate(fileno(ref->fp), 0);
+    if (ftruncate(fileno(ref->fp), 0) < 0)
+	{
+		pthread_mutex_unlock(&db->lock);
+		return 0;
+	}
 
     JsonEncode(ref->json, ref->fp);
 
