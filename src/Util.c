@@ -235,10 +235,10 @@ UtilStringConcat(char *str1, char *str2)
         {
             strcpy(ret, str2);
         }
-		else
-		{
-			strcpy(ret, "");
-		}
+        else
+        {
+            strcpy(ret, "");
+        }
     }
 
     return ret;

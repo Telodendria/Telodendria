@@ -407,10 +407,10 @@ DbLockFromArr(Db * db, Array * args)
             {
                 db->leastRecent = ref->next;
             }
-			else
-			{
-            	ref->prev->next = ref->next;
-			}
+            else
+            {
+                ref->prev->next = ref->next;
+            }
 
             ref->prev = db->mostRecent;
             ref->next = NULL;
@@ -423,6 +423,9 @@ DbLockFromArr(Db * db, Array * args)
     }
     else
     {
+        Array *name = ArrayCreate();
+        size_t i;
+
         /* Not in cache; load from disk */
 
         ref = Malloc(sizeof(DbRef));
@@ -448,7 +451,12 @@ DbLockFromArr(Db * db, Array * args)
 
         ref->ts = UtilServerTs();
         ref->size = DbComputeSize(ref->json);
-        ref->name = ArrayDuplicate(args);
+
+        for (i = 0; i < ArraySize(args); i++)
+        {
+            ArrayAdd(name, UtilStringDuplicate(ArrayGet(args, i)));
+        }
+        ref->name = name;
 
         HashMapSet(db->cache, hash, ref);
         db->cacheSize += ref->size;
@@ -512,7 +520,7 @@ DbCreate(Db * db, size_t nArgs,...)
         return NULL;
     }
 
-	Free(dir);
+    Free(dir);
 
     fp = fopen(file, "w");
     Free(file);
@@ -564,10 +572,10 @@ DbUnlock(Db * db, DbRef * ref)
 
     rewind(ref->fp);
     if (ftruncate(fileno(ref->fp), 0) < 0)
-	{
-		pthread_mutex_unlock(&db->lock);
-		return 0;
-	}
+    {
+        pthread_mutex_unlock(&db->lock);
+        return 0;
+    }
 
     JsonEncode(ref->json, ref->fp);
 
