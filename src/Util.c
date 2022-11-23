@@ -37,6 +37,10 @@
 #include <sys/stat.h>
 #include <limits.h>
 
+#ifndef PATH_MAX
+#define PATH_MAX 256
+#endif
+
 unsigned long
 UtilServerTs(void)
 {

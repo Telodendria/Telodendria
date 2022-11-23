@@ -576,7 +576,6 @@ HttpServerWorkerThread(void *args)
             char *headerKey;
             char *headerValue;
             char *headerPtr;
-            ssize_t i;
 
             if (strcmp(line, "\r\n") == 0)
             {

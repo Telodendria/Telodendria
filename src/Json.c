@@ -469,7 +469,7 @@ JsonDecodeString(FILE * in)
                         if (utf8 == 0)
                         {
                             /*
-                             * We read in a \u0000, null. There is no
+                             * We read in a 0000, null. There is no
                              * circumstance in which putting a null
                              * character into our buffer will end well.
                              *
