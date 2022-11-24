@@ -1,4 +1,4 @@
-.Dd $Mdocdate: September 30 2022 $
+.Dd $Mdocdate: November 24 2022 $
 .Dt ARRAY 3
 .Os Telodendria Project
 .Sh NAME
@@ -24,6 +24,10 @@
 .Fn ArrayDelete "Array *" "size_t"
 .Ft void
 .Fn ArraySort "Array *" "int (*) (void *, void *)"
+.Ft Array *
+.Fn ArrayFromVarArgs "size_t" "va_list"
+.Ft Array *
+.Fn ArrayDuplicate "Array *"
 .Sh DESCRIPTION
 These functions implement a simple array data structure that
 is automatically resized as necessary when new values are added.
@@ -85,9 +89,23 @@ the opposite: the second element should appear after the first in the array.
 .Pp
 .Fn ArrayGet
 is used to get the element at the specified index.
+.Pp
+.Fn ArrayFromVarArgs
+is used to convert a variadic arguments list into an Array. In many
+cases, the Array API is much easier to work with than
+.Fn va_arg
+and friends.
+.Pp
+.Fn ArrayDuplicate
+duplicates an existing array. Note that Arrays only hold
+pointers to data, not the data itself, so the duplicated array will
+point to the same places in memory as the original array.
 .Sh RETURN VALUES
-.Fn ArrayCreate
-returns a pointer on the heap to a newly allocated array structure, or
+.Fn ArrayCreate ,
+.Fn ArrayFromVarArgs ,
+and
+.Fn ArrayDuplicate
+return a pointer on the heap to a newly allocated array structure, or
 .Dv NULL
 if the allocation fails.
 .Pp

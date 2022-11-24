@@ -50,19 +50,19 @@ IsInteger(char *str)
 #define GET_DIRECTIVE(name) \
 	directive = (ConfigDirective *) HashMapGet(config, name); \
 	if (!directive) { \
-		Log(lc, LOG_ERROR, "Missing required configuration directive: '%s'.", name); \
+		Log(lc, LOG_ERR, "Missing required configuration directive: '%s'.", name); \
 		goto error; \
 	} \
 	children = ConfigChildrenGet(directive); \
 	value = ConfigValuesGet(directive); \
 
 #define ASSERT_NO_CHILDREN(name) if (children) { \
-	Log(lc, LOG_ERROR, "Unexpected child values in directive: '%s'.", name); \
+	Log(lc, LOG_ERR, "Unexpected child values in directive: '%s'.", name); \
 	goto error; \
 }
 
 #define ASSERT_VALUES(name, expected) if (ArraySize(value) != expected) { \
-	Log(lc, LOG_ERROR, \
+	Log(lc, LOG_ERR, \
 		"Wrong value count in directive '%s': got '%d', but expected '%d'.", \
 		name, ArraySize(value), expected); \
 	goto error; \
@@ -108,7 +108,7 @@ TelodendriaConfigParse(HashMap * config, LogConfig * lc)
         tConfig->listenPort = (unsigned short) atoi(ArrayGet(value, 0));
         if (!tConfig->listenPort)
         {
-            Log(lc, LOG_ERROR, "Expected numeric value for listen port, got '%s'.", ArrayGet(value, 1));
+            Log(lc, LOG_ERR, "Expected numeric value for listen port, got '%s'.", ArrayGet(value, 1));
             goto error;
         }
     }
@@ -134,7 +134,7 @@ TelodendriaConfigParse(HashMap * config, LogConfig * lc)
         tConfig->baseUrl = Malloc(strlen(tConfig->serverName) + 10);
         if (!tConfig->baseUrl)
         {
-            Log(lc, LOG_ERROR, "Error allocating memory for default config value 'base-url'.");
+            Log(lc, LOG_ERR, "Error allocating memory for default config value 'base-url'.");
             goto error;
         }
 
@@ -178,7 +178,7 @@ TelodendriaConfigParse(HashMap * config, LogConfig * lc)
                 COPY_VALUE(tConfig->gid, 1);
                 break;
             default:
-                Log(lc, LOG_ERROR,
+                Log(lc, LOG_ERR,
                     "Wrong value count in directive 'id': got '%d', but expected 1 or 2.",
                     ArraySize(value));
                 goto error;
@@ -204,13 +204,13 @@ TelodendriaConfigParse(HashMap * config, LogConfig * lc)
         tConfig->threads = atoi(ArrayGet(value, 0));
         if (!tConfig->threads)
         {
-            Log(lc, LOG_ERROR, "threads must be greater than zero");
+            Log(lc, LOG_ERR, "threads must be greater than zero");
             goto error;
         }
     }
     else
     {
-        Log(lc, LOG_ERROR,
+        Log(lc, LOG_ERR,
             "Expected integer for directive 'threads', "
             "but got '%s'.", ArrayGet(value, 0));
         goto error;
@@ -231,13 +231,13 @@ TelodendriaConfigParse(HashMap * config, LogConfig * lc)
             tConfig->maxConnections = atoi(ArrayGet(value, 0));
             if (!tConfig->maxConnections)
             {
-                Log(lc, LOG_ERROR, "max-connections must be greater than zero.");
+                Log(lc, LOG_ERR, "max-connections must be greater than zero.");
                 goto error;
             }
         }
         else
         {
-            Log(lc, LOG_ERROR, "Expected integer for max-connections, got '%s'", ArrayGet(value, 0));
+            Log(lc, LOG_ERR, "Expected integer for max-connections, got '%s'", ArrayGet(value, 0));
             goto error;
         }
     }
@@ -257,7 +257,7 @@ TelodendriaConfigParse(HashMap * config, LogConfig * lc)
     }
     else if (strcmp(ArrayGet(value, 0), "false") != 0)
     {
-        Log(lc, LOG_ERROR,
+        Log(lc, LOG_ERR,
             "Expected boolean value for directive 'federation', "
             "but got '%s'.", ArrayGet(value, 0));
         goto error;
@@ -272,7 +272,7 @@ TelodendriaConfigParse(HashMap * config, LogConfig * lc)
     }
     else if (strcmp(ArrayGet(value, 0), "false") != 0)
     {
-        Log(lc, LOG_ERROR,
+        Log(lc, LOG_ERR,
             "Expected boolean value for directive 'registration', "
             "but got '%s'.", ArrayGet(value, 0));
         goto error;
@@ -293,14 +293,14 @@ TelodendriaConfigParse(HashMap * config, LogConfig * lc)
             size = ArraySize(ConfigValuesGet(cDirective));
             if (size > 1)
             {
-                Log(lc, LOG_ERROR, "Expected 1 value for log.level, got %d.", size);
+                Log(lc, LOG_ERR, "Expected 1 value for log.level, got %d.", size);
                 goto error;
             }
 
             cVal = ArrayGet(ConfigValuesGet(cDirective), 0);
             if (strcmp(cVal, "message") == 0)
             {
-                tConfig->logLevel = LOG_MESSAGE;
+                tConfig->logLevel = LOG_INFO;
             }
             else if (strcmp(cVal, "debug") == 0)
             {
@@ -308,7 +308,7 @@ TelodendriaConfigParse(HashMap * config, LogConfig * lc)
             }
             else if (strcmp(cVal, "task") == 0)
             {
-                tConfig->logLevel = LOG_TASK;
+                tConfig->logLevel = LOG_NOTICE;
             }
             else if (strcmp(cVal, "warning") == 0)
             {
@@ -316,11 +316,11 @@ TelodendriaConfigParse(HashMap * config, LogConfig * lc)
             }
             else if (strcmp(cVal, "error") == 0)
             {
-                tConfig->logLevel = LOG_ERROR;
+                tConfig->logLevel = LOG_ERR;
             }
             else
             {
-                Log(lc, LOG_ERROR, "Invalid value for log.level: '%s'.", cVal);
+                Log(lc, LOG_ERR, "Invalid value for log.level: '%s'.", cVal);
                 goto error;
             }
         }
@@ -331,7 +331,7 @@ TelodendriaConfigParse(HashMap * config, LogConfig * lc)
             size = ArraySize(ConfigValuesGet(cDirective));
             if (size > 1)
             {
-                Log(lc, LOG_ERROR, "Expected 1 value for log.level, got %d.", size);
+                Log(lc, LOG_ERR, "Expected 1 value for log.level, got %d.", size);
                 goto error;
             }
 
@@ -353,7 +353,7 @@ TelodendriaConfigParse(HashMap * config, LogConfig * lc)
             size = ArraySize(ConfigValuesGet(cDirective));
             if (size > 1)
             {
-                Log(lc, LOG_ERROR, "Expected 1 value for log.level, got %d.", size);
+                Log(lc, LOG_ERR, "Expected 1 value for log.level, got %d.", size);
                 goto error;
             }
 
@@ -365,7 +365,7 @@ TelodendriaConfigParse(HashMap * config, LogConfig * lc)
             }
             else if (strcmp(cVal, "false") != 0)
             {
-                Log(lc, LOG_ERROR, "Expected boolean value for log.color, got '%s'.", cVal);
+                Log(lc, LOG_ERR, "Expected boolean value for log.color, got '%s'.", cVal);
                 goto error;
             }
         }
@@ -386,7 +386,7 @@ TelodendriaConfigParse(HashMap * config, LogConfig * lc)
     }
     else
     {
-        Log(lc, LOG_ERROR, "Unknown log value '%s', expected 'stdout', 'file', or 'syslog'.",
+        Log(lc, LOG_ERR, "Unknown log value '%s', expected 'stdout', 'file', or 'syslog'.",
             ArrayGet(value, 0));
         goto error;
     }

@@ -22,41 +22,12 @@
  * SOFTWARE.
  */
 
-/*
- * Log.h: A heavily-modified version of Shlog, a simple C logging
- * facility that allows for colorful output, timestamps, and custom
- * log levels. This library differs from Shlog in that the naming
- * conventions have been updated to be consistent with Telodendria.
- *
- * Shlog was originally a learning project. It worked well, however,
- * and produced elegant logging output, so it was chosen to be the
- * main logging mechanism of Telodendria. The original Shlog project
- * is now dead; Shlog lives on now only as Telodendria's logging
- * mechanism.
- *
- * In the name of simplicity and portability, I opted to use an
- * in-house logging system instead of syslog(), or other system logging
- * mechanisms. However, this API could easily be patched to allow
- * logging via other mechanisms that support the same features.
- */
 #ifndef TELODENDRIA_LOG_H
 #define TELODENDRIA_LOG_H
 
 #include <stdio.h>
 #include <stddef.h>
 #include <syslog.h>
-
-/*
- * I used to define all my own constants, but now I use
- * those defined in syslog.h. Instead of replacing all the
- * references, I just map the old names to the new ones. If
- * you're ever bored one day, you can remove these, and then
- * go fix all the compiler errors that arise. Should be pretty
- * easy, just mind numbing.
- */
-#define LOG_ERROR LOG_ERR
-#define LOG_TASK LOG_NOTICE
-#define LOG_MESSAGE LOG_INFO
 
 /*
  * The possible flags that can be applied to alter the behavior of

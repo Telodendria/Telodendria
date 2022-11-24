@@ -39,6 +39,7 @@ MatrixHttpHandler(HttpServerContext * context, void *argp)
     MatrixHttpHandlerArgs *args = (MatrixHttpHandlerArgs *) argp;
 
     LogConfig *lc = args->lc;
+    Db *db = args->db;
 
     HashMap *requestHeaders = HttpRequestHeaders(context);
     FILE *stream;
@@ -54,7 +55,7 @@ MatrixHttpHandler(HttpServerContext * context, void *argp)
 
     requestPath = HttpRequestPath(context);
 
-    Log(lc, LOG_MESSAGE, "%s %s",
+    Log(lc, LOG_INFO, "%s %s",
         HttpRequestMethodToString(HttpRequestMethodGet(context)),
         requestPath);
 

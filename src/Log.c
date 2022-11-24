@@ -59,7 +59,7 @@ LogConfigCreate(void)
 
     memset(config, 0, sizeof(LogConfig));
 
-    LogConfigLevelSet(config, LOG_MESSAGE);
+    LogConfigLevelSet(config, LOG_INFO);
     LogConfigIndentSet(config, 0);
     LogConfigOutputSet(config, NULL);   /* Will set to stdout */
     LogConfigFlagSet(config, LOG_FLAG_COLOR);
@@ -154,9 +154,9 @@ LogConfigLevelSet(LogConfig * config, int level)
 
     switch (level)
     {
-        case LOG_ERROR:
+        case LOG_ERR:
         case LOG_WARNING:
-        case LOG_MESSAGE:
+        case LOG_INFO:
         case LOG_DEBUG:
             config->level = level;
         default:
@@ -311,16 +311,16 @@ Log(LogConfig * config, int level, const char *msg,...)
         case LOG_CRIT:
             indicator = 'X';
             break;
-        case LOG_ERROR:
+        case LOG_ERR:
             indicator = 'x';
             break;
         case LOG_WARNING:
             indicator = '!';
             break;
-        case LOG_TASK:
+        case LOG_NOTICE:
             indicator = '~';
             break;
-        case LOG_MESSAGE:
+        case LOG_INFO:
             indicator = '>';
             break;
         case LOG_DEBUG:

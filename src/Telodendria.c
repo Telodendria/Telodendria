@@ -104,23 +104,23 @@ typedef enum ArgFlag
 static void
 TelodendriaPrintHeader(LogConfig * lc)
 {
-    Log(lc, LOG_MESSAGE,
+    Log(lc, LOG_INFO,
         " _____    _           _                _      _");
-    Log(lc, LOG_MESSAGE,
+    Log(lc, LOG_INFO,
         "|_   _|__| | ___   __| | ___ _ __   __| |_ __(_) __ _");
-    Log(lc, LOG_MESSAGE,
+    Log(lc, LOG_INFO,
         "  | |/ _ \\ |/ _ \\ / _` |/ _ \\ '_ \\ / _` | '__| |/ _` |");
-    Log(lc, LOG_MESSAGE,
+    Log(lc, LOG_INFO,
         "  | |  __/ | (_) | (_| |  __/ | | | (_| | |  | | (_| |");
-    Log(lc, LOG_MESSAGE,
+    Log(lc, LOG_INFO,
       "  |_|\\___|_|\\___/ \\__,_|\\___|_| |_|\\__,_|_|  |_|\\__,_|");
-    Log(lc, LOG_MESSAGE, "Telodendria v" TELODENDRIA_VERSION);
-    Log(lc, LOG_MESSAGE, "");
-    Log(lc, LOG_MESSAGE,
+    Log(lc, LOG_INFO, "Telodendria v" TELODENDRIA_VERSION);
+    Log(lc, LOG_INFO, "");
+    Log(lc, LOG_INFO,
         "Copyright (C) 2022 Jordan Bancino <@jordan:bancino.net>");
-    Log(lc, LOG_MESSAGE,
+    Log(lc, LOG_INFO,
         "Documentation/Support: https://telodendria.io");
-    Log(lc, LOG_MESSAGE, "");
+    Log(lc, LOG_INFO, "");
 }
 
 int
@@ -170,7 +170,7 @@ main(int argc, char **argv)
 
     if (pledge("stdio rpath wpath cpath flock inet dns getpw id unveil", NULL) != 0)
     {
-        Log(lc, LOG_ERROR, "Pledge failed: %s", strerror(errno));
+        Log(lc, LOG_ERR, "Pledge failed: %s", strerror(errno));
         exit = EXIT_FAILURE;
         goto finish;
     }
@@ -207,7 +207,7 @@ main(int argc, char **argv)
 
     if (!configArg)
     {
-        Log(lc, LOG_ERROR, "No configuration file specified.");
+        Log(lc, LOG_ERR, "No configuration file specified.");
         exit = EXIT_FAILURE;
         goto finish;
     }
@@ -221,7 +221,7 @@ main(int argc, char **argv)
 #ifdef __OpenBSD__
         if (unveil(configArg, "r") != 0)
         {
-            Log(lc, LOG_ERROR, "Unable to unveil() configuration file '%s' for reading.", configArg);
+            Log(lc, LOG_ERR, "Unable to unveil() configuration file '%s' for reading.", configArg);
             exit = EXIT_FAILURE;
             goto finish;
         }
@@ -229,18 +229,18 @@ main(int argc, char **argv)
         configFile = fopen(configArg, "r");
         if (!configFile)
         {
-            Log(lc, LOG_ERROR, "Unable to open configuration file '%s' for reading.", configArg);
+            Log(lc, LOG_ERR, "Unable to open configuration file '%s' for reading.", configArg);
             exit = EXIT_FAILURE;
             goto finish;
         }
     }
 
-    Log(lc, LOG_TASK, "Processing configuration file '%s'.", configArg);
+    Log(lc, LOG_NOTICE, "Processing configuration file '%s'.", configArg);
 
     configParseResult = ConfigParse(configFile);
     if (!ConfigParseResultOk(configParseResult))
     {
-        Log(lc, LOG_ERROR, "Syntax error on line %d.",
+        Log(lc, LOG_ERR, "Syntax error on line %d.",
             ConfigParseResultLineNumber(configParseResult));
         exit = EXIT_FAILURE;
         goto finish;
@@ -262,14 +262,14 @@ main(int argc, char **argv)
 
     if (flags & ARG_CONFIGTEST)
     {
-        Log(lc, LOG_MESSAGE, "Configuration is OK.");
+        Log(lc, LOG_INFO, "Configuration is OK.");
         goto finish;
     }
 
 #ifdef __OpenBSD__
     if (unveil(tConfig->dataDir, "rwc") != 0)
     {
-        Log(lc, LOG_ERROR, "Unveil of data directory failed: %s", strerror(errno));
+        Log(lc, LOG_ERR, "Unveil of data directory failed: %s", strerror(errno));
         exit = EXIT_FAILURE;
         goto finish;
     }
@@ -292,7 +292,7 @@ main(int argc, char **argv)
 
     if (chdir(tConfig->dataDir) != 0)
     {
-        Log(lc, LOG_ERROR, "Unable to change into data directory: %s.", strerror(errno));
+        Log(lc, LOG_ERR, "Unable to change into data directory: %s.", strerror(errno));
         exit = EXIT_FAILURE;
         goto finish;
     }
@@ -308,12 +308,12 @@ main(int argc, char **argv)
 
         if (!logFile)
         {
-            Log(lc, LOG_ERROR, "Unable to open log file for appending.");
+            Log(lc, LOG_ERR, "Unable to open log file for appending.");
             exit = EXIT_FAILURE;
             goto finish;
         }
 
-        Log(lc, LOG_MESSAGE, "Logging to the log file. Check there for all future messages.");
+        Log(lc, LOG_INFO, "Logging to the log file. Check there for all future messages.");
         LogConfigOutputSet(lc, logFile);
     }
     else if (tConfig->flags & TELODENDRIA_LOG_STDOUT)
@@ -322,7 +322,7 @@ main(int argc, char **argv)
     }
     else if (tConfig->flags & TELODENDRIA_LOG_SYSLOG)
     {
-        Log(lc, LOG_MESSAGE, "Logging to the syslog. Check there for all future messages.");
+        Log(lc, LOG_INFO, "Logging to the syslog. Check there for all future messages.");
         LogConfigFlagSet(lc, LOG_FLAG_SYSLOG);
 
         openlog("telodendria", LOG_PID | LOG_NDELAY, LOG_DAEMON);
@@ -332,8 +332,8 @@ main(int argc, char **argv)
     }
     else
     {
-        Log(lc, LOG_ERROR, "Unknown logging method in flags: '%d'", tConfig->flags);
-        Log(lc, LOG_ERROR, "This is a programmer error; please report it.");
+        Log(lc, LOG_ERR, "Unknown logging method in flags: '%d'", tConfig->flags);
+        Log(lc, LOG_ERR, "This is a programmer error; please report it.");
         exit = EXIT_FAILURE;
         goto finish;
     }
@@ -361,7 +361,7 @@ main(int argc, char **argv)
                                   MatrixHttpHandler, &matrixArgs);
     if (!httpServer)
     {
-        Log(lc, LOG_ERROR, "Unable to create HTTP server on port %d: %s",
+        Log(lc, LOG_ERR, "Unable to create HTTP server on port %d: %s",
             tConfig->listenPort, strerror(errno));
         exit = EXIT_FAILURE;
         goto finish;
@@ -376,7 +376,7 @@ main(int argc, char **argv)
 
         if (!userInfo || !groupInfo)
         {
-            Log(lc, LOG_ERROR, "Unable to locate the user/group specified in the configuration.");
+            Log(lc, LOG_ERR, "Unable to locate the user/group specified in the configuration.");
             exit = EXIT_FAILURE;
             goto finish;
         }
@@ -408,7 +408,7 @@ main(int argc, char **argv)
         {
             if (setgid(groupInfo->gr_gid) != 0 || setuid(userInfo->pw_uid) != 0)
             {
-                Log(lc, LOG_ERROR, "Unable to set process uid/gid.");
+                Log(lc, LOG_ERR, "Unable to set process uid/gid.");
                 exit = EXIT_FAILURE;
                 goto finish;
             }
@@ -474,21 +474,21 @@ main(int argc, char **argv)
 
     if (!matrixArgs.db)
     {
-        Log(lc, LOG_ERROR, "Unable to open data directory as a database.");
+        Log(lc, LOG_ERR, "Unable to open data directory as a database.");
         exit = EXIT_FAILURE;
         goto finish;
     }
 
-    Log(lc, LOG_TASK, "Starting server...");
+    Log(lc, LOG_NOTICE, "Starting server...");
 
     if (!HttpServerStart(httpServer))
     {
-        Log(lc, LOG_ERROR, "Unable to start HTTP server.");
+        Log(lc, LOG_ERR, "Unable to start HTTP server.");
         exit = EXIT_FAILURE;
         goto finish;
     }
 
-    Log(lc, LOG_MESSAGE, "Listening on port: %d", tConfig->listenPort);
+    Log(lc, LOG_INFO, "Listening on port: %d", tConfig->listenPort);
 
     sigAction.sa_handler = TelodendriaSignalHandler;
     sigfillset(&sigAction.sa_mask);
@@ -496,7 +496,7 @@ main(int argc, char **argv)
 
     if (sigaction(SIGINT, &sigAction, NULL) < 0)
     {
-        Log(lc, LOG_ERROR, "Unable to install signal handler.");
+        Log(lc, LOG_ERR, "Unable to install signal handler.");
         exit = EXIT_FAILURE;
         goto finish;
     }
@@ -506,7 +506,7 @@ main(int argc, char **argv)
     HttpServerJoin(httpServer);
 
 finish:
-    Log(lc, LOG_TASK, "Shutting down...");
+    Log(lc, LOG_NOTICE, "Shutting down...");
     if (httpServer)
     {
         HttpServerFree(httpServer);
