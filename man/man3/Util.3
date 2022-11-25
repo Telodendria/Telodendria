@@ -1,0 +1,83 @@
+.Dd $Mdocdate: November 25 2022 $
+.Dt UTIL 3
+.Os Telodendria Project
+.Sh NAME
+.Nm Util
+.Nd Some misc. helper functions that don't need their own headers.
+.Sh SYNOPSIS
+.In Util.h
+.Ft unsigned long
+.Fn UtilServerTs "void"
+.Ft unsigned long
+.Fn UtilLastModified "char *"
+.Ft int
+.Fn UtilMkdir "const char *" "const mode_t"
+.Ft char *
+.Fn UtilUtf8Encode "unsigned long"
+.Ft char *
+.Fn UtilStringDuplicate "char *"
+.Ft char *
+.Fn UtilStringConcat "char *" "char *"
+.Ft int
+.Fn UtilSleepMillis "long"
+.Ft size_t
+.Fn UtilParseBytes "char *"
+.Ft ssize_t
+.Fn UtilGetDelim "char **" "size_t *" "int" "FILE *"
+.Ft ssize_t
+.Fn UtilGetLine "char **" "size_t *" "FILE *"
+.Sh DESCRIPTION
+.Pp
+This header holds a number of random functions related to strings,
+time, and other tasks that don't require a full API, just one or
+two functions. For the most part, the functions here are entirely
+standalone, depending only on POSIX functions, however there are a
+few that specifically utilize Telodendria APIs. Those are noted.
+.Pp
+.Fn UtilServerTs
+gets the current time in milliseconds since the Unix epoch. This
+uses
+.Xr gettimeofday 2
+and time_t, and converts it to a single number, which is then
+returned to the caller. A note on the 2038 problem: as long as
+sizeof(long) >= 8, that is, as long as the long datatype is 64 bits
+or more, which it is on all modern 64-bit Unix-like operating
+systems, then everything should be fine. Expect Telodendria on 32 bit
+machines to break in 2038. I didn't want to try to hack together
+some system to store larger numbers than the architecture supports.
+We can always re-evaluate things over the next decade.
+.Pp
+.Fn UtilUtf8Encode
+takes a UTF-8 codepoint and encodes it into a string buffer
+containing between 1 and 4 bytes. The string buffer is allocated
+on the heap, so it should be freed when it is no longer needed.
+.Pp
+.Fn UtilStringDuplicate
+duplicates a NULL-terminated string, and returns a new string on the
+heap. This is useful when a function takes in a string that it needs
+to store for for long amounts of time, even perhaps after the
+original string is long gone.
+.Pp
+.Fn UtilSleepMillis
+sleeps the calling thread for the given number of milliseconds. It
+occurred to me that POSIX does not specify a super friendly way to
+sleep, so this is a wrapper around the POSIX
+.Xr nanosleep 2
+designed to make its usage much, much simpler.
+.Pp
+.Fn UtilLastModified
+uses
+.Xr stat 2
+to get the last modified time of the given file. This is used
+primarily for caching file data.
+.Pp
+.Fn UtilStringConcat
+takes in two NULL-terminated strings and returns their concatenation.
+It works a lot like
+.Xr strcat 3 ,
+but it takes care of allocating memory big enough to hold both
+strings. One or both strings may be NULL. If a string is NULL, it
+is treated like an empty string.
+.Sh RETURN VALUES
+.Pp
+TODO

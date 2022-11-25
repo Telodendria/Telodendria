@@ -22,12 +22,6 @@
  * SOFTWARE.
  */
 
-/*
- * Util.h: Some misc. helper functions that provide functionality that
- * doesn't need its own full API. The functions here are entirely
- * stand-alone, and generally don't depend on any of the other APIs
- * defined by Telodendria.
- */
 #ifndef TELODENDRIA_UTIL_H
 #define TELODENDRIA_UTIL_H
 
@@ -35,25 +29,6 @@
 #include <stddef.h>
 #include <sys/types.h>
 
-/*
- * Get the current type in milliseconds since the Unix epoch. This uses
- * POSIX gettimeofday(2) and time_t, and converts it to a single number,
- * which is returned.
- *
- * A note on the 2038 problem: that's a long ways away, screw future
- * me!
- *
- * Kidding. As long as (sizeof(long) == 8), that is, as long as the
- * long datatype is 64 bits, which is is on all modern 64-bit Unix-like
- * operating systems, then everything should be fine. Expect
- * Telodendria on 32-bit machines to break in 2038. I didn't want to
- * try to hack together some system to store larger numbers than the
- * architecture supports. We can always re-evaluate things over the
- * next decade.
- *
- * Return: A long representing the current time in milliseconds since
- * the beginning of the Unix epoch, just as the Matrix spec requires.
- */
 extern unsigned long
  UtilServerTs(void);
 
@@ -63,59 +38,25 @@ extern unsigned long
 extern int
  UtilMkdir(const char *, const mode_t);
 
-/*
- * Encode a single UTF-8 codepoint as a string buffer containing
- * between 1 and 4 bytes. The string buffer is allocated on the heap,
- * so it should be freed when it is no longer needed.
- *
- * Params:
- *
- *   (unsigned long) The UTF-8 codepoint to encode as a byte buffer.
- *
- * Return: a null-terminated byte buffer representing the UTF-8
- * codepoint.
- */
 extern char *
  UtilUtf8Encode(unsigned long);
 
-
-/*
- * Duplicate a null-terminated string, and return a new string on the
- * heap.
- *
- * Params:
- *   (char *) The string to duplicate. It can be located anywhere on
- *            the heap or the stack.
- *
- * Return: A pointer to a null-terminated string on the heap. You must
- * free() it when you're done with it. This may also return NULL if the
- * call to malloc() fails.
- */
 extern char *
  UtilStringDuplicate(char *);
 
 extern char *
  UtilStringConcat(char *, char *);
 
-/*
- * Sleep for the given number of milliseconds. This is a simple wrapper
- * for nanosleep() that makes its usage much easier.
- *
- * Params:
- *   (long) The number of milliseconds to sleep for.
- *
- * Return: The result of nanosleep().
- */
 extern int
  UtilSleepMillis(long);
 
 extern size_t
- UtilStringToBytes(char *);
+ UtilParseBytes(char *);
 
 extern ssize_t
- UtilGetDelim(char **, size_t *, int, FILE *, int *);
+ UtilGetDelim(char **, size_t *, int, FILE *);
 
 extern ssize_t
- UtilGetLine(char **, size_t *, FILE *, int *);
+ UtilGetLine(char **, size_t *, FILE *);
 
 #endif                             /* TELODENDRIA_UTIL_H */

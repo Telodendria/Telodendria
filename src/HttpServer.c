@@ -464,8 +464,6 @@ HttpServerWorkerThread(void *args)
         HashMap *requestParams;
         ssize_t requestPathLen;
 
-        int lineError = -1;
-
         ssize_t i = 0;
         HttpRequestMethod requestMethod;
 
@@ -484,13 +482,13 @@ HttpServerWorkerThread(void *args)
         /* Get the first line of the request.
          * 
          * Every once in a while, we're too fast for the client. When this
-         * happens, UtilGetLine() sets lineError to EAGAIN. If we get
+         * happens, UtilGetLine() sets errno to EAGAIN. If we get
          * EAGAIN, then clear the error on the stream and try again
          * after 1ms. This is typically more than enough time for the
          * client to send data. */
         firstRead = UtilServerTs();
-        while ((lineLen = UtilGetLine(&line, &lineSize, fp, &lineError)) == -1
-               && lineError == EAGAIN)
+        while ((lineLen = UtilGetLine(&line, &lineSize, fp)) == -1
+               && errno == EAGAIN)
         {
             clearerr(fp);
 
@@ -571,7 +569,7 @@ HttpServerWorkerThread(void *args)
             goto internal_error;
         }
 
-        while ((lineLen = UtilGetLine(&line, &lineSize, fp, &lineError)) != -1)
+        while ((lineLen = UtilGetLine(&line, &lineSize, fp)) != -1)
         {
             char *headerKey;
             char *headerValue;
