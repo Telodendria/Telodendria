@@ -1,4 +1,4 @@
-.Dd $Mdocdate: November 25 2022 $
+.Dd $Mdocdate: November 26 2022 $
 .Dt UTIL 3
 .Os Telodendria Project
 .Sh NAME
@@ -47,6 +47,12 @@ machines to break in 2038. I didn't want to try to hack together
 some system to store larger numbers than the architecture supports.
 We can always re-evaluate things over the next decade.
 .Pp
+.Fn UtilMkdir
+behaves just like the system call
+.Xr mkdir 2 ,
+but it creates any intermediate directories if necessary, unlike
+.Xr mkdir 2 .
+.Pp
 .Fn UtilUtf8Encode
 takes a UTF-8 codepoint and encodes it into a string buffer
 containing between 1 and 4 bytes. The string buffer is allocated
@@ -78,6 +84,50 @@ It works a lot like
 but it takes care of allocating memory big enough to hold both
 strings. One or both strings may be NULL. If a string is NULL, it
 is treated like an empty string.
+.Pp
+.Fn UtilParseBytes
+is a highly specialized function used in parsing the configuration file.
+It takes in a string which is supposed to represent a number of bytes.
+It must consist of an integer, followed by an optional suffix of k, K, m, M,
+g, or G, indicating the value is kilobytes, megabytes, or gigabytes.
+.Pp
+.Fn UtilGetDelim
+and
+.Fn UtilGetLine
+work identically to the POSIX equivalents, documented in
+.Xr getdelim 3 ,
+except it assumes pointers were allocated using the Memory API, and it
+uses the Memory API itself to reallocate necessary pointers.
 .Sh RETURN VALUES
 .Pp
-TODO
+.Fn UtilServerTs
+and
+.Fn UtilLastModified
+return timestamps in the form of milliseconds since the Unix epoch as an unsigned
+long. The Matrix specification requires timestamps be in milliseconds, so these
+functions are designed to make that easy and convenient.
+.Pp
+.Fn UtilMkdir
+returns 0 on success, and -1 on failure, just like
+.Xr mkdir 2 .
+It also sets errno as appropriate.
+.Pp
+.Fn UtilSleepMillis
+returns the result of calling
+.Xr nanosleep 2 .
+.Pp
+.Fn UtilUtf8Encode ,
+.Fn UtilStringDuplicate ,
+and
+.Fn UtilStringConcat
+return a NULL-terminated string on the heap if they succeed, or NULL on failure.
+Typically a failure in these functions indicate an error allocating memory.
+.Pp
+.Fn UtilParseBytes
+returns a number of bytes, or 0 if there was an error parsing the byte string.
+.Pp
+.Fn UtilGetDelim
+and
+.Fn UtilGetLine
+return the same value as their POSIX equivalents, documented in
+.Xr getdelim 3 .
