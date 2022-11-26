@@ -41,9 +41,9 @@ Due: January 1, 2023
 		[x] Queue
 		[ ] Routes
 		[ ] TelodendriaConfig
-		[ ] Util
+		[x] Util
 		[ ] Memory
-		[ ] Db
+		[x] Db
 
 Milestone: v1.0.0
 -----------------
