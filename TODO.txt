@@ -22,7 +22,7 @@ Due: January 1, 2023
 [x] Refactor man pages to be prefaced with 'telodendria-'
 
 [x] Add recipe to td script to upload patches to the Matrix room
-[ ] Document send-patch
+[x] Document send-patch
 [~] Convert documentation to man pages
 	[~] Internal API docs
 		[x] Array

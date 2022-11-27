@@ -1,0 +1,63 @@
+.Dd $Mdocdate: November 27 2022 $
+.Dt SEND-PATCH 8
+.Os Telodendria Project
+.Sh NAME
+.Nm send-patch
+.Nd Submit a patch file to the Telodendria Patches Matrix room
+.Sh SYNOPSIS
+.Nm
+.Op patch
+.Sh DESCRIPTION
+.Nm
+is a simple shell script for submitting patch files to Telodendria's patch
+room for review. Do note that it depends on
+.Xr jq 1
+and
+.Xr curl 1 ,
+and so may not work out of the box on some systems. However, these tools are
+readily available for most systems. Please consult your package manager's
+manual for installing packages.
+.Pp
+.Nm
+takes a single argument, a patch file. It also reads a number of environment
+variables, as described in the following section. This script is designed to be
+simple; it only pushes files into a hard-coded Matrix room. Thus, as far as
+Matrix clients go, this one is a rather minimal one, and that is by design.
+.Pp
+This script exists so that users who are working on a machine that doesn't have
+a Matrix client installed can still submit work to the Telodendria project. The
+goal is to make development as accessible as possible.
+.Pp
+This script only supports password login, so if your homeserver does not
+support password login, it will not work.
+.Sh ENVIRONMENT
+.Pp
+.Nm
+utilizes the following environment variables:
+.Bl -tag -width Ds
+.It Ev MXID
+Your Matrix ID in the standard format. This is used to connect to your
+homeserver to send the message.
+.It Ev MXPW
+Your Matrix account's password. If not set, you will be prompted for your
+password by the script, unless
+.Ev ACCESS_TOKEN
+is set.
+.It Ev ACCESS_TOKEN
+If you already have an access token for your account, such as one from an
+existing session, then you can set this environment variable to bypass the
+password authentication flow.
+.El
+.Sh FILES
+.Pp
+.Nm
+does utilize the
+.Pa .env
+file, just like
+.Xr td 8 .
+Consult that page for the specifics of the
+.Pa .env
+file.
+.Sh SEE ALSO
+.Xr td 8
+
