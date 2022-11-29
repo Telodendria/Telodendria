@@ -1,0 +1,135 @@
+.Dd $Mdocdate: November 29 2022 $
+.Dt MEMORY 3
+.Os Telodendria Project
+.Sh NAME
+.Nm Memory
+.Nd Smart memory management.
+.Sh SYNOPSIS
+.In Memory.h
+.Ft void *
+.Fn MemoryAllocate "size_t" "const char *" "int"
+.Ft void *
+.Fn MemoryReallocate "void *" "size_t" "const char *" "int"
+.Ft void
+.Fn MemoryFree "void *" "const char *" "int"
+.Ft size_t
+.Fn MemoryAllocated "void"
+.Ft void
+.Fn MemoryFreeAll "void"
+.Ft MemoryInfo *
+.Fn MemoryInfoGet "void *"
+.Ft size_t
+.Fn MemoryInfoGetSize "MemoryInfo *"
+.Ft const char *
+.Fn MemoryInfoGetFile "MemoryInfo *"
+.Ft int
+.Fn MemoryInfoGetLine "MemoryInfo *"
+.Ft void *
+.Fn MemoryInfoGetPointer "MemoryInfo *"
+.Ft void
+.Fn MemoryIterate "void (*) (MemoryInfo *, void *)" "void *"
+.Ft void
+.Fn MemoryHook "void (*) (MemoryAction, MemoryInfo *, void *" "void *"
+.Sh DESCRIPTION
+.Nm
+is an API that allows for smart memory management and profiling. It wraps
+the standard library functions
+.Xr malloc 3 ,
+.Xr realloc 3 ,
+and
+.Xr free 3 ,
+and offers identical semantics, while providing functionality that the
+standard library doesn't have, such as getting statistics on the total
+memory allocated on the heap, and getting the size of a block of memory
+given a pointer. Additionally, thanks to preprocessor macros, the exact
+file and line number at which an allocation, reallocation, or free occured
+can be obtained given a pointer. Finally, all the blocks allocated on the
+heap can be iterated and evaluated, and a callback function can be executed
+every time a memory operation occurs.
+.Pp
+A number of macros are available, which make using the
+.Nm
+API much more useful.
+.Fn Malloc
+expands to
+.Fn MemoryAllocate
+with the __FILE__ and __LINE__ constants for the second and third
+arguments respectively. Likewise,
+.Fn Realloc
+and
+.Fn Free
+expand to
+.Fn MemoryReallocate
+and
+.Fn MemoryFree
+with __FILE__ and __LINE__ as the second and third parameters.
+This allows the API to be used exactly how the standard library
+would be used. In fact, the functions which these macros expand to
+are not intended to be called directly; only use the macros for the
+best results.
+.Pp
+If all memory used in the program is managed by this API, there are some
+helpful functions that allow the program to probe the state of the heap.
+These functions are described here.
+.Pp
+.Fn MemoryAllocated
+gets the total memory that the program has on the heap. This operation
+iterates over all the heap allocations made with
+.Fn MemoryAllocate
+and then returns a total count, in bytes.
+.Pp
+.Fn MemoryFreeAll
+iterates over all the heap allocations made with
+.Fn MemoryAllocate
+and calls
+.Fn MemoryFree
+on them. It immediately invalidates all pointers, and any subsequent
+reads or writes to heap memory result in undefined behavior. This
+is typically used at the end of the program.
+.Pp
+.Fn MemoryInfoGet
+takes a pointer and fetches information about it, storing it in a
+structure that can then be queried.
+.Pp
+.Fn MemoryInfoGetSize ,
+.Fn MemoryInfoGetFile ,
+.Fn MemoryInfoGetLine ,
+and
+.Fn MemoryInfoGetPointer 
+all take in the structure returned by
+.Fn MemoryInfoGet ,
+and return the respective property about the given property. These are
+especially useful for logging and debugging with
+.Fn MemoryIterate
+and
+.Fn MemoryHook .
+.Pp
+.Fn MemoryIterate
+takes a pointer to a function that takes the memory information structure,
+as well as a void pointer for caller-provided arguments. It iterates over
+all the heap memory currently allocated at the time of calling.
+.Fn MemoryHook
+has a similar prototype, although the function pointer it takes is slightly
+different. It also takes a memory action as the first argument. The
+.Nm
+API stores the pointer to this function, and executes it every time memory
+is allocated, reallocated, or freed. This allows a program to execute code
+whenever memory is allocated.
+.Sh RETURN VALUES
+.Pp
+.Fn MemoryAllocate 
+and
+.Fn MemoryReallocate
+return the same as their standard library counterparts. That is, a pointer
+to memory on the heap, or NULL if there was an error allocating it.
+.Pp
+.Fn MemoryInfoGet
+returns a pointer to information about a block on the heap, or NULL if the
+passed pointer was not allocated by the
+.Nm
+API, or is no longer allocated.
+.Pp
+.Fn MemoryAllocated
+returns an unsigned integer that indicates the number of bytes currently
+allocated on the heap.
+
