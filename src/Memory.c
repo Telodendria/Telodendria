@@ -23,11 +23,13 @@
  */
 #include <Memory.h>
 
-#include <Constants.h>
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h>
+
+#ifndef TELODENDRIA_MEMORY_TABLE_CHUNK
+#define TELODENDRIA_MEMORY_TABLE_CHUNK 256
+#endif
 
 struct MemoryInfo
 {

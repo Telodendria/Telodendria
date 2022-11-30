@@ -28,8 +28,11 @@
 #include <string.h>
 
 #include <Memory.h>
-#include <Constants.h>
 #include <HashMap.h>
+
+#ifndef TELODENDRIA_STRING_CHUNK
+#define TELODENDRIA_STRING_CHUNK 64
+#endif
 
 const char *
 HttpRequestMethodToString(const HttpRequestMethod method)
