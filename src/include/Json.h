@@ -75,13 +75,13 @@ extern JsonValue *
  JsonValueFloat(double);
 
 extern double
-JsonValueAsFloat(JsonValue *);
+ JsonValueAsFloat(JsonValue *);
 
 extern JsonValue *
  JsonValueBoolean(int);
 
 extern int
-JsonValueAsBoolean(JsonValue *);
+ JsonValueAsBoolean(JsonValue *);
 
 extern JsonValue *
  JsonValueNull(void);
