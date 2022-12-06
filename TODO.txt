@@ -49,15 +49,29 @@ Milestone: v1.0.0
 
 [ ] Database upgrades/migration path
 
-[~] client-Server API
-	[x] Error responses
-	[x] CORS headers
+[~] Client-Server API
+    [ ] API Standards
+	    [x] Error responses
+	[x] Web Browser Clients
 	[x] /_matrix/client/versions
-	[x] Well-known URIs
+    [x] Server Discovery
+	    [x] Well-known URIs
 		[x] Make base-url optional in config
 		[x] Make identity-server optional in config
-	[ ] Client authentication
+	[ ] Client Authentication
 	[ ] Capabilities negotiation
+    [ ] Filtering
+    [ ] Events
+    [ ] Rooms
+    [ ] User Data
+    [ ] Security (Rate Limiting)
+    [ ] Modules
+        [ ] Instant Messaging
+        [ ] Voice over IP
+        [ ] Receipts
+        [ ] Fully Read Markers
+        [ ] Content Repository
+        [ ] Send-To-Device Messaging
 [ ] Server-Server API
 [ ] Application Service API
 [ ] Identity Service API
