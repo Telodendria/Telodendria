@@ -947,7 +947,8 @@ JsonDecodeObject(JsonParserState * state)
                 goto error;
             }
 
-            HashMapSet(obj, key, value);
+            /* If there's an existing value at this key, discard it. */
+            JsonValueFree(HashMapSet(obj, key, value));
 
             JsonTokenSeek(state);
             if (JsonExpect(state, TOKEN_OBJECT_CLOSE))
