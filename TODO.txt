@@ -28,9 +28,6 @@ Due: January 1, 2023
 		[x] Array
 		[x] Base64
 		[x] CanonicalJson
-		[ ] Config
-			[ ] API (Config.3)
-			[ ] File format (Config.5)
 		[x] HashMap
 		[ ] Http
 		[ ] HttpServer

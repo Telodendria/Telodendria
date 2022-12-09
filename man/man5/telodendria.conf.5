@@ -1,4 +1,4 @@
-.Dd $Mdocdate: November 8 2022 $
+.Dd $Mdocdate: December 9 2022 $
 .Dt TELODENDRIA.CONF 5
 .Os Telodendria Project
 .Sh NAME
@@ -16,21 +16,13 @@ option, and is typically located at
 .Pa /etc/telodendria.conf
 .sp
 .Nm
-uses OpenBSD-style syntax, though it is a little more rigid in its
-parser. All values must be surrounded by quotes, and each directive
-must be ended with a semicolon.
-.Sh MACROS
-Macros can be defined that will later be expanded in context.
-Macro names must start with a letter, digit, or underscore, and may
-contain only those characters. Macros are not expanded inside quotes.
-.sp
-For example:
-.Bd -literal -offset indent
-macro1 = "value1";
-directive $macro1;
-.Ed
-.Sh GLOBAL OPTIONS
-Here are the settings that can be set globally:
+uses JSON for its configuration file syntax, which should be
+familiar. Very early versions of
+.Nm
+used a  custom OpenBSD-style configuration file, but this was
+not as versatile or familiar as JSON.
+.Sh DIRECTIVES
+Here are the top-level directives:
 .Bl -tag -width Ds
 .It Ic listen Ar port
 The port to listen on. Telodendria will bind to all interfaces, but it
@@ -47,7 +39,7 @@ the internet.
 .Ar port
 should be a decimal port number. This directive is entirely optional. If
 it is omitted, then Telodendria will listen on port 8008 by default.
-.It Ic server-name Ar name
+.It Ic serverName Ar name
 Configure the domain name of your homeserver. Note that Matrix servers
 cannot be migrated to other domains, so once this is set, it should never
 change unless you want unexpected things to happen, or you want to start
@@ -55,7 +47,7 @@ over.
 .Ar name
 should be a DNS name that can be publically resolved. This directive
 is required.
-.It Ic base-url Ar url
+.It Ic baseUrl Ar url
 Set the server's base URL.
 .Ar url
 should be a valid URL, complete with the protocol. It does not need to
@@ -69,16 +61,16 @@ manifest.
 .Pp
 This directive is optional. If it is not specified, it is automatically
 deduced from the server name.
-.It Ic identity-server Ar url
+.It Ic identityServer Ar url
 The identity server that clients should use to perform identity lookups.
 .Pp
 .Ar url
 follows the same rules as
-.Ic base-url .
+.Ic baseUrl .
 .Pp
 This directive is optional. If it is not specified, it is automatically
 set to be the same as the base URL.
-.It Ic id Ar uid Ar gid
+.It Ic runAs Ar uidObj
 The effective UNIX user and group to drop to after binding to the socket
 and changing the filesystem root for the process. This only works if
 Telodendria is running as the root user, and is used as a security mechanism.
@@ -86,7 +78,20 @@ If this option is set and Telodendria is started as a non-priviledged user,
 then a warning is printed to the log if that user does not match what's
 specified here. This directive is optional, but should be used as a sanity
 check, if nothing more, to make sure the permissions are working properly.
-.It Ic data-dir Ar directory
+.Pp
+This directive takes an object with the following directives:
+.Bl -tag -width Ds
+.It Ic uid Ar user
+The UNIX username to drop to. If
+.Ic runAs
+is specified, this directive is required.
+.It Ic gid Ar group
+The UNIX group to drop to. This directive is optional; if it is not
+specified, then the value of
+.Ic uid
+is copied.
+.El
+.It Ic dataDir Ar directory
 The data directory into which Telodendria will write all user and event
 information. Telodendria doesn't use a database like other Matrix homeserver
 implementations; it uses a flat-file directory structure, similar to how an
@@ -122,27 +127,27 @@ to run their own homeserver, you can aset this to
 which will allow anyone to create an account. Telodendria should be capable of handling
 a large amount of users without difficulty or security issues. This directive is
 required.
-.It Ic log Ar stdout|file|syslog
-The log configuration. Telodendria uses its own logging facility, which can output
-logs to standard output, a file, or the syslog. If set to
+.It Ic log Ar logObj
+The log file configuration. Telodendria uses its own logging facility, which can
+output logs to standard output, a file, or the syslog. This directive is required,
+and it takes an object with the following directives:
+.Bl -tag -width Ds
+.It Ic output Ar stdout|file|syslog
+The lot output destination. If set to
 .Ar file ,
 Telodendria will log to
 .Pa telodendria.log
 inside the
-.Ic data-dir .
-.Pp
-A number of child directives can
-be added to this directive to customize the log output:
-.Bl -tag -width Ds
-.It Ic level Ar error|warning|task|message|debug
+.Ic dataDir .
+.It Ic level Ar error|warning|notice|message|debug
 The level of messages to log at. Each level shows all the levels above it. For
 example, setting the level to
 .Ar error
 will show only errors, while setting the level to
 .Ar warning
 will show warnings and errors.
-.Ar task
-shows tasks, warnings, and errors, and so on. The
+.Ar notice
+shows notices, warnings, and errors, and so on. The
 .Ar debug
 level shows all messages.
 .It Ic timestampFormat Ar format|none|default
@@ -171,11 +176,11 @@ less than the total CPU core count, to prevent overloading the system. The most
 efficient number of threads ultimately depends on the configuration of the
 machine running Telodendria, so you may just have to play around with different
 values here to see which gives the best performance.
-.It Ic max-connections Ar count
+.It Ic maxConnections Ar count
 The maximum number of simultanious connections to allow to the daemon. This option
 prevents the daemon from allocating large amounts of memory in the even that it
 undergoes a denial of service attack. It typically does not need to be adjusted.
-.It Ic max-cache Ar bytes
+.It Ic maxCache Ar bytes
 The maximum size of the cache. Telodendria relies heavily on caching to speed
 things up. The cache grows as data is loaded from the data directory. All cache
 is stored in memory. This option limits the size of the memory cache. If you have

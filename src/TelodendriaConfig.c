@@ -23,61 +23,179 @@
  */
 #include <TelodendriaConfig.h>
 #include <Memory.h>
-#include <Config.h>
+#include <Json.h>
 #include <HashMap.h>
 #include <Log.h>
 #include <Array.h>
 #include <Util.h>
+#include <Db.h>
 
 #include <stdlib.h>
 #include <ctype.h>
 #include <string.h>
 
-static int
-IsInteger(char *str)
-{
-    while (*str)
-    {
-        if (!isdigit((unsigned char) *str))
-        {
-            return 0;
-        }
-        str++;
+#define CONFIG_REQUIRE(key, type) \
+    value = HashMapGet(config, key); \
+    if (!value) \
+    { \
+        Log(lc, LOG_ERR, "Missing required " key " directive."); \
+        goto error; \
+    } \
+    if (JsonValueType(value) == JSON_NULL) \
+    { \
+        Log(lc, LOG_ERR, "Missing value for " key " directive."); \
+        goto error; \
+    } \
+    if (JsonValueType(value) != type) \
+    { \
+        Log(lc, LOG_ERR, "Expected " key " to be of type " #type); \
+        goto error; \
     }
+
+#define CONFIG_COPY_STRING(into) \
+    into = UtilStringDuplicate(JsonValueAsString(value));
+
+#define CONFIG_OPTIONAL_STRING(into, key, default) \
+    value = HashMapGet(config, key); \
+    if (value && JsonValueType(value) != JSON_NULL) \
+    { \
+        if (JsonValueType(value) != JSON_STRING) \
+        { \
+            Log(lc, LOG_ERR, "Expected " key " to be of type JSON_STRING"); \
+            goto error; \
+        } \
+        into = UtilStringDuplicate(JsonValueAsString(value)); \
+    } \
+    else \
+    { \
+        Log(lc, LOG_INFO, "Using default value " #default " for " key "."); \
+        into = default ? UtilStringDuplicate(default) : NULL; \
+    }
+
+#define CONFIG_OPTIONAL_INTEGER(into, key, default) \
+    value = HashMapGet(config, key); \
+    if (value && JsonValueType(value) != JSON_NULL) \
+    { \
+        if (JsonValueType(value) != JSON_INTEGER) \
+        { \
+            Log(lc, LOG_ERR, "Expected " key " to be of type JSON_INTEGER"); \
+            goto error; \
+        } \
+        into = JsonValueAsInteger(value); \
+    } \
+    else \
+    { \
+        Log(lc, LOG_INFO, "Using default value " #default " for " key "."); \
+        into = default; \
+    }
+
+int
+ConfigParseRunAs(LogConfig * lc, TelodendriaConfig * tConfig, HashMap * config)
+{
+    JsonValue *value;
+
+    CONFIG_REQUIRE("uid", JSON_STRING);
+    CONFIG_COPY_STRING(tConfig->uid);
+
+    CONFIG_OPTIONAL_STRING(tConfig->gid, "gid", tConfig->uid);
+
     return 1;
+
+error:
+    return 0;
 }
 
-#define GET_DIRECTIVE(name) \
-	directive = (ConfigDirective *) HashMapGet(config, name); \
-	if (!directive) { \
-		Log(lc, LOG_ERR, "Missing required configuration directive: '%s'.", name); \
-		goto error; \
-	} \
-	children = ConfigChildrenGet(directive); \
-	value = ConfigValuesGet(directive); \
+int
+ConfigParseLog(LogConfig * lc, TelodendriaConfig * tConfig, HashMap * config)
+{
+    JsonValue *value;
+    char *str;
 
-#define ASSERT_NO_CHILDREN(name) if (children) { \
-	Log(lc, LOG_ERR, "Unexpected child values in directive: '%s'.", name); \
-	goto error; \
+    CONFIG_REQUIRE("output", JSON_STRING);
+    str = JsonValueAsString(value);
+
+    if (strcmp(str, "stdout") == 0)
+    {
+        tConfig->flags |= TELODENDRIA_LOG_STDOUT;
+    }
+    else if (strcmp(str, "file") == 0)
+    {
+        tConfig->flags |= TELODENDRIA_LOG_FILE;
+    }
+    else if (strcmp(str, "syslog") == 0)
+    {
+        tConfig->flags |= TELODENDRIA_LOG_SYSLOG;
+    }
+    else
+    {
+        Log(lc, LOG_ERR, "Invalid value for log.output: '%s'.", str);
+        goto error;
+    }
+
+    CONFIG_OPTIONAL_STRING(str, "level", "message");
+
+    if (strcmp(str, "message") == 0)
+    {
+        tConfig->logLevel = LOG_INFO;
+    }
+    else if (strcmp(str, "debug") == 0)
+    {
+        tConfig->logLevel = LOG_DEBUG;
+    }
+    else if (strcmp(str, "notice") == 0)
+    {
+        tConfig->logLevel = LOG_NOTICE;
+    }
+    else if (strcmp(str, "warning") == 0)
+    {
+        tConfig->logLevel = LOG_WARNING;
+    }
+    else if (strcmp(str, "error") == 0)
+    {
+        tConfig->logLevel = LOG_ERR;
+    }
+    else
+    {
+        Log(lc, LOG_ERR, "Invalid value for log.level: '%s'.", tConfig->logLevel);
+        goto error;
+    }
+
+    Free(str);
+
+    CONFIG_OPTIONAL_STRING(tConfig->logTimestamp, "timestampFormat", "default");
+
+    if (strcmp(tConfig->logTimestamp, "none") == 0)
+    {
+        Free(tConfig->logTimestamp);
+        tConfig->logTimestamp = NULL;
+    }
+
+    value = HashMapGet(config, "color");
+    if (value && JsonValueType(value) != JSON_NULL)
+    {
+        if (JsonValueType(value) != JSON_BOOLEAN)
+        {
+            Log(lc, LOG_ERR, "Expected type JSON_BOOLEAN for log.color.");
+            goto error;
+        }
+
+        if (JsonValueAsBoolean(value))
+        {
+            tConfig->flags |= TELODENDRIA_LOG_COLOR;
+        }
+    }
+
+    return 1;
+
+error:
+    return 0;
 }
-
-#define ASSERT_VALUES(name, expected) if (ArraySize(value) != expected) { \
-	Log(lc, LOG_ERR, \
-		"Wrong value count in directive '%s': got '%d', but expected '%d'.", \
-		name, ArraySize(value), expected); \
-	goto error; \
-}
-
-#define COPY_VALUE(into, index) into = UtilStringDuplicate(ArrayGet(value, index))
 
 TelodendriaConfig *
 TelodendriaConfigParse(HashMap * config, LogConfig * lc)
 {
     TelodendriaConfig *tConfig;
-
-    ConfigDirective *directive;
-    Array *value;
-    HashMap *children;
+    JsonValue *value;
 
     if (!config || !lc)
     {
@@ -92,41 +210,15 @@ TelodendriaConfigParse(HashMap * config, LogConfig * lc)
 
     memset(tConfig, 0, sizeof(TelodendriaConfig));
 
-    directive = (ConfigDirective *) HashMapGet(config, "listen");
-    children = ConfigChildrenGet(directive);
-    value = ConfigValuesGet(directive);
+    CONFIG_OPTIONAL_INTEGER(tConfig->listenPort, "listen", 8008);
 
-    if (!directive)
+    CONFIG_REQUIRE("serverName", JSON_STRING);
+    CONFIG_COPY_STRING(tConfig->serverName);
+
+    value = HashMapGet(config, "baseUrl");
+    if (value)
     {
-        tConfig->listenPort = 8008;
-    }
-    else
-    {
-        ASSERT_NO_CHILDREN("listen");
-        ASSERT_VALUES("listen", 1);
-
-        tConfig->listenPort = (unsigned short) atoi(ArrayGet(value, 0));
-        if (!tConfig->listenPort)
-        {
-            Log(lc, LOG_ERR, "Expected numeric value for listen port, got '%s'.", ArrayGet(value, 1));
-            goto error;
-        }
-    }
-
-    GET_DIRECTIVE("server-name");
-    ASSERT_NO_CHILDREN("server-name");
-    ASSERT_VALUES("server-name", 1);
-    COPY_VALUE(tConfig->serverName, 0);
-
-    directive = (ConfigDirective *) HashMapGet(config, "base-url");
-    children = ConfigChildrenGet(directive);
-    value = ConfigValuesGet(directive);
-
-    if (directive)
-    {
-        ASSERT_NO_CHILDREN("base-url");
-        ASSERT_VALUES("base-url", 1);
-        COPY_VALUE(tConfig->baseUrl, 0);
+        CONFIG_COPY_STRING(tConfig->baseUrl);
     }
     else
     {
@@ -134,272 +226,64 @@ TelodendriaConfigParse(HashMap * config, LogConfig * lc)
         tConfig->baseUrl = Malloc(strlen(tConfig->serverName) + 10);
         if (!tConfig->baseUrl)
         {
-            Log(lc, LOG_ERR, "Error allocating memory for default config value 'base-url'.");
+            Log(lc, LOG_ERR, "Error allocating memory for default config value 'baseUrl'.");
             goto error;
         }
 
         sprintf(tConfig->baseUrl, "https://%s", tConfig->serverName);
     }
 
-    directive = (ConfigDirective *) HashMapGet(config, "identity-server");
-    children = ConfigChildrenGet(directive);
-    value = ConfigValuesGet(directive);
+    CONFIG_OPTIONAL_STRING(tConfig->identityServer, "identityServer", NULL);
 
-    if (directive)
+    value = HashMapGet(config, "runAs");
+    if (value && JsonValueType(value) != JSON_NULL)
     {
-        ASSERT_NO_CHILDREN("identity-server");
-        ASSERT_VALUES("identity-server", 1);
-        COPY_VALUE(tConfig->identityServer, 0);
-    }
-    else
-    {
-        Log(lc, LOG_WARNING, "Identity server not specified. No identity server will be advertised.");
-        tConfig->identityServer = NULL;
-    }
-
-    directive = (ConfigDirective *) HashMapGet(config, "id");
-    children = ConfigChildrenGet(directive);
-    value = ConfigValuesGet(directive);
-
-    ASSERT_NO_CHILDREN("id");
-
-    if (directive)
-    {
-
-        switch (ArraySize(value))
+        if (JsonValueType(value) == JSON_OBJECT)
         {
-            case 1:
-                Log(lc, LOG_WARNING, "No run group specified; assuming it's the same as the user.");
-                COPY_VALUE(tConfig->uid, 0);
-                tConfig->gid = UtilStringDuplicate(tConfig->uid);
-                break;
-            case 2:
-                COPY_VALUE(tConfig->uid, 0);
-                COPY_VALUE(tConfig->gid, 1);
-                break;
-            default:
-                Log(lc, LOG_ERR,
-                    "Wrong value count in directive 'id': got '%d', but expected 1 or 2.",
-                    ArraySize(value));
-                goto error;
-        }
-    }
-    else
-    {
-        tConfig->uid = NULL;
-        tConfig->gid = NULL;
-    }
-
-    GET_DIRECTIVE("data-dir");
-    ASSERT_NO_CHILDREN("data-dir");
-    ASSERT_VALUES("data-dir", 1);
-    COPY_VALUE(tConfig->dataDir, 0);
-
-    GET_DIRECTIVE("threads");
-    ASSERT_NO_CHILDREN("threads");
-    ASSERT_VALUES("threads", 1);
-
-    if (IsInteger(ArrayGet(value, 0)))
-    {
-        tConfig->threads = atoi(ArrayGet(value, 0));
-        if (!tConfig->threads)
-        {
-            Log(lc, LOG_ERR, "threads must be greater than zero");
-            goto error;
-        }
-    }
-    else
-    {
-        Log(lc, LOG_ERR,
-            "Expected integer for directive 'threads', "
-            "but got '%s'.", ArrayGet(value, 0));
-        goto error;
-    }
-
-    directive = (ConfigDirective *) HashMapGet(config, "max-connections");
-    if (!directive)
-    {
-        Log(lc, LOG_WARNING, "max-connections not specified; using defaults, which may change");
-        tConfig->maxConnections = 32;
-    }
-    else
-    {
-        ASSERT_NO_CHILDREN("max-connections");
-        ASSERT_VALUES("max-connections", 1);
-        if (IsInteger(ArrayGet(value, 0)))
-        {
-            tConfig->maxConnections = atoi(ArrayGet(value, 0));
-            if (!tConfig->maxConnections)
+            if (!ConfigParseRunAs(lc, tConfig, JsonValueAsObject(value)))
             {
-                Log(lc, LOG_ERR, "max-connections must be greater than zero.");
                 goto error;
             }
         }
         else
         {
-            Log(lc, LOG_ERR, "Expected integer for max-connections, got '%s'", ArrayGet(value, 0));
+            Log(lc, LOG_ERR, "Config directive 'runAs' should be a JSON object");
+            Log(lc, LOG_ERR, "that contains a 'uid' and 'gid'.");
             goto error;
         }
     }
 
-    GET_DIRECTIVE("max-cache");
-    ASSERT_NO_CHILDREN("max-cache");
-    ASSERT_VALUES("max-cache", 1);
-    tConfig->maxCache = UtilParseBytes(ArrayGet(value, 0));
+    CONFIG_REQUIRE("dataDir", JSON_STRING);
+    CONFIG_COPY_STRING(tConfig->dataDir);
 
-    GET_DIRECTIVE("federation");
-    ASSERT_NO_CHILDREN("federation");
-    ASSERT_VALUES("federation", 1);
+    CONFIG_OPTIONAL_INTEGER(tConfig->threads, "threads", 1);
+    CONFIG_OPTIONAL_INTEGER(tConfig->maxConnections, "maxConnections", 32);
+    CONFIG_OPTIONAL_INTEGER(tConfig->maxCache, "maxCache", DB_MIN_CACHE);
 
-    if (strcmp(ArrayGet(value, 0), "true") == 0)
+    CONFIG_REQUIRE("federation", JSON_BOOLEAN);
+    if (JsonValueAsBoolean(value))
     {
         tConfig->flags |= TELODENDRIA_FEDERATION;
     }
-    else if (strcmp(ArrayGet(value, 0), "false") != 0)
-    {
-        Log(lc, LOG_ERR,
-            "Expected boolean value for directive 'federation', "
-            "but got '%s'.", ArrayGet(value, 0));
-        goto error;
-    }
 
-    GET_DIRECTIVE("registration");
-    ASSERT_NO_CHILDREN("registration");
-    ASSERT_VALUES("registration", 1);
-    if (strcmp(ArrayGet(value, 0), "true") == 0)
+    CONFIG_REQUIRE("registration", JSON_BOOLEAN);
+    if (JsonValueAsBoolean(value))
     {
         tConfig->flags |= TELODENDRIA_REGISTRATION;
     }
-    else if (strcmp(ArrayGet(value, 0), "false") != 0)
+
+    CONFIG_REQUIRE("log", JSON_OBJECT);
+    if (!ConfigParseLog(lc, tConfig, JsonValueAsObject(value)))
     {
-        Log(lc, LOG_ERR,
-            "Expected boolean value for directive 'registration', "
-            "but got '%s'.", ArrayGet(value, 0));
-        goto error;
-    }
-
-    GET_DIRECTIVE("log");
-    ASSERT_VALUES("log", 1);
-
-    if (children)
-    {
-        ConfigDirective *cDirective;
-        char *cVal;
-        size_t size;
-
-        cDirective = HashMapGet(children, "level");
-        if (cDirective)
-        {
-            size = ArraySize(ConfigValuesGet(cDirective));
-            if (size > 1)
-            {
-                Log(lc, LOG_ERR, "Expected 1 value for log.level, got %d.", size);
-                goto error;
-            }
-
-            cVal = ArrayGet(ConfigValuesGet(cDirective), 0);
-            if (strcmp(cVal, "message") == 0)
-            {
-                tConfig->logLevel = LOG_INFO;
-            }
-            else if (strcmp(cVal, "debug") == 0)
-            {
-                tConfig->logLevel = LOG_DEBUG;
-            }
-            else if (strcmp(cVal, "task") == 0)
-            {
-                tConfig->logLevel = LOG_NOTICE;
-            }
-            else if (strcmp(cVal, "warning") == 0)
-            {
-                tConfig->logLevel = LOG_WARNING;
-            }
-            else if (strcmp(cVal, "error") == 0)
-            {
-                tConfig->logLevel = LOG_ERR;
-            }
-            else
-            {
-                Log(lc, LOG_ERR, "Invalid value for log.level: '%s'.", cVal);
-                goto error;
-            }
-        }
-
-        cDirective = HashMapGet(children, "timestampFormat");
-        if (cDirective)
-        {
-            size = ArraySize(ConfigValuesGet(cDirective));
-            if (size > 1)
-            {
-                Log(lc, LOG_ERR, "Expected 1 value for log.level, got %d.", size);
-                goto error;
-            }
-
-            cVal = ArrayGet(ConfigValuesGet(cDirective), 0);
-
-            if (strcmp(cVal, "none") == 0)
-            {
-                tConfig->logTimestamp = NULL;
-            }
-            else if (strcmp(cVal, "default") != 0)
-            {
-                tConfig->logTimestamp = UtilStringDuplicate(cVal);
-            }
-        }
-
-        cDirective = HashMapGet(children, "color");
-        if (cDirective)
-        {
-            size = ArraySize(ConfigValuesGet(cDirective));
-            if (size > 1)
-            {
-                Log(lc, LOG_ERR, "Expected 1 value for log.level, got %d.", size);
-                goto error;
-            }
-
-            cVal = ArrayGet(ConfigValuesGet(cDirective), 0);
-
-            if (strcmp(cVal, "true") == 0)
-            {
-                tConfig->flags |= TELODENDRIA_LOG_COLOR;
-            }
-            else if (strcmp(cVal, "false") != 0)
-            {
-                Log(lc, LOG_ERR, "Expected boolean value for log.color, got '%s'.", cVal);
-                goto error;
-            }
-        }
-    }
-
-    /* Set the actual log output file last */
-    if (strcmp(ArrayGet(value, 0), "stdout") == 0)
-    {
-        tConfig->flags |= TELODENDRIA_LOG_STDOUT;
-    }
-    else if (strcmp(ArrayGet(value, 0), "file") == 0)
-    {
-        tConfig->flags |= TELODENDRIA_LOG_FILE;
-    }
-    else if (strcmp(ArrayGet(value, 0), "syslog") == 0)
-    {
-        tConfig->flags |= TELODENDRIA_LOG_SYSLOG;
-    }
-    else
-    {
-        Log(lc, LOG_ERR, "Unknown log value '%s', expected 'stdout', 'file', or 'syslog'.",
-            ArrayGet(value, 0));
         goto error;
     }
 
     return tConfig;
+
 error:
     TelodendriaConfigFree(tConfig);
     return NULL;
 }
-
-#undef GET_DIRECTIVE
-#undef ASSERT_NO_CHILDREN
-#undef ASSERT_VALUES
 
 void
 TelodendriaConfigFree(TelodendriaConfig * tConfig)

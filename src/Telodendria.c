@@ -35,7 +35,7 @@
 #include <TelodendriaConfig.h>
 #include <Log.h>
 #include <HashMap.h>
-#include <Config.h>
+#include <Json.h>
 #include <HttpServer.h>
 #include <Matrix.h>
 #include <Db.h>
@@ -136,7 +136,6 @@ main(int argc, char **argv)
 
     /* Config file */
     FILE *configFile = NULL;
-    ConfigParseResult *configParseResult = NULL;
     HashMap *config = NULL;
 
     /* Program configuration */
@@ -237,28 +236,24 @@ main(int argc, char **argv)
 
     Log(lc, LOG_NOTICE, "Processing configuration file '%s'.", configArg);
 
-    configParseResult = ConfigParse(configFile);
-    if (!ConfigParseResultOk(configParseResult))
+    config = JsonDecode(configFile);
+    fclose(configFile);
+
+    if (!config)
     {
-        Log(lc, LOG_ERR, "Syntax error on line %d.",
-            ConfigParseResultLineNumber(configParseResult));
+        Log(lc, LOG_ERR, "Syntax error in configuration file.");
         exit = EXIT_FAILURE;
         goto finish;
     }
 
-    config = ConfigParseResultGet(configParseResult);
-    ConfigParseResultFree(configParseResult);
-
-    fclose(configFile);
-
     tConfig = TelodendriaConfigParse(config, lc);
+    JsonFree(config);
+
     if (!tConfig)
     {
         exit = EXIT_FAILURE;
         goto finish;
     }
-
-    ConfigFree(config);
 
     if (flags & ARG_CONFIGTEST)
     {
@@ -277,7 +272,10 @@ main(int argc, char **argv)
     unveil(NULL, NULL);            /* Done with unveil(), so disable it */
 #endif
 
-    LogConfigTimeStampFormatSet(lc, tConfig->logTimestamp);
+    if (!tConfig->logTimestamp || strcmp(tConfig->logTimestamp, "default") != 0)
+    {
+        LogConfigTimeStampFormatSet(lc, tConfig->logTimestamp);
+    }
 
     if (tConfig->flags & TELODENDRIA_LOG_COLOR)
     {
