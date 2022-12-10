@@ -52,6 +52,7 @@ MatrixHttpHandler(HttpServerContext * context, void *argp)
     char *requestPath;
     Array *pathParts;
     char *pathPart;
+    RouteArgs routeArgs;
 
     requestPath = HttpRequestPath(context);
 
@@ -70,7 +71,7 @@ MatrixHttpHandler(HttpServerContext * context, void *argp)
     LogConfigUnindent(lc);
 
     HttpResponseStatus(context, HTTP_OK);
-    HttpResponseHeader(context, "Server", "Telodendria v" TELODENDRIA_VERSION);
+    HttpResponseHeader(context, "Server", "Telodendria/" TELODENDRIA_VERSION);
     HttpResponseHeader(context, "Content-Type", "application/json");
 
     /* CORS */
@@ -103,15 +104,19 @@ MatrixHttpHandler(HttpServerContext * context, void *argp)
         ArrayAdd(pathParts, decoded);
     }
 
+    routeArgs.matrixArgs = args;
+    routeArgs.context = context;
+    routeArgs.path = pathParts;
+
     pathPart = MATRIX_PATH_POP(pathParts);
 
     if (MATRIX_PATH_EQUALS(pathPart, ".well-known"))
     {
-        response = RouteWellKnown(args, context, pathParts);
+        response = RouteWellKnown(&routeArgs);
     }
     else if (MATRIX_PATH_EQUALS(pathPart, "_matrix"))
     {
-        response = RouteMatrix(args, context, pathParts);
+        response = RouteMatrix(&routeArgs);
     }
     else
     {
@@ -122,7 +127,6 @@ MatrixHttpHandler(HttpServerContext * context, void *argp)
     Free(pathPart);
 
     HttpSendHeaders(context);
-    stream = HttpStream(context);
 
     if (!response)
     {
@@ -131,6 +135,7 @@ MatrixHttpHandler(HttpServerContext * context, void *argp)
         response = MatrixErrorCreate(M_UNKNOWN);
     }
 
+    stream = HttpStream(context);
     JsonEncode(response, stream);
     fprintf(stream, "\n");
 
