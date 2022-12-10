@@ -34,7 +34,7 @@ ROUTE_IMPL(RouteMatrix, args)
     HashMap *response = NULL;
     char *pathPart = MATRIX_PATH_POP(args->path);
 
-    if (!MATRIX_PATH_EQUALS(pathPart, "client") || MATRIX_PATH_PARTS(args->path) <= 1)
+    if (!MATRIX_PATH_EQUALS(pathPart, "client") || MATRIX_PATH_PARTS(args->path) < 1)
     {
         Free(pathPart);
         HttpResponseStatus(args->context, HTTP_NOT_FOUND);

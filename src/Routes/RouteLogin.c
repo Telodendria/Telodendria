@@ -25,7 +25,6 @@
 
 #include <string.h>
 
-#include <Memory.h>
 #include <Json.h>
 #include <HashMap.h>
 
@@ -34,8 +33,6 @@ ROUTE_IMPL(RouteLogin, args)
     HashMap *response = NULL;
     Array *enabledFlows;
     HashMap *pwdFlow;
-
-    Log(args->matrixArgs->lc, LOG_INFO, "Entered RouteLogin()");
 
     if (MATRIX_PATH_PARTS(args->path) > 0)
     {
@@ -64,6 +61,5 @@ ROUTE_IMPL(RouteLogin, args)
             break;
     }
 
-    Log(args->matrixArgs->lc, LOG_INFO, "Exitting RouteLogin()");
     return response;
 }
