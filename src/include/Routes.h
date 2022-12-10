@@ -31,9 +31,23 @@
 
 #include <Matrix.h>
 
-#define ROUTE(name) HashMap * name(MatrixHttpHandlerArgs *args, HttpServerContext *context, Array *path)
+typedef struct RouteArgs
+{
+    MatrixHttpHandlerArgs *matrixArgs;
+    HttpServerContext *context;
+    Array *path;
+} RouteArgs;
 
-extern ROUTE(RouteWellKnown);
-extern ROUTE(RouteMatrix);
+#define ROUTE(name) \
+	extern HashMap * \
+	name(RouteArgs *)
+
+#define ROUTE_IMPL(name, argsName) \
+	HashMap * \
+	name(RouteArgs * argsName)
+
+ROUTE(RouteWellKnown);
+ROUTE(RouteMatrix);
+ROUTE(RouteLogin);
 
 #endif

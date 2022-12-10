@@ -29,22 +29,20 @@
 #include <Json.h>
 #include <HashMap.h>
 
-ROUTE(RouteMatrix)
+ROUTE_IMPL(RouteMatrix, args)
 {
     HashMap *response = NULL;
-    char *pathPart = MATRIX_PATH_POP(path);
+    char *pathPart = MATRIX_PATH_POP(args->path);
 
-    (void) args;
-
-    if (!MATRIX_PATH_EQUALS(pathPart, "client") || MATRIX_PATH_PARTS(path) != 1)
+    if (!MATRIX_PATH_EQUALS(pathPart, "client") || MATRIX_PATH_PARTS(args->path) <= 1)
     {
         Free(pathPart);
-        HttpResponseStatus(context, HTTP_NOT_FOUND);
+        HttpResponseStatus(args->context, HTTP_NOT_FOUND);
         return MatrixErrorCreate(M_NOT_FOUND);
     }
 
     Free(pathPart);
-    pathPart = MATRIX_PATH_POP(path);
+    pathPart = MATRIX_PATH_POP(args->path);
 
     if (MATRIX_PATH_EQUALS(pathPart, "versions"))
     {
@@ -52,17 +50,36 @@ ROUTE(RouteMatrix)
 
         Free(pathPart);
 
-        ArrayAdd(versions, JsonValueString(UtilStringDuplicate("v1.4")));
+        ArrayAdd(versions, JsonValueString(UtilStringDuplicate("v1.5")));
 
         response = HashMapCreate();
         HashMapSet(response, "versions", JsonValueArray(versions));
 
         return response;
     }
+    else if (MATRIX_PATH_EQUALS(pathPart, "v3") ||
+             MATRIX_PATH_EQUALS(pathPart, "r0"))
+    {
+        Free(pathPart);
+        pathPart = MATRIX_PATH_POP(args->path);
+
+        if (MATRIX_PATH_EQUALS(pathPart, "login"))
+        {
+            response = RouteLogin(args);
+        }
+        else
+        {
+            HttpResponseStatus(args->context, HTTP_NOT_FOUND);
+            response = MatrixErrorCreate(M_NOT_FOUND);
+        }
+
+        Free(pathPart);
+        return response;
+    }
     else
     {
         Free(pathPart);
-        HttpResponseStatus(context, HTTP_NOT_FOUND);
+        HttpResponseStatus(args->context, HTTP_NOT_FOUND);
         return MatrixErrorCreate(M_NOT_FOUND);
     }
 }

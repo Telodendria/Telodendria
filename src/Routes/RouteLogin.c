@@ -29,46 +29,41 @@
 #include <Json.h>
 #include <HashMap.h>
 
-ROUTE_IMPL(RouteWellKnown, args)
+ROUTE_IMPL(RouteLogin, args)
 {
     HashMap *response = NULL;
-    char *pathPart = MATRIX_PATH_POP(args->path);
+    Array *enabledFlows;
+    HashMap *pwdFlow;
 
-    if (!MATRIX_PATH_EQUALS(pathPart, "matrix") || MATRIX_PATH_PARTS(args->path) != 1)
+    Log(args->matrixArgs->lc, LOG_INFO, "Entered RouteLogin()");
+
+    if (MATRIX_PATH_PARTS(args->path) > 0)
     {
-        Free(pathPart);
         HttpResponseStatus(args->context, HTTP_NOT_FOUND);
         return MatrixErrorCreate(M_NOT_FOUND);
     }
 
-    Free(pathPart);
-    pathPart = MATRIX_PATH_POP(args->path);
-
-    if (MATRIX_PATH_EQUALS(pathPart, "client"))
+    switch (HttpRequestMethodGet(args->context))
     {
-        HashMap *homeserver = HashMapCreate();
+        case HTTP_GET:
+            response = HashMapCreate();
+            enabledFlows = ArrayCreate();
+            pwdFlow = HashMapCreate();
 
-        Free(pathPart);
+            HashMapSet(pwdFlow, "type",
+            JsonValueString(UtilStringDuplicate("m.login.password")));
+            ArrayAdd(enabledFlows, JsonValueObject(pwdFlow));
+            HashMapSet(response, "flows", JsonValueArray(enabledFlows));
 
-        response = HashMapCreate();
-
-        HashMapSet(homeserver, "base_url", JsonValueString(UtilStringDuplicate(args->matrixArgs->config->baseUrl)));
-        HashMapSet(response, "m.homeserver", JsonValueObject(homeserver));
-
-        if (args->matrixArgs->config->identityServer)
-        {
-            HashMap *identityServer = HashMapCreate();
-
-            HashMapSet(identityServer, "base_url", JsonValueString(UtilStringDuplicate(args->matrixArgs->config->identityServer)));
-            HashMapSet(response, "m.identity_server", identityServer);
-        }
-
-        return response;
+            break;
+        case HTTP_POST:
+            /* TODO */
+        default:
+            HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
+            response = MatrixErrorCreate(M_UNRECOGNIZED);
+            break;
     }
-    else
-    {
-        Free(pathPart);
-        HttpResponseStatus(args->context, HTTP_NOT_FOUND);
-        return MatrixErrorCreate(M_NOT_FOUND);
-    }
+
+    Log(args->matrixArgs->lc, LOG_INFO, "Exitting RouteLogin()");
+    return response;
 }
