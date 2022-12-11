@@ -27,6 +27,7 @@
 
 #include <Json.h>
 #include <HashMap.h>
+#include <Util.h>
 
 ROUTE_IMPL(RouteLogin, args)
 {

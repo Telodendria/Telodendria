@@ -28,6 +28,7 @@
 #include <Memory.h>
 #include <Json.h>
 #include <HashMap.h>
+#include <Util.h>
 
 ROUTE_IMPL(RouteMatrix, args)
 {

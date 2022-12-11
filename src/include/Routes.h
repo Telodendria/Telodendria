@@ -24,18 +24,44 @@
 #ifndef TELODENDRIA_ROUTES_H
 #define TELODENDRIA_ROUTES_H
 
+#include <string.h>
+
 #include <HashMap.h>
 #include <Array.h>
 #include <HttpServer.h>
-#include <Util.h>
-
 #include <Matrix.h>
+
+/*
+ * Abstract away the underlying data structure of the path so that
+ * routes don't have to care what it is.
+ *
+ * This will be helpful, for instance, if we decide to switch to a
+ * queue (which can easily be done with the current implementation if
+ * we just add a function that computes how many elements are in a
+ * queue.) An array isn't the most efficient data structure for this
+ * purpose; a queue would be much better. This allows us to change that
+ * down the road without having to rewrite all the routes.
+ *
+ * One tricky thing about the current Queue implementation is that it
+ * is a fixed-size queue, so we'd either need to make it large enough
+ * to accomodate large paths, or rewrite it to be dynamically-sized.
+ */
+#define MATRIX_PATH Array
+#define MATRIX_PATH_CREATE() ArrayCreate()
+#define MATRIX_PATH_APPEND(path, part) ArrayAdd(path, part)
+#define MATRIX_PATH_FREE(path) ArrayFree(path)
+
+#define MATRIX_PATH_POP(path) ArrayDelete(path, 0)
+#define MATRIX_PATH_PARTS(path) ArraySize(path)
+
+#define MATRIX_PATH_EQUALS(pathPart, str) \
+	((pathPart != NULL) && (strcmp(pathPart, str) == 0))
 
 typedef struct RouteArgs
 {
     MatrixHttpHandlerArgs *matrixArgs;
     HttpServerContext *context;
-    Array *path;
+    MATRIX_PATH *path;
 } RouteArgs;
 
 #define ROUTE(name) \

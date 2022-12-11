@@ -50,7 +50,7 @@ MatrixHttpHandler(HttpServerContext * context, void *argp)
     HashMap *response;
 
     char *requestPath;
-    Array *pathParts;
+    MATRIX_PATH *pathParts;
     char *pathPart;
     RouteArgs routeArgs;
 
@@ -94,14 +94,14 @@ MatrixHttpHandler(HttpServerContext * context, void *argp)
         goto finish;
     }
 
-    pathParts = ArrayCreate();
+    pathParts = MATRIX_PATH_CREATE();
     key = requestPath;
 
     while ((pathPart = strtok_r(key, "/", &key)))
     {
         char *decoded = HttpUrlDecode(pathPart);
 
-        ArrayAdd(pathParts, decoded);
+        MATRIX_PATH_APPEND(pathParts, decoded);
     }
 
     routeArgs.matrixArgs = args;
@@ -148,7 +148,7 @@ MatrixHttpHandler(HttpServerContext * context, void *argp)
         Free(pathPart);
     }
 
-    ArrayFree(pathParts);
+    MATRIX_PATH_FREE(pathParts);
     JsonFree(response);
 
 finish:
