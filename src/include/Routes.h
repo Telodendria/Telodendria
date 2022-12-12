@@ -31,21 +31,6 @@
 #include <HttpServer.h>
 #include <Matrix.h>
 
-/*
- * Abstract away the underlying data structure of the path so that
- * routes don't have to care what it is.
- *
- * This will be helpful, for instance, if we decide to switch to a
- * queue (which can easily be done with the current implementation if
- * we just add a function that computes how many elements are in a
- * queue.) An array isn't the most efficient data structure for this
- * purpose; a queue would be much better. This allows us to change that
- * down the road without having to rewrite all the routes.
- *
- * One tricky thing about the current Queue implementation is that it
- * is a fixed-size queue, so we'd either need to make it large enough
- * to accomodate large paths, or rewrite it to be dynamically-sized.
- */
 #define MATRIX_PATH Array
 #define MATRIX_PATH_CREATE() ArrayCreate()
 #define MATRIX_PATH_APPEND(path, part) ArrayAdd(path, part)
@@ -72,8 +57,10 @@ typedef struct RouteArgs
 	HashMap * \
 	name(RouteArgs * argsName)
 
-ROUTE(RouteWellKnown);
-ROUTE(RouteMatrix);
-ROUTE(RouteLogin);
+ROUTE(RouteWellKnown); /* /.well-known */
+ROUTE(RouteMatrix); /* /_matrix */
+ROUTE(RouteLogin); /* /_matrix/client/(r0|v3)/login */
+
+#undef ROUTE
 
 #endif
