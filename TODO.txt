@@ -33,7 +33,7 @@ Due: January 1, 2023
 		[ ] HttpServer
 		[x] Json
 		[x] Log
-		[ ] Matrix
+		[x] Matrix
 		[x] Queue
 		[ ] Routes
 		[x] TelodendriaConfig
