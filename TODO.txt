@@ -12,34 +12,22 @@ Milestone: v0.1.0
 Due: January 1, 2023
 ---------------------
 
-[x] Data abstraction layer
-	[x] Caching
-	[x] Cache eviction
-	[x] Make memory info access O(1)
-[x] Make config option 'id' optional; print warning if not present started as root.
-[x] Write install and uninstall scripts
-[x] Add relayd example to contrib/
-[x] Refactor man pages to be prefaced with 'telodendria-'
-
-[x] Add recipe to td script to upload patches to the Matrix room
-[x] Document send-patch
-[~] Convert documentation to man pages
-	[~] Internal API docs
-		[x] Array
-		[x] Base64
-		[x] CanonicalJson
-		[x] HashMap
-		[ ] Http
-		[ ] HttpServer
-		[x] Json
-		[x] Log
-		[x] Matrix
-		[x] Queue
-		[x] Routes
-		[x] TelodendriaConfig
-		[x] Util
-		[x] Memory
-		[x] Db
+[~] Internal API docs
+	[x] Array
+	[x] Base64
+	[x] CanonicalJson
+	[x] HashMap
+	[ ] Http
+	[ ] HttpServer
+	[x] Json
+	[x] Log
+	[x] Matrix
+	[x] Queue
+	[x] Routes
+	[x] TelodendriaConfig
+	[x] Util
+	[x] Memory
+	[x] Db
 
 Milestone: v1.0.0
 -----------------
