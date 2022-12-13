@@ -158,7 +158,7 @@ recipe_release() {
 	cd "$TELODENDRIA_PUB/pub/v$TELODENDRIA_VERSION"
 
 	# Tag the release at this point in time.
-	cvs tag "$CVS_TAG" .
+	cvs tag "$CVS_TAG"
 
 	# Generate the release tarball.
 	cvs export "-r$CVS_TAG" "Telodendria"
