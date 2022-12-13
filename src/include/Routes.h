@@ -57,9 +57,9 @@ typedef struct RouteArgs
 	HashMap * \
 	name(RouteArgs * argsName)
 
-ROUTE(RouteWellKnown); /* /.well-known */
-ROUTE(RouteMatrix); /* /_matrix */
-ROUTE(RouteLogin); /* /_matrix/client/(r0|v3)/login */
+ROUTE(RouteWellKnown);             /* /.well-known */
+ROUTE(RouteMatrix);                /* /_matrix */
+ROUTE(RouteLogin);                 /* /_matrix/client/(r0|v3)/login */
 
 #undef ROUTE
 
