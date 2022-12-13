@@ -1,0 +1,157 @@
+.Dd $Mdocdate: December 13 2022 $
+.Dt HTTPSERVER 3
+.Os Telodendria Project
+.Sh NAME
+.Nm HttpServer
+.Nd Extremely simple HTTP server.
+.Sh SYNOPSIS
+.In HttpServer.h
+.Ft HttpServer *
+.Fn HttpServerCreate "unsigned short" "unsigned int" "unsigned int" "HttpHandler *" "void *"
+.Ft void
+.Fn HttpServerFree "HttpServer *"
+.Ft int
+.Fn HttpServerStart "HttpServer *"
+.Ft void
+.Fn HttpServerJoin "HttpServer *"
+.Ft void
+.Fn HttpServerStop "HttpServer *"
+.Ft HashMap *
+.Fn HttpRequestHeaders "HttpServerContext *"
+.Ft HttpRequestMethod
+.Fn HttpRequestMethodGet "HttpServerContext *"
+.Ft char *
+.Fn HttpRequestPath "HttpServerContext *"
+.Ft HashMap *
+.Fn HttpRequestParams "HttpServerContext *"
+.Ft char *
+.Fn HttpResponseHeader "HttpServerContext *" "char *" "char *"
+.Ft void
+.Fn HttpResponseStatus "HttpServerContext *" HttpStatus"
+.Ft FILE *
+.Fn HttpStream "HttpServerContext *"
+.Ft void
+.Fn HttpSendHeaders "HttpServerContext *"
+.Sh DESCRIPTION
+.Nm
+builds on the
+.Xr Http 3
+API, and provides a very simple, yet very functional API for
+creating an HTTP server. It aims at being easy to use and minimal,
+yet also efficient. It uses non-blocking I/O, is fully multi-threaded,
+very configurable, yet also able to be set up in just two function calls.
+.Pp
+This API should be familiar to those that have dealt with the HTTP server
+libraries of other programming languages, particularly Java. In fact,
+much of the terminology used in this code came from Java, and you'll
+notice that the way responses are sent and received very closely resemble
+the way it's done in Java.
+.Pp
+An HTTP server itself is created with
+.Fn HttpServerCreate ,
+which takes the port number to create the server on, the number of threads to
+use, the maximum number of connections, a request handler function, and the
+arguments to that function, in that order. The request handler function is
+of the following type:
+.Bd -literal -offset indent
+typedef void (HttpHandler) (HttpServerContext *, void *)
+.Ed
+.Pp
+Where the void pointer received is the same pointer that was passed into
+.Fn HttpServerCreate
+as the last parameter.
+.Pp
+The returned HttpServer pointer is then managed by
+.Fn HttpServerStart ,
+.Fn HttpServerStop ,
+.Fn HttpServerJoin ,
+and
+.Fn HttpServerFree .
+.Fn HttpServerStart
+attempts to start the HTTP server, and returns immediately with the status.
+This API is fully threaded and asyncronous, so the caller can continue working
+while the HTTP server is running in a separate thread, and managing a pool
+of threads to handle responses. Typically at some point after calling
+.Fn HttpServerStart ,
+the program will have no more work to do, and so it will want to wait for
+the HTTP server to finish. This is accomplished with
+.Fn HttpServerJoin ,
+which joins the HTTP worker thread to the calling thread, making the
+calling thread wait until the HTTP server has stopped.
+.Pp
+The only condition that will cause the HTTP server to stop is when
+.Fn HttpServerStop
+is invoked. This will typically happen in a signal handler that catches
+signals instructing the program to shut down. Only after the server has
+been stopped can it be freed with
+.Fn HttpServerFree .
+Note that calling
+.Fn HttpServerFree
+while the server is running results in undefined behavior.
+.Pp
+The remainder of the functions in this API are used inside of the
+HTTP handler function passed by the caller of
+.Fn HttpServerCreate .
+They allow the handler to figure out the context of an HTTP request,
+which includes the path that was requested, any parameters, and the
+headers used to make the request. They also allow the handler
+to respond with a status code, headers, and a body.
+.Pp
+.Fn HttpRequestHeaders ,
+.Fn HttpRequestMethodGet ,
+.Fn HttpRequestPath ,
+and
+.Fn HttpRequestParams
+get the information about the request. They should all be passed the
+server context pointer that was passed into the handler function.
+The data returned by these functions should be treated as read-only,
+and should not be freed; their memory is handled outside of the HTTP
+server handler function.
+.Pp
+.Fn HttpResponseHeader
+and
+.Fn HttpResponseStatus
+are used to set response headers, and the response status of the
+request, respectively.
+.Pp
+.Fn HttpStream
+returns a stream that is both readable and writable. Reading from
+the stream reads the request body that the client sent, if there is
+one. Note that the request headers have already been read, so the stream
+is correctly positioned at the beginning of the body of the request.
+.Fn HttpSendHeaders
+must be called before the stream is written to, otherwise a malformed
+HTTP response will be sent. An HTTP handler should properly set all
+the headers it intends to send, send those headers, and then write the
+response  body to the stream. Finally, note that the stream does not
+need to be closed by the HTTP handler; in fact, doing so results in
+undefined behavior. The stream is managed by the server itself.
+.Sh RETURN VALUES
+.Pp
+.Fn HttpRequestHeaders
+and
+.Fn HttpRequestParams
+return a hash map that can be used to access the request headers and
+parameters, if necessary. Note that the request parameters would be
+GET parameters, attached to the path that was requested. To get POST
+parameters, read the stream returned by
+.Fn HttpStream
+and pass the contents into
+.Fn HttpParamDecode
+to get a hash map.
+.Pp
+.Fn HttpRequestPath
+returns a string that represents the path that the client requested. Note
+that it is not normalized; it is exactly what the client sent, so it should
+be checked for path traversal attacks and other malformed paths that the
+client may sent.
+.Pp
+.Fn HttpResponseHeader
+returns the previous value of the given header, or NULL if there was no
+previous value.
+.Pp
+.Fn HttpStream
+returns a FILE pointer that can be read and written using the C standard
+I/O functions.
+.Sh SEE ALSO
+.Xr Http 3
