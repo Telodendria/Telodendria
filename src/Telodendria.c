@@ -105,6 +105,52 @@ static void
 TelodendriaPrintHeader(LogConfig * lc)
 {
     Log(lc, LOG_INFO,
+        "            .=                       -=-");
+    Log(lc, LOG_INFO,
+        "          :.:+                     .=:.");
+    Log(lc, LOG_INFO,
+        "         .=+-==.                  :.");
+    Log(lc, LOG_INFO,
+        "           .+-                   =.");
+    Log(lc, LOG_INFO,
+        "           .+                   :+.");
+    Log(lc, LOG_INFO,
+        "            ==.                 -+:");
+    Log(lc, LOG_INFO,
+        "             =++==--::           =+.");
+    Log(lc, LOG_INFO,
+        "               .:::--=+=:        :+=");
+    Log(lc, LOG_INFO,
+        "                       :==.      -=:");
+    Log(lc, LOG_INFO,
+        "                         ===----=-.           ... :+.");
+    Log(lc, LOG_INFO,
+        "                       :==+=======:        .-+-::-+-=+=");
+    Log(lc, LOG_INFO,
+        "                      .==*%#=======       :+-      ..");
+    Log(lc, LOG_INFO,
+        "                 .:--=-===+=========-.   :+:");
+    Log(lc, LOG_INFO,
+        "              .=++=::..:============-+=-=-");
+    Log(lc, LOG_INFO,
+        ":+=:        :=+-:      .-=========-.  .");
+    Log(lc, LOG_INFO,
+        " =+++:  .:=+-:      .:--. .--:==:");
+    Log(lc, LOG_INFO,
+        "   ::---:..       :=+:        ==");
+    Log(lc, LOG_INFO,
+        "                  ++.        .+-");
+    Log(lc, LOG_INFO,
+        "                  =+         .+-     ...:");
+    Log(lc, LOG_INFO,
+        "                  +-          -+-:-+=::+:");
+    Log(lc, LOG_INFO,
+        "        :=-....:-=:            .--:    =-");
+    Log(lc, LOG_INFO,
+        "     -++=:.:::..");
+
+
+    Log(lc, LOG_INFO,
         " _____    _           _                _      _");
     Log(lc, LOG_INFO,
         "|_   _|__| | ___   __| | ___ _ __   __| |_ __(_) __ _");

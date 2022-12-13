@@ -1,3 +1,26 @@
+            .=                       -=-               
+          :.:+                     .=:.                
+         .=+-==.                  :.                   
+           .+-                   =.                    
+           .+                   :+.                    
+            ==.                 -+:                    
+             =++==--::           =+.                   
+               .:::--=+=:        :+=                   
+                       :==.      -=:                   
+                         ===----=-.           ... :+.  
+                       :==+=======:        .-+-::-+-=+=
+                      .==*%#=======       :+-      ..  
+                 .:--=-===+=========-.   :+:           
+              .=++=::..:============-+=-=-             
+:+=:        :=+-:      .-=========-.  .                
+ =+++:  .:=+-:      .:--. .--:==:                      
+   ::---:..       :=+:        ==                       
+                  ++.        .+-                       
+                  =+         .+-     ...:              
+                  +-          -+-:-+=::+:              
+        :=-....:-=:            .--:    =-              
+     -++=:.:::..                                       
+
 =======================================================
 |_   _|__| | ___   __| | ___ _ __   __| |_ __(_) __ _ 
   | |/ _ \ |/ _ \ / _` |/ _ \ '_ \ / _` | '__| |/ _` |
@@ -25,3 +48,15 @@ Telodendria/
 		Routes/ - Where Matrix API endpoints are implemented
 	tests/ - Unit and integration tests will eventually go here.
 	tools/ - Development environment and tools.
+
+To cut a new release for Telodendria, perform the following
+steps. This is just a reference for me so I don't mess it up.
+
+	- Update tools/bin/td to declare the next version number.
+	- Update site/index.html with links to the new version.
+	- Make sure man/man7/telodendria-changelog.7 is up to date
+	  with the latest information.
+	- Commit any changes made in the previous steps.
+	- Run the release recipe: td release
+	- Deploy the site: td site
+
