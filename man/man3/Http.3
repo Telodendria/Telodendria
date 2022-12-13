@@ -1,0 +1,171 @@
+.Dd $Mdocdate: December 13 2022 $
+.Dt HTTP 3
+.Os Telodendria Project
+.Sh NAME
+.Nm Http
+.Nd Encode and decode various parts of the HTTP protocol.
+.Sh SYNOPSIS
+.In Http.h
+.Ft const char *
+.Fn HttpStatusToString "const HttpStatus"
+.Ft HttpRequestMethod
+.Fn HttpRequestMethodFromString "const char *"
+.Ft const char *
+.Fn HttpRequestMethodToString "const HttpRequestMethod"
+.Ft char *
+.Fn HttpUrlEncode "char *"
+.Ft char *
+.Fn HttpUrlDecode "char *"
+.Ft HashMap *
+.Fn HttpParamDecode "char *"
+.Ft char *
+.Fn HttpParamEncode "HashMap *"
+.Sh DESCRIPTION
+.Pp
+.Nm
+is a collection of utility functions that are useful for dealing with
+HTTP. HTTP is not a complex protocol, but this API makes it a lot easier
+to work with.
+.Pp
+.Fn HttpStatusToString
+takes an HttpStatus and converts it into a string description of the
+status, which is to be used in an HTTP response. For example, calling
+.Fn HttpStatusToString "HTTP_GATEWAY_TIMEOUT"
+produces the string "Gateway Timeout".
+.Pp
+HttpStatus is an enumeration that corresponds to the actual integer
+values of the valid HTTP response codes. For example, calling
+.Fn HttpStatusToString "504"
+produces the same output. HttpStatus is defined as follows:
+.Bd -literal -offset indent
+typedef enum HttpStatus
+{
+    /* Informational responses */
+    HTTP_CONTINUE = 100,
+    HTTP_SWITCHING_PROTOCOLS = 101,
+    HTTP_EARLY_HINTS = 103,
+
+    /* Successful responses */
+    HTTP_OK = 200,
+    HTTP_CREATED = 201,
+    HTTP_ACCEPTED = 202,
+    HTTP_NON_AUTHORITATIVE_INFORMATION = 203,
+    HTTP_NO_CONTENT = 204,
+    HTTP_RESET_CONTENT = 205,
+    HTTP_PARTIAL_CONTENT = 206,
+
+    /* Redirection messages */
+    HTTP_MULTIPLE_CHOICES = 300,
+    HTTP_MOVED_PERMANENTLY = 301,
+    HTTP_FOUND = 302,
+    HTTP_SEE_OTHER = 303,
+    HTTP_NOT_MODIFIED = 304,
+    HTTP_TEMPORARY_REDIRECT = 307,
+    HTTP_PERMANENT_REDIRECT = 308,
+
+    /* Client error messages */
+    HTTP_BAD_REQUEST = 400,
+    HTTP_UNAUTHORIZED = 401,
+    HTTP_FORBIDDEN = 403,
+    HTTP_NOT_FOUND = 404,
+    HTTP_METHOD_NOT_ALLOWED = 405,
+    HTTP_NOT_ACCEPTABLE = 406,
+    HTTP_PROXY_AUTH_REQUIRED = 407,
+    HTTP_REQUEST_TIMEOUT = 408,
+    HTTP_CONFLICT = 409,
+    HTTP_GONE = 410,
+    HTTP_LENGTH_REQUIRED = 411,
+    HTTP_PRECONDITION_FAILED = 412,
+    HTTP_PAYLOAD_TOO_LARGE = 413,
+    HTTP_URI_TOO_LONG = 414,
+    HTTP_UNSUPPORTED_MEDIA_TYPE = 415,
+    HTTP_RANGE_NOT_SATISFIABLE = 416,
+    HTTP_EXPECTATION_FAILED = 417,
+    HTTP_TEAPOT = 418,
+    HTTP_UPGRADE_REQUIRED = 426,
+    HTTP_PRECONDITION_REQUIRED = 428,
+    HTTP_TOO_MANY_REQUESTS = 429,
+    HTTP_REQUEST_HEADER_FIELDS_TOO_LARGE = 431,
+    HTTP_UNAVAILABLE_FOR_LEGAL_REASONS = 451,
+
+    /* Server error responses */
+    HTTP_INTERNAL_SERVER_ERROR = 500,
+    HTTP_NOT_IMPLEMENTED = 501,
+    HTTP_BAD_GATEWAY = 502,
+    HTTP_SERVICE_UNAVAILABLE = 503,
+    HTTP_GATEWAY_TIMEOUT = 504,
+    HTTP_VERSION_NOT_SUPPORTED = 505,
+    HTTP_VARIANT_ALSO_NEGOTIATES = 506,
+    HTTP_NOT_EXTENDED = 510,
+    HTTP_NETWORK_AUTH_REQUIRED = 511
+} HttpStatus;
+.Ed
+.Pp
+.Fn HttpRequestMethodFromString
+and
+.Fn HttpRequestMethodToString
+convert an HttpRequestMethod enumeration value from and to a
+string, respectively. The HttpRequestMethod enumeration is
+defined as follows:
+.Bd -literal -offset indent
+typedef enum HttpRequestMethod
+{
+	HTTP_METHOD_UNKNOWN,
+	HTTP_GET,
+	HTTP_HEAD,
+	HTTP_POST,
+	HTTP_PUT,
+	HTTP_DELETE,
+	HTTP_CONNECT,
+	HTTP_OPTIONS,
+	HTTP_TRACE,
+	HTTP_PATCH
+} HttpRequestMethod;
+.Ed
+.Pp
+These can be used for parsing a request method and then storing
+it efficiently; it doesn't have be stored as a string, and it's
+much nicer to work with enumeration values than it is with
+strings in C. The very first enumeration value is not to be
+passed to
+.Fn HttpRequestMethodToString ,
+rather it may be returned by
+.Fn HttpRequestMethodFromString
+if it cannot identify the request method string passed to it.
+.Pp
+.Fn HttpUrlEncode
+and
+.Fn HttpUrlDecode
+deal with URL-safe strings.
+.Fn HttpUrlEncode
+encodes a C string such that it can appear in a URL, and
+.Fn HttpUrlDecode
+does the opposite; it decodes a URL string into the actual
+bytes it is supposed to represent.
+.Pp
+.Fn HttpParamDecode
+and
+.Fn HttpParamEncode
+convert HTTP parameters in the form of "param=value&param2=val2"
+to and from a hash map for easy parsing, manipulation, and encoding.
+.Sh RETURN VALUES
+.Pp
+.Fn HttpStatusToString
+and
+.Fn HttpRequestMethodToString
+both return constant strings; they are not to be manipulated because
+doing so would result in a segmentation fault, as these strings
+are stored in the data segment of the program.
+.Pp
+.Fn HttpUrlEncode ,
+.Fn HttpUrlDecode ,
+.Fn HttpParamDecode ,
+and
+.Fn HttpParamEncode
+all return strings that were allocated on the heap using the
+Memory API, or NULL if there was an error allocating memory.
+Thee strings returned can be manipulated at will, and must be
+freed using the Memory API when they're no longer needed.
+.Sh SEE ALSO
+.Xr HashMap 3 ,
+.Xr Memory 3
