@@ -1,4 +1,4 @@
-.Dd $Mdocdate: November 20 2022 $
+.Dd $Mdocdate: December 13 2022 $
 .Dt TELODENDRIA 7
 .Os Telodendria Project
 .Sh NAME
@@ -8,13 +8,6 @@
 .Nm
 is an open source Matrix homeserver written entirely from scratch in ANSI C and
 designed to be lightweight and simple, yet functional.
-.Pp
-.Sy Note:
-.Nm
-is under
-.Sy heavy
-development and is not yet ready for use. Please see
-.Sx PROJECT STATUS .
 .Pp
 .Nm
 differentiates itself from the other Matrix homeserver
@@ -169,22 +162,6 @@ shouldn't have a hostile leader. I want to be as understanding as I can, and tal
 through issues politely and in a civil manner. If I'm failing in this way, don't
 be afraid to call me out!
 .El
-.Sh PROJECT STATUS
-Telodendria is a very ambitious project. There's a lot that needs to happen yet
-before it is usable. At the moment, there's nothing here that even remotely resembles
-a Matrix homeserver. I'm still getting off the ground and building a foundation.
-.Pp
-But just because there's nothing here yet doesn't mean you should go away! I could
-always use help, so you are more than welcome to help out if you want things to go
-quicker. Please see the
-.Xr contributing 7
-page for details on how you can get involved. The CVS repository has a file called
-.Pa TODO.txt ,
-which contains a checklist of what has been done so far, and what's on the radar
-to be done. You can take a look at it once you've checked out the source code.
-If you'd like to help out, feel free to grab an item on the list that's not done
-yet and start getting patches written. When you're done, enjoy the satisfaction
-of crossing the item off the list yourself.
 .Sh SEE ALSO
 .Xr telodendria 8 ,
 .Xr telodendria.conf 5 ,
@@ -195,25 +172,17 @@ The installed version of
 conforms to the latest Matrix specification available at the time
 of its release.
 .Sh HISTORY
-At this time,
+.Pp
 .Nm
-does not have any tagged releases because it is not yet functional
-as a Matrix homeserver. Please checkout out
-.Sx PROJECT STATUS
-to see where things are currently at. When
-.Nm
-is mature enough to have a change log, it will go in this section.
+was started in early July of 2022. For a change log of this
+project, see
+.Xr telodendria-changelog 7 .
 .Sh AUTHORS
 .Nm
-was started by Jordan Bancino <@jordan:bancino.net>.
-Contributions to the code, website, documentation, or other
-components of
-.Nm
-were made by the following people:
-.Bl -bullet
-.It
-Jonah Evans <@jonah:bancino.net>
-.El
+was started by and is almost exclusively developed by
+Jordan Bancino <@jordan:bancino.net>. Contributions to the code,
+website, documentation, or other components of this project have
+been made by various open source developers.
 .Sh LICENSE
 All of the code and documentation for
 .Nm
