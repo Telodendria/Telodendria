@@ -8,12 +8,6 @@ Key:
 [~] In Progress
 [!] Won't Fix
 
-Milestone: v0.1.0
-Due: January 1, 2023
----------------------
-
-[ ] Release
-
 Milestone: v1.0.0
 -----------------
 
