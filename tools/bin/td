@@ -19,7 +19,7 @@
 # such that these serve more as sane defaults than hard requirements.
 #
 
-: "${TELODENDRIA_VERSION:=0.1.0}"
+: "${TELODENDRIA_VERSION:=0.1.1}"
 : "${CVS_TAG:=Telodendria-$(echo $TELODENDRIA_VERSION | sed 's/\./_/g')}"
 
 : "${DEFINES:=-D_DEFAULT_SOURCE -DTELODENDRIA_VERSION=\"$TELODENDRIA_VERSION\"}"
