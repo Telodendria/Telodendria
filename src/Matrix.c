@@ -125,14 +125,14 @@ MatrixHttpHandler(HttpServerContext * context, void *argp)
 
     Free(pathPart);
 
-    HttpSendHeaders(context);
-
     if (!response)
     {
-        Log(lc, LOG_WARNING, "A route handler returned NULL.");
+        Log(lc, LOG_ERR, "A route handler returned NULL.");
         HttpResponseStatus(context, HTTP_INTERNAL_SERVER_ERROR);
         response = MatrixErrorCreate(M_UNKNOWN);
     }
+
+    HttpSendHeaders(context);
 
     stream = HttpStream(context);
     JsonEncode(response, stream);
