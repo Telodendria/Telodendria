@@ -25,66 +25,40 @@
 
 #include <string.h>
 
-#include <Memory.h>
 #include <Json.h>
 #include <HashMap.h>
 #include <Util.h>
 
-ROUTE_IMPL(RouteMatrix, args)
+ROUTE_IMPL(RouteRegister, args)
 {
+    HashMap *request = NULL;
     HashMap *response = NULL;
-    char *pathPart = MATRIX_PATH_POP(args->path);
 
-    if (!MATRIX_PATH_EQUALS(pathPart, "client") || MATRIX_PATH_PARTS(args->path) < 1)
+    if (MATRIX_PATH_PARTS(args->path) > 0)
     {
-        Free(pathPart);
         HttpResponseStatus(args->context, HTTP_NOT_FOUND);
         return MatrixErrorCreate(M_NOT_FOUND);
     }
 
-    Free(pathPart);
-    pathPart = MATRIX_PATH_POP(args->path);
-
-    if (MATRIX_PATH_EQUALS(pathPart, "versions"))
+    if (HttpRequestMethodGet(args->context) != HTTP_POST)
     {
-        Array *versions = ArrayCreate();
-
-        Free(pathPart);
-
-        ArrayAdd(versions, JsonValueString(UtilStringDuplicate("v1.5")));
-
-        response = HashMapCreate();
-        HashMapSet(response, "versions", JsonValueArray(versions));
-
-        return response;
+        HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
+        return MatrixErrorCreate(M_UNRECOGNIZED);
     }
-    else if (MATRIX_PATH_EQUALS(pathPart, "v3") ||
-             MATRIX_PATH_EQUALS(pathPart, "r0"))
+
+    if (!(args->matrixArgs->config->flags & TELODENDRIA_REGISTRATION))
     {
-        Free(pathPart);
-        pathPart = MATRIX_PATH_POP(args->path);
-
-        if (MATRIX_PATH_EQUALS(pathPart, "login"))
-        {
-            response = RouteLogin(args);
-        }
-        else if (MATRIX_PATH_EQUALS(pathPart, "register"))
-        {
-            response = RouteRegister(args);
-        }
-        else
-        {
-            HttpResponseStatus(args->context, HTTP_NOT_FOUND);
-            response = MatrixErrorCreate(M_NOT_FOUND);
-        }
-
-        Free(pathPart);
-        return response;
+        HttpResponseStatus(args->context, HTTP_FORBIDDEN);
+        return MatrixErrorCreate(M_FORBIDDEN);
     }
-    else
+
+    request = JsonDecode(HttpStream(args->context));
+    if (!request)
     {
-        Free(pathPart);
-        HttpResponseStatus(args->context, HTTP_NOT_FOUND);
-        return MatrixErrorCreate(M_NOT_FOUND);
+        HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
+        return MatrixErrorCreate(M_NOT_JSON);
     }
+
+    JsonFree(request);
+    return response;
 }
