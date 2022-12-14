@@ -28,37 +28,77 @@
 #include <Json.h>
 #include <HashMap.h>
 #include <Util.h>
+#include <Memory.h>
 
 ROUTE_IMPL(RouteRegister, args)
 {
     HashMap *request = NULL;
     HashMap *response = NULL;
 
-    if (MATRIX_PATH_PARTS(args->path) > 0)
+    char *pathPart = NULL;
+
+    if (MATRIX_PATH_PARTS(args->path) == 0)
     {
-        HttpResponseStatus(args->context, HTTP_NOT_FOUND);
-        return MatrixErrorCreate(M_NOT_FOUND);
+
+        if (HttpRequestMethodGet(args->context) != HTTP_POST)
+        {
+            HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
+            return MatrixErrorCreate(M_UNRECOGNIZED);
+        }
+
+        if (!(args->matrixArgs->config->flags & TELODENDRIA_REGISTRATION))
+        {
+            HttpResponseStatus(args->context, HTTP_FORBIDDEN);
+            return MatrixErrorCreate(M_FORBIDDEN);
+        }
+
+        request = JsonDecode(HttpStream(args->context));
+        if (!request)
+        {
+            HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
+            return MatrixErrorCreate(M_NOT_JSON);
+        }
+
+        /* TODO: Complete account registration flow */
+
+        JsonFree(request);
+    }
+    else
+    {
+        pathPart = MATRIX_PATH_POP(args->path);
+
+        if (HttpRequestMethodGet(args->context) == HTTP_GET &&
+            MATRIX_PATH_EQUALS(pathPart, "available"))
+        {
+            /* TODO: Check if ?username=x is available */
+        }
+        else if (HttpRequestMethodGet(args->context) == HTTP_POST &&
+                 (MATRIX_PATH_EQUALS(pathPart, "email") ||
+                  MATRIX_PATH_EQUALS(pathPart, "msisdn")))
+        {
+            Free(pathPart);
+            pathPart = MATRIX_PATH_POP(args->path);
+            if (!MATRIX_PATH_EQUALS(pathPart, "requestToken"))
+            {
+                HttpResponseStatus(args->context, HTTP_NOT_FOUND);
+                response = MatrixErrorCreate(M_UNRECOGNIZED);
+            }
+            else
+            {
+                /* TODO: Validate request body and potentially return
+                 * M_BAD_JSON */
+                HttpResponseStatus(args->context, HTTP_FORBIDDEN);
+                response = MatrixErrorCreate(M_THREEPID_DENIED);
+            }
+        }
+        else
+        {
+            HttpResponseStatus(args->context, HTTP_NOT_FOUND);
+            response = MatrixErrorCreate(M_UNRECOGNIZED);
+        }
+
+        Free(pathPart);
     }
 
-    if (HttpRequestMethodGet(args->context) != HTTP_POST)
-    {
-        HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-        return MatrixErrorCreate(M_UNRECOGNIZED);
-    }
-
-    if (!(args->matrixArgs->config->flags & TELODENDRIA_REGISTRATION))
-    {
-        HttpResponseStatus(args->context, HTTP_FORBIDDEN);
-        return MatrixErrorCreate(M_FORBIDDEN);
-    }
-
-    request = JsonDecode(HttpStream(args->context));
-    if (!request)
-    {
-        HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-        return MatrixErrorCreate(M_NOT_JSON);
-    }
-
-    JsonFree(request);
     return response;
 }
