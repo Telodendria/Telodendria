@@ -70,6 +70,14 @@ ROUTE_IMPL(RouteRegister, args)
         if (HttpRequestMethodGet(args->context) == HTTP_GET &&
             MATRIX_PATH_EQUALS(pathPart, "available"))
         {
+            char *username = HashMapGet(HttpRequestParams(args->context), "username");
+
+            if (!username)
+            {
+                HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
+                response = MatrixErrorCreate(M_MISSING_PARAM);
+            }
+
             /* TODO: Check if ?username=x is available */
         }
         else if (HttpRequestMethodGet(args->context) == HTTP_POST &&
