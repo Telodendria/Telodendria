@@ -32,7 +32,21 @@ as well, so you can discuss your progress and ask questions.
 .Pp
 Not released yet.
 .Pp
-Changes in this release:
+.Nm
+homeserver changes and fixes:
+.Pp
+.Bl -bullet
+.It
+Fixed a memory leak that would occur when parsing an invalid
+JSON object failed.
+.It
+Fixed an edge case where HTTP response headers were being
+sent before they were set properly, causing the server to
+report a status of 200 even when that wasn't the desired
+status.
+.El
+.Pp
+Other changes and fixes included in this release:
 .Bl -bullet
 .It
 Fixed a bug in
