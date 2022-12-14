@@ -561,7 +561,7 @@ HttpServerWorkerThread(void *args)
         }
 
         requestPath[i] = '\0';
-        requestParams = HttpParamDecode(requestPath + i);
+        requestParams = HttpParamDecode(requestPath + i + 1);
 
         context = HttpServerContextCreate(requestMethod, requestPath, requestParams, fp);
         if (!context)

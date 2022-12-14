@@ -440,7 +440,7 @@ HttpParamDecode(char *in)
         if (!decKey)
         {
             /* Decoding error */
-            Free(params);
+            HashMapFree(params);
             return NULL;
         }
 
@@ -471,11 +471,16 @@ HttpParamDecode(char *in)
         if (!decVal)
         {
             /* Decoding error */
-            Free(params);
+            HashMapFree(params);
             return NULL;
         }
 
-        HashMapSet(params, decKey, decVal);
+        buf = HashMapSet(params, decKey, decVal);
+        if (buf)
+        {
+            Free(buf);
+            Free(decKey);
+        }
 
         if (*in == '&')
         {
