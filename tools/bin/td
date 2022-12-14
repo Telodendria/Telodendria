@@ -63,6 +63,24 @@ mod_time() {
     fi 
 }
 
+# Substitute shell variables in a stream with their actual value
+# in this shell.
+setsubst() {
+    SED="/tmp/sed-$RANDOM.txt"
+
+    (
+        set | while IFS='=' read -r var val; do
+            val=$(echo "$val" | cut -d "'" -f 2)
+            echo "s|\\\${$var}|$val|g"
+        done
+
+        echo "s|\\\${[a-zA-Z_]*}||g"
+    ) > "$SED"
+
+    sed -f "$SED" $@
+    rm "$SED"
+}
+
 # Build the source code, and generate  the 'build/telodendria'
 # binary.
 recipe_build() {
@@ -133,15 +151,29 @@ recipe_site() {
 		exit 1
 	fi
 
-	cp -v site/* "$TELODENDRIA_PUB/"
+    DATE=$(date)
+
+    cd site/
+    find . -type f | while IFS= read -r file; do
+        dest="$TELODENDRIA_PUB/$file"
+        dir=$(dirname "$dest")
+
+        echo "$dest"
+
+        mkdir -p "$dir"
+        setsubst "$file" > "$dest"
+    done
+    cd - > /dev/null
 
 	find man/ -name '*.[1-9]' | while IFS= read -r man; do
 		dir=$(dirname "$man")
 		html=$(basename "$man")
 
 		mkdir -p "$TELODENDRIA_PUB/$dir/"
-		mandoc -Thtml -O style=/style.css,man=/man/man%S/%N.%S.html "$man" > "$TELODENDRIA_PUB/$dir/$html.html"
-		echo "$man -> $TELODENDRIA_PUB/$dir/$html.html"
+		mandoc -Thtml \
+            -O style=/style.css,man=man/man%S/%N.%S.html "$man" \
+            > "$TELODENDRIA_PUB/$dir/$html.html"
+		echo "$TELODENDRIA_PUB/$dir/$html.html"
 	done
 }
 

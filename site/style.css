@@ -43,14 +43,6 @@ body {
 	text-decoration: underline
 }
 
-.Bd {
-    background-color: var(--color-snippet);
-    border-radius: var(--border-radius);
-	padding-left: 10px;
-
-	overflow: auto;
-}
-
 h1 {
 	text-align: center;
 }
@@ -83,7 +75,6 @@ table {
 	border-spacing: 0px;
 }
 
-
 td, th {
     border: 1px solid var(--color-table-border);
     text-align: left;
@@ -94,8 +85,23 @@ tr:nth-child(even) {
     background-color: var(--color-table-accent);
 }
 
-/* The above styles are nice for real tables, but not for
- * a man page synopsis. */
+/* Thanks Jonah! */
+#logo {
+	display: block;
+	margin: auto;
+	width: 50vw;
+	max-width: 400px;
+}
+
+/* Mandoc overrides */
+
+.Bd {
+    background-color: var(--color-snippet);
+    border-radius: var(--border-radius);
+	padding-left: 10px;
+
+	overflow: auto;
+}
 
 .Nm {
 	width: fit-content;
@@ -105,11 +111,4 @@ tr:nth-child(even) {
 	border: none;
 }
 
-/* Thanks Jonah! */
-#logo {
-	display: block;
-	margin: auto;
-	width: 50vw;
-	max-width: 400px;
-}
 
