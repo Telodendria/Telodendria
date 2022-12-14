@@ -798,6 +798,8 @@ JsonTokenSeek(JsonParserState * state)
                         if (!fgets(state->token + 1, 4, state->stream))
                         {
                             state->tokenType = TOKEN_EOF;
+                            Free(state->token);
+                            state->token = NULL;
                             return;
                         }
 
@@ -809,12 +811,16 @@ JsonTokenSeek(JsonParserState * state)
                         else
                         {
                             state->tokenType = TOKEN_UNKNOWN;
+                            Free(state->token);
+                            state->token = NULL;
                         }
                         break;
                     case 'f':
                         if (!fgets(state->token + 1, 5, state->stream))
                         {
                             state->tokenType = TOKEN_EOF;
+                            Free(state->token);
+                            state->token = NULL;
                             return;
                         }
 
@@ -826,12 +832,16 @@ JsonTokenSeek(JsonParserState * state)
                         else
                         {
                             state->tokenType = TOKEN_UNKNOWN;
+                            Free(state->token);
+                            state->token = NULL;
                         }
                         break;
                     case 'n':
                         if (!fgets(state->token + 1, 4, state->stream))
                         {
                             state->tokenType = TOKEN_EOF;
+                            Free(state->token);
+                            state->token = NULL;
                             return;
                         }
 
@@ -842,10 +852,14 @@ JsonTokenSeek(JsonParserState * state)
                         else
                         {
                             state->tokenType = TOKEN_UNKNOWN;
+                            Free(state->token);
+                            state->token = NULL;
                         }
                         break;
                     default:
                         state->tokenType = TOKEN_UNKNOWN;
+                        Free(state->token);
+                        state->token = NULL;
                         break;
                 }
             }
