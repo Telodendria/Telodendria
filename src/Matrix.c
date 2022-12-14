@@ -37,18 +37,14 @@ void
 MatrixHttpHandler(HttpServerContext * context, void *argp)
 {
     MatrixHttpHandlerArgs *args = (MatrixHttpHandlerArgs *) argp;
-
     LogConfig *lc = args->lc;
-
-    HashMap *requestHeaders = HttpRequestHeaders(context);
     FILE *stream;
-
-    char *key;
-    char *val;
-
     HashMap *response;
 
+    char *key;
+
     char *requestPath;
+    char *requestPathCpy;
     MATRIX_PATH *pathParts;
     char *pathPart;
     RouteArgs routeArgs;
@@ -60,14 +56,6 @@ MatrixHttpHandler(HttpServerContext * context, void *argp)
         requestPath);
 
     LogConfigIndent(lc);
-    Log(lc, LOG_DEBUG, "Request headers:");
-
-    LogConfigIndent(lc);
-    while (HashMapIterate(requestHeaders, &key, (void **) &val))
-    {
-        Log(lc, LOG_DEBUG, "%s: %s", key, val);
-    }
-    LogConfigUnindent(lc);
 
     HttpResponseStatus(context, HTTP_OK);
     HttpResponseHeader(context, "Server", "Telodendria/" TELODENDRIA_VERSION);
@@ -94,7 +82,8 @@ MatrixHttpHandler(HttpServerContext * context, void *argp)
     }
 
     pathParts = MATRIX_PATH_CREATE();
-    key = requestPath;
+    requestPathCpy = UtilStringDuplicate(requestPath);
+    key = requestPathCpy;
 
     while ((pathPart = strtok_r(key, "/", &key)))
     {
@@ -102,6 +91,8 @@ MatrixHttpHandler(HttpServerContext * context, void *argp)
 
         MATRIX_PATH_APPEND(pathParts, decoded);
     }
+
+    Free(requestPathCpy);
 
     routeArgs.matrixArgs = args;
     routeArgs.context = context;
@@ -127,7 +118,7 @@ MatrixHttpHandler(HttpServerContext * context, void *argp)
 
     if (!response)
     {
-        Log(lc, LOG_ERR, "A route handler returned NULL.");
+        Log(lc, LOG_ERR, "The route handler returned NULL: %s", requestPath);
         HttpResponseStatus(context, HTTP_INTERNAL_SERVER_ERROR);
         response = MatrixErrorCreate(M_UNKNOWN);
     }
