@@ -82,6 +82,9 @@ parser that prevented GET parameters from being parsed.
 Fixed the database file name generator to prevent directory
 traversal attacks by replacing special characters with
 safer ones.
+.It
+Fixed a memory leak that would occur when closing a
+database that contains cached objects.
 .El
 .Pp
 Misc:

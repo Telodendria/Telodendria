@@ -60,6 +60,19 @@ struct DbRef
     FILE *fp;
 };
 
+static void
+StringArrayFree(Array *arr)
+{
+    size_t i;
+
+    for (i = 0; i < ArraySize(arr); i++)
+    {
+        Free(ArrayGet(arr, i));
+    }
+
+    ArrayFree(arr);
+}
+
 static ssize_t DbComputeSize(HashMap *);
 
 static ssize_t
@@ -209,22 +222,23 @@ DbFileName(Db * db, Array * args)
     {
         char *tmp, *tmp2;
         char *arg = UtilStringDuplicate(ArrayGet(args, i));
+        size_t j = 0;
 
         /* Sanitize name to prevent directory traversal attacks */
-        while (*arg)
+        while (arg[j])
         {
-            switch (*arg)
+            switch (arg[j])
             {
                 case '/':
-                    *arg = '_';
+                    arg[j] = '_';
                     break;
                 case '.':
-                    *arg = '-';
+                    arg[j] = '-';
                     break;
                 default:
                     break;
             }
-            arg++;
+            j++;
         }
 
         tmp = UtilStringConcat(str, arg);
@@ -266,7 +280,7 @@ DbCacheEvict(Db * db)
         HashMapDelete(db->cache, hash);
         Free(hash);
 
-        ArrayFree(ref->name);
+        StringArrayFree(ref->name);
 
         db->cacheSize -= ref->size;
 
@@ -337,7 +351,7 @@ DbClose(Db * db)
     {
         Free(key);
         JsonFree(val->json);
-        ArrayFree(val->name);
+        StringArrayFree(val->name);
         pthread_mutex_destroy(&val->lock);
         Free(val);
     }
@@ -507,6 +521,7 @@ DbCreate(Db * db, size_t nArgs,...)
     char *dir;
     va_list ap;
     Array *args;
+    DbRef *ret;
 
     if (!db)
     {
@@ -554,7 +569,11 @@ DbCreate(Db * db, size_t nArgs,...)
     fflush(fp);
     fclose(fp);
 
-    return DbLockFromArr(db, args);
+    ret = DbLockFromArr(db, args);
+
+    ArrayFree(args);
+
+    return ret;
 }
 
 int
@@ -588,7 +607,7 @@ DbDelete(Db * db, size_t nArgs,...)
 
         HashMapDelete(db->cache, hash);
         JsonFree(ref->json);
-        ArrayFree(ref->name);
+        StringArrayFree(ref->name);
 
         db->cacheSize -= ref->size;
 
