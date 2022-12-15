@@ -1,4 +1,4 @@
-.Dd $Mdocdate: November 26 2022 $
+.Dd $Mdocdate: December 15 2022 $
 .Dt UTIL 3
 .Os Telodendria Project
 .Sh NAME
@@ -26,6 +26,8 @@
 .Fn UtilGetDelim "char **" "size_t *" "int" "FILE *"
 .Ft ssize_t
 .Fn UtilGetLine "char **" "size_t *" "FILE *"
+.Ft char *
+.Fn UtilRandomString "size_t"
 .Sh DESCRIPTION
 .Pp
 This header holds a number of random functions related to strings,
@@ -98,6 +100,12 @@ work identically to the POSIX equivalents, documented in
 .Xr getdelim 3 ,
 except it assumes pointers were allocated using the Memory API, and it
 uses the Memory API itself to reallocate necessary pointers.
+.Pp
+.Fn UtilRandomString
+generates a random string of the given length. At the moment, it only
+selects from uppercase and lowercase numbers, but the character set may
+be expanded in the future, or a function may be added to specify an
+arbitrary character set.
 .Sh RETURN VALUES
 .Pp
 .Fn UtilServerTs
@@ -131,3 +139,7 @@ and
 .Fn UtilGetLine
 return the same value as their POSIX equivalents, documented in
 .Xr getdelim 3 .
+.Pp
+.Fn UtilRandomString
+returns a string, allocated on the heap, of the given length, or NULL if there
+was an error allocating memory.

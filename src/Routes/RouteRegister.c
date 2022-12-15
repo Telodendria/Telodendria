@@ -75,6 +75,7 @@ ROUTE_IMPL(RouteRegister, args)
 
             HashMapSet(response, "flows", JsonValueArray(flows));
             HashMapSet(response, "params", JsonValueObject(HashMapCreate()));
+            HashMapSet(response, "session", JsonValueString(UtilRandomString(24)));
         }
         else
         {

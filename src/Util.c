@@ -36,6 +36,7 @@
 #include <sys/time.h>
 #include <sys/stat.h>
 #include <limits.h>
+#include <pthread.h>
 
 #ifndef PATH_MAX
 #define PATH_MAX 256
@@ -393,4 +394,35 @@ ssize_t
 UtilGetLine(char **linePtr, size_t * n, FILE * stream)
 {
     return UtilGetDelim(linePtr, n, '\n', stream);
+}
+
+char *
+UtilRandomString(size_t len)
+{
+    static const char charset[] =
+        "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+
+    char *str;
+    size_t i;
+
+    unsigned int seed = UtilServerTs() * (unsigned long) pthread_self();
+
+    if (!len)
+    {
+        return NULL;
+    }
+
+    str = Malloc(len + 1);
+    if (!str)
+    {
+        return NULL;
+    }
+
+    for (i = 0; i < len; i++)
+    {
+        str[i] = charset[rand_r(&seed) % (sizeof(charset) - 1)];
+    }
+
+    str[len] = '\0';
+    return str;
 }

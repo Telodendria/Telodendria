@@ -43,6 +43,12 @@ While the database is for persistent storage, there may
 be some ephemeral data that lives there only for a short
 while, so it will be necessary to remove that data when
 necessary.
+.It
+Added a thread-safe random string generator, which will
+be used extensively for generating session tokens, device
+IDs, access tokens, and more. This generator is seeded by
+the current timestamp and the thread ID, so it should be
+fairly random.
 .El
 .Pp
 Bug fixes:

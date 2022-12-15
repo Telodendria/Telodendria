@@ -59,4 +59,7 @@ extern ssize_t
 extern ssize_t
  UtilGetLine(char **, size_t *, FILE *);
 
+extern char *
+ UtilRandomString(size_t);
+
 #endif                             /* TELODENDRIA_UTIL_H */
