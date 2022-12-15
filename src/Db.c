@@ -40,6 +40,25 @@ struct Db
     size_t maxCache;
     HashMap *cache;
 
+    /*
+     * The cache uses a double linked list (see DbRef
+     * below) to know which objects are most and least
+     * recently used. The following diagram helps me
+     * know what way all the pointers go, because it
+     * can get very confusing sometimes. For example,
+     * there's nothing stopping "next" from pointing to
+     * least recent, and "prev" from pointing to most
+     * recent, so hopefully this clarifies the pointer
+     * terminology used when dealing with the linked
+     * list:
+     *
+     *         mostRecent            leastRecent
+     *             |   prev       prev   |   prev
+     *           +---+ ---> +---+ ---> +---+ ---> NULL
+     *           |ref|      |ref|      |ref|
+     * NULL <--- +---+ <--- +---+ <--- +---+
+     *      next       next       next
+     */
     DbRef *mostRecent;
     DbRef *leastRecent;
 };
