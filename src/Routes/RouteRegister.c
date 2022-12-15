@@ -57,6 +57,9 @@ ROUTE_IMPL(RouteRegister, args)
 
     char *pathPart = NULL;
 
+    DbRef *ref;
+    HashMap *persist;
+
     if (MATRIX_PATH_PARTS(args->path) == 0)
     {
         JsonValue *auth = NULL;
@@ -91,9 +94,10 @@ ROUTE_IMPL(RouteRegister, args)
         if (!auth)
         {
             char *session = UtilRandomString(24);
-            DbRef *ref = DbCreate(args->matrixArgs->db, 2,
+
+            ref = DbCreate(args->matrixArgs->db, 2,
                                   "user_interactive", session);
-            HashMap *persist = DbJson(ref);
+            persist = DbJson(ref);
 
             HashMapSet(persist, "created",
                        JsonValueInteger(UtilServerTs()));
@@ -141,6 +145,23 @@ ROUTE_IMPL(RouteRegister, args)
         }
 
         /* Check to see if session exists */
+        ref = DbLock(args->matrixArgs->db, 2,
+            "user_interactive", sessionStr);
+        
+        if (!ref)
+        {
+            HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
+            response = MatrixErrorCreate(M_UNKNOWN);
+            goto finish;
+        }
+
+        /* We only need to know that it exists. */
+        DbUnlock(args->matrixArgs->db, ref);
+        DbDelete(args->matrixArgs->db, 2,
+            "user_interactive", sessionStr);
+        
+        /* TODO: Abstract all the above logic out to a function */
+        /* TODO: Register new user here */
 
 finish:
         JsonFree(request);
@@ -161,7 +182,7 @@ finish:
                 response = MatrixErrorCreate(M_MISSING_PARAM);
             }
 
-            /* TODO: Check if ?username=x is available */
+            /* TODO: Check if username is available */
         }
         else if (HttpRequestMethodGet(args->context) == HTTP_POST &&
                  (MATRIX_PATH_EQUALS(pathPart, "email") ||
