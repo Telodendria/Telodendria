@@ -11,7 +11,9 @@ Key:
 Milestone: v0.1.1
 -----------------
 
-[ ] Database version file
+[ ] Abstract user-interactive authentication
+[ ] Abstract /email/requestToken and /msidsn/requestToken
+
 [ ] User registration
 
 Milestone: v1.0.0

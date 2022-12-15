@@ -30,6 +30,26 @@
 #include <Util.h>
 #include <Memory.h>
 
+static HashMap *
+BuildDummyFlow(void)
+{
+    HashMap *response = HashMapCreate();
+    HashMap *dummyFlow = HashMapCreate();
+    Array *stages = ArrayCreate();
+    Array *flows = ArrayCreate();
+
+    ArrayAdd(stages,
+             JsonValueString(UtilStringDuplicate("m.login.dummy")));
+    HashMapSet(dummyFlow, "stages", JsonValueArray(stages));
+    ArrayAdd(flows, JsonValueObject(dummyFlow));
+
+    HashMapSet(response, "flows", JsonValueArray(flows));
+    HashMapSet(response, "params",
+               JsonValueObject(HashMapCreate()));
+
+    return response;
+}
+
 ROUTE_IMPL(RouteRegister, args)
 {
     HashMap *request = NULL;
@@ -39,7 +59,14 @@ ROUTE_IMPL(RouteRegister, args)
 
     if (MATRIX_PATH_PARTS(args->path) == 0)
     {
-        HashMap *auth = NULL;
+        JsonValue *auth = NULL;
+
+        HashMap *authObj = JsonValueAsObject(auth);
+        JsonValue *type = HashMapGet(authObj, "type");
+        JsonValue *session = HashMapGet(authObj, "session");
+
+        char *typeStr;
+        char *sessionStr;
 
         if (HttpRequestMethodGet(args->context) != HTTP_POST)
         {
@@ -63,14 +90,9 @@ ROUTE_IMPL(RouteRegister, args)
         auth = HashMapGet(request, "auth");
         if (!auth)
         {
-            Array *flows = ArrayCreate();
-            HashMap *dummyFlow = HashMapCreate();
-            Array *stages = ArrayCreate();
-
             char *session = UtilRandomString(24);
-
             DbRef *ref = DbCreate(args->matrixArgs->db, 2,
-                         "user_interactive", session);
+                                  "user_interactive", session);
             HashMap *persist = DbJson(ref);
 
             HashMapSet(persist, "created",
@@ -79,25 +101,48 @@ ROUTE_IMPL(RouteRegister, args)
 
             DbUnlock(args->matrixArgs->db, ref);
 
-            response = HashMapCreate();
+            HttpResponseStatus(args->context, HTTP_UNAUTHORIZED);
+            response = BuildDummyFlow();
 
-            ArrayAdd(stages,
-               JsonValueString(UtilStringDuplicate("m.login.dummy")));
-            HashMapSet(dummyFlow, "stages", JsonValueArray(stages));
-            ArrayAdd(flows, JsonValueObject(dummyFlow));
-
-            HashMapSet(response, "flows", JsonValueArray(flows));
-            HashMapSet(response, "params",
-                       JsonValueObject(HashMapCreate()));
             HashMapSet(response, "session", JsonValueString(session));
+
+            goto finish;
         }
-        else
+
+        if (JsonValueType(auth) != JSON_OBJECT)
         {
-
+            HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
+            response = MatrixErrorCreate(M_BAD_JSON);
+            goto finish;
         }
 
-        /* TODO: Complete account registration flow */
+        if (!type || JsonValueType(type) != JSON_STRING)
+        {
+            HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
+            response = MatrixErrorCreate(M_BAD_JSON);
+            goto finish;
+        }
 
+        if (!session || JsonValueType(session) != JSON_STRING)
+        {
+            HttpResponseStatus(args->context, HTTP_UNAUTHORIZED);
+            response = BuildDummyFlow();
+            goto finish;
+        }
+
+        typeStr = JsonValueAsString(session);
+        sessionStr = JsonValueAsString(session);
+
+        if (strcmp(typeStr, "m.login.dummy") != 0)
+        {
+            HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
+            response = MatrixErrorCreate(M_INVALID_PARAM);
+            goto finish;
+        }
+
+        /* Check to see if session exists */
+
+finish:
         JsonFree(request);
     }
     else
@@ -108,7 +153,7 @@ ROUTE_IMPL(RouteRegister, args)
             MATRIX_PATH_EQUALS(pathPart, "available"))
         {
             char *username = HashMapGet(
-                HttpRequestParams(args->context), "username");
+                        HttpRequestParams(args->context), "username");
 
             if (!username)
             {
