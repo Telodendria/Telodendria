@@ -208,10 +208,30 @@ DbFileName(Db * db, Array * args)
     for (i = 0; i < ArraySize(args); i++)
     {
         char *tmp, *tmp2;
+        char *arg = UtilStringDuplicate(ArrayGet(args, i));
 
-        tmp = UtilStringConcat(str, ArrayGet(args, i));
-        tmp2 = UtilStringConcat(tmp, (i < ArraySize(args) - 1) ? "/" : ".json");
+        /* Sanitize name to prevent directory traversal attacks */
+        while (*arg)
+        {
+            switch (*arg)
+            {
+                case '/':
+                    *arg = '_';
+                    break;
+                case '.':
+                    *arg = '-';
+                    break;
+                default:
+                    break;
+            }
+            arg++;
+        }
 
+        tmp = UtilStringConcat(str, arg);
+        tmp2 = UtilStringConcat(tmp,
+            (i < ArraySize(args) - 1) ? "/" : ".json");
+
+        Free(arg);
         Free(str);
         Free(tmp);
 

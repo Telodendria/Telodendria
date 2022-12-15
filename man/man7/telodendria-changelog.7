@@ -68,6 +68,10 @@ would occur in some edge cases.
 .It
 Fixed an "off-by-one" error in the HTTP server request
 parser that prevented GET parameters from being parsed.
+.It
+Fixed the database file name generator to prevent directory
+traversal attacks by replacing characters with special meaning
+with safer characters.
 .El
 .Pp
 Misc.:
