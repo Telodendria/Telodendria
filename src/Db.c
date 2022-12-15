@@ -537,6 +537,76 @@ DbCreate(Db * db, size_t nArgs,...)
     return DbLockFromArr(db, args);
 }
 
+int
+DbDelete(Db * db, size_t nArgs,...)
+{
+    va_list ap;
+    Array *args;
+    char *file;
+    char *hash;
+    int ret = 1;
+    DbRef *ref;
+
+    if (!db)
+    {
+        return 0;
+    }
+
+    va_start(ap, nArgs);
+    args = ArrayFromVarArgs(nArgs, ap);
+    va_end(ap);
+
+    pthread_mutex_lock(&db->lock);
+
+    hash = DbHashKey(args);
+    file = DbFileName(db, args);
+
+    ref = HashMapGet(db->cache, hash);
+    if (ref)
+    {
+        pthread_mutex_lock(&ref->lock);
+
+        HashMapDelete(db->cache, hash);
+        JsonFree(ref->json);
+        ArrayFree(ref->name);
+
+        db->cacheSize -= ref->size;
+
+        if (ref->next)
+        {
+            ref->next->prev = ref->prev;
+        }
+        else
+        {
+            db->mostRecent = ref->prev;
+        }
+
+        if (ref->prev)
+        {
+            ref->prev->next = ref->next;
+        }
+        else
+        {
+            db->leastRecent = ref->next;
+        }
+
+        pthread_mutex_unlock(&ref->lock);
+        pthread_mutex_destroy(&ref->lock);
+        Free(ref);
+    }
+
+    Free(hash);
+
+    if (UtilLastModified(file))
+    {
+        ret = remove(file) == 0;
+    }
+
+    pthread_mutex_unlock(&db->lock);
+
+    return ret;
+}
+
 DbRef *
 DbLock(Db * db, size_t nArgs,...)
 {

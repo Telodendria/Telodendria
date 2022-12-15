@@ -11,7 +11,7 @@ Key:
 Milestone: v0.1.1
 -----------------
 
-[ ] DbDelete()
+[x] DbDelete()
 [ ] UtilRandomString()
 [ ] Database version file
 [ ] User registration

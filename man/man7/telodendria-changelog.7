@@ -1,4 +1,4 @@
-.Dd $Mdocdate: December 14 2022 $
+.Dd $Mdocdate: December 15 2022 $
 .Dt TELODENDRIA-CHANGELOG 7
 .Os Telodendria Project
 .Sh NAME
@@ -37,6 +37,12 @@ Changes:
 .It
 Improved HTTP request logging by removing unnecessary
 log entries and making errors more specific.
+.It
+Added a way to safely delete objects from the database.
+While the database is for persistent storage, there may
+be some ephemeral data that lives there only for a short
+while, so it will be necessary to remove that data when
+necessary.
 .El
 .Pp
 Bug fixes:

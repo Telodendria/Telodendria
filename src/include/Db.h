@@ -44,6 +44,9 @@ extern void
 extern DbRef *
  DbCreate(Db *, size_t,...);
 
+extern int
+ DbDelete(Db *, size_t,...);
+
 extern DbRef *
  DbLock(Db *, size_t,...);
 
