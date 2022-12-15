@@ -400,7 +400,7 @@ char *
 UtilRandomString(size_t len)
 {
     static const char charset[] =
-        "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
     char *str;
     size_t i;
