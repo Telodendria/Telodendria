@@ -49,6 +49,16 @@ be used extensively for generating session tokens, device
 IDs, access tokens, and more. This generator is seeded by
 the current timestamp and the thread ID, so it should be
 fairly random.
+.It
+Leaked memory is now hexdump-ed out to the log if the log
+level is set to debug. This greatly simplifies debugging,
+because developers can now easily see exactly what the
+contents of the leaked memory are. Note that in some
+circumstances, this memory may contain sensitive data,
+such as access tokens, usernames, or passwords. However,
+.Nm
+should not be leaking memory at all, so if you encounter
+any leaks, please report them.
 .El
 .Pp
 Bug fixes:
@@ -70,11 +80,11 @@ Fixed an "off-by-one" error in the HTTP server request
 parser that prevented GET parameters from being parsed.
 .It
 Fixed the database file name generator to prevent directory
-traversal attacks by replacing characters with special meaning
-with safer characters.
+traversal attacks by replacing special characters with
+safer ones.
 .El
 .Pp
-Misc.:
+Misc:
 .Bl -bullet
 .It
 Fixed a bug in

@@ -13,6 +13,9 @@ Milestone: v0.1.1
 
 [x] DbDelete()
 [x] UtilRandomString()
+[x] Hex dump leaked memory
+[ ] Leaks in DB
+
 [ ] Database version file
 [ ] User registration
 

@@ -24,6 +24,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 #include <unistd.h>
 #include <errno.h>
 #include <signal.h>
@@ -79,9 +80,80 @@ TelodendriaMemoryIterator(MemoryInfo * i, void *args)
     /* We haven't freed the logger memory yet */
     if (MemoryInfoGetPointer(i) != lc)
     {
+#define LEN 16
+        char hexBuf[(LEN * 2) + LEN + 1];
+        char asciiBuf[LEN + 1];
+        const unsigned char *pc = MemoryInfoGetPointer(i);
+        size_t pI = 0;
+        size_t hI = 0;
+        size_t aI = 0;
+
         Log(lc, LOG_WARNING, "%s:%d: %lu bytes of memory at %p leaked.",
             MemoryInfoGetFile(i), MemoryInfoGetLine(i),
             MemoryInfoGetSize(i), MemoryInfoGetPointer(i));
+
+        for (pI = 0; pI < MemoryInfoGetSize(i); pI++)
+        {
+            if (pI > 0 && pI % LEN == 0)
+            {
+                hexBuf[hI - 1] = '\0';
+                asciiBuf[aI] = '\0';
+
+                Log(lc, LOG_DEBUG, "%04x: %s | %s |",
+                    pI - LEN, hexBuf, asciiBuf);
+
+                sprintf(hexBuf, "%02x ", pc[pI]);
+                hI = 3;
+
+                if (isprint(pc[pI]))
+                {
+                    asciiBuf[0] = pc[pI];
+                }
+                else
+                {
+                    asciiBuf[0] = '.';
+                }
+                asciiBuf[1] = '\0';
+                aI = 1;
+            }
+            else
+            {
+                if (isprint(pc[pI]))
+                {
+                    asciiBuf[aI] = pc[pI];
+                }
+                else
+                {
+                    asciiBuf[aI] = '.';
+                }
+                aI++;
+
+                sprintf(hexBuf + hI, "%02x ", pc[pI]);
+                hI += 3;
+            }
+        }
+
+        while (hI < sizeof(hexBuf) - 2)
+        {
+            hexBuf[hI] = ' ';
+            hI++;
+        }
+
+        while (aI < sizeof(asciiBuf) - 1)
+        {
+            asciiBuf[aI] = ' ';
+            aI++;
+        }
+
+        hexBuf[hI] = '\0';
+        asciiBuf[aI] = '\0';
+
+        Log(lc, LOG_DEBUG, "%04x: %s | %s |",
+            pI - (pI % LEN), hexBuf, asciiBuf);
+
+        Log(lc, LOG_DEBUG, "%04x", pI);
+
+#undef LEN
     }
 }
 
