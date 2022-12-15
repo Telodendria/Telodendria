@@ -61,7 +61,7 @@ struct DbRef
 };
 
 static void
-StringArrayFree(Array *arr)
+StringArrayFree(Array * arr)
 {
     size_t i;
 
@@ -243,7 +243,7 @@ DbFileName(Db * db, Array * args)
 
         tmp = UtilStringConcat(str, arg);
         tmp2 = UtilStringConcat(tmp,
-            (i < ArraySize(args) - 1) ? "/" : ".json");
+                           (i < ArraySize(args) - 1) ? "/" : ".json");
 
         Free(arg);
         Free(str);
