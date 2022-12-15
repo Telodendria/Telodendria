@@ -67,15 +67,29 @@ ROUTE_IMPL(RouteRegister, args)
             HashMap *dummyFlow = HashMapCreate();
             Array *stages = ArrayCreate();
 
+            char *session = UtilRandomString(24);
+
+            DbRef *ref = DbCreate(args->matrixArgs->db, 2,
+                         "user_interactive", session);
+            HashMap *persist = DbJson(ref);
+
+            HashMapSet(persist, "created",
+                       JsonValueInteger(UtilServerTs()));
+            HashMapSet(persist, "completed", JsonValueBoolean(0));
+
+            DbUnlock(args->matrixArgs->db, ref);
+
             response = HashMapCreate();
 
-            ArrayAdd(stages, JsonValueString(UtilStringDuplicate("m.login.dummy")));
+            ArrayAdd(stages,
+               JsonValueString(UtilStringDuplicate("m.login.dummy")));
             HashMapSet(dummyFlow, "stages", JsonValueArray(stages));
             ArrayAdd(flows, JsonValueObject(dummyFlow));
 
             HashMapSet(response, "flows", JsonValueArray(flows));
-            HashMapSet(response, "params", JsonValueObject(HashMapCreate()));
-            HashMapSet(response, "session", JsonValueString(UtilRandomString(24)));
+            HashMapSet(response, "params",
+                       JsonValueObject(HashMapCreate()));
+            HashMapSet(response, "session", JsonValueString(session));
         }
         else
         {
@@ -93,7 +107,8 @@ ROUTE_IMPL(RouteRegister, args)
         if (HttpRequestMethodGet(args->context) == HTTP_GET &&
             MATRIX_PATH_EQUALS(pathPart, "available"))
         {
-            char *username = HashMapGet(HttpRequestParams(args->context), "username");
+            char *username = HashMapGet(
+                HttpRequestParams(args->context), "username");
 
             if (!username)
             {
