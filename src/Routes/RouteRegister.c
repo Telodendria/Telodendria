@@ -39,6 +39,7 @@ ROUTE_IMPL(RouteRegister, args)
 
     if (MATRIX_PATH_PARTS(args->path) == 0)
     {
+        HashMap *auth = NULL;
 
         if (HttpRequestMethodGet(args->context) != HTTP_POST)
         {
@@ -57,6 +58,27 @@ ROUTE_IMPL(RouteRegister, args)
         {
             HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
             return MatrixErrorCreate(M_NOT_JSON);
+        }
+
+        auth = HashMapGet(request, "auth");
+        if (!auth)
+        {
+            Array *flows = ArrayCreate();
+            HashMap *dummyFlow = HashMapCreate();
+            Array *stages = ArrayCreate();
+
+            response = HashMapCreate();
+
+            ArrayAdd(stages, JsonValueString(UtilStringDuplicate("m.login.dummy")));
+            HashMapSet(dummyFlow, "stages", JsonValueArray(stages));
+            ArrayAdd(flows, JsonValueObject(dummyFlow));
+
+            HashMapSet(response, "flows", JsonValueArray(flows));
+            HashMapSet(response, "params", JsonValueObject(HashMapCreate()));
+        }
+        else
+        {
+
         }
 
         /* TODO: Complete account registration flow */

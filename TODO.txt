@@ -8,6 +8,14 @@ Key:
 [~] In Progress
 [!] Won't Fix
 
+Milestone: v0.1.1
+-----------------
+
+[ ] DbDelete()
+[ ] UtilRandomString()
+[ ] Database version file
+[ ] User registration
+
 Milestone: v1.0.0
 -----------------
 
