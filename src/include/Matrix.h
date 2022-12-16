@@ -80,4 +80,7 @@ extern void
 extern HashMap *
  MatrixErrorCreate(MatrixError);
 
+extern HashMap *
+ MatrixUserInteractiveAuth(HttpServerContext *, Db *, HashMap *);
+
 #endif

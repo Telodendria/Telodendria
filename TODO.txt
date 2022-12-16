@@ -11,7 +11,7 @@ Key:
 Milestone: v0.1.1
 -----------------
 
-[ ] Abstract user-interactive authentication
+[x] Abstract user-interactive authentication
 [ ] Abstract /email/requestToken and /msidsn/requestToken
 
 [ ] User registration

@@ -30,26 +30,6 @@
 #include <Util.h>
 #include <Memory.h>
 
-static HashMap *
-BuildDummyFlow(void)
-{
-    HashMap *response = HashMapCreate();
-    HashMap *dummyFlow = HashMapCreate();
-    Array *stages = ArrayCreate();
-    Array *flows = ArrayCreate();
-
-    ArrayAdd(stages,
-             JsonValueString(UtilStringDuplicate("m.login.dummy")));
-    HashMapSet(dummyFlow, "stages", JsonValueArray(stages));
-    ArrayAdd(flows, JsonValueObject(dummyFlow));
-
-    HashMapSet(response, "flows", JsonValueArray(flows));
-    HashMapSet(response, "params",
-               JsonValueObject(HashMapCreate()));
-
-    return response;
-}
-
 ROUTE_IMPL(RouteRegister, args)
 {
     HashMap *request = NULL;
@@ -57,30 +37,12 @@ ROUTE_IMPL(RouteRegister, args)
 
     char *pathPart = NULL;
 
-    DbRef *ref;
-    HashMap *persist;
-
     if (MATRIX_PATH_PARTS(args->path) == 0)
     {
-        JsonValue *auth = NULL;
-
-        HashMap *authObj = JsonValueAsObject(auth);
-        JsonValue *type = HashMapGet(authObj, "type");
-        JsonValue *session = HashMapGet(authObj, "session");
-
-        char *typeStr;
-        char *sessionStr;
-
         if (HttpRequestMethodGet(args->context) != HTTP_POST)
         {
             HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
             return MatrixErrorCreate(M_UNRECOGNIZED);
-        }
-
-        if (!(args->matrixArgs->config->flags & TELODENDRIA_REGISTRATION))
-        {
-            HttpResponseStatus(args->context, HTTP_FORBIDDEN);
-            return MatrixErrorCreate(M_FORBIDDEN);
         }
 
         request = JsonDecode(HttpStream(args->context));
@@ -90,77 +52,19 @@ ROUTE_IMPL(RouteRegister, args)
             return MatrixErrorCreate(M_NOT_JSON);
         }
 
-        auth = HashMapGet(request, "auth");
-        if (!auth)
+        if (!(args->matrixArgs->config->flags & TELODENDRIA_REGISTRATION))
         {
-            char *session = UtilRandomString(24);
-
-            ref = DbCreate(args->matrixArgs->db, 2,
-                                  "user_interactive", session);
-            persist = DbJson(ref);
-
-            HashMapSet(persist, "created",
-                       JsonValueInteger(UtilServerTs()));
-            HashMapSet(persist, "completed", JsonValueBoolean(0));
-
-            DbUnlock(args->matrixArgs->db, ref);
-
-            HttpResponseStatus(args->context, HTTP_UNAUTHORIZED);
-            response = BuildDummyFlow();
-
-            HashMapSet(response, "session", JsonValueString(session));
-
+            HttpResponseStatus(args->context, HTTP_FORBIDDEN);
+            response = MatrixErrorCreate(M_FORBIDDEN);
             goto finish;
         }
 
-        if (JsonValueType(auth) != JSON_OBJECT)
+        response = MatrixUserInteractiveAuth(args->context, args->matrixArgs->db, request);
+        if (response)
         {
-            HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-            response = MatrixErrorCreate(M_BAD_JSON);
             goto finish;
         }
 
-        if (!type || JsonValueType(type) != JSON_STRING)
-        {
-            HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-            response = MatrixErrorCreate(M_BAD_JSON);
-            goto finish;
-        }
-
-        if (!session || JsonValueType(session) != JSON_STRING)
-        {
-            HttpResponseStatus(args->context, HTTP_UNAUTHORIZED);
-            response = BuildDummyFlow();
-            goto finish;
-        }
-
-        typeStr = JsonValueAsString(session);
-        sessionStr = JsonValueAsString(session);
-
-        if (strcmp(typeStr, "m.login.dummy") != 0)
-        {
-            HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-            response = MatrixErrorCreate(M_INVALID_PARAM);
-            goto finish;
-        }
-
-        /* Check to see if session exists */
-        ref = DbLock(args->matrixArgs->db, 2,
-            "user_interactive", sessionStr);
-        
-        if (!ref)
-        {
-            HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-            response = MatrixErrorCreate(M_UNKNOWN);
-            goto finish;
-        }
-
-        /* We only need to know that it exists. */
-        DbUnlock(args->matrixArgs->db, ref);
-        DbDelete(args->matrixArgs->db, 2,
-            "user_interactive", sessionStr);
-        
-        /* TODO: Abstract all the above logic out to a function */
         /* TODO: Register new user here */
 
 finish:
