@@ -1,4 +1,4 @@
-.Dd $Mdocdate: December 12 2022 $
+.Dd $Mdocdate: December 16 2022 $
 .Dt MATRIX 3
 .Os Telodendria Project
 .Sh NAME
@@ -10,6 +10,8 @@
 .Fn MatrixHttpHandler "HttpServerContext *" "void *"
 .Ft void
 .Fn MatrixErrorCreate "MatrixError"
+.Ft HashMap *
+.Fn MatrixUserInteractiveAuth "HttpServerContext *" "Db *" "HashMap *"
 .Sh DESCRIPTION
 .Nm
 provides some helper functions that bind to the
@@ -77,11 +79,26 @@ typedef enum MatrixError
 	M_CANNOT_LEAVE_SERVER_NOTICE_ROOM
 } MatrixError;
 .Ed
+.Pp
+.Fn MatrixUserInteractiveAuth
+executes the user interactive authentication flow. A number of Matrix
+client API requests require this flow, so this function provides a
+convenient abstraction. Currently, it only implements a single-stage
+"m.login.dummy" auth, so it's more of a formality than anything else,
+but in the future, this function may support more authentication
+flows.
 .Sh RETURN VALUES
 .Pp
 .Fn MatrixErrorCreate
 returns a JSON object that represents the given error code. It can be
 immediately returned as the HTTP response body, or modified as needed.
+.Pp
+.Fn MatrixUserInteractiveAuth
+returns NULL when the auth is successful. That is, if it returns NULL,
+then the caller can proceed assuming that the client has done all the
+right things to authenticate itself. If this function does not return
+NULL, then the returned JSON object should be passed along to the
+client immediately without continuing.
 .Sh SEE ALSO
 .Xr HttpServer 3 ,
 .Xr Log 3 ,

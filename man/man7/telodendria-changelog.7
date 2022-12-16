@@ -1,4 +1,4 @@
-.Dd $Mdocdate: December 15 2022 $
+.Dd $Mdocdate: December 16 2022 $
 .Dt TELODENDRIA-CHANGELOG 7
 .Os Telodendria Project
 .Sh NAME
@@ -32,11 +32,14 @@ as well, so you can discuss your progress and ask questions.
 .Pp
 Not released yet.
 .Pp
-Changes:
+New:
 .Bl -bullet
 .It
-Improved HTTP request logging by removing unnecessary
-log entries and making errors more specific.
+Added a basic form of the user interactive authentication API,
+which can be used by any endpoints that the spec says require
+it. Currently, it only implements a single dummy login flow,
+so it's more of a fomality than anything else, but more login
+flows can easily be added in the future.
 .It
 Added a way to safely delete objects from the database.
 While the database is for persistent storage, there may
@@ -49,6 +52,13 @@ be used extensively for generating session tokens, device
 IDs, access tokens, and more. This generator is seeded by
 the current timestamp and the thread ID, so it should be
 fairly random.
+.El
+.Pp
+Changes:
+.Bl -bullet
+.It
+Improved HTTP request logging by removing unnecessary
+log entries and making errors more specific.
 .It
 Leaked memory is now hexdump-ed out to the log if the log
 level is set to debug. This greatly simplifies debugging,
