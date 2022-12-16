@@ -37,6 +37,15 @@ ROUTE_IMPL(RouteRegister, args)
 
     char *pathPart = NULL;
 
+    JsonValue *val;
+
+    char *username = NULL;
+    char *password = NULL;
+    char *initialDeviceDisplayName = NULL;
+    int refreshToken = 0;
+    int inhibitLogin = 0;
+    char *deviceId;
+
     if (MATRIX_PATH_PARTS(args->path) == 0)
     {
         if (HttpRequestMethodGet(args->context) != HTTP_POST)
@@ -59,11 +68,47 @@ ROUTE_IMPL(RouteRegister, args)
             goto finish;
         }
 
-        response = MatrixUserInteractiveAuth(args->context, args->matrixArgs->db, request);
+        response = MatrixUserInteractiveAuth(args->context,
+            args->matrixArgs->db, request);
+
         if (response)
         {
             goto finish;
         }
+
+        val = HashMapGet(request, "username");
+        if (!val)
+        {
+            HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
+            response = MatrixErrorCreate(M_MISSING_PARAM);
+            goto finish;
+        }
+
+        if (JsonValueType(val) != JSON_STRING)
+        {
+            HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
+            response = MatrixErrorCreate(M_BAD_JSON);
+            goto finish;
+        }
+
+        username = JsonValueAsString(val);
+
+        val = HashMapGet(request, "password");
+        if (!val)
+        {
+            HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
+            response = MatrixErrorCreate(M_MISSING_PARAM);
+            goto finish;
+        }
+
+        if (JsonValueType(val) != JSON_STRING)
+        {
+            HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
+            response = MatrixErrorCreate(M_BAD_JSON);
+            goto finish;
+        }
+
+        password = JsonValueAsString(val);
 
         /* TODO: Register new user here */
 
@@ -77,7 +122,7 @@ finish:
         if (HttpRequestMethodGet(args->context) == HTTP_GET &&
             MATRIX_PATH_EQUALS(pathPart, "available"))
         {
-            char *username = HashMapGet(
+            username = HashMapGet(
                         HttpRequestParams(args->context), "username");
 
             if (!username)

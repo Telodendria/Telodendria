@@ -15,6 +15,9 @@ Milestone: v0.1.1
 [ ] Abstract /email/requestToken and /msidsn/requestToken
 
 [ ] User registration
+    [ ] Username validation
+    [ ] Password validation
+    [ ] Password hashing
 
 Milestone: v1.0.0
 -----------------

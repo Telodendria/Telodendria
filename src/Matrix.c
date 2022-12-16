@@ -459,5 +459,7 @@ HashMap *
 MatrixRateLimit(HttpServerContext *context, Db *db)
 {
     /* TODO: Implement rate limiting */
+    (void) context;
+    (void) db;
     return NULL;
 }
