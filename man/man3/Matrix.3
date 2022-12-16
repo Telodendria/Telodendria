@@ -12,6 +12,10 @@
 .Fn MatrixErrorCreate "MatrixError"
 .Ft HashMap *
 .Fn MatrixUserInteractiveAuth "HttpServerContext *" "Db *" "HashMap *"
+.Ft HashMap *
+.Fn MatrixAuthenticate "HttpServerContext *" "Db *"
+.Ft HashMap *
+.Fn MatrixRateLimit "HttpServerContext *" "Db *"
 .Sh DESCRIPTION
 .Nm
 provides some helper functions that bind to the
@@ -87,17 +91,29 @@ convenient abstraction. Currently, it only implements a single-stage
 "m.login.dummy" auth, so it's more of a formality than anything else,
 but in the future, this function may support more authentication
 flows.
+.Pp
+.Fn MatrixAuthenticate
+checks the request for a valid access token, which indicates that a
+user is authenticated.
+.Pp
+.Fn MatrixRateLimit
+determines whether or not the request should be rate limited. It is
+expected that this will occur before most, if not all of the caller's
+logic.
 .Sh RETURN VALUES
 .Pp
 .Fn MatrixErrorCreate
 returns a JSON object that represents the given error code. It can be
 immediately returned as the HTTP response body, or modified as needed.
 .Pp
-.Fn MatrixUserInteractiveAuth
-returns NULL when the auth is successful. That is, if it returns NULL,
-then the caller can proceed assuming that the client has done all the
-right things to authenticate itself. If this function does not return
-NULL, then the returned JSON object should be passed along to the
+.Fn MatrixUserInteractiveAuth ,
+.Fn MatrixAuthenticate ,
+and
+.Fn MatrixRateLimit
+all return NULL when they are successful. That is, if these functions
+return NULL, then the caller can proceed assuming that all is well
+and no further action needs to be taken. If these functions do not
+return NULL, then the returned JSON object should be passed along to the
 client immediately without continuing.
 .Sh SEE ALSO
 .Xr HttpServer 3 ,
