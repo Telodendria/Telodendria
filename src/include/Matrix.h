@@ -83,4 +83,10 @@ extern HashMap *
 extern HashMap *
  MatrixUserInteractiveAuth(HttpServerContext *, Db *, HashMap *);
 
+extern HashMap *
+ MatrixAuthenticate(HttpServerContext *, Db *);
+
+extern HashMap *
+ MatrixRateLimit(HttpServerContext *, Db *);
+
 #endif

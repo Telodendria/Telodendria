@@ -25,6 +25,7 @@
 #include <Matrix.h>
 
 #include <string.h>
+#include <ctype.h>
 
 #include <Memory.h>
 #include <HttpServer.h>
@@ -402,5 +403,61 @@ MatrixUserInteractiveAuth(HttpServerContext * context, Db * db,
     DbUnlock(db, ref);
     DbDelete(db, 2, "user_interactive", sessionStr);
 
-    return NULL; /* All good, auth successful */
+    return NULL;                   /* All good, auth successful */
+}
+
+HashMap *
+MatrixAuthenticate(HttpServerContext * context, Db * db)
+{
+    HashMap *params;
+    char *token;
+
+    (void) db;                     /* Silence warning about unused var;
+                                    * we'll use it eventually. */
+
+    params = HttpRequestHeaders(context);
+    token = HashMapGet(params, "authorization");
+
+    if (token)
+    {
+        /* If the header was provided but it's not given correctly,
+         * that's an error */
+        if (strncmp(token, "Bearer ", 7) != 0)
+        {
+            HttpResponseStatus(context, HTTP_UNAUTHORIZED);
+            return MatrixErrorCreate(M_MISSING_TOKEN);
+        }
+
+        /* Seek past "Bearer" */
+        token += 8;
+
+        /* Seek past any spaces between "Bearer" and the token */
+        while (*token && isspace(*token))
+        {
+            token++;
+        }
+    }
+    else
+    {
+        /* Header was not provided, we must check for ?access_token */
+        params = HttpRequestParams(context);
+        token = HashMapGet(params, "access_token");
+
+        if (!token)
+        {
+            HttpResponseStatus(context, HTTP_UNAUTHORIZED);
+            return MatrixErrorCreate(M_MISSING_TOKEN);
+        }
+    }
+
+    /* TODO: Check that "token" is actually valid */
+
+    return NULL;
+}
+
+HashMap *
+MatrixRateLimit(HttpServerContext *context, Db *db)
+{
+    /* TODO: Implement rate limiting */
+    return NULL;
 }
