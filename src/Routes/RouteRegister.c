@@ -71,7 +71,7 @@ ROUTE_IMPL(RouteRegister, args)
         }
 
         response = MatrixUserInteractiveAuth(args->context,
-            args->matrixArgs->db, request);
+                                       args->matrixArgs->db, request);
 
         if (response)
         {
@@ -89,21 +89,16 @@ ROUTE_IMPL(RouteRegister, args)
         }
 
         val = HashMapGet(request, "username");
-        if (!val)
+        if (val)
         {
-            HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-            response = MatrixErrorCreate(M_MISSING_PARAM);
-            goto finish;
+            if (JsonValueType(val) != JSON_STRING)
+            {
+                HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
+                response = MatrixErrorCreate(M_BAD_JSON);
+                goto finish;
+            }
+            username = JsonValueAsString(val);
         }
-
-        if (JsonValueType(val) != JSON_STRING)
-        {
-            HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-            response = MatrixErrorCreate(M_BAD_JSON);
-            goto finish;
-        }
-
-        username = JsonValueAsString(val);
 
         val = HashMapGet(request, "password");
         if (!val)
@@ -177,12 +172,12 @@ ROUTE_IMPL(RouteRegister, args)
         /* TODO: Register new user here */
 
         /* These values are already set */
-        (void) username;
         (void) password;
         (void) refreshToken;
         (void) inhibitLogin;
 
         /* These may be NULL */
+        (void) username;
         (void) deviceId;
         (void) initialDeviceDisplayName;
 
