@@ -39,6 +39,8 @@ ROUTE_IMPL(RouteRegister, args)
 
     JsonValue *val;
 
+    char *kind;
+
     char *username = NULL;
     char *password = NULL;
     char *initialDeviceDisplayName = NULL;
@@ -76,6 +78,16 @@ ROUTE_IMPL(RouteRegister, args)
             goto finish;
         }
 
+        kind = HashMapGet(HttpRequestParams(args->context), "kind");
+
+        /* We don't support guest accounts yet */
+        if (kind && strcmp(kind, "user") != 0)
+        {
+            HttpResponseStatus(args->context, HTTP_FORBIDDEN);
+            response = MatrixErrorCreate(M_INVALID_PARAM);
+            goto finish;
+        }
+
         val = HashMapGet(request, "username");
         if (!val)
         {
@@ -110,7 +122,69 @@ ROUTE_IMPL(RouteRegister, args)
 
         password = JsonValueAsString(val);
 
+        val = HashMapGet(request, "device_id");
+        if (val)
+        {
+            if (JsonValueType(val) != JSON_STRING)
+            {
+                HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
+                response = MatrixErrorCreate(M_BAD_JSON);
+                goto finish;
+            }
+
+            deviceId = JsonValueAsString(val);
+        }
+
+        val = HashMapGet(request, "inhibit_login");
+        if (val)
+        {
+            if (JsonValueType(val) != JSON_BOOLEAN)
+            {
+                HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
+                response = MatrixErrorCreate(M_BAD_JSON);
+                goto finish;
+            }
+
+            inhibitLogin = JsonValueAsBoolean(val);
+        }
+
+        val = HashMapGet(request, "initial_device_display_name");
+        if (val)
+        {
+            if (JsonValueType(val) != JSON_STRING)
+            {
+                HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
+                response = MatrixErrorCreate(M_BAD_JSON);
+                goto finish;
+            }
+
+            initialDeviceDisplayName = JsonValueAsString(val);
+        }
+
+        val = HashMapGet(request, "refresh_token");
+        if (val)
+        {
+            if (JsonValueType(val) != JSON_BOOLEAN)
+            {
+                HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
+                response = MatrixErrorCreate(M_BAD_JSON);
+                goto finish;
+            }
+
+            refreshToken = JsonValueAsBoolean(val);
+        }
+
         /* TODO: Register new user here */
+
+        /* These values are already set */
+        (void) username;
+        (void) password;
+        (void) refreshToken;
+        (void) inhibitLogin;
+
+        /* These may be NULL */
+        (void) deviceId;
+        (void) initialDeviceDisplayName;
 
 finish:
         JsonFree(request);
