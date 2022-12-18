@@ -8,16 +8,16 @@ Key:
 [~] In Progress
 [!] Won't Fix
 
-Milestone: v0.1.1
+Milestone: v0.2.0
 -----------------
 
 [x] Abstract user-interactive authentication
 [ ] Abstract /email/requestToken and /msidsn/requestToken
 
-[ ] User registration
-    [ ] Username validation
-    [ ] Password validation
+[~] User registration
+    [x] Username validation
     [ ] Password hashing
+    [ ] User API
 
 Milestone: v1.0.0
 -----------------
