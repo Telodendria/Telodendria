@@ -1,4 +1,4 @@
-.Dd $Mdocdate: December 16 2022 $
+.Dd $Mdocdate: December 18 2022 $
 .Dt MATRIX 3
 .Os Telodendria Project
 .Sh NAME
@@ -16,6 +16,10 @@
 .Fn MatrixAuthenticate "HttpServerContext *" "Db *"
 .Ft HashMap *
 .Fn MatrixRateLimit "HttpServerContext *" "Db *"
+.Ft int
+.Fn MatrixUserValidate "char *" "char *"
+.Ft int
+.Fn MatrixHistoricalUserValidate "char *" "char *"
 .Sh DESCRIPTION
 .Nm
 provides some helper functions that bind to the
@@ -100,6 +104,18 @@ user is authenticated.
 determines whether or not the request should be rate limited. It is
 expected that this will occur before most, if not all of the caller's
 logic.
+.Pp
+.Fn MatrixUserValidate
+and
+.Fn MatrixHistoricalUserValidate
+take a Matrix ID local part and a domain name, in that order, and
+check to see if it is valid according to the specification.
+.Fn MatrixUserValidate
+checks for a strictly spec-compliant user ID, but the specification
+also requires historical usernames which do not meet the requirements
+of the latest speck to also be supported, so
+.Fn MatrixHistoricalUserValidate
+can be used in cases where historical usernames may be dealt with.
 .Sh RETURN VALUES
 .Pp
 .Fn MatrixErrorCreate
@@ -115,6 +131,12 @@ return NULL, then the caller can proceed assuming that all is well
 and no further action needs to be taken. If these functions do not
 return NULL, then the returned JSON object should be passed along to the
 client immediately without continuing.
+.Pp
+.Fn MatrixUserValidate
+and
+.Fn MatrixHistoricalUserValidate
+return a boolean value, where 0 indicates the provided ID is
+not valid, and non-zero values indicate the provided ID is valid.
 .Sh SEE ALSO
 .Xr HttpServer 3 ,
 .Xr Log 3 ,

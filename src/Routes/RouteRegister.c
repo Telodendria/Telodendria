@@ -70,6 +70,25 @@ ROUTE_IMPL(RouteRegister, args)
             goto finish;
         }
 
+        val = HashMapGet(request, "username");
+        if (val)
+        {
+            if (JsonValueType(val) != JSON_STRING)
+            {
+                HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
+                response = MatrixErrorCreate(M_BAD_JSON);
+                goto finish;
+            }
+            username = JsonValueAsString(val);
+
+            if (!MatrixUserValidate(username, args->matrixArgs->config->serverName))
+            {
+                HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
+                response = MatrixErrorCreate(M_INVALID_USERNAME);
+                goto finish;
+            }
+        }
+
         response = MatrixUserInteractiveAuth(args->context,
                                        args->matrixArgs->db, request);
 
@@ -88,17 +107,6 @@ ROUTE_IMPL(RouteRegister, args)
             goto finish;
         }
 
-        val = HashMapGet(request, "username");
-        if (val)
-        {
-            if (JsonValueType(val) != JSON_STRING)
-            {
-                HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-                response = MatrixErrorCreate(M_BAD_JSON);
-                goto finish;
-            }
-            username = JsonValueAsString(val);
-        }
 
         val = HashMapGet(request, "password");
         if (!val)
