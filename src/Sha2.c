@@ -65,8 +65,8 @@ typedef unsigned int uint32_t;
 #define WW(i) (w[i] = w[i - 16] + S0(w[i - 15]) + w[i - 7] + S1(w[i - 2]))
 
 #define ROUND(a, b, c, d, e, f, g, h, k, w) { \
-    unsigned long tmp0 = h + T0(e) + CH(e, f, g) + k + w; \
-    unsigned long tmp1 = T1(a) + MAJ(a, b, c); \
+    uint32_t tmp0 = h + T0(e) + CH(e, f, g) + k + w; \
+    uint32_t tmp1 = T1(a) + MAJ(a, b, c); \
     h = tmp0 + tmp1; \
     d += tmp0; \
 }
@@ -223,8 +223,8 @@ Sha256(char *str)
     fill[0] = 0x80;
 
     fillLen = (context.bufLen < 56) ? 56 - context.bufLen : 120 - context.bufLen;
-    hiLen = (unsigned long) (context.length >> 29);
-    loLen = (unsigned long) (context.length << 3);
+    hiLen = (uint32_t) (context.length >> 29);
+    loLen = (uint32_t) (context.length << 3);
 
     PUT_UINT32(&buf[0], hiLen);
     PUT_UINT32(&buf[4], loLen);
