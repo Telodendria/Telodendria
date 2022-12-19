@@ -432,7 +432,7 @@ MatrixAuthenticate(HttpServerContext * context, Db * db)
         token += 8;
 
         /* Seek past any spaces between "Bearer" and the token */
-        while (*token && isspace(*token))
+        while (*token && isspace((unsigned char) *token))
         {
             token++;
         }
