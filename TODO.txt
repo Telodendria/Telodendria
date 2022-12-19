@@ -16,7 +16,7 @@ Milestone: v0.2.0
 
 [~] User registration
     [x] Username validation
-    [ ] Password hashing
+    [x] Password hashing
     [ ] User API
 
 Milestone: v1.0.0

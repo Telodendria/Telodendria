@@ -1,0 +1,27 @@
+.Dd $Mdocdate: December 19 2022 $
+.Dt SHA2 3
+.Os Telodendria Project
+.Sh NAME
+.Nm Sha2
+.Nd A simple implementation of the SHA2 hashing functions.
+.Sh SYNOPSIS
+.In Sha2.h
+.Ft char *
+.Fn Sha256 "char *"
+.Sh DESCRIPTION
+.Pp
+This API defines simple functions for computing SHA2 hashes. At the
+moment, it only defines
+.Fn Sha256 ,
+which computes the SHA-256 hash of the given C string. It is not trivial
+to implement SHA-512 in ANSI C due to the lack of a 64-bit integer
+type, so that hash function has been omitted.
+.Sh RETURN VALUES
+.Pp
+.Fn Sha256
+returns a string allocated on the heap using the Memory API, or NULL
+if there was an error allocating memory for it. The returned string
+should be freed when it is no longer needed.
+.Sh SEE ALSO
+.Xr Memory 3 ,
+.Xr Base64 3
