@@ -187,7 +187,7 @@ Sha256(char *str)
     unsigned char out[32];
     char *outStr;
 
-    char fill[64];
+    unsigned char fill[64];
     uint32_t fillLen;
     unsigned char buf[8];
     uint32_t hiLen;
@@ -229,7 +229,7 @@ Sha256(char *str)
     PUT_UINT32(&buf[0], hiLen);
     PUT_UINT32(&buf[4], loLen);
 
-    Sha256Process(&context, (unsigned char *) fill, fillLen);
+    Sha256Process(&context, fill, fillLen);
     Sha256Process(&context, buf, 8);
 
     for (i = 0; i < 8; i++)
