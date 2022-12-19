@@ -456,7 +456,7 @@ MatrixAuthenticate(HttpServerContext * context, Db * db)
 }
 
 HashMap *
-MatrixRateLimit(HttpServerContext *context, Db *db)
+MatrixRateLimit(HttpServerContext * context, Db * db)
 {
     /* TODO: Implement rate limiting */
     (void) context;
@@ -480,8 +480,8 @@ MatrixUserValidate(char *localpart, char *domain)
         }
 
         if (!((c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') ||
-            (c == '.') || (c == '_') || (c == '=') || (c == '-') ||
-            (c == '/')))
+              (c == '.') || (c == '_') || (c == '=') || (c == '-') ||
+              (c == '/')))
         {
             return 0;
         }
