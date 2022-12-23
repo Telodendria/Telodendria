@@ -41,6 +41,14 @@
 #include <Matrix.h>
 #include <Db.h>
 
+#ifdef __OpenBSD__
+extern int
+pledge(const char *, const char *);
+
+extern int
+unveil(const char *, const char *);
+#endif
+
 static void
 TelodendriaMemoryHook(MemoryAction a, MemoryInfo * i, void *args)
 {
