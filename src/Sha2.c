@@ -29,12 +29,10 @@
 
 #include <limits.h>
 
-#if (defined(LONG_BIT) && LONG_BIT == 32) || \
-	(defined(INT_WIDTH) && INT_WIDTH == 32)
+#if defined(LONG_BIT) && LONG_BIT == 32
 typedef unsigned long uint32_t;
 
-#elif (defined(WORD_BIT) && WORD_BIT == 32) || \
-	(defined(LONG_WIDTH) && LONG_WIDTH == 32)
+#elif defined(WORD_BIT) && WORD_BIT == 32
 typedef unsigned int uint32_t;
 
 #else
