@@ -40,6 +40,7 @@
 #include <HttpServer.h>
 #include <Matrix.h>
 #include <Db.h>
+#include <Cron.h>
 
 static void
 TelodendriaMemoryHook(MemoryAction a, MemoryInfo * i, void *args)
@@ -267,6 +268,7 @@ main(int argc, char **argv)
     struct sigaction sigAction;
 
     MatrixHttpHandlerArgs matrixArgs;
+    Cron *cron = NULL;
 
     memset(&matrixArgs, 0, sizeof(matrixArgs));
 
@@ -595,6 +597,21 @@ main(int argc, char **argv)
         goto finish;
     }
 
+    cron = CronCreate(60 * 1000);  /* 1-minute tick */
+    if (!cron)
+    {
+        Log(lc, LOG_ERR, "Unable to set up job scheduler.");
+        exit = EXIT_FAILURE;
+        goto finish;
+    }
+
+    Log(lc, LOG_DEBUG, "Registering jobs...");
+
+    /* TODO: Register jobs here */
+
+    Log(lc, LOG_NOTICE, "Starting job scheduler...");
+    CronStart(cron);
+
     Log(lc, LOG_NOTICE, "Starting server...");
 
     if (!HttpServerStart(httpServer))
@@ -627,6 +644,13 @@ finish:
     {
         HttpServerFree(httpServer);
         Log(lc, LOG_DEBUG, "Freed HTTP Server.");
+    }
+
+    if (cron)
+    {
+        CronStop(cron);
+        CronFree(cron);
+        Log(lc, LOG_DEBUG, "Stopped and freed job scheduler.");
     }
 
     /*
