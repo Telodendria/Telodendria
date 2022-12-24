@@ -1,4 +1,4 @@
-.Dd $Mdocdate: December 18 2022 $
+.Dd $Mdocdate: December 24 2022 $
 .Dt TELODENDRIA-CHANGELOG 7
 .Os Telodendria Project
 .Sh NAME
@@ -38,7 +38,7 @@ New:
 Added a basic form of the user interactive authentication API,
 which can be used by any endpoints that the spec says require
 it. Currently, it only implements a single dummy login flow,
-so it's more of a fomality than anything else, but more login
+so it's more of a formality than anything else, but more login
 flows can easily be added in the future.
 .It
 Added a way to safely delete objects from the database.
@@ -52,6 +52,12 @@ be used extensively for generating session tokens, device
 IDs, access tokens, and more. This generator is seeded by
 the current timestamp and the thread ID, so it should be
 fairly random.
+.It
+Added a SHA-256 hash function, which at present is used
+to hash passwords.
+.It
+Added a basic job scheduler to execute periodic jobs, such
+as expiring tokens and cleaning up temporary files.
 .El
 .Pp
 Changes:
