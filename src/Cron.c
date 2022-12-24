@@ -78,10 +78,12 @@ CronThread(void *args)
     while (!cron->stop)
     {
         size_t i;
-        unsigned long ts = UtilServerTs();
+        unsigned long ts; /* tick start */
+        unsigned long te; /* tick end */
 
         pthread_mutex_lock(&cron->lock);
 
+        ts = UtilServerTs();
         for (i = 0; i < ArraySize(cron->jobs); i++)
         {
             Job *job = ArrayGet(cron->jobs, i);
@@ -98,9 +100,15 @@ CronThread(void *args)
                 Free(job);
             }
         }
+        te = UtilServerTs();
 
         pthread_mutex_unlock(&cron->lock);
-        UtilSleepMillis(cron->tick - (UtilServerTs() - ts));
+
+        /* Only sleep if the jobs didn't overrun the tick */
+        if (cron->tick > (te - ts))
+        {
+            UtilSleepMillis(cron->tick - (te - ts));
+        }
     }
 
     return NULL;

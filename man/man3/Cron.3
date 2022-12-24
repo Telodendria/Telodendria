@@ -1,0 +1,96 @@
+.Dd $Mdocdate: December 24 2022 $
+.Dt CRON 3
+.Os Telodendria Project
+.Sh NAME
+.Nm Cron
+.Nd Basic periodic job scheduler.
+.Sh SYNOPSIS
+.In Cron.h
+.Ft Cron *
+.Fn CronCreate "unsigned long"
+.Ft void
+.Fn CronOnce "Cron *" "void (*) (void *)" "void *"
+.Ft void
+.Fn CronEvery "Cron *" "unsigned long" "void (*) (void *)" "void *"
+.Ft void
+.Fn CronStart "Cron *"
+.Ft void
+.Fn CronStop "Cron *"
+.Ft void
+.Fn CronFree "Cron *"
+.Sh DESCRIPTION
+.Pp
+.Nm
+is an extremely basic job scheduler. So basic, in fact,
+that it runs all jobs on a single thread, which means that it
+is intended for short-lived jobs. In the future,
+.Nm
+might be extended to support a one-thread-per-job model, but
+for now, jobs should consider that they are sharing their
+thread, so they should not be long-running jobs.
+.Pp
+.Nm
+works by "ticking" at an interval defined by the caller of
+.Fn CronCreate .
+At each tick, all the jobs are queried, and if they are due
+to run again, their function is executed. As much as possible,
+.Nm
+tries to tick at constant intervals, however it is possible that
+a job may overrun the tick duration. If this happens,
+.Nm
+ticks again immediately after all the jobs for the previous tick
+have completed. This is in an effort to compensate for the lost
+time, however it is important to note that when jobs overrun the
+tick interval, the interval is pushed back. In this way,
+.Nm
+is best suited for scheduling jobs that should happen
+"approximately" every so often; it is not a real-time scheduler
+by any means. 
+.Pp
+.Fn CronCreate
+creates a new
+.Nm
+object that all the other functions use. Like most of the other
+APIs in this project, it must be freed with
+.Fn CronFree
+when it is no longer needed.
+.Pp
+Jobs can be scheduled with 
+.Fn CronOnce
+and
+.Fn CronEvery .
+.Fn CronOnce
+schedules a one-off job to be executed only at the next tick, and
+then discarded. This is useful for scheduling tasks that only have
+to happen once, or very infrequently depending on conditions other
+than the current time, but don't have to happen immediately. The
+caller simply indicates that it wishes for the task to execute at
+some time in the future. How far into the future this practically
+ends up being is determined by how long it takes other jobs to
+finish, and what the tick interval is.
+.Pp
+.Fn CronEvery
+schedules a repetitive task to be executed at approximately the
+given interval. As stated above, this is a fuzzy interval; depending
+on the jobs being run and the tick interval, tasks may not happen
+at exactly the scheduled time, but they will eventually happen.
+.Pp
+.Fn CronStart
+and
+.Fn CronStop
+start and stop the ticking, respectively.
+.Fn CronFree
+discards all the job references and frees all memory associated
+with the given instance of the
+.Nm
+instance.
+.Sh RETURN VALUES
+.Pp
+.Fn CronCreate
+returns a reference to a 
+.Nm ,
+or NULL if it was unable to allocate memory for it.
+.Pp
+The other functions in this header don't return anything. They
+are assumed to usually work, unless their input is obviously
+wrong.
