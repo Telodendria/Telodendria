@@ -26,14 +26,16 @@
 
 typedef struct Cron Cron;
 
+typedef void (JobFunc) (void *);
+
 extern Cron *
  CronCreate(unsigned long);
 
 extern void
- CronOnce(Cron *, void (*) (void *), void *);
+ CronOnce(Cron *, JobFunc *, void *);
 
 extern void
- CronEvery(Cron *, unsigned long, void (*) (void *), void *);
+ CronEvery(Cron *, unsigned long, JobFunc *, void *);
 
 extern void
  CronStart(Cron *);

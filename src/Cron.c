@@ -42,12 +42,12 @@ typedef struct Job
 {
     unsigned long interval;
     unsigned long lastExec;
-    void (*func) (void *);
+    JobFunc *func;
     void *args;
 } Job;
 
 static Job *
- JobCreate(long interval, void (*func) (void *), void *args)
+ JobCreate(long interval, JobFunc *func, void *args)
 {
     Job *job;
 
@@ -84,6 +84,7 @@ CronThread(void *args)
         pthread_mutex_lock(&cron->lock);
 
         ts = UtilServerTs();
+
         for (i = 0; i < ArraySize(cron->jobs); i++)
         {
             Job *job = ArrayGet(cron->jobs, i);
@@ -107,7 +108,22 @@ CronThread(void *args)
         /* Only sleep if the jobs didn't overrun the tick */
         if (cron->tick > (te - ts))
         {
-            UtilSleepMillis(cron->tick - (te - ts));
+            const unsigned long microTick = 100;
+            unsigned long remainingTick = cron->tick - (te - ts);
+
+            /* Only sleep for microTick ms at a time because if the
+             * job scheduler is supposed to stop before the tick is up,
+             * we don't want to be stuck in a long sleep */
+            while (remainingTick >= microTick && !cron->stop)
+            {
+                UtilSleepMillis(microTick);
+                remainingTick -= microTick;
+            }
+
+            if (remainingTick && !cron->stop)
+            {
+                UtilSleepMillis(remainingTick);
+            }
         }
     }
 
@@ -132,6 +148,7 @@ CronCreate(unsigned long tick)
     }
 
     cron->tick = tick;
+    cron->stop = 1;
 
     pthread_mutex_init(&cron->lock, NULL);
 
@@ -139,7 +156,7 @@ CronCreate(unsigned long tick)
 }
 
 void
- CronOnce(Cron * cron, void (*func) (void *), void *args)
+ CronOnce(Cron * cron, JobFunc *func, void *args)
 {
     Job *job;
 
@@ -160,7 +177,7 @@ void
 }
 
 void
- CronEvery(Cron * cron, unsigned long interval, void (*func) (void *), void *args)
+ CronEvery(Cron * cron, unsigned long interval, JobFunc *func, void *args)
 {
     Job *job;
 

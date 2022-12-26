@@ -26,10 +26,10 @@
 
 #include <HashMap.h>
 #include <HttpServer.h>
-#include <Db.h>
+#include <Matrix.h>
 
 extern void
- UserInteractiveAuthCleanup(Db *);
+ UserInteractiveAuthCleanup(MatrixHttpHandlerArgs *);
 
 extern HashMap *
  UserInteractiveAuth(HttpServerContext *, Db *, HashMap *);

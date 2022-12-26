@@ -135,7 +135,7 @@ UserInteractiveAuth(HttpServerContext * context, Db * db,
 }
 
 void
-UserInteractiveAuthCleanup(Db * db)
+UserInteractiveAuthCleanup(MatrixHttpHandlerArgs *args)
 {
-
+    Log(args->lc, LOG_DEBUG, "Purging old user interactive auth sessions...");
 }

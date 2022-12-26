@@ -41,6 +41,7 @@
 #include <Matrix.h>
 #include <Db.h>
 #include <Cron.h>
+#include <UserInteractiveAuth.h>
 
 static void
 TelodendriaMemoryHook(MemoryAction a, MemoryInfo * i, void *args)
@@ -607,7 +608,7 @@ main(int argc, char **argv)
 
     Log(lc, LOG_DEBUG, "Registering jobs...");
 
-    /* TODO: Register jobs here */
+    CronEvery(cron, 30 * 60 * 1000, (JobFunc *) UserInteractiveAuthCleanup, &matrixArgs);
 
     Log(lc, LOG_NOTICE, "Starting job scheduler...");
     CronStart(cron);
