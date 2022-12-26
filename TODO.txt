@@ -14,6 +14,7 @@ Milestone: v0.2.0
 [x] Abstract user-interactive authentication
 [ ] Abstract /email/requestToken and /msidsn/requestToken
 
+[ ] Document UserInteractiveAuth (move docs from Matrix)
 [~] User registration
     [x] Username validation
     [x] Password hashing

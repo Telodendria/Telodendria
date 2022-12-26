@@ -29,6 +29,7 @@
 #include <HashMap.h>
 #include <Util.h>
 #include <Memory.h>
+#include <UserInteractiveAuth.h>
 
 ROUTE_IMPL(RouteRegister, args)
 {
@@ -79,7 +80,7 @@ ROUTE_IMPL(RouteRegister, args)
                 response = MatrixErrorCreate(M_BAD_JSON);
                 goto finish;
             }
-            username = JsonValueAsString(val);
+            username = UtilStringDuplicate(JsonValueAsString(val));
 
             if (!MatrixUserValidate(username, args->matrixArgs->config->serverName))
             {
@@ -87,9 +88,12 @@ ROUTE_IMPL(RouteRegister, args)
                 response = MatrixErrorCreate(M_INVALID_USERNAME);
                 goto finish;
             }
+
+            /* TODO: Check if username exists and throw error if it
+             * does */
         }
 
-        response = MatrixUserInteractiveAuth(args->context,
+        response = UserInteractiveAuth(args->context,
                                        args->matrixArgs->db, request);
 
         if (response)
@@ -123,7 +127,7 @@ ROUTE_IMPL(RouteRegister, args)
             goto finish;
         }
 
-        password = JsonValueAsString(val);
+        password = UtilStringDuplicate(JsonValueAsString(val));
 
         val = HashMapGet(request, "device_id");
         if (val)
@@ -135,7 +139,7 @@ ROUTE_IMPL(RouteRegister, args)
                 goto finish;
             }
 
-            deviceId = JsonValueAsString(val);
+            deviceId = UtilStringDuplicate(JsonValueAsString(val));
         }
 
         val = HashMapGet(request, "inhibit_login");
@@ -161,7 +165,7 @@ ROUTE_IMPL(RouteRegister, args)
                 goto finish;
             }
 
-            initialDeviceDisplayName = JsonValueAsString(val);
+            initialDeviceDisplayName = UtilStringDuplicate(JsonValueAsString(val));
         }
 
         val = HashMapGet(request, "refresh_token");
@@ -177,17 +181,27 @@ ROUTE_IMPL(RouteRegister, args)
             refreshToken = JsonValueAsBoolean(val);
         }
 
-        /* TODO: Register new user here */
+        if (!username)
+        {
+            username = UtilRandomString(16);
+        }
+
+        if (!inhibitLogin && !deviceId)
+        {
+            deviceId = UtilRandomString(10);
+        }
 
         /* These values are already set */
         (void) password;
         (void) refreshToken;
         (void) inhibitLogin;
+        (void) username;
 
         /* These may be NULL */
-        (void) username;
-        (void) deviceId;
         (void) initialDeviceDisplayName;
+        (void) deviceId;
+
+        /* TODO: Register new user here */
 
 finish:
         JsonFree(request);

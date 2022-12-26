@@ -78,8 +78,8 @@ CronThread(void *args)
     while (!cron->stop)
     {
         size_t i;
-        unsigned long ts; /* tick start */
-        unsigned long te; /* tick end */
+        unsigned long ts;          /* tick start */
+        unsigned long te;          /* tick end */
 
         pthread_mutex_lock(&cron->lock);
 

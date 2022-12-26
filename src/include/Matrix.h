@@ -81,9 +81,6 @@ extern HashMap *
  MatrixErrorCreate(MatrixError);
 
 extern HashMap *
- MatrixUserInteractiveAuth(HttpServerContext *, Db *, HashMap *);
-
-extern HashMap *
  MatrixAuthenticate(HttpServerContext *, Db *);
 
 extern HashMap *
