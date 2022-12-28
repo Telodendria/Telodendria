@@ -662,6 +662,8 @@ DbDelete(Db * db, size_t nArgs,...)
 
     pthread_mutex_unlock(&db->lock);
 
+    ArrayFree(args);
+    Free(file);
     return ret;
 }
 

@@ -47,7 +47,7 @@ typedef struct Job
 } Job;
 
 static Job *
- JobCreate(long interval, JobFunc *func, void *args)
+JobCreate(long interval, JobFunc * func, void *args)
 {
     Job *job;
 
@@ -111,9 +111,9 @@ CronThread(void *args)
             const unsigned long microTick = 100;
             unsigned long remainingTick = cron->tick - (te - ts);
 
-            /* Only sleep for microTick ms at a time because if the
-             * job scheduler is supposed to stop before the tick is up,
-             * we don't want to be stuck in a long sleep */
+            /* Only sleep for microTick ms at a time because if the job
+             * scheduler is supposed to stop before the tick is up, we
+             * don't want to be stuck in a long sleep */
             while (remainingTick >= microTick && !cron->stop)
             {
                 UtilSleepMillis(microTick);
@@ -156,7 +156,7 @@ CronCreate(unsigned long tick)
 }
 
 void
- CronOnce(Cron * cron, JobFunc *func, void *args)
+CronOnce(Cron * cron, JobFunc * func, void *args)
 {
     Job *job;
 
@@ -177,7 +177,7 @@ void
 }
 
 void
- CronEvery(Cron * cron, unsigned long interval, JobFunc *func, void *args)
+CronEvery(Cron * cron, unsigned long interval, JobFunc * func, void *args)
 {
     Job *job;
 
