@@ -70,19 +70,21 @@ UserInteractiveAuth(HttpServerContext * context, Db * db,
         HashMap *persist;
         char *session = UtilRandomString(24);
 
-        ref = DbCreate(db, 2, "user_interactive", session);
+        ref = DbLock(db, 1, "user_interactive");
+        if (!ref)
+        {
+            ref = DbCreate(db, 1, "user_interactive");
+        }
+
         persist = DbJson(ref);
-
-        HashMapSet(persist, "created",
-                   JsonValueInteger(UtilServerTs()));
-        HashMapSet(persist, "completed", JsonValueBoolean(0));
-
+        HashMapSet(persist, session, JsonValueNull());
         DbUnlock(db, ref);
 
         HttpResponseStatus(context, HTTP_UNAUTHORIZED);
         response = BuildDummyFlow();
 
-        HashMapSet(response, "session", JsonValueString(session));
+        HashMapSet(response, "session",
+            JsonValueString(UtilStringDuplicate(session)));
 
         return response;
     }
@@ -118,10 +120,10 @@ UserInteractiveAuth(HttpServerContext * context, Db * db,
         return MatrixErrorCreate(M_INVALID_PARAM);
     }
 
-    /* Check to see if session exists */
-    ref = DbLock(db, 2, "user_interactive", sessionStr);
+    ref = DbLock(db, 1, "user_interactive");
 
-    if (!ref)
+    /* Check to see if session exists */
+    if (!ref || !HashMapGet(DbJson(ref), sessionStr))
     {
         HttpResponseStatus(context, HTTP_BAD_REQUEST);
         return MatrixErrorCreate(M_UNKNOWN);
@@ -129,13 +131,16 @@ UserInteractiveAuth(HttpServerContext * context, Db * db,
 
     /* We only need to know that it exists. */
     DbUnlock(db, ref);
-    DbDelete(db, 2, "user_interactive", sessionStr);
 
     return NULL;                   /* All good, auth successful */
 }
 
 void
-UserInteractiveAuthCleanup(MatrixHttpHandlerArgs *args)
+UserInteractiveAuthCleanup(MatrixHttpHandlerArgs * args)
 {
     Log(args->lc, LOG_DEBUG, "Purging old user interactive auth sessions...");
+    if (!DbDelete(args->db, 1, "user_interactive"))
+    {
+        Log(args->lc, LOG_ERR, "Failed to purge user_interactive.");
+    }
 }

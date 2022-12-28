@@ -68,7 +68,8 @@ TelodendriaMemoryHook(MemoryAction a, MemoryInfo * i, void *args)
             break;
     }
 
-    Log(lc, LOG_DEBUG, "%s:%d: %s %lu bytes of memory at %p.",
+    Log(lc, a == MEMORY_BAD_POINTER ? LOG_WARNING : LOG_DEBUG,
+        "%s:%d: %s %lu bytes of memory at %p.",
         MemoryInfoGetFile(i), MemoryInfoGetLine(i),
         action, MemoryInfoGetSize(i),
         MemoryInfoGetPointer(i));
