@@ -58,4 +58,6 @@ extern void MemoryIterate(void (*) (MemoryInfo *, void *), void *);
 
 extern void MemoryHook(void (*) (MemoryAction, MemoryInfo *, void *), void *);
 
+extern void MemoryHexDump(MemoryInfo *, void (*) (size_t, char *, char *, void *), void *);
+
 #endif

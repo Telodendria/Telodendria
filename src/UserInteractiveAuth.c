@@ -84,7 +84,7 @@ UserInteractiveAuth(HttpServerContext * context, Db * db,
         response = BuildDummyFlow();
 
         HashMapSet(response, "session",
-            JsonValueString(UtilStringDuplicate(session)));
+                   JsonValueString(UtilStringDuplicate(session)));
 
         return response;
     }

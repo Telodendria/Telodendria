@@ -25,10 +25,15 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <ctype.h>
 #include <pthread.h>
 
-#ifndef TELODENDRIA_MEMORY_TABLE_CHUNK
-#define TELODENDRIA_MEMORY_TABLE_CHUNK 256
+#ifndef MEMORY_TABLE_CHUNK
+#define MEMORY_TABLE_CHUNK 256
+#endif
+
+#ifndef MEMORY_HEXDUMP_WIDTH
+#define MEMORY_HEXDUMP_WIDTH 16
 #endif
 
 struct MemoryInfo
@@ -60,7 +65,7 @@ MemoryInsert(MemoryInfo * a)
 
     if (!allocations)
     {
-        allocationsSize = TELODENDRIA_MEMORY_TABLE_CHUNK;
+        allocationsSize = MEMORY_TABLE_CHUNK;
         allocations = calloc(allocationsSize, sizeof(void *));
         if (!allocations)
         {
@@ -76,7 +81,7 @@ MemoryInsert(MemoryInfo * a)
         size_t tmpAllocationsSize = allocationsSize;
         MemoryInfo **tmpAllocations;
 
-        allocationsSize += TELODENDRIA_MEMORY_TABLE_CHUNK;
+        allocationsSize += MEMORY_TABLE_CHUNK;
         tmpAllocations = calloc(allocationsSize, sizeof(void *));
 
         if (!tmpAllocations)
@@ -418,4 +423,66 @@ void
     hook = memHook;
     hookArgs = args;
     pthread_mutex_unlock(&lock);
+}
+
+void
+ MemoryHexDump(MemoryInfo * info, void (*printFunc) (size_t, char *, char *, void *), void *args)
+{
+    char hexBuf[(MEMORY_HEXDUMP_WIDTH * 2) + MEMORY_HEXDUMP_WIDTH + 1];
+    char asciiBuf[MEMORY_HEXDUMP_WIDTH + 1];
+    size_t pI = 0;
+    size_t hI = 0;
+    size_t aI = 0;
+    const unsigned char *pc;
+
+    if (!info || !printFunc)
+    {
+        return;
+    }
+
+    pc = MemoryInfoGetPointer(info);
+
+    for (pI = 0; pI < MemoryInfoGetSize(info); pI++)
+    {
+        if (pI > 0 && pI % MEMORY_HEXDUMP_WIDTH == 0)
+        {
+            hexBuf[hI - 1] = '\0';
+            asciiBuf[aI] = '\0';
+
+            printFunc(pI - MEMORY_HEXDUMP_WIDTH, hexBuf, asciiBuf, args);
+
+            sprintf(hexBuf, "%02x ", pc[pI]);
+            hI = 3;
+
+            asciiBuf[0] = isprint(pc[pI]) ? pc[pI] : '.';
+            asciiBuf[1] = '\0';
+            aI = 1;
+        }
+        else
+        {
+            asciiBuf[aI] = isprint(pc[pI]) ? pc[pI] : '.';
+            aI++;
+
+            sprintf(hexBuf + hI, "%02x ", pc[pI]);
+            hI += 3;
+        }
+    }
+
+    while (hI < sizeof(hexBuf) - 2)
+    {
+        hexBuf[hI] = ' ';
+        hI++;
+    }
+
+    while (aI < sizeof(asciiBuf) - 1)
+    {
+        asciiBuf[aI] = ' ';
+        aI++;
+    }
+
+    hexBuf[hI] = '\0';
+    asciiBuf[aI] = '\0';
+
+    printFunc(pI - (pI % MEMORY_HEXDUMP_WIDTH), hexBuf, asciiBuf, args);
+    printFunc(pI, NULL, NULL, args);
 }
