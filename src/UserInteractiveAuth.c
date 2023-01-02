@@ -111,7 +111,7 @@ UserInteractiveAuth(HttpServerContext * context, Db * db,
         return BuildDummyFlow();
     }
 
-    typeStr = JsonValueAsString(session);
+    typeStr = JsonValueAsString(type);
     sessionStr = JsonValueAsString(session);
 
     if (strcmp(typeStr, "m.login.dummy") != 0)
