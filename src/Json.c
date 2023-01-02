@@ -397,7 +397,7 @@ JsonDecodeString(FILE * in)
     size_t len;
     size_t allocated;
     char *str;
-    char c;
+    int c;
     char a[5];
 
     unsigned long utf8;
