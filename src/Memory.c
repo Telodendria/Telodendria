@@ -468,6 +468,9 @@ void
         }
     }
 
+    hexBuf[hI] = '\0';
+    hI--;
+
     while (hI < sizeof(hexBuf) - 2)
     {
         hexBuf[hI] = ' ';
@@ -483,6 +486,8 @@ void
     hexBuf[hI] = '\0';
     asciiBuf[aI] = '\0';
 
-    printFunc(pI - (pI % MEMORY_HEXDUMP_WIDTH), hexBuf, asciiBuf, args);
+    printFunc(pI - ((pI % MEMORY_HEXDUMP_WIDTH) ?
+                  (pI % MEMORY_HEXDUMP_WIDTH) : MEMORY_HEXDUMP_WIDTH),
+              hexBuf, asciiBuf, args);
     printFunc(pI, NULL, NULL, args);
 }
