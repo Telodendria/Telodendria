@@ -9,7 +9,7 @@ Vagrant.configure("2") do |config|
   # * 0.0.0.0/0 ::/0
   config.vm.network "private_network", ip: "172.17.0.101"
   # File watcher which syncs the project directory to /vagrant on the vm
-  config.vm.synced_folder ".", "/vagrant"
+  config.vm.synced_folder "../", "/vagrant"
   config.vm.provision "shell", inline: <<-EOF
     cp /vagrant/contrib/relayd.conf /etc/relayd.conf
     sed -i s/127.0.0.1/0.0.0.0/ /etc/relayd.conf
