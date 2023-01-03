@@ -1,0 +1,34 @@
+Vagrant.configure("2") do |config|
+  config.vm.box = "generic/openbsd7"
+  config.vm.network "forwarded_port", guest: 80, host: 80
+  config.vm.network "forwarded_port", guest: 443, host: 443
+  config.vm.network "forwarded_port", guest: 8008, host: 8008
+  # NOTE: This address is not within the allowed ranges.
+  # To allow this address, simply allow all ranges by specifying
+  # this in /etc/vbox/networks.conf (if you use the Virtualbox provider, or change the configured address):
+  # * 0.0.0.0/0 ::/0
+  config.vm.network "private_network", ip: "172.17.0.101"
+  # File watcher which syncs the project directory to /vagrant on the vm
+  config.vm.synced_folder ".", "/vagrant"
+  config.vm.provision "shell", inline: <<-EOF
+    cp /vagrant/contrib/relayd.conf /etc/relayd.conf
+    sed -i s/127.0.0.1/0.0.0.0/ /etc/relayd.conf
+    mkdir -p -m 0700 /etc/ssl/private
+    openssl req -x509 -newkey rsa:4096 \
+        -days 365 -nodes \
+        -subj '/CN=telodendria' \
+        -keyout /etc/ssl/private/telodendria.key \
+        -out /etc/ssl/telodendria.crt
+    relayd -n
+    rcctl enable relayd
+    rcctl restart relayd
+    cat /vagrant/tools/env.sh >> /home/vagrant/.bash_profile
+    sed -i 's#$(pwd)#/vagrant#' /home/vagrant/.bash_profile
+    sed -i 's#find tools/bin#find /vagrant/tools/bin#' /home/vagrant/.bash_profile
+    mkdir /vagrant/data
+    cp /vagrant/contrib/development.conf /vagrant/contrib/development.conf.bak
+    sed -i 's/"localhost"/"vagrant"/' /vagrant/contrib/development.conf
+    ### If you changed the address in the config above you might want to change it here as well:
+    sed -i s#http://localhost:8008#https://172.17.0.101:443# /vagrant/contrib/development.conf
+  EOF
+end
