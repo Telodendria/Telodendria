@@ -1,4 +1,4 @@
-.Dd $Mdocdate: December 28 2022 $
+.Dd $Mdocdate: January 6 2023 $
 .Dt TELODENDRIA-CHANGELOG 7
 .Os Telodendria Project
 .Sh NAME
@@ -104,6 +104,9 @@ database that contains cached objects.
 .It
 Fixed a memory leak that would occur when deleting database
 objects.
+.It
+Fixed a few non-fatal memory warnings that would show up
+as a result of passing a constant string into certain APIs.
 .El
 .Pp
 Misc:
@@ -121,6 +124,9 @@ files. This makes it easier to release
 versions.
 .It
 Fix whitespace issues in various shell scripts.
+.It
+Fixed the debug log output so that it only shows the file name,
+not the entire file path in the repository.
 .El
 .Sh v0.1.0
 .Pp

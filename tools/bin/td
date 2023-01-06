@@ -23,7 +23,6 @@
 : "${CVS_TAG:=Telodendria-$(echo $TELODENDRIA_VERSION | sed 's/\./_/g')}"
 
 : "${DEFINES:=-D_DEFAULT_SOURCE -DTELODENDRIA_VERSION=\"$TELODENDRIA_VERSION\"}"
-: "${INCLUDES:=-Isrc/include}"
 
 : "${CC:=cc}"
 : "${CFLAGS:=-Wall -Wextra -pedantic -ansi -O3}"
@@ -84,28 +83,29 @@ setsubst() {
 # Build the source code, and generate  the 'build/telodendria'
 # binary.
 recipe_build() {
-    mkdir -p build
+    cd src
+    mkdir -p ../build
 
     do_rebuild=0
     objs=""
-    for src in $(find src -name '*.c'); do
-        obj=$(echo "$src" | sed -e 's/^src/build/' -e 's/\.c$/\.o/')
+    for src in $(find . -name '*.c' | cut -d '/' -f 2-); do
+        obj=$(echo "../build/$src" | sed -e 's/\.c$/\.o/')
         objs="$objs $obj"
     
         if [ $(mod_time "$src") -ge $(mod_time "$obj") ]; then
             echo "CC $(basename $obj)"
             obj_dir=$(dirname "$obj")
             mkdir -p "$obj_dir"
-            if ! $CC $CFLAGS -c -o "$obj" "$src"; then
+            if ! $CC $CFLAGS -Iinclude -c -o "$obj" "$src"; then
                 exit 1
             fi
             do_rebuild=1
         fi
     done
 
-    if [ $do_rebuild -eq 1 ] || [ ! -f "build/$PROG" ]; then
+    if [ $do_rebuild -eq 1 ] || [ ! -f "../build/$PROG" ]; then
         echo "LD $PROG"
-        $CC $LDFLAGS -o "build/$PROG" $objs
+        $CC $LDFLAGS -o "../build/$PROG" $objs
     else
         echo "Up to date."
     fi
