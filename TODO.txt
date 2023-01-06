@@ -16,6 +16,9 @@ Milestone: v0.2.0
 
 [ ] Document UserInteractiveAuth (move docs from Matrix)
 [ ] Document MemoryHexDump
+[ ] Move String functions to a new String.h?
+[ ] Make UtilStringConcat use varargs
+[ ] Look into seeding random strings (possibly create Random.h?)
 [~] User registration
     [x] Username validation
     [x] Password hashing
