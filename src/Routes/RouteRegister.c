@@ -47,7 +47,7 @@ ROUTE_IMPL(RouteRegister, args)
     char *initialDeviceDisplayName = NULL;
     int refreshToken = 0;
     int inhibitLogin = 0;
-    char *deviceId;
+    char *deviceId = NULL;
 
     if (MATRIX_PATH_PARTS(args->path) == 0)
     {
