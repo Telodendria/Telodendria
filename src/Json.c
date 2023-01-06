@@ -645,7 +645,18 @@ JsonFree(HashMap * object)
 
     while (HashMapIterate(object, &key, (void **) &value))
     {
-        Free(key);
+        /*
+         * The key might not always be on the heap. In cases
+         * where the JSON object is built programmatically instead
+         * of with the parser, stack strings will probably have been
+         * used as the key.
+         */
+        MemoryInfo *i = MemoryInfoGet(key);
+        if (i)
+        {
+            Free(key);
+        }
+
         JsonValueFree(value);
     }
 

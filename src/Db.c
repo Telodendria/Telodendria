@@ -511,7 +511,7 @@ DbLockFromArr(Db * db, Array * args)
         }
         ref->name = name;
 
-        HashMapSet(db->cache, hash, ref);
+        HashMapSet(db->cache, UtilStringDuplicate(hash), ref);
         db->cacheSize += ref->size;
 
         ref->next = NULL;
