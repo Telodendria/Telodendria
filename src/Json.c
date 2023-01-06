@@ -652,6 +652,7 @@ JsonFree(HashMap * object)
          * used as the key.
          */
         MemoryInfo *i = MemoryInfoGet(key);
+
         if (i)
         {
             Free(key);
