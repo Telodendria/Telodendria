@@ -1,4 +1,4 @@
-.Dd $Mdocdate: November 11 2022 $
+.Dd $Mdocdate: January 6 2023 $
 .Dt TELODENDRIA-CONTRIBUTING 7
 .Os Telodendria Project
 .Sh NAME
@@ -249,3 +249,20 @@ run my own
 .Xr indent 1
 on the code anyway, just to make sure the spacing is consistent, if nothing
 else.
+.Pp
+This project places a strong emphasis on documentation. Well-documented
+code is fundamental to a successful project, so when you are writing code,
+please also make sure it is documented appropriately.
+.Bl -bullet
+.It
+If you are adding a header, make sure you add a man page that documents
+all the functions in the header.
+.It
+If you're adding a function, make sure you add documentation for it
+to the appropriate man page for the header that your function resides
+in. Do note that you do not have to document static functions, only
+public API functions.
+.El
+.Pp
+If your patch does not also include proper documentation, it will
+likely be rejected.
