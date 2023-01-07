@@ -94,7 +94,7 @@ recipe_build() {
     
         if [ $(mod_time "$src") -ge $(mod_time "$obj") ]; then
             if [ -t 1 ]; then
-                printf "CC %s\t\t\t\r" "$(basename $obj)"
+                printf "CC %s%*c\r" "$(basename $obj)" "16" " "
             else
                 echo "CC $(basename $obj)"
             fi
