@@ -86,10 +86,6 @@ extern HashMap *
 extern HashMap *
  MatrixRateLimit(HttpServerContext *, Db *);
 
-extern int
- MatrixUserValidate(char *, char *);
 
-extern int
- MatrixHistoricalUserValidate(char *, char *);
 
 #endif

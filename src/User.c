@@ -21,42 +21,66 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-#ifndef TELODENDRIA_DB_H
-#define TELODENDRIA_DB_H
+#include <User.h>
 
-#ifndef DB_MIN_CACHE
-#define DB_MIN_CACHE 1024
-#endif
+#include <string.h>
 
-#include <stddef.h>
+int
+UserValidate(char *localpart, char *domain)
+{
+    size_t maxLen = 255 - strlen(domain) - 1;
+    size_t i = 0;
 
-#include <HashMap.h>
+    while (localpart[i])
+    {
+        char c = localpart[i];
 
-typedef struct Db Db;
-typedef struct DbRef DbRef;
+        if (i > maxLen)
+        {
+            return 0;
+        }
 
-extern Db *
- DbOpen(char *, size_t);
+        if (!((c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') ||
+              (c == '.') || (c == '_') || (c == '=') || (c == '-') ||
+              (c == '/')))
+        {
+            return 0;
+        }
 
-extern void
- DbClose(Db *);
+        i++;
+    }
 
-extern DbRef *
- DbCreate(Db *, size_t,...);
+    return 1;
+}
 
-extern int
- DbDelete(Db *, size_t,...);
+int
+UserHistoricalValidate(char *localpart, char *domain)
+{
+    size_t maxLen = 255 - strlen(domain) - 1;
+    size_t i = 0;
 
-extern DbRef *
- DbLock(Db *, size_t,...);
+    while (localpart[i])
+    {
+        char c = localpart[i];
 
-extern int
- DbUnlock(Db *, DbRef *);
+        if (i > maxLen)
+        {
+            return 0;
+        }
 
-extern int
- DbExists(Db *, size_t,...);
+        if (!(c >= 0x21 && c <= 0x39) || (c >= 0x3B && c <= 0x7E))
+        {
+            return 0;
+        }
 
-extern HashMap *
- DbJson(DbRef *);
+        i++;
+    }
 
-#endif
+    return 1;
+}
+
+int
+UserExists(Db * db, char *name)
+{
+    return DbExists(db, 2, "users", name);
+}

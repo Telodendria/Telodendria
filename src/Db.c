@@ -724,6 +724,28 @@ DbUnlock(Db * db, DbRef * ref)
     return 1;
 }
 
+int
+DbExists(Db * db, size_t nArgs,...)
+{
+    va_list ap;
+    Array *args;
+    char *file;
+    int ret;
+
+    va_start(ap, nArgs);
+    args = ArrayFromVarArgs(nArgs, ap);
+    va_end(ap);
+
+    file = DbFileName(db, args);
+
+    ret = UtilLastModified(file);
+
+    Free(file);
+    ArrayFree(args);
+
+    return ret;
+}
+
 HashMap *
 DbJson(DbRef * ref)
 {

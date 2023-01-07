@@ -29,6 +29,8 @@
 #include <HashMap.h>
 #include <String.h>
 #include <Memory.h>
+
+#include <User.h>
 #include <UserInteractiveAuth.h>
 
 ROUTE_IMPL(RouteRegister, args)
@@ -48,6 +50,8 @@ ROUTE_IMPL(RouteRegister, args)
     int refreshToken = 0;
     int inhibitLogin = 0;
     char *deviceId = NULL;
+
+    Db *db = args->matrixArgs->db;
 
     if (MATRIX_PATH_PARTS(args->path) == 0)
     {
@@ -82,15 +86,19 @@ ROUTE_IMPL(RouteRegister, args)
             }
             username = StringDuplicate(JsonValueAsString(val));
 
-            if (!MatrixUserValidate(username, args->matrixArgs->config->serverName))
+            if (!UserValidate(username, args->matrixArgs->config->serverName))
             {
                 HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
                 response = MatrixErrorCreate(M_INVALID_USERNAME);
                 goto finish;
             }
 
-            /* TODO: Check if username exists and throw error if it
-             * does */
+            if (UserExists(db, username))
+            {
+                HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
+                response = MatrixErrorCreate(M_USER_IN_USE);
+                goto finish;
+            }
         }
 
         response = UserInteractiveAuth(args->context,
@@ -181,29 +189,29 @@ ROUTE_IMPL(RouteRegister, args)
             refreshToken = JsonValueAsBoolean(val);
         }
 
-        if (!username)
-        {
-            username = StringRandom(16);
-        }
-
-        if (!inhibitLogin && !deviceId)
-        {
-            deviceId = StringRandom(10);
-        }
-
         /* These values are already set */
         (void) password;
         (void) refreshToken;
         (void) inhibitLogin;
-        (void) username;
 
         /* These may be NULL */
         (void) initialDeviceDisplayName;
+        (void) username;
         (void) deviceId;
 
         /* TODO: Register new user here */
 
+        if (!inhibitLogin)
+        {
+            /* TODO: Log in user here and attach auth info to response */
+        }
+
 finish:
+        Free(username);
+        Free(password);
+        Free(deviceId);
+        Free(initialDeviceDisplayName);
+
         JsonFree(request);
     }
     else
@@ -221,8 +229,21 @@ finish:
                 HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
                 response = MatrixErrorCreate(M_MISSING_PARAM);
             }
-
-            /* TODO: Check if username is available */
+            else if (!UserValidate(username, args->matrixArgs->config->serverName))
+            {
+                HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
+                response = MatrixErrorCreate(M_INVALID_USERNAME);
+            }
+            else if (UserExists(db, username))
+            {
+                response = HashMapCreate();
+                HashMapSet(response, "available", JsonValueBoolean(1));
+            }
+            else
+            {
+                HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
+                response = MatrixErrorCreate(M_USER_IN_USE);
+            }
         }
         else if (HttpRequestMethodGet(args->context) == HTTP_POST &&
                  (MATRIX_PATH_EQUALS(pathPart, "email") ||

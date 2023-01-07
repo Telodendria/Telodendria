@@ -21,42 +21,32 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-#ifndef TELODENDRIA_DB_H
-#define TELODENDRIA_DB_H
+#ifndef TELODENDRIA_USER_H
+#define TELODENDRIA_USER_H
 
-#ifndef DB_MIN_CACHE
-#define DB_MIN_CACHE 1024
-#endif
+#include <Db.h>
 
-#include <stddef.h>
+typedef struct User User;
 
-#include <HashMap.h>
+extern int
+ UserValidate(char *, char *);
 
-typedef struct Db Db;
-typedef struct DbRef DbRef;
+extern int
+ UserHistoricalValidate(char *, char *);
 
-extern Db *
- DbOpen(char *, size_t);
+extern int
+ UserExists(Db *, char *name);
+
+extern User *
+ UserCreate(Db *, char *name, char *password);
+
+extern User *
+ UserLock(Db *, char *name);
+
+extern int
+ UserUnlock(User *);
 
 extern void
- DbClose(Db *);
+ UserLogin(User *, char *name, char *password, char *deviceId, char *deviceDisplayName);
 
-extern DbRef *
- DbCreate(Db *, size_t,...);
-
-extern int
- DbDelete(Db *, size_t,...);
-
-extern DbRef *
- DbLock(Db *, size_t,...);
-
-extern int
- DbUnlock(Db *, DbRef *);
-
-extern int
- DbExists(Db *, size_t,...);
-
-extern HashMap *
- DbJson(DbRef *);
-
-#endif
+#endif                             /* TELODENDRIA_USER_H */
