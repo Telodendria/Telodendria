@@ -32,6 +32,7 @@
 #include <math.h>
 #include <time.h>
 
+#include <unistd.h>
 #include <errno.h>
 #include <sys/time.h>
 #include <sys/stat.h>
@@ -399,13 +400,12 @@ UtilGetLine(char **linePtr, size_t * n, FILE * stream)
 char *
 UtilRandomString(size_t len)
 {
-    static const char charset[] =
-    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    static const char charset[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    static pthread_mutex_t seedLock = PTHREAD_MUTEX_INITIALIZER;
+    static unsigned int seed = 0;
 
     char *str;
     size_t i;
-
-    unsigned int seed = UtilServerTs() * (unsigned long) pthread_self();
 
     if (!len)
     {
@@ -418,10 +418,19 @@ UtilRandomString(size_t len)
         return NULL;
     }
 
+    pthread_mutex_lock(&seedLock);
+
+    if (!seed)
+    {
+        seed = UtilServerTs() ^ getpid() ^ (unsigned long) pthread_self();
+    }
+
     for (i = 0; i < len; i++)
     {
         str[i] = charset[rand_r(&seed) % (sizeof(charset) - 1)];
     }
+
+    pthread_mutex_unlock(&seedLock);
 
     str[len] = '\0';
     return str;
