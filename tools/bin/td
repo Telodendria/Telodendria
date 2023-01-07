@@ -93,7 +93,11 @@ recipe_build() {
         objs="$objs $obj"
     
         if [ $(mod_time "$src") -ge $(mod_time "$obj") ]; then
-            echo "CC $(basename $obj)"
+            if [ -t 1 ]; then
+                printf "CC %s\t\t\t\r" "$(basename $obj)"
+            else
+                echo "CC $(basename $obj)"
+            fi
             obj_dir=$(dirname "$obj")
             mkdir -p "$obj_dir"
             if ! $CC $CFLAGS -Iinclude -c -o "$obj" "$src"; then
