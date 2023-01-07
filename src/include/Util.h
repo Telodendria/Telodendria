@@ -45,7 +45,7 @@ extern char *
  UtilStringDuplicate(char *);
 
 extern char *
- UtilStringConcat(char *, char *);
+ UtilStringConcat(size_t,...);
 
 extern int
  UtilSleepMillis(long);

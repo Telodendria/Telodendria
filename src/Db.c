@@ -200,7 +200,7 @@ DbHashKey(Array * args)
 
     for (i = 0; i < ArraySize(args); i++)
     {
-        char *tmp = UtilStringConcat(str, ArrayGet(args, i));
+        char *tmp = UtilStringConcat(2, str, ArrayGet(args, i));
 
         Free(str);
         str = tmp;
@@ -213,19 +213,17 @@ static char *
 DbDirName(Db * db, Array * args)
 {
     size_t i;
-    char *str = UtilStringConcat(db->dir, "/");
+    char *str = UtilStringConcat(2, db->dir, "/");
 
     for (i = 0; i < ArraySize(args) - 1; i++)
     {
-        char *tmp, *tmp2;
+        char *tmp;
 
-        tmp = UtilStringConcat(str, ArrayGet(args, i));
-        tmp2 = UtilStringConcat(tmp, "/");
+        tmp = UtilStringConcat(3, str, ArrayGet(args, i), "/");
 
         Free(str);
-        Free(tmp);
 
-        str = tmp2;
+        str = tmp;
     }
 
     return str;
@@ -235,11 +233,11 @@ static char *
 DbFileName(Db * db, Array * args)
 {
     size_t i;
-    char *str = UtilStringConcat(db->dir, "/");
+    char *str = UtilStringConcat(2, db->dir, "/");
 
     for (i = 0; i < ArraySize(args); i++)
     {
-        char *tmp, *tmp2;
+        char *tmp;
         char *arg = UtilStringDuplicate(ArrayGet(args, i));
         size_t j = 0;
 
@@ -260,15 +258,13 @@ DbFileName(Db * db, Array * args)
             j++;
         }
 
-        tmp = UtilStringConcat(str, arg);
-        tmp2 = UtilStringConcat(tmp,
+        tmp = UtilStringConcat(3, str, arg,
                            (i < ArraySize(args) - 1) ? "/" : ".json");
 
         Free(arg);
         Free(str);
-        Free(tmp);
 
-        str = tmp2;
+        str = tmp;
     }
 
     return str;

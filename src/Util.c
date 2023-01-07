@@ -27,6 +27,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdarg.h>
 #include <string.h>
 #include <ctype.h>
 #include <math.h>
@@ -211,43 +212,53 @@ UtilStringDuplicate(char *inStr)
 }
 
 char *
-UtilStringConcat(char *str1, char *str2)
+UtilStringConcat(size_t nStr,...)
 {
-    char *ret;
-    size_t str1Len, str2Len;
+    va_list argp;
+    char *str;
+    char *strp;
+    size_t strLen = 0;
+    size_t i;
 
-    str1Len = str1 ? strlen(str1) : 0;
-    str2Len = str2 ? strlen(str2) : 0;
-
-    ret = Malloc(str1Len + str2Len + 1);
-
-    if (!ret)
+    va_start(argp, nStr);
+    for (i = 0; i < nStr; i++)
     {
-        return NULL;
-    }
+        char *argStr = va_arg(argp, char *);
 
-    if (str1 && str2)
-    {
-        strcpy(ret, str1);
-        strcpy(ret + str1Len, str2);
-    }
-    else
-    {
-        if (str1)
+        if (argStr)
         {
-            strcpy(ret, str1);
-        }
-        else if (str2)
-        {
-            strcpy(ret, str2);
-        }
-        else
-        {
-            strcpy(ret, "");
+            strLen += strlen(argStr);
         }
     }
+    va_end(argp);
 
-    return ret;
+    str = Malloc(strLen + 1);
+    strp = str;
+
+    va_start(argp, nStr);
+
+    for (i = 0; i < nStr; i++)
+    {
+        /* Manually copy chars instead of using strcopy() so we don't
+         * have to call strlen() on the strings again, and we aren't
+         * writing useless null chars. */
+
+        char *argStr = va_arg(argp, char *);
+
+        if (argStr)
+        {
+            while (*argStr)
+            {
+                *strp = *argStr;
+                strp++;
+                argStr++;
+            }
+        }
+    }
+
+    va_end(argp);
+    str[strLen] = '\0';
+    return str;
 }
 
 int
