@@ -25,6 +25,12 @@
 
 #include <string.h>
 
+struct User
+{
+    Db *db;
+    DbRef *ref;
+};
+
 int
 UserValidate(char *localpart, char *domain)
 {
