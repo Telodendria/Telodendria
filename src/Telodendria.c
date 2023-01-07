@@ -184,7 +184,7 @@ TelodendriaPrintHeader(LogConfig * lc)
     Log(lc, LOG_INFO, "Telodendria v" TELODENDRIA_VERSION);
     Log(lc, LOG_INFO, "");
     Log(lc, LOG_INFO,
-        "Copyright (C) 2022 Jordan Bancino <@jordan:bancino.net>");
+        "Copyright (C) 2023 Jordan Bancino <@jordan:bancino.net>");
     Log(lc, LOG_INFO,
         "Documentation/Support: https://telodendria.io");
     Log(lc, LOG_INFO, "");
