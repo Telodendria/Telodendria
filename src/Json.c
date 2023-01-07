@@ -24,7 +24,7 @@
 #include <Json.h>
 
 #include <Memory.h>
-#include <Util.h>
+#include <String.h>
 
 #include <stdio.h>
 #include <stddef.h>
@@ -486,7 +486,7 @@ JsonDecodeString(FILE * in)
 
                         /* Encode the 4-byte UTF-8 buffer into a series
                          * of 1-byte characters */
-                        utf8Ptr = UtilUtf8Encode(utf8);
+                        utf8Ptr = StringUtf8Encode(utf8);
                         if (!utf8Ptr)
                         {
                             /* Mem error */
@@ -494,8 +494,8 @@ JsonDecodeString(FILE * in)
                             return NULL;
                         }
 
-                        /* Move the output of UtilUtf8Encode() into our
-                         * local buffer */
+                        /* Move the output of StringUtf8Encode() into
+                         * our local buffer */
                         strcpy(a, utf8Ptr);
                         Free(utf8Ptr);
                         break;

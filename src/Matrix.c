@@ -30,7 +30,7 @@
 #include <Memory.h>
 #include <HttpServer.h>
 #include <Json.h>
-#include <Util.h>
+#include <String.h>
 
 #include <Routes.h>
 
@@ -83,7 +83,7 @@ MatrixHttpHandler(HttpServerContext * context, void *argp)
     }
 
     pathParts = MATRIX_PATH_CREATE();
-    requestPathCpy = UtilStringDuplicate(requestPath);
+    requestPathCpy = StringDuplicate(requestPath);
     key = requestPathCpy;
 
     while ((pathPart = strtok_r(key, "/", &key)))
@@ -295,8 +295,8 @@ MatrixErrorCreate(MatrixError errorArg)
         return NULL;
     }
 
-    HashMapSet(errorObj, "errcode", JsonValueString(UtilStringDuplicate(errcode)));
-    HashMapSet(errorObj, "error", JsonValueString(UtilStringDuplicate(error)));
+    HashMapSet(errorObj, "errcode", JsonValueString(StringDuplicate(errcode)));
+    HashMapSet(errorObj, "error", JsonValueString(StringDuplicate(error)));
 
     return errorObj;
 }

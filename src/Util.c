@@ -144,122 +144,11 @@ UtilMkdir(const char *dir, const mode_t mode)
     return 0;
 }
 
-char *
-UtilUtf8Encode(unsigned long utf8)
-{
-    char *str;
 
-    str = Malloc(5 * sizeof(char));
-    if (!str)
-    {
-        return NULL;
-    }
 
-    if (utf8 <= 0x7F)              /* Plain ASCII */
-    {
-        str[0] = (char) utf8;
-        str[1] = '\0';
-    }
-    else if (utf8 <= 0x07FF)       /* 2-byte */
-    {
-        str[0] = (char) (((utf8 >> 6) & 0x1F) | 0xC0);
-        str[1] = (char) (((utf8 >> 0) & 0x3F) | 0x80);
-        str[2] = '\0';
-    }
-    else if (utf8 <= 0xFFFF)       /* 3-byte */
-    {
-        str[0] = (char) (((utf8 >> 12) & 0x0F) | 0xE0);
-        str[1] = (char) (((utf8 >> 6) & 0x3F) | 0x80);
-        str[2] = (char) (((utf8 >> 0) & 0x3F) | 0x80);
-        str[3] = '\0';
-    }
-    else if (utf8 <= 0x10FFFF)     /* 4-byte */
-    {
-        str[0] = (char) (((utf8 >> 18) & 0x07) | 0xF0);
-        str[1] = (char) (((utf8 >> 12) & 0x3F) | 0x80);
-        str[2] = (char) (((utf8 >> 6) & 0x3F) | 0x80);
-        str[3] = (char) (((utf8 >> 0) & 0x3F) | 0x80);
-        str[4] = '\0';
-    }
-    else
-    {
-        /* Send replacement character */
-        str[0] = (char) 0xEF;
-        str[1] = (char) 0xBF;
-        str[2] = (char) 0xBD;
-        str[3] = '\0';
-    }
 
-    return str;
-}
 
-char *
-UtilStringDuplicate(char *inStr)
-{
-    size_t len;
-    char *outStr;
 
-    len = strlen(inStr);
-    outStr = Malloc(len + 1);      /* For the null terminator */
-    if (!outStr)
-    {
-        return NULL;
-    }
-
-    strcpy(outStr, inStr);
-
-    return outStr;
-}
-
-char *
-UtilStringConcat(size_t nStr,...)
-{
-    va_list argp;
-    char *str;
-    char *strp;
-    size_t strLen = 0;
-    size_t i;
-
-    va_start(argp, nStr);
-    for (i = 0; i < nStr; i++)
-    {
-        char *argStr = va_arg(argp, char *);
-
-        if (argStr)
-        {
-            strLen += strlen(argStr);
-        }
-    }
-    va_end(argp);
-
-    str = Malloc(strLen + 1);
-    strp = str;
-
-    va_start(argp, nStr);
-
-    for (i = 0; i < nStr; i++)
-    {
-        /* Manually copy chars instead of using strcopy() so we don't
-         * have to call strlen() on the strings again, and we aren't
-         * writing useless null chars. */
-
-        char *argStr = va_arg(argp, char *);
-
-        if (argStr)
-        {
-            while (*argStr)
-            {
-                *strp = *argStr;
-                strp++;
-                argStr++;
-            }
-        }
-    }
-
-    va_end(argp);
-    str[strLen] = '\0';
-    return str;
-}
 
 int
 UtilSleepMillis(long ms)
@@ -406,43 +295,4 @@ ssize_t
 UtilGetLine(char **linePtr, size_t * n, FILE * stream)
 {
     return UtilGetDelim(linePtr, n, '\n', stream);
-}
-
-char *
-UtilRandomString(size_t len)
-{
-    static const char charset[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    static pthread_mutex_t seedLock = PTHREAD_MUTEX_INITIALIZER;
-    static unsigned int seed = 0;
-
-    char *str;
-    size_t i;
-
-    if (!len)
-    {
-        return NULL;
-    }
-
-    str = Malloc(len + 1);
-    if (!str)
-    {
-        return NULL;
-    }
-
-    pthread_mutex_lock(&seedLock);
-
-    if (!seed)
-    {
-        seed = UtilServerTs() ^ getpid() ^ (unsigned long) pthread_self();
-    }
-
-    for (i = 0; i < len; i++)
-    {
-        str[i] = charset[rand_r(&seed) % (sizeof(charset) - 1)];
-    }
-
-    pthread_mutex_unlock(&seedLock);
-
-    str[len] = '\0';
-    return str;
 }

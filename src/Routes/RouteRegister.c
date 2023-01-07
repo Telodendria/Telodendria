@@ -27,7 +27,7 @@
 
 #include <Json.h>
 #include <HashMap.h>
-#include <Util.h>
+#include <String.h>
 #include <Memory.h>
 #include <UserInteractiveAuth.h>
 
@@ -80,7 +80,7 @@ ROUTE_IMPL(RouteRegister, args)
                 response = MatrixErrorCreate(M_BAD_JSON);
                 goto finish;
             }
-            username = UtilStringDuplicate(JsonValueAsString(val));
+            username = StringDuplicate(JsonValueAsString(val));
 
             if (!MatrixUserValidate(username, args->matrixArgs->config->serverName))
             {
@@ -127,7 +127,7 @@ ROUTE_IMPL(RouteRegister, args)
             goto finish;
         }
 
-        password = UtilStringDuplicate(JsonValueAsString(val));
+        password = StringDuplicate(JsonValueAsString(val));
 
         val = HashMapGet(request, "device_id");
         if (val)
@@ -139,7 +139,7 @@ ROUTE_IMPL(RouteRegister, args)
                 goto finish;
             }
 
-            deviceId = UtilStringDuplicate(JsonValueAsString(val));
+            deviceId = StringDuplicate(JsonValueAsString(val));
         }
 
         val = HashMapGet(request, "inhibit_login");
@@ -165,7 +165,7 @@ ROUTE_IMPL(RouteRegister, args)
                 goto finish;
             }
 
-            initialDeviceDisplayName = UtilStringDuplicate(JsonValueAsString(val));
+            initialDeviceDisplayName = StringDuplicate(JsonValueAsString(val));
         }
 
         val = HashMapGet(request, "refresh_token");
@@ -183,12 +183,12 @@ ROUTE_IMPL(RouteRegister, args)
 
         if (!username)
         {
-            username = UtilRandomString(16);
+            username = StringRandom(16);
         }
 
         if (!inhibitLogin && !deviceId)
         {
-            deviceId = UtilRandomString(10);
+            deviceId = StringRandom(10);
         }
 
         /* These values are already set */

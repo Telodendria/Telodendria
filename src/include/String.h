@@ -21,46 +21,21 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-#include <Routes.h>
+#ifndef TELODENDRIA_STRING_H
+#define TELODENDRIA_STRING_H
 
-#include <string.h>
+#include <stddef.h>
 
-#include <Json.h>
-#include <HashMap.h>
-#include <String.h>
+extern char *
+ StringUtf8Encode(unsigned long);
 
-ROUTE_IMPL(RouteLogin, args)
-{
-    HashMap *response = NULL;
-    Array *enabledFlows;
-    HashMap *pwdFlow;
+extern char *
+ StringDuplicate(const char *);
 
-    if (MATRIX_PATH_PARTS(args->path) > 0)
-    {
-        HttpResponseStatus(args->context, HTTP_NOT_FOUND);
-        return MatrixErrorCreate(M_NOT_FOUND);
-    }
+extern char *
+ StringConcat(size_t,...);
 
-    switch (HttpRequestMethodGet(args->context))
-    {
-        case HTTP_GET:
-            response = HashMapCreate();
-            enabledFlows = ArrayCreate();
-            pwdFlow = HashMapCreate();
+extern char *
+ StringRandom(size_t);
 
-            HashMapSet(pwdFlow, "type",
-                JsonValueString(StringDuplicate("m.login.password")));
-            ArrayAdd(enabledFlows, JsonValueObject(pwdFlow));
-            HashMapSet(response, "flows", JsonValueArray(enabledFlows));
-
-            break;
-        case HTTP_POST:
-            /* TODO */
-        default:
-            HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-            response = MatrixErrorCreate(M_UNRECOGNIZED);
-            break;
-    }
-
-    return response;
-}
+#endif                             /* TELODENDRIA_STRING_H */

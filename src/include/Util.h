@@ -38,15 +38,6 @@ extern unsigned long
 extern int
  UtilMkdir(const char *, const mode_t);
 
-extern char *
- UtilUtf8Encode(unsigned long);
-
-extern char *
- UtilStringDuplicate(char *);
-
-extern char *
- UtilStringConcat(size_t,...);
-
 extern int
  UtilSleepMillis(long);
 
@@ -58,8 +49,5 @@ extern ssize_t
 
 extern ssize_t
  UtilGetLine(char **, size_t *, FILE *);
-
-extern char *
- UtilRandomString(size_t);
 
 #endif                             /* TELODENDRIA_UTIL_H */

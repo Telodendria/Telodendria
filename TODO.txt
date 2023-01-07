@@ -14,16 +14,17 @@ Milestone: v0.2.0
 [x] Abstract user-interactive authentication
 [ ] Abstract /email/requestToken and /msidsn/requestToken
 
-[ ] Document UserInteractiveAuth (move docs from Matrix)
-[ ] Document MemoryHexDump
-[ ] Move String functions to a new String.h?
-[~] Make UtilStringConcat use varargs
-    [ ] Update documentation
+[x] Move String functions to a new String.h
+[x] Make StringConcat use varargs
 [x] Look into seeding random strings (possibly create Random.h?)
 [~] User registration
     [x] Username validation
     [x] Password hashing
     [ ] User API
+
+[ ] Document UserInteractiveAuth (move docs from Matrix)
+[ ] Document MemoryHexDump
+[ ] Document String and remove old functions from Util
 
 Milestone: v1.0.0
 -----------------
