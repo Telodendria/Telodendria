@@ -234,7 +234,7 @@ finish:
                 HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
                 response = MatrixErrorCreate(M_INVALID_USERNAME);
             }
-            else if (UserExists(db, username))
+            else if (!UserExists(db, username))
             {
                 response = HashMapCreate();
                 HashMapSet(response, "available", JsonValueBoolean(1));
