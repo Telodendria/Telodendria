@@ -25,9 +25,9 @@ Milestone: v0.2.0
 [ ] Document UserInteractiveAuth (move docs from Matrix)
 [ ] Document User
 [ ] Move docs from Matrix to User for UserValidate
-[ ] Document MemoryHexDump
-[ ] Document String and remove old functions from Util
-[ ] Document DbExists
+[ ] Document MemoryHexDump()
+[ ] Document Str and remove old functions from Util docs.
+[ ] Document DbExists()
 
 Milestone: v1.0.0
 -----------------
