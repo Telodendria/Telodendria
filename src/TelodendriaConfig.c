@@ -27,7 +27,7 @@
 #include <HashMap.h>
 #include <Log.h>
 #include <Array.h>
-#include <String.h>
+#include <Str.h>
 #include <Db.h>
 
 #include <stdlib.h>
@@ -53,7 +53,7 @@
     }
 
 #define CONFIG_COPY_STRING(into) \
-    into = StringDuplicate(JsonValueAsString(value));
+    into = StrDuplicate(JsonValueAsString(value));
 
 #define CONFIG_OPTIONAL_STRING(into, key, default) \
     value = HashMapGet(config, key); \
@@ -64,12 +64,12 @@
             Log(lc, LOG_ERR, "Expected " key " to be of type JSON_STRING"); \
             goto error; \
         } \
-        into = StringDuplicate(JsonValueAsString(value)); \
+        into = StrDuplicate(JsonValueAsString(value)); \
     } \
     else \
     { \
         Log(lc, LOG_INFO, "Using default value " #default " for " key "."); \
-        into = default ? StringDuplicate(default) : NULL; \
+        into = default ? StrDuplicate(default) : NULL; \
     }
 
 #define CONFIG_OPTIONAL_INTEGER(into, key, default) \

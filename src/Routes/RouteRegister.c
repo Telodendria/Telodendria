@@ -27,7 +27,7 @@
 
 #include <Json.h>
 #include <HashMap.h>
-#include <String.h>
+#include <Str.h>
 #include <Memory.h>
 
 #include <User.h>
@@ -84,7 +84,7 @@ ROUTE_IMPL(RouteRegister, args)
                 response = MatrixErrorCreate(M_BAD_JSON);
                 goto finish;
             }
-            username = StringDuplicate(JsonValueAsString(val));
+            username = StrDuplicate(JsonValueAsString(val));
 
             if (!UserValidate(username, args->matrixArgs->config->serverName))
             {
@@ -135,7 +135,7 @@ ROUTE_IMPL(RouteRegister, args)
             goto finish;
         }
 
-        password = StringDuplicate(JsonValueAsString(val));
+        password = StrDuplicate(JsonValueAsString(val));
 
         val = HashMapGet(request, "device_id");
         if (val)
@@ -147,7 +147,7 @@ ROUTE_IMPL(RouteRegister, args)
                 goto finish;
             }
 
-            deviceId = StringDuplicate(JsonValueAsString(val));
+            deviceId = StrDuplicate(JsonValueAsString(val));
         }
 
         val = HashMapGet(request, "inhibit_login");
@@ -173,7 +173,7 @@ ROUTE_IMPL(RouteRegister, args)
                 goto finish;
             }
 
-            initialDeviceDisplayName = StringDuplicate(JsonValueAsString(val));
+            initialDeviceDisplayName = StrDuplicate(JsonValueAsString(val));
         }
 
         val = HashMapGet(request, "refresh_token");

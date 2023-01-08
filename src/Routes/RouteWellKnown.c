@@ -28,7 +28,7 @@
 #include <Memory.h>
 #include <Json.h>
 #include <HashMap.h>
-#include <String.h>
+#include <Str.h>
 
 ROUTE_IMPL(RouteWellKnown, args)
 {
@@ -53,14 +53,14 @@ ROUTE_IMPL(RouteWellKnown, args)
 
         response = HashMapCreate();
 
-        HashMapSet(homeserver, "base_url", JsonValueString(StringDuplicate(args->matrixArgs->config->baseUrl)));
+        HashMapSet(homeserver, "base_url", JsonValueString(StrDuplicate(args->matrixArgs->config->baseUrl)));
         HashMapSet(response, "m.homeserver", JsonValueObject(homeserver));
 
         if (args->matrixArgs->config->identityServer)
         {
             HashMap *identityServer = HashMapCreate();
 
-            HashMapSet(identityServer, "base_url", JsonValueString(StringDuplicate(args->matrixArgs->config->identityServer)));
+            HashMapSet(identityServer, "base_url", JsonValueString(StrDuplicate(args->matrixArgs->config->identityServer)));
             HashMapSet(response, "m.identity_server", identityServer);
         }
 

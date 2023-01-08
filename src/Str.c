@@ -21,7 +21,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-#include <String.h>
+#include <Str.h>
 
 #include <Memory.h>
 #include <Util.h>
@@ -33,7 +33,7 @@
 #include <unistd.h>
 
 char *
-StringUtf8Encode(unsigned long utf8)
+StrUtf8Encode(unsigned long utf8)
 {
     char *str;
 
@@ -82,7 +82,7 @@ StringUtf8Encode(unsigned long utf8)
 }
 
 char *
-StringDuplicate(const char *inStr)
+StrDuplicate(const char *inStr)
 {
     size_t len;
     char *outStr;
@@ -100,7 +100,7 @@ StringDuplicate(const char *inStr)
 }
 
 char *
-StringConcat(size_t nStr,...)
+StrConcat(size_t nStr,...)
 {
     va_list argp;
     char *str;
@@ -150,7 +150,7 @@ StringConcat(size_t nStr,...)
 }
 
 char *
-StringRandom(size_t len)
+StrRandom(size_t len)
 {
     static const char charset[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
     static pthread_mutex_t seedLock = PTHREAD_MUTEX_INITIALIZER;

@@ -21,21 +21,21 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-#ifndef TELODENDRIA_STRING_H
-#define TELODENDRIA_STRING_H
+#ifndef TELODENDRIA_STR_H
+#define TELODENDRIA_STR_H
 
 #include <stddef.h>
 
 extern char *
- StringUtf8Encode(unsigned long);
+ StrUtf8Encode(unsigned long);
 
 extern char *
- StringDuplicate(const char *);
+ StrDuplicate(const char *);
 
 extern char *
- StringConcat(size_t,...);
+ StrConcat(size_t,...);
 
 extern char *
- StringRandom(size_t);
+ StrRandom(size_t);
 
-#endif                             /* TELODENDRIA_STRING_H */
+#endif                             /* TELODENDRIA_STR_H */

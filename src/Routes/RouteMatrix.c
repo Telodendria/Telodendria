@@ -28,7 +28,7 @@
 #include <Memory.h>
 #include <Json.h>
 #include <HashMap.h>
-#include <String.h>
+#include <Str.h>
 
 ROUTE_IMPL(RouteMatrix, args)
 {
@@ -51,7 +51,7 @@ ROUTE_IMPL(RouteMatrix, args)
 
         Free(pathPart);
 
-        ArrayAdd(versions, JsonValueString(StringDuplicate("v1.5")));
+        ArrayAdd(versions, JsonValueString(StrDuplicate("v1.5")));
 
         response = HashMapCreate();
         HashMapSet(response, "versions", JsonValueArray(versions));

@@ -27,7 +27,7 @@
 
 #include <Json.h>
 #include <HashMap.h>
-#include <String.h>
+#include <Str.h>
 
 ROUTE_IMPL(RouteLogin, args)
 {
@@ -49,7 +49,7 @@ ROUTE_IMPL(RouteLogin, args)
             pwdFlow = HashMapCreate();
 
             HashMapSet(pwdFlow, "type",
-                JsonValueString(StringDuplicate("m.login.password")));
+                   JsonValueString(StrDuplicate("m.login.password")));
             ArrayAdd(enabledFlows, JsonValueObject(pwdFlow));
             HashMapSet(response, "flows", JsonValueArray(enabledFlows));
 

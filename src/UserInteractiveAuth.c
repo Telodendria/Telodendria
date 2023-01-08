@@ -24,7 +24,7 @@
 #include <UserInteractiveAuth.h>
 
 #include <Json.h>
-#include <String.h>
+#include <Str.h>
 #include <Matrix.h>
 
 #include <string.h>
@@ -38,7 +38,7 @@ BuildDummyFlow(void)
     Array *flows = ArrayCreate();
 
     ArrayAdd(stages,
-             JsonValueString(StringDuplicate("m.login.dummy")));
+             JsonValueString(StrDuplicate("m.login.dummy")));
     HashMapSet(dummyFlow, "stages", JsonValueArray(stages));
     ArrayAdd(flows, JsonValueObject(dummyFlow));
 
@@ -68,7 +68,7 @@ UserInteractiveAuth(HttpServerContext * context, Db * db,
     {
         HashMap *response = NULL;
         HashMap *persist;
-        char *session = StringRandom(24);
+        char *session = StrRandom(24);
 
         ref = DbLock(db, 1, "user_interactive");
         if (!ref)
@@ -84,7 +84,7 @@ UserInteractiveAuth(HttpServerContext * context, Db * db,
         response = BuildDummyFlow();
 
         HashMapSet(response, "session",
-                   JsonValueString(StringDuplicate(session)));
+                   JsonValueString(StrDuplicate(session)));
 
         return response;
     }

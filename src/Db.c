@@ -26,7 +26,7 @@
 #include <Memory.h>
 #include <Json.h>
 #include <Util.h>
-#include <String.h>
+#include <Str.h>
 
 #include <pthread.h>
 #include <fcntl.h>
@@ -201,7 +201,7 @@ DbHashKey(Array * args)
 
     for (i = 0; i < ArraySize(args); i++)
     {
-        char *tmp = StringConcat(2, str, ArrayGet(args, i));
+        char *tmp = StrConcat(2, str, ArrayGet(args, i));
 
         Free(str);
         str = tmp;
@@ -214,13 +214,13 @@ static char *
 DbDirName(Db * db, Array * args)
 {
     size_t i;
-    char *str = StringConcat(2, db->dir, "/");
+    char *str = StrConcat(2, db->dir, "/");
 
     for (i = 0; i < ArraySize(args) - 1; i++)
     {
         char *tmp;
 
-        tmp = StringConcat(3, str, ArrayGet(args, i), "/");
+        tmp = StrConcat(3, str, ArrayGet(args, i), "/");
 
         Free(str);
 
@@ -234,12 +234,12 @@ static char *
 DbFileName(Db * db, Array * args)
 {
     size_t i;
-    char *str = StringConcat(2, db->dir, "/");
+    char *str = StrConcat(2, db->dir, "/");
 
     for (i = 0; i < ArraySize(args); i++)
     {
         char *tmp;
-        char *arg = StringDuplicate(ArrayGet(args, i));
+        char *arg = StrDuplicate(ArrayGet(args, i));
         size_t j = 0;
 
         /* Sanitize name to prevent directory traversal attacks */
@@ -259,8 +259,8 @@ DbFileName(Db * db, Array * args)
             j++;
         }
 
-        tmp = StringConcat(3, str, arg,
-                           (i < ArraySize(args) - 1) ? "/" : ".json");
+        tmp = StrConcat(3, str, arg,
+                        (i < ArraySize(args) - 1) ? "/" : ".json");
 
         Free(arg);
         Free(str);
@@ -504,11 +504,11 @@ DbLockFromArr(Db * db, Array * args)
 
         for (i = 0; i < ArraySize(args); i++)
         {
-            ArrayAdd(name, StringDuplicate(ArrayGet(args, i)));
+            ArrayAdd(name, StrDuplicate(ArrayGet(args, i)));
         }
         ref->name = name;
 
-        HashMapSet(db->cache, StringDuplicate(hash), ref);
+        HashMapSet(db->cache, StrDuplicate(hash), ref);
         db->cacheSize += ref->size;
 
         ref->next = NULL;
