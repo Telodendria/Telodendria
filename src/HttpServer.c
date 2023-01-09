@@ -276,30 +276,6 @@ HttpSendHeaders(HttpServerContext * c)
     fprintf(fp, "\n");
 }
 
-static int
-QueueConnection(HttpServer * server, int fd)
-{
-    FILE *fp;
-    int result;
-
-    if (!server)
-    {
-        return 0;
-    }
-
-    fp = fdopen(fd, "r+");
-    if (!fp)
-    {
-        return 0;
-    }
-
-    pthread_mutex_lock(&server->connQueueMutex);
-    result = QueuePush(server->connQueue, fp);
-    pthread_mutex_unlock(&server->connQueueMutex);
-
-    return result;
-}
-
 static FILE *
 DequeueConnection(HttpServer * server)
 {
@@ -699,6 +675,7 @@ HttpServerEventThread(void *args)
         int connFd;
         int pollResult;
 
+
         pollResult = poll(pollFds, 1, 500);
 
         if (pollResult < 0)
@@ -707,14 +684,32 @@ HttpServerEventThread(void *args)
             continue;
         }
 
-        connFd = accept(server->sd, (struct sockaddr *) & addr, &addrLen);
+        pthread_mutex_lock(&server->connQueueMutex);
 
-        if (connFd < 0)
+        /* Don't even accept connections if the queue is full. */
+        if (!QueueFull(server->connQueue))
         {
-            continue;
-        }
+            FILE *fp;
 
-        QueueConnection(server, connFd);
+            connFd = accept(server->sd, (struct sockaddr *) & addr, &addrLen);
+
+            if (connFd < 0)
+            {
+                pthread_mutex_unlock(&server->connQueueMutex);
+                continue;
+            }
+
+            fp = fdopen(connFd, "r+");
+            if (!fp)
+            {
+                pthread_mutex_unlock(&server->connQueueMutex);
+                close(connFd);
+                continue;
+            }
+
+            QueuePush(server->connQueue, fp);
+        }
+        pthread_mutex_unlock(&server->connQueueMutex);
     }
 
     for (i = 0; i < server->nThreads; i++)

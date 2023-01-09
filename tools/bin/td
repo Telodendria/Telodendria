@@ -108,7 +108,11 @@ recipe_build() {
     done
 
     if [ $do_rebuild -eq 1 ] || [ ! -f "../build/$PROG" ]; then
-        echo "LD $PROG"
+        if [ -t 1 ]; then
+            printf "LD %s%*c\n" "$PROG" "16" " "
+        else
+            echo "LD $PROG"
+        fi
         $CC $LDFLAGS -o "../build/$PROG" $objs
     else
         echo "Up to date."
