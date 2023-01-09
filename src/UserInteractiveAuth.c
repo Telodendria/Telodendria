@@ -125,6 +125,7 @@ UserInteractiveAuth(HttpServerContext * context, Db * db,
     /* Check to see if session exists */
     if (!ref || !HashMapGet(DbJson(ref), sessionStr))
     {
+        DbUnlock(db, ref);
         HttpResponseStatus(context, HTTP_BAD_REQUEST);
         return MatrixErrorCreate(M_UNKNOWN);
     }
