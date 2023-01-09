@@ -53,6 +53,8 @@ ROUTE_IMPL(RouteRegister, args)
 
     Db *db = args->matrixArgs->db;
 
+    User *user = NULL;
+
     if (MATRIX_PATH_PARTS(args->path) == 0)
     {
         if (HttpRequestMethodGet(args->context) != HTTP_POST)
@@ -190,28 +192,28 @@ ROUTE_IMPL(RouteRegister, args)
         }
 
         /* These values are already set */
-        (void) password;
         (void) refreshToken;
         (void) inhibitLogin;
 
         /* These may be NULL */
         (void) initialDeviceDisplayName;
-        (void) username;
         (void) deviceId;
 
-        /* TODO: Register new user here */
-
+        user = UserCreate(db, username, password);
+        response = HashMapCreate();
+        HashMapSet(response, "user_id", JsonValueString(StrConcat(4, "@", UserGetName(user), ":", args->matrixArgs->config->serverName)));
+        HttpResponseStatus(args->context, HTTP_OK);
         if (!inhibitLogin)
         {
             /* TODO: Log in user here and attach auth info to response */
         }
+        UserUnlock(user);
 
 finish:
         Free(username);
         Free(password);
         Free(deviceId);
         Free(initialDeviceDisplayName);
-
         JsonFree(request);
     }
     else

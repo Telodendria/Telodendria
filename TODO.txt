@@ -20,7 +20,7 @@ Milestone: v0.2.0
 [~] User registration
     [x] Username validation
     [x] Password hashing
-    [ ] User API
+    [~] User API
 
 [ ] Document UserInteractiveAuth (move docs from Matrix)
 [ ] Document User

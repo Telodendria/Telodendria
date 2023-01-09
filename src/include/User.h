@@ -47,6 +47,9 @@ extern int
  UserUnlock(User *);
 
 extern void
- UserLogin(User *, char *name, char *password, char *deviceId, char *deviceDisplayName);
+ UserLogin(User *, char *password, char *deviceId, char *deviceDisplayName);
+
+extern char *
+ UserGetName(User *);
 
 #endif                             /* TELODENDRIA_USER_H */
