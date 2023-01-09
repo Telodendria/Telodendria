@@ -561,7 +561,7 @@ HttpServerWorkerThread(void *args)
         }
 
         requestPath[i] = '\0';
-        requestParams = HttpParamDecode(requestPath + i + 1);
+        requestParams = (i == requestPathLen) ? NULL : HttpParamDecode(requestPath + i + 1);
 
         context = HttpServerContextCreate(requestMethod, requestPath, requestParams, fp);
         if (!context)
@@ -591,7 +591,7 @@ HttpServerWorkerThread(void *args)
                 line[i] = tolower(line[i]);
             }
 
-            headerKey = Malloc((i * sizeof(char)) + 1);
+            headerKey = Malloc((i + 1) * sizeof(char));
             if (!headerKey)
             {
                 goto internal_error;
