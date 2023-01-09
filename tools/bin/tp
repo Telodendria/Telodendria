@@ -52,7 +52,7 @@ case "$1" in
 			fi
 
 			if ! $CURL -o "$TP_DIR/ingress/$id.patch" "$HOMESERVER/media/v3/download/$server/$id"; then
-                rm "$TP_DIR"/ingress/$id.patch"
+                rm "$TP_DIR/ingress/$id.patch"
                 echo "Failed to fetch mxc://$server/$id."
                 echo "Will try again next time."
                 continue
