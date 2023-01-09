@@ -22,12 +22,12 @@ Milestone: v0.2.0
     [x] Password hashing
     [~] User API
 
+[x] Document MemoryHexDump()
+[x] Document DbExists()
 [ ] Document UserInteractiveAuth (move docs from Matrix)
 [ ] Document User
 [ ] Move docs from Matrix to User for UserValidate
-[ ] Document MemoryHexDump()
 [ ] Document Str and remove old functions from Util docs.
-[ ] Document DbExists()
 
 Milestone: v1.0.0
 -----------------

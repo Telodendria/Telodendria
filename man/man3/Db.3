@@ -1,4 +1,4 @@
-.Dd $Mdocdate: December 15 2022 $
+.Dd $Mdocdate: January 9 2023 $
 .Dt DB 3
 .Os Telodendria Project
 .Sh NAME
@@ -18,6 +18,8 @@
 .Fn DbLock "Db *" "size_t" "..."
 .Ft int
 .Fn DbUnlock "Db *" "DbRef *"
+.Ft int
+.Fn DbExists "Db *" "size_t" "..."
 .Ft HashMap *
 .Fn DbJson "DbRef *"
 .Sh DESCRIPTION
@@ -54,6 +56,17 @@ integrity.
 .Fn DbUnlock
 unlocks an object and returns it back to the database, which syncs it to the
 filesystem and caches it, if it isn't in the cache already.
+.Pp
+.Fn DbExists
+checks the existence of the given database object in a more efficient
+manner than attempting to lock it with
+.Fn DbLock .
+.Fn DbExists
+does not lock the object, nor does it load it into memory if it exists. It
+takes the same arguments as
+.Fn DbLock
+and
+.Fn DbUnlock .
 .Pp
 .Fn DbJson
 converts a database reference into JSON. At this time, the database actually

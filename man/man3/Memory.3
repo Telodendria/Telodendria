@@ -1,4 +1,4 @@
-.Dd $Mdocdate: November 29 2022 $
+.Dd $Mdocdate: January 9 2023 $
 .Dt MEMORY 3
 .Os Telodendria Project
 .Sh NAME
@@ -30,6 +30,8 @@
 .Fn MemoryIterate "void (*) (MemoryInfo *, void *)" "void *"
 .Ft void
 .Fn MemoryHook "void (*) (MemoryAction, MemoryInfo *, void *" "void *"
+.Ft void
+.Fn MemoryHexDump "MemoryInfo *" "void (*) (size_t, char *, char *, void *)" "void *"
 .Sh DESCRIPTION
 .Nm
 is an API that allows for smart memory management and profiling. It wraps
@@ -115,6 +117,14 @@ different. It also takes a memory action as the first argument. The
 API stores the pointer to this function, and executes it every time memory
 is allocated, reallocated, or freed. This allows a program to execute code
 whenever memory is allocated.
+.Pp
+.Fn MemoryHexDump
+can be useful for debugging memory errors. It reads over a block of memory
+and generates a hexadecimal and an ASCII string for each chunk of the block.
+It takes a memory infomation structure and a callback function that processes
+the offset, hexadecimal string, and ASCII string. This callback function
+typically prints the strings out to a console, file, or other output
+device.
 .Sh RETURN VALUES
 .Pp
 .Fn MemoryAllocate 

@@ -40,24 +40,43 @@ typedef enum MemoryAction
 
 typedef struct MemoryInfo MemoryInfo;
 
-extern void *MemoryAllocate(size_t, const char *, int);
-extern void *MemoryReallocate(void *, size_t, const char *, int);
-extern void MemoryFree(void *, const char *, int);
+extern void *
+ MemoryAllocate(size_t, const char *, int);
 
-extern size_t MemoryAllocated(void);
-extern void MemoryFreeAll(void);
+extern void *
+ MemoryReallocate(void *, size_t, const char *, int);
 
-extern MemoryInfo *MemoryInfoGet(void *);
+extern void
+ MemoryFree(void *, const char *, int);
 
-extern size_t MemoryInfoGetSize(MemoryInfo *);
-extern const char *MemoryInfoGetFile(MemoryInfo *);
-extern int MemoryInfoGetLine(MemoryInfo *);
-extern void *MemoryInfoGetPointer(MemoryInfo *);
+extern size_t
+ MemoryAllocated(void);
 
-extern void MemoryIterate(void (*) (MemoryInfo *, void *), void *);
+extern void
+ MemoryFreeAll(void);
 
-extern void MemoryHook(void (*) (MemoryAction, MemoryInfo *, void *), void *);
+extern MemoryInfo *
+ MemoryInfoGet(void *);
 
-extern void MemoryHexDump(MemoryInfo *, void (*) (size_t, char *, char *, void *), void *);
+extern size_t
+ MemoryInfoGetSize(MemoryInfo *);
+
+extern const char *
+ MemoryInfoGetFile(MemoryInfo *);
+
+extern int
+ MemoryInfoGetLine(MemoryInfo *);
+
+extern void *
+ MemoryInfoGetPointer(MemoryInfo *);
+
+extern void
+ MemoryIterate(void (*) (MemoryInfo *, void *), void *);
+
+extern void
+ MemoryHook(void (*) (MemoryAction, MemoryInfo *, void *), void *);
+
+extern void
+ MemoryHexDump(MemoryInfo *, void (*) (size_t, char *, char *, void *), void *);
 
 #endif
