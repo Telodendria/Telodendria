@@ -147,7 +147,7 @@ if [ "$(basename "$PATCHFILE" .patch)" = "$PATCHFILE" ] || [ ! -f "$PATCHFILE" ]
 fi
 echo "Sending file '$PATCHFILE'"
 echo "Checking homeserver's real address using .well-known..."
-curlec "$HS_NAME/.well-known/matrix/client"
+curlec "https://$HS_NAME/.well-known/matrix/client"
 case "$ERROR_CODE" in 
 	"200")
 		WELL_KNOWN=$RETURN
