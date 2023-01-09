@@ -736,9 +736,22 @@ DbExists(Db * db, size_t nArgs,...)
     args = ArrayFromVarArgs(nArgs, ap);
     va_end(ap);
 
-    file = DbFileName(db, args);
+    if (!args)
+    {
+        return 0;
+    }
 
+    /*
+     * Though it's not explicitly required, we lock the
+     * database before checking that an object exists to
+     * prevent any potential race conditions.
+     */
+    pthread_mutex_lock(&db->lock);
+
+    file = DbFileName(db, args);
     ret = UtilLastModified(file);
+
+    pthread_mutex_unlock(&db->lock);
 
     Free(file);
     ArrayFree(args);
