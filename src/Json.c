@@ -905,7 +905,7 @@ JsonDecodeValue(JsonParserState * state)
             value = JsonValueArray(JsonDecodeArray(state));
             break;
         case TOKEN_STRING:
-            strValue = Malloc(state->tokenLen);
+            strValue = Malloc(state->tokenLen + 1);
             if (!strValue)
             {
                 return NULL;
