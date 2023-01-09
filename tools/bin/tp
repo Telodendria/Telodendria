@@ -68,7 +68,7 @@ case "$1" in
 
 			echo "$count" > "$TP_DIR/count.txt"
 
-			matrix_send "Queued <code>$file</code> as <a href=\"https://telodendria.io/patches/p/$count.patch\">#$count</a>"
+			matrix_send "Queued <code>$file</code> as <a href=\"https://telodendria.io/patches/p/$count.patch\">#$count</a>" > /dev/null
 		done
 		;;
 	"queue")
