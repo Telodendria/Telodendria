@@ -52,6 +52,7 @@ ROUTE_IMPL(RouteRegister, args)
     char *deviceId = NULL;
 
     Db *db = args->matrixArgs->db;
+    LogConfig *lc = args->matrixArgs->lc;
 
     User *user = NULL;
 
@@ -207,8 +208,10 @@ ROUTE_IMPL(RouteRegister, args)
         {
             /* TODO: Log in user here and attach auth info to response */
         }
-        UserUnlock(user);
 
+        Log(lc, LOG_INFO, "Registered user '%s'", UserGetName(user));
+
+        UserUnlock(user);
 finish:
         Free(username);
         Free(password);

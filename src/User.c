@@ -121,13 +121,19 @@ UserLock(Db * db, char *name)
 int
 UserUnlock(User * user)
 {
+    int ret;
+
     if (!user)
     {
         return 0;
     }
+
     Free(user->name);
+
+    ret = DbUnlock(user->db, user->ref);
     Free(user);
-    return DbUnlock(user->db, user->ref);
+
+    return ret;
 }
 
 User *
