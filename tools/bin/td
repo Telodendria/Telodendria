@@ -137,6 +137,9 @@ recipe_clean() {
 # then running indent(1) on each source code file.
 recipe_format() {
     find src -name '*.c' -or -name '*.h' | while IFS= read -r src; do
+        if [ -t 1 ]; then
+            printf "FMT %s%*c\r" $(basename "$src") "16" " "
+        fi
         # Update the headers
         srcHeader=$(grep -n -m 1 '^ \*/' "$src" | cut -d ':' -f 1)
         head "-n$srcHeader" "$src" |
@@ -148,6 +151,9 @@ recipe_format() {
             rm $(basename "$src").BAK
         fi
     done
+    if [ -t 1 ]; then
+        printf "%*c\n" "50" " "
+    fi
 }
 
 # Deploy the Telodendria website by copying the required files to
