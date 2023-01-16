@@ -202,11 +202,32 @@ ROUTE_IMPL(RouteRegister, args)
 
         user = UserCreate(db, username, password);
         response = HashMapCreate();
-        HashMapSet(response, "user_id", JsonValueString(StrConcat(4, "@", UserGetName(user), ":", args->matrixArgs->config->serverName)));
+        HashMapSet(response, "user_id", JsonValueString(StrConcat(4, "@",
+                                                                  UserGetName(user), ":", args->matrixArgs->config->serverName)));
         HttpResponseStatus(args->context, HTTP_OK);
         if (!inhibitLogin)
         {
-            /* TODO: Log in user here and attach auth info to response */
+            UserLoginInfo *loginInfo = UserLogin(user, password, deviceId,
+                              initialDeviceDisplayName, refreshToken);
+
+            HashMapSet(response, "access_token",
+                       JsonValueString(loginInfo->accessToken));
+            HashMapSet(response, "device_id",
+                       JsonValueString(loginInfo->deviceId));
+
+            if (refreshToken)
+            {
+                HashMapSet(response, "expires_in_ms",
+                           JsonValueInteger(loginInfo->tokenLifetime));
+                HashMapSet(response, "refresh_token",
+                           JsonValueString(loginInfo->refreshToken));
+            }
+
+            /*
+             * Don't need to free members; they're attached to the JSON response,
+             * they will be freed after the response is sent.
+             */
+            Free(loginInfo);
         }
 
         Log(lc, LOG_INFO, "Registered user '%s'", UserGetName(user));

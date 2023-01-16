@@ -186,26 +186,171 @@ UserCreate(Db * db, char *name, char *password)
     hash = Sha256(tmpstr);
     Free(tmpstr);
     HashMapSet(json, "salt", JsonValueString(salt));
-    HashMapSet(json, "hash", JsonValueString(hash));
+    HashMapSet(json, "password", JsonValueString(hash));
 
-    HashMapSet(json, "created_on", JsonValueInteger(ts));
-    HashMapSet(json, "last_updated", JsonValueInteger(ts));
+    HashMapSet(json, "createdOn", JsonValueInteger(ts));
+    HashMapSet(json, "deactivated", JsonValueBoolean(0));
 
     return user;
 }
 
-void
-UserLogin(User * user, char *password, char *deviceId, char *deviceDisplayName)
+UserLoginInfo *
+UserLogin(User * user, char *password, char *deviceId, char *deviceDisplayName,
+          int withRefresh)
 {
-    /* TODO: Implement login */
-    (void) user;
-    (void) password;
-    (void) deviceId;
-    (void) deviceDisplayName;
+    DbRef *atRef;
+    DbRef *rtRef = NULL;
+
+    HashMap *devices;
+    HashMap *device;
+
+    UserLoginInfo *result;
+
+    if (!user || !password)
+    {
+        return NULL;
+    }
+
+    if (!UserCheckPassword(user, password))
+    {
+        return NULL;
+    }
+
+    result = Malloc(sizeof(UserLoginInfo));
+    if (!result)
+    {
+        return NULL;
+    }
+
+    result->refreshToken = NULL;
+    result->tokenLifetime = 0;
+
+    /* Generate an access token */
+    result->accessToken = StrRandom(64);
+    atRef = DbCreate(user->db, 3, "tokens", "access", result->accessToken);
+
+    HashMapSet(DbJson(atRef), "user", JsonValueString(StrDuplicate(user->name)));
+
+    if (withRefresh)
+    {
+        unsigned long ts = UtilServerTs();
+
+        result->tokenLifetime = 1000 * 60 * 60 * 24 * 7;        /* 1 Week */
+
+        result->refreshToken = StrRandom(64);
+        rtRef = DbCreate(user->db, 3, "tokens", "refresh", result->refreshToken);
+
+        HashMapSet(DbJson(rtRef), "refreshes",
+                   JsonValueString(StrDuplicate(result->accessToken)));
+        HashMapSet(DbJson(atRef), "expires", JsonValueInteger(ts + result->tokenLifetime));
+        DbUnlock(user->db, rtRef);
+    }
+
+    if (!deviceId)
+    {
+        result->deviceId = StrRandom(10);
+    }
+    else
+    {
+        result->deviceId = StrDuplicate(deviceId);
+    }
+
+    devices = JsonValueAsObject(HashMapGet(DbJson(user->ref), "devices"));
+    if (!devices)
+    {
+        devices = HashMapCreate();
+        HashMapSet(DbJson(user->ref), "devices", JsonValueObject(devices));
+    }
+
+    device = JsonValueAsObject(HashMapGet(devices, result->deviceId));
+
+    if (device)
+    {
+        JsonValue *val;
+
+        val = HashMapDelete(device, "accessToken");
+        if (val)
+        {
+            DbDelete(user->db, 3, "tokens", "access", JsonValueAsString(val));
+            JsonValueFree(val);
+        }
+
+        val = HashMapDelete(device, "refreshToken");
+        if (val)
+        {
+            DbDelete(user->db, 3, "tokens", "refresh", JsonValueAsString(val));
+            JsonValueFree(val);
+        }
+    }
+    else
+    {
+        device = HashMapCreate();
+        HashMapSet(devices, StrDuplicate(result->deviceId), JsonValueObject(device));
+
+        if (deviceDisplayName)
+        {
+            HashMapSet(device, "displayName",
+                    JsonValueString(StrDuplicate(deviceDisplayName)));
+        }
+
+    }
+
+    if (result->refreshToken)
+    {
+        HashMapSet(device, "refreshToken",
+                 JsonValueString(StrDuplicate(result->refreshToken)));
+    }
+
+    HashMapSet(device, "accessToken",
+               JsonValueString(StrDuplicate(result->accessToken)));
+
+    HashMapSet(DbJson(atRef), "device", JsonValueString(StrDuplicate(result->deviceId)));
+    DbUnlock(user->db, atRef);
+
+    return result;
 }
 
 char *
 UserGetName(User * user)
 {
     return user ? user->name : NULL;
+}
+
+int
+UserCheckPassword(User * user, char *password)
+{
+    HashMap *json;
+
+    char *storedHash;
+    char *salt;
+
+    char *hashedPwd;
+    char *tmp;
+
+    int result;
+
+    if (!user || !password)
+    {
+        return 0;
+    }
+
+    json = DbJson(user->ref);
+
+    storedHash = JsonValueAsString(HashMapGet(json, "password"));
+    salt = JsonValueAsString(HashMapGet(json, "salt"));
+
+    if (!storedHash || !salt)
+    {
+        return 0;
+    }
+
+    tmp = StrConcat(2, password, salt);
+    hashedPwd = Sha256(tmp);
+    Free(tmp);
+
+    result = strcmp(hashedPwd, storedHash) == 0;
+
+    Free(hashedPwd);
+
+    return result;
 }
