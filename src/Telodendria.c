@@ -344,6 +344,11 @@ main(int argc, char **argv)
     {
         LogConfigTimeStampFormatSet(lc, tConfig->logTimestamp);
     }
+    else
+    {
+        Free(tConfig->logTimestamp);
+        tConfig->logTimestamp = NULL;
+    }
 
     if (tConfig->flags & TELODENDRIA_LOG_COLOR)
     {
@@ -610,8 +615,10 @@ finish:
         fclose(stdout);
     }
 
-    TelodendriaConfigFree(tConfig);
     DbClose(matrixArgs.db);
+
+    LogConfigTimeStampFormatSet(lc, NULL);
+    TelodendriaConfigFree(tConfig);
 
     Log(lc, LOG_DEBUG, "");
     MemoryIterate(TelodendriaMemoryIterator, lc);
