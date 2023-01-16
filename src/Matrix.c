@@ -358,3 +358,31 @@ MatrixRateLimit(HttpServerContext * context, Db * db)
     (void) db;
     return NULL;
 }
+
+HashMap *
+MatrixClientWellKnown(char *base, char *identity)
+{
+    HashMap *response;
+    HashMap *homeserver;
+
+    if (!base)
+    {
+        return NULL;
+    }
+
+    response = HashMapCreate();
+    homeserver = HashMapCreate();
+
+    HashMapSet(homeserver, "base_url", JsonValueString(StrDuplicate(base)));
+    HashMapSet(response, "m.homeserver", JsonValueObject(homeserver));
+
+    if (identity)
+    {
+        HashMap *identityServer = HashMapCreate();
+
+        HashMapSet(identityServer, "base_url", JsonValueString(StrDuplicate(identity)));
+        HashMapSet(response, "m.identity_server", identityServer);
+    }
+
+    return response;
+}

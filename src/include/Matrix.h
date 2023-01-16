@@ -86,6 +86,7 @@ extern HashMap *
 extern HashMap *
  MatrixRateLimit(HttpServerContext *, Db *);
 
-
+extern HashMap *
+ MatrixClientWellKnown(char *, char *);
 
 #endif

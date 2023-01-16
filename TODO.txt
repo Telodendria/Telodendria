@@ -17,10 +17,10 @@ Milestone: v0.2.0
 [x] Move String functions to a new String.h
 [x] Make StringConcat use varargs
 [x] Look into seeding random strings (possibly create Random.h?)
-[~] User registration
+[x] User registration
     [x] Username validation
     [x] Password hashing
-    [~] User API
+    [x] User API
 
 [x] Document MemoryHexDump()
 [x] Document DbExists()

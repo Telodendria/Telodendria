@@ -32,7 +32,6 @@
 
 ROUTE_IMPL(RouteWellKnown, args)
 {
-    HashMap *response = NULL;
     char *pathPart = MATRIX_PATH_POP(args->path);
 
     if (!MATRIX_PATH_EQUALS(pathPart, "matrix") || MATRIX_PATH_PARTS(args->path) != 1)
@@ -47,24 +46,9 @@ ROUTE_IMPL(RouteWellKnown, args)
 
     if (MATRIX_PATH_EQUALS(pathPart, "client"))
     {
-        HashMap *homeserver = HashMapCreate();
-
         Free(pathPart);
-
-        response = HashMapCreate();
-
-        HashMapSet(homeserver, "base_url", JsonValueString(StrDuplicate(args->matrixArgs->config->baseUrl)));
-        HashMapSet(response, "m.homeserver", JsonValueObject(homeserver));
-
-        if (args->matrixArgs->config->identityServer)
-        {
-            HashMap *identityServer = HashMapCreate();
-
-            HashMapSet(identityServer, "base_url", JsonValueString(StrDuplicate(args->matrixArgs->config->identityServer)));
-            HashMapSet(response, "m.identity_server", identityServer);
-        }
-
-        return response;
+        return MatrixClientWellKnown(args->matrixArgs->config->baseUrl,
+                            args->matrixArgs->config->identityServer);
     }
     else
     {
