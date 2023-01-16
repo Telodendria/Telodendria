@@ -301,5 +301,7 @@ TelodendriaConfigFree(TelodendriaConfig * tConfig)
     Free(tConfig->gid);
     Free(tConfig->dataDir);
 
+    Free(tConfig->logTimestamp);
+
     Free(tConfig);
 }
