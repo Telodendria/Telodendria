@@ -18,9 +18,12 @@ Milestone: v0.2.0
     [ ] Logout
     [ ] Logout all
     [ ] Login fallback (static HTML page)
+[ ] User Interactive
+    [ ] Passwords
+    [ ] Registration tokens
+    [ ] Caller builds flows
 [x] Non-JSON endpoints
     [x] Home page (like Synapse's "it works!")
-    [ ] Content repository
 
 [x] Document MemoryHexDump()
 [x] Document DbExists()
@@ -56,6 +59,13 @@ Milestone: v0.4.0
     [ ] 7: Events
     [ ] 8: Rooms
 
+Milestone: v0.5.0
+-----------------
+
+[~] Client-Server API
+    [ ] Modules
+        [ ] Content Repository
+
 Milestone: v1.0.0
 -----------------
 
@@ -65,7 +75,6 @@ Milestone: v1.0.0
         [ ] Voice over IP
         [ ] Receipts
         [ ] Fully Read Markers
-        [ ] Content Repository
         [ ] Send-To-Device Messaging
 [ ] Server-Server API
 [ ] Application Service API

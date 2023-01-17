@@ -260,6 +260,11 @@ main(int argc, char **argv)
         }
     }
 
+    if (flags & ARG_VERBOSE)
+    {
+        LogConfigLevelSet(lc, LOG_DEBUG);
+    }
+
     if (flags & ARG_VERSION)
     {
         goto finish;

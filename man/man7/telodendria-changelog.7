@@ -53,6 +53,10 @@ it. Currently, it only implements a single dummy login flow,
 so it's more of a formality than anything else, but more login
 flows can easily be added in the future.
 .It
+Added a simple landing page that allows those setting up
+.Nm
+to quickly verify that it is accessible where it needs to be.
+.It
 Added a way to safely delete objects from the database.
 While the database is for persistent storage, there may
 be some ephemeral data that lives there only for a short
@@ -147,6 +151,10 @@ Updated the copyright year in the source code and compiled output.
 .It
 Switch the -std=c89 flag to -ansi instead, as -ansi might be more
 supported.
+.It
+Fixed the -v flag. It now sets the log level to debug as soon
+as possible to allowe debugging the configuration file parsing
+if necessary.
 .El
 .Pp
 And many more small bug fixes and feature additions. Please
