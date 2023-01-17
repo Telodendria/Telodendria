@@ -118,6 +118,52 @@ UserLock(Db * db, char *name)
     return user;
 }
 
+User *
+UserAuthenticate(Db * db, char *accessToken)
+{
+    User *user;
+    DbRef *atRef;
+
+    char *userName;
+    char *deviceId;
+    long expires;
+
+    if (!db || !accessToken)
+    {
+        return NULL;
+    }
+
+    atRef = DbLock(db, 3, "tokens", "access", accessToken);
+    if (!atRef)
+    {
+        return NULL;
+    }
+
+    userName = JsonValueAsString(HashMapGet(DbJson(atRef), "user"));
+    deviceId = JsonValueAsString(HashMapGet(DbJson(atRef), "device"));
+    expires = JsonValueAsInteger(HashMapGet(DbJson(atRef), "expires"));
+
+    user = UserLock(db, userName);
+    if (!user)
+    {
+        DbUnlock(db, atRef);
+        return NULL;
+    }
+
+    if (UtilServerTs() >= (unsigned long) expires)
+    {
+        UserUnlock(user);
+        DbUnlock(db, atRef);
+        return NULL;
+    }
+
+    /* TODO: Attach deviceId to User */
+    (void) deviceId;
+
+    DbUnlock(db, atRef);
+    return user;
+}
+
 int
 UserUnlock(User * user)
 {

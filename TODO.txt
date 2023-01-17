@@ -21,6 +21,7 @@ Milestone: v0.2.0
     [x] Username validation
     [x] Password hashing
     [x] User API
+[x] Password login
 
 [x] Document MemoryHexDump()
 [x] Document DbExists()

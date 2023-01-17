@@ -51,6 +51,9 @@ extern User *
 extern User *
  UserLock(Db *, char *name);
 
+extern User *
+ UserAuthenticate(Db *, char *accessToken);
+
 extern int
  UserUnlock(User *);
 

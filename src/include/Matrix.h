@@ -81,7 +81,7 @@ extern HashMap *
  MatrixErrorCreate(MatrixError);
 
 extern HashMap *
- MatrixAuthenticate(HttpServerContext *, Db *);
+ MatrixGetAccessToken(HttpServerContext *, char **);
 
 extern HashMap *
  MatrixRateLimit(HttpServerContext *, Db *);

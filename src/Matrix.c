@@ -302,13 +302,10 @@ MatrixErrorCreate(MatrixError errorArg)
 }
 
 HashMap *
-MatrixAuthenticate(HttpServerContext * context, Db * db)
+MatrixGetAccessToken(HttpServerContext * context, char **accessToken)
 {
     HashMap *params;
     char *token;
-
-    (void) db;                     /* Silence warning about unused var;
-                                    * we'll use it eventually. */
 
     params = HttpRequestHeaders(context);
     token = HashMapGet(params, "authorization");
@@ -345,8 +342,7 @@ MatrixAuthenticate(HttpServerContext * context, Db * db)
         }
     }
 
-    /* TODO: Check that "token" is actually valid */
-
+    *accessToken = token;
     return NULL;
 }
 
