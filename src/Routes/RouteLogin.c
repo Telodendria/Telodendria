@@ -28,12 +28,32 @@
 #include <Json.h>
 #include <HashMap.h>
 #include <Str.h>
+#include <Memory.h>
+#include <User.h>
 
 ROUTE_IMPL(RouteLogin, args)
 {
+    HashMap *request = NULL;
     HashMap *response = NULL;
     Array *enabledFlows;
     HashMap *pwdFlow;
+
+    JsonValue *val;
+
+    HashMap *identifier;
+
+    char *deviceId = NULL;
+    char *initialDeviceDisplayName = NULL;
+    int refreshToken = 0;
+
+    char *password;
+    char *type;
+    char *username;
+
+    Db *db = args->matrixArgs->db;
+
+    User *user;
+    UserLoginInfo *loginInfo;
 
     if (MATRIX_PATH_PARTS(args->path) > 0)
     {
@@ -52,15 +72,219 @@ ROUTE_IMPL(RouteLogin, args)
                    JsonValueString(StrDuplicate("m.login.password")));
             ArrayAdd(enabledFlows, JsonValueObject(pwdFlow));
             HashMapSet(response, "flows", JsonValueArray(enabledFlows));
-
             break;
         case HTTP_POST:
-            /* TODO */
+            request = JsonDecode(HttpStream(args->context));
+            if (!request)
+            {
+                HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
+                response = MatrixErrorCreate(M_NOT_JSON);
+                break;
+            }
+
+            val = HashMapGet(request, "type");
+            if (!val)
+            {
+                HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
+                response = MatrixErrorCreate(M_MISSING_PARAM);
+                break;
+            }
+
+            if (JsonValueType(val) != JSON_STRING)
+            {
+                HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
+                response = MatrixErrorCreate(M_BAD_JSON);
+                break;
+            }
+
+            type = JsonValueAsString(val);
+            if (strcmp(type, "m.login.password") != 0)
+            {
+                HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
+                response = MatrixErrorCreate(M_UNRECOGNIZED);
+                break;
+            }
+
+            val = HashMapGet(request, "identifier");
+            if (!val)
+            {
+                HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
+                response = MatrixErrorCreate(M_MISSING_PARAM);
+                break;
+            }
+
+            if (JsonValueType(val) != JSON_OBJECT)
+            {
+                HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
+                response = MatrixErrorCreate(M_BAD_JSON);
+                break;
+            }
+
+            identifier = JsonValueAsObject(val);
+
+            val = HashMapGet(identifier, "type");
+            if (!val)
+            {
+                HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
+                response = MatrixErrorCreate(M_MISSING_PARAM);
+                break;
+            }
+
+            if (JsonValueType(val) != JSON_STRING)
+            {
+                HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
+                response = MatrixErrorCreate(M_BAD_JSON);
+                break;
+            }
+
+            type = JsonValueAsString(val);
+            if (strcmp(type, "m.id.user") != 0)
+            {
+                HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
+                response = MatrixErrorCreate(M_UNRECOGNIZED);
+                break;
+            }
+
+            val = HashMapGet(identifier, "user");
+            if (!val)
+            {
+                HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
+                response = MatrixErrorCreate(M_MISSING_PARAM);
+                break;
+            }
+
+            if (JsonValueType(val) != JSON_STRING)
+            {
+                HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
+                response = MatrixErrorCreate(M_BAD_JSON);
+                break;
+            }
+
+            username = JsonValueAsString(val);
+
+            if (!UserExists(db, username))
+            {
+                HttpResponseStatus(args->context, HTTP_FORBIDDEN);
+                response = MatrixErrorCreate(M_FORBIDDEN);
+                break;
+            }
+
+            val = HashMapGet(request, "device_id");
+            if (val)
+            {
+                if (JsonValueType(val) != JSON_STRING)
+                {
+                    HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
+                    response = MatrixErrorCreate(M_BAD_JSON);
+                    break;
+                }
+
+                deviceId = JsonValueAsString(val);
+            }
+
+            val = HashMapGet(request, "initial_device_display_name");
+            if (val)
+            {
+                if (JsonValueType(val) != JSON_STRING)
+                {
+                    HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
+                    response = MatrixErrorCreate(M_BAD_JSON);
+                    break;
+                }
+
+                initialDeviceDisplayName = JsonValueAsString(val);
+            }
+
+            val = HashMapGet(request, "password");
+            if (!val)
+            {
+                HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
+                response = MatrixErrorCreate(M_MISSING_PARAM);
+                break;
+            }
+
+            if (JsonValueType(val) != JSON_STRING)
+            {
+                HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
+                response = MatrixErrorCreate(M_BAD_JSON);
+                break;
+            }
+
+            password = JsonValueAsString(val);
+
+            val = HashMapGet(request, "refresh_token");
+            if (val)
+            {
+                if (JsonValueType(val) != JSON_BOOLEAN)
+                {
+                    HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
+                    response = MatrixErrorCreate(M_BAD_JSON);
+                    break;
+                }
+
+                refreshToken = JsonValueAsBoolean(val);
+            }
+
+            user = UserLock(db, username);
+
+            if (!user)
+            {
+                HttpResponseStatus(args->context, HTTP_FORBIDDEN);
+                response = MatrixErrorCreate(M_FORBIDDEN);
+                break;
+            }
+
+            loginInfo = UserLogin(user, password, deviceId,
+                              initialDeviceDisplayName, refreshToken);
+
+            if (!loginInfo)
+            {
+                UserUnlock(user);
+
+                HttpResponseStatus(args->context, HTTP_FORBIDDEN);
+                response = MatrixErrorCreate(M_FORBIDDEN);
+                break;
+            }
+
+            response = HashMapCreate();
+
+            HashMapSet(response, "access_token",
+                       JsonValueString(loginInfo->accessToken));
+            HashMapSet(response, "device_id",
+                       JsonValueString(loginInfo->deviceId));
+
+            if (refreshToken)
+            {
+                HashMapSet(response, "expires_in_ms",
+                           JsonValueInteger(loginInfo->tokenLifetime));
+                HashMapSet(response, "refresh_token",
+                           JsonValueString(loginInfo->refreshToken));
+            }
+
+            HashMapSet(response, "user_id",
+                       JsonValueString(
+                             StrConcat(4, "@", UserGetName(user), ":",
+                              args->matrixArgs->config->serverName)));
+
+            HashMapSet(response, "well_known",
+                       JsonValueObject(
+              MatrixClientWellKnown(args->matrixArgs->config->baseUrl,
+                          args->matrixArgs->config->identityServer)));
+
+            /*
+             * Don't need to free members; they're attached to the JSON
+             * response, they will be freed after the response is sent.
+             */
+            Free(loginInfo);
+            UserUnlock(user);
+
+            break;
         default:
             HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
             response = MatrixErrorCreate(M_UNRECOGNIZED);
             break;
     }
 
+    JsonFree(request);
     return response;
 }
