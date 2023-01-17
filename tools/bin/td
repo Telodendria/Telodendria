@@ -185,7 +185,7 @@ recipe_site() {
 
         mkdir -p "$TELODENDRIA_PUB/$dir/"
         mandoc -Thtml \
-            -O style=/style.css,man=man/man%S/%N.%S.html "$man" \
+            -O style=/style.css,man=/man/man%S/%N.%S.html "$man" \
             > "$TELODENDRIA_PUB/$dir/$html.html"
         echo "$TELODENDRIA_PUB/$dir/$html.html"
     done
