@@ -1,4 +1,4 @@
-.Dd $Mdocdate: January 6 2023 $
+.Dd $Mdocdate: January 17 2023 $
 .Dt TELODENDRIA-CHANGELOG 7
 .Os Telodendria Project
 .Sh NAME
@@ -32,10 +32,22 @@ as well, so you can discuss your progress and ask questions.
 .Pp
 Not released yet.
 .Pp
+This release is focused on providing a decent amount of the
+client authentication API. You can now create accounts on a
+Telodendria homeserver, and log in to get access tokens.
+.Pp
 New:
 .Bl -bullet
 .It
-Added a basic form of the user interactive authentication API,
+Added the basic form of the user registration API. If
+registration is enabled in the configuration file, clients
+can now register for Matrix accounts.
+.It
+Added the basic form of the user login API. Clients can now
+log in to their accounts and generate access tokens to be
+used to authenticate requests.
+.It
+Added the basic form of the user interactive authentication API,
 which can be used by any endpoints that the spec says require
 it. Currently, it only implements a single dummy login flow,
 so it's more of a formality than anything else, but more login
@@ -75,6 +87,9 @@ such as access tokens, usernames, or passwords. However,
 .Nm
 should not be leaking memory at all, so if you encounter
 any leaks, please report them.
+.It
+Refactored a lot of the code and accompanying documentation
+to be more readable and maintainable.
 .El
 .Pp
 Bug fixes:
@@ -127,7 +142,16 @@ Fix whitespace issues in various shell scripts.
 .It
 Fixed the debug log output so that it only shows the file name,
 not the entire file path in the repository.
+.It
+Updated the copyright year in the source code and compiled output.
+.It
+Switch the -std=c89 flag to -ansi instead, as -ansi might be more
+supported.
 .El
+.Pp
+And many more small bug fixes and feature additions. Please
+test the current functionality, and report bugs to the Matrix
+rooms.
 .Sh v0.1.0
 .Pp
 Tuesday, December 13, 2022

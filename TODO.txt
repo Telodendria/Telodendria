@@ -31,7 +31,7 @@ Milestone: v0.2.0
 [ ] Document Str and remove old functions from Util docs.
 
 [ ] Clean up scripts (make tools/lib/matrix.sh)
-[ ] Update changelog
+[x] Update changelog
 [x] Fix man page links on website
 
 Milestone: v1.0.0
