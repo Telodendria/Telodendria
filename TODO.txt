@@ -11,17 +11,16 @@ Key:
 Milestone: v0.2.0
 -----------------
 
-[x] Abstract user-interactive authentication
 [ ] Abstract /email/requestToken and /msidsn/requestToken
 
-[x] Move String functions to a new String.h
-[x] Make StringConcat use varargs
-[x] Look into seeding random strings (possibly create Random.h?)
-[x] User registration
-    [x] Username validation
-    [x] Password hashing
-    [x] User API
-[x] Password login
+[ ] User login
+    [ ] Refresh tokens
+    [ ] Logout
+    [ ] Logout all
+    [ ] Login fallback (static HTML page)
+[ ] Non-JSON endpoints
+    [ ] Home page (like Synapse's "it works!")
+    [ ] Content repository
 
 [x] Document MemoryHexDump()
 [x] Document DbExists()
@@ -34,27 +33,33 @@ Milestone: v0.2.0
 [x] Update changelog
 [x] Fix man page links on website
 
+Milestone: v0.3.0
+-----------------
+
+[ ] Client-Server API
+    [ ] 4: Token-based user registration
+        [ ] Refactor user-interactive auth flow
+        [ ] Token validity endpoint
+    [ ] 4: Account management
+        [ ] Deactivate
+        [ ] Change password
+        [ ] Whoami
+    [ ] 9: User Data
+    [ ] 5: Capabilities negotiation
+    [ ] 10: Security (Rate Limiting)
+
+Milestone: v0.4.0
+-----------------
+
+[ ] Client-Server API
+    [ ] 6: Filtering
+    [ ] 7: Events
+    [ ] 8: Rooms
+
 Milestone: v1.0.0
 -----------------
 
-[ ] Database upgrades/migration path
-
 [~] Client-Server API
-    [ ] API Standards
-	    [x] Error responses
-	[x] Web Browser Clients
-	[x] /_matrix/client/versions
-    [x] Server Discovery
-	    [x] Well-known URIs
-		[x] Make base-url optional in config
-		[x] Make identity-server optional in config
-	[ ] Client Authentication
-	[ ] Capabilities negotiation
-    [ ] Filtering
-    [ ] Events
-    [ ] Rooms
-    [ ] User Data
-    [ ] Security (Rate Limiting)
     [ ] Modules
         [ ] Instant Messaging
         [ ] Voice over IP
@@ -68,6 +73,10 @@ Milestone: v1.0.0
 [ ] Push Gateway API
 [ ] Room Versions
 
+Milestone v1.1.0
+----------------
+
+[ ] Database upgrades/migration path
 [ ] Create a command line tool to manage Telodendria
 	[ ] User management
 	[ ] Room management
