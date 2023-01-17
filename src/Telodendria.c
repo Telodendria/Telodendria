@@ -32,6 +32,7 @@
 #include <grp.h>
 #include <pwd.h>
 
+#include <Telodendria.h>
 #include <Memory.h>
 #include <TelodendriaConfig.h>
 #include <Log.h>
@@ -42,6 +43,42 @@
 #include <Db.h>
 #include <Cron.h>
 #include <UserInteractiveAuth.h>
+
+const char
+ TelodendriaLogo[TELODENDRIA_LOGO_HEIGHT][TELODENDRIA_LOGO_WIDTH] = {
+    "            .=                       -=-               ",
+    "          :.:+                     .=:.                ",
+    "         .=+-==.                  :.                   ",
+    "           .+-                   =.                    ",
+    "           .+                   :+.                    ",
+    "            ==.                 -+:                    ",
+    "             =++==--::           =+.                   ",
+    "               .:::--=+=:        :+=                   ",
+    "                       :==.      -=:                   ",
+    "                         ===----=-.           ... :+.  ",
+    "                       :==+=======:        .-+-::-+-=+=",
+    "                      .==*%#=======       :+-      ..  ",
+    "                 .:--=-===+=========-.   :+:           ",
+    "              .=++=::..:============-+=-=-             ",
+    ":+=:        :=+-:      .-=========-.  .                ",
+    " =+++:  .:=+-:      .:--. .--:==:                      ",
+    "   ::---:..       :=+:        ==                       ",
+    "                  ++.        .+-                       ",
+    "                  =+         .+-     ...:              ",
+    "                  +-          -+-:-+=::+:              ",
+    "        :=-....:-=:            .--:    =-              ",
+    "     -++=:.:::..                                       "
+};
+
+const char
+ TelodendriaHeader[TELODENDRIA_HEADER_HEIGHT][TELODENDRIA_HEADER_WIDTH] = {
+    "=======================================================",
+    "|_   _|__| | ___   __| | ___ _ __   __| |_ __(_) __ _  ",
+    "  | |/ _ \\ |/ _ \\ / _` |/ _ \\ '_ \\ / _` | '__| |/ _` | ",
+    "  | |  __/ | (_) | (_| |  __/ | | | (_| | |  | | (_| | ",
+    "  |_|\\___|_|\\___/ \\__,_|\\___|_| |_|\\__,_|_|  |_|\\__,_| ",
+    "======================================================="
+};
 
 static void
 TelodendriaMemoryHook(MemoryAction a, MemoryInfo * i, void *args)
@@ -125,62 +162,18 @@ typedef enum ArgFlag
 static void
 TelodendriaPrintHeader(LogConfig * lc)
 {
-    Log(lc, LOG_INFO,
-        "            .=                       -=-");
-    Log(lc, LOG_INFO,
-        "          :.:+                     .=:.");
-    Log(lc, LOG_INFO,
-        "         .=+-==.                  :.");
-    Log(lc, LOG_INFO,
-        "           .+-                   =.");
-    Log(lc, LOG_INFO,
-        "           .+                   :+.");
-    Log(lc, LOG_INFO,
-        "            ==.                 -+:");
-    Log(lc, LOG_INFO,
-        "             =++==--::           =+.");
-    Log(lc, LOG_INFO,
-        "               .:::--=+=:        :+=");
-    Log(lc, LOG_INFO,
-        "                       :==.      -=:");
-    Log(lc, LOG_INFO,
-        "                         ===----=-.           ... :+.");
-    Log(lc, LOG_INFO,
-        "                       :==+=======:        .-+-::-+-=+=");
-    Log(lc, LOG_INFO,
-        "                      .==*%#=======       :+-      ..");
-    Log(lc, LOG_INFO,
-        "                 .:--=-===+=========-.   :+:");
-    Log(lc, LOG_INFO,
-        "              .=++=::..:============-+=-=-");
-    Log(lc, LOG_INFO,
-        ":+=:        :=+-:      .-=========-.  .");
-    Log(lc, LOG_INFO,
-        " =+++:  .:=+-:      .:--. .--:==:");
-    Log(lc, LOG_INFO,
-        "   ::---:..       :=+:        ==");
-    Log(lc, LOG_INFO,
-        "                  ++.        .+-");
-    Log(lc, LOG_INFO,
-        "                  =+         .+-     ...:");
-    Log(lc, LOG_INFO,
-        "                  +-          -+-:-+=::+:");
-    Log(lc, LOG_INFO,
-        "        :=-....:-=:            .--:    =-");
-    Log(lc, LOG_INFO,
-        "     -++=:.:::..");
+    size_t i;
 
+    for (i = 0; i < TELODENDRIA_LOGO_HEIGHT; i++)
+    {
+        Log(lc, LOG_INFO, "%s", TelodendriaLogo[i]);
+    }
 
-    Log(lc, LOG_INFO,
-        " _____    _           _                _      _");
-    Log(lc, LOG_INFO,
-        "|_   _|__| | ___   __| | ___ _ __   __| |_ __(_) __ _");
-    Log(lc, LOG_INFO,
-        "  | |/ _ \\ |/ _ \\ / _` |/ _ \\ '_ \\ / _` | '__| |/ _` |");
-    Log(lc, LOG_INFO,
-        "  | |  __/ | (_) | (_| |  __/ | | | (_| | |  | | (_| |");
-    Log(lc, LOG_INFO,
-      "  |_|\\___|_|\\___/ \\__,_|\\___|_| |_|\\__,_|_|  |_|\\__,_|");
+    for (i = 0; i < TELODENDRIA_HEADER_HEIGHT; i++)
+    {
+        Log(lc, LOG_INFO, "%s", TelodendriaHeader[i]);
+    }
+
     Log(lc, LOG_INFO, "Telodendria v" TELODENDRIA_VERSION);
     Log(lc, LOG_INFO, "");
     Log(lc, LOG_INFO,

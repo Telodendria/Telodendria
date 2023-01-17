@@ -40,7 +40,7 @@ MatrixHttpHandler(HttpServerContext * context, void *argp)
     MatrixHttpHandlerArgs *args = (MatrixHttpHandlerArgs *) argp;
     LogConfig *lc = args->lc;
     FILE *stream;
-    HashMap *response;
+    HashMap *response = NULL;
 
     char *key;
 
@@ -60,7 +60,6 @@ MatrixHttpHandler(HttpServerContext * context, void *argp)
 
     HttpResponseStatus(context, HTTP_OK);
     HttpResponseHeader(context, "Server", "Telodendria/" TELODENDRIA_VERSION);
-    HttpResponseHeader(context, "Content-Type", "application/json");
 
     /* CORS */
     HttpResponseHeader(context, "Access-Control-Allow-Origin", "*");
@@ -101,7 +100,11 @@ MatrixHttpHandler(HttpServerContext * context, void *argp)
 
     pathPart = MATRIX_PATH_POP(pathParts);
 
-    if (MATRIX_PATH_EQUALS(pathPart, ".well-known"))
+    if (!pathPart)
+    {
+        response = RouteMainPage(&routeArgs);
+    }
+    else if (MATRIX_PATH_EQUALS(pathPart, ".well-known"))
     {
         response = RouteWellKnown(&routeArgs);
     }
@@ -117,18 +120,25 @@ MatrixHttpHandler(HttpServerContext * context, void *argp)
 
     Free(pathPart);
 
-    if (!response)
+    /*
+     * If the route handler returned a JSON object, take care
+     * of sending it here.
+     *
+     * Otherwise, if the route handler returned NULL, so assume
+     * that it sent its own headers and and body.
+     */
+    if (response)
     {
-        Log(lc, LOG_ERR, "The route handler returned NULL: %s", requestPath);
-        HttpResponseStatus(context, HTTP_INTERNAL_SERVER_ERROR);
-        response = MatrixErrorCreate(M_UNKNOWN);
+        HttpResponseHeader(context, "Content-Type", "application/json");
+        HttpSendHeaders(context);
+
+        stream = HttpStream(context);
+
+        JsonEncode(response, stream);
+        JsonFree(response);
+
+        fprintf(stream, "\n");
     }
-
-    HttpSendHeaders(context);
-
-    stream = HttpStream(context);
-    JsonEncode(response, stream);
-    fprintf(stream, "\n");
 
     /*
      * By this point, there should be no path parts remaining, but if
@@ -140,7 +150,6 @@ MatrixHttpHandler(HttpServerContext * context, void *argp)
     }
 
     MATRIX_PATH_FREE(pathParts);
-    JsonFree(response);
 
 finish:
     LogConfigUnindent(lc);

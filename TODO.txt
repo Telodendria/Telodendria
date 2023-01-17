@@ -18,8 +18,8 @@ Milestone: v0.2.0
     [ ] Logout
     [ ] Logout all
     [ ] Login fallback (static HTML page)
-[ ] Non-JSON endpoints
-    [ ] Home page (like Synapse's "it works!")
+[x] Non-JSON endpoints
+    [x] Home page (like Synapse's "it works!")
     [ ] Content repository
 
 [x] Document MemoryHexDump()

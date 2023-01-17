@@ -21,48 +21,19 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-#ifndef TELODENDRIA_ROUTES_H
-#define TELODENDRIA_ROUTES_H
+#ifndef TELODENDRIA_H
+#define TELODENDRIA_H
 
-#include <string.h>
+#define TELODENDRIA_LOGO_WIDTH 56
+#define TELODENDRIA_LOGO_HEIGHT 22
 
-#include <HashMap.h>
-#include <Array.h>
-#include <HttpServer.h>
-#include <Matrix.h>
+extern const char
+ TelodendriaLogo[TELODENDRIA_LOGO_HEIGHT][TELODENDRIA_LOGO_WIDTH];
 
-#define MATRIX_PATH Array
-#define MATRIX_PATH_CREATE() ArrayCreate()
-#define MATRIX_PATH_APPEND(path, part) ArrayAdd(path, part)
-#define MATRIX_PATH_FREE(path) ArrayFree(path)
+#define TELODENDRIA_HEADER_WIDTH 56
+#define TELODENDRIA_HEADER_HEIGHT 6
 
-#define MATRIX_PATH_POP(path) ArrayDelete(path, 0)
-#define MATRIX_PATH_PARTS(path) ArraySize(path)
-
-#define MATRIX_PATH_EQUALS(pathPart, str) \
-	((pathPart != NULL) && (strcmp(pathPart, str) == 0))
-
-typedef struct RouteArgs
-{
-    MatrixHttpHandlerArgs *matrixArgs;
-    HttpServerContext *context;
-    MATRIX_PATH *path;
-} RouteArgs;
-
-#define ROUTE(name) \
-	extern HashMap * \
-	name(RouteArgs *)
-
-#define ROUTE_IMPL(name, argsName) \
-	HashMap * \
-	name(RouteArgs * argsName)
-
-ROUTE(RouteMainPage);              /* / */
-ROUTE(RouteWellKnown);             /* /.well-known */
-ROUTE(RouteMatrix);                /* /_matrix */
-ROUTE(RouteLogin);                 /* /_matrix/client/(r0|v3)/login */
-ROUTE(RouteRegister);              /* /_matrix/client/(r0|v3)/register */
-
-#undef ROUTE
+extern const char
+ TelodendriaHeader[TELODENDRIA_HEADER_HEIGHT][TELODENDRIA_HEADER_WIDTH];
 
 #endif
