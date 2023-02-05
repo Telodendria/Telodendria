@@ -26,12 +26,14 @@
 
 : "${CC:=cc}"
 : "${CFLAGS:=-Wall -Wextra -pedantic -ansi -O3}"
-: "${LDFLAGS:=-lm -pthread -static -flto -fdata-sections -ffunction-sections -s -Wl,-static -Wl,-gc-sections}"
+: "${STATIC:=-static -Wl,-static}"
+: "${LDFLAGS:=-lm -pthread -flto -fdata-sections -ffunction-sections -s -Wl,-gc-sections}"
 : "${PROG:=telodendria}"
 
 . "$(pwd)/tools/lib/common.sh"
 
 CFLAGS="${CFLAGS} ${DEFINES} ${INCLUDES}"
+LDFLAGS="${LDFLAGS} ${STATIC}"
 
 if [ "$DEBUG" = "1" ]; then
     CFLAGS="$CFLAGS -O0 -g"
@@ -85,6 +87,11 @@ setsubst() {
 recipe_build() {
     cd src
     mkdir -p ../build
+
+    echo "CC = ${CC}"
+    echo "CFLAGS = ${CFLAGS}"
+    echo "LDFLAGS = ${LDFLAGS}"
+    echo
 
     do_rebuild=0
     objs=""
