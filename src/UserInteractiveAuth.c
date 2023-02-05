@@ -68,7 +68,7 @@ UserInteractiveAuth(HttpServerContext * context, Db * db,
     {
         HashMap *response = NULL;
         HashMap *persist;
-        char *session = StrRandom(24);
+        char *sessionRand = StrRandom(24);
 
         ref = DbLock(db, 1, "user_interactive");
         if (!ref)
@@ -77,14 +77,14 @@ UserInteractiveAuth(HttpServerContext * context, Db * db,
         }
 
         persist = DbJson(ref);
-        HashMapSet(persist, session, JsonValueNull());
+        HashMapSet(persist, sessionRand, JsonValueNull());
         DbUnlock(db, ref);
 
         HttpResponseStatus(context, HTTP_UNAUTHORIZED);
         response = BuildDummyFlow();
 
         HashMapSet(response, "session",
-                   JsonValueString(StrDuplicate(session)));
+                   JsonValueString(StrDuplicate(sessionRand)));
 
         return response;
     }

@@ -689,8 +689,6 @@ HttpServerEventThread(void *args)
         /* Don't even accept connections if the queue is full. */
         if (!QueueFull(server->connQueue))
         {
-            FILE *fp;
-
             connFd = accept(server->sd, (struct sockaddr *) & addr, &addrLen);
 
             if (connFd < 0)
