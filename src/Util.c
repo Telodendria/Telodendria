@@ -44,6 +44,10 @@
 #define PATH_MAX 256
 #endif
 
+#ifndef SSIZE_MAX
+#define SSIZE_MAX LONG_MAX
+#endif
+
 unsigned long
 UtilServerTs(void)
 {

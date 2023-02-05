@@ -29,10 +29,24 @@
 
 #include <limits.h>
 
-#if defined(LONG_BIT) && LONG_BIT == 32
+/*
+ * POSIX says that LONG_BIT and WORD_BIT are defined, but some notable
+ * non-conforming systems and compilers don't don't define it, or only
+ * define it in circumstances I'm unwilling to comply with (such as
+ * defining _GNU_SOURCE.
+ *
+ * So, unfortunately, although LONG_BIT and WORD_BIT are the most
+ * elegant solutions, we're forced to do this so we can check LONG_MAX
+ * and INT_MAX.
+ */
+#define BIT64_MAX 9223372036854775807
+#define BIT32_MAX 2147483647
+#define BIT16_MAX 32767
+
+#if (defined(LONG_BIT) && LONG_BIT == 32) || (defined(LONG_MAX) && LONG_MAX == BIT32_MAX)
 typedef unsigned long uint32_t;
 
-#elif defined(WORD_BIT) && WORD_BIT == 32
+#elif (defined(WORD_BIT) && WORD_BIT == 32) || (defined(INT_MAX) && INT_MAX == BIT32_MAX)
 typedef unsigned int uint32_t;
 
 #else
