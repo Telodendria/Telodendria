@@ -266,7 +266,7 @@ HashMapIterate(HashMap * map, char **key, void **value)
 
         map->iterator++;
 
-        if (bucket)
+        if (bucket && bucket->hash)
         {
             *key = bucket->key;
             *value = bucket->value;
