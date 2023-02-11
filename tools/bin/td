@@ -100,11 +100,7 @@ recipe_build() {
         objs="$objs $obj"
     
         if [ $(mod_time "$src") -ge $(mod_time "$obj") ]; then
-            if [ -t 1 ]; then
-                printf "CC %s%*c\r" "$(basename $obj)" "16" " "
-            else
-                echo "CC $(basename $obj)"
-            fi
+            echo "CC $(basename $obj)"
             obj_dir=$(dirname "$obj")
             mkdir -p "$obj_dir"
             if ! $CC $CFLAGS -Iinclude -c -o "$obj" "$src"; then
@@ -115,11 +111,7 @@ recipe_build() {
     done
 
     if [ $do_rebuild -eq 1 ] || [ ! -f "../build/$PROG" ]; then
-        if [ -t 1 ]; then
-            printf "LD %s%*c\n" "$PROG" "16" " "
-        else
-            echo "LD $PROG"
-        fi
+        echo "LD $PROG"
         $CC $LDFLAGS -o "../build/$PROG" $objs
     else
         echo "Up to date."
