@@ -43,10 +43,10 @@ extern int
  UserHistoricalValidate(char *, char *);
 
 extern int
- UserExists(Db *, char *name);
+ UserExists(Db *, char *);
 
 extern User *
- UserCreate(Db *, char *name, char *password);
+ UserCreate(Db *, char *, char *);
 
 extern User *
  UserLock(Db *, char *name);

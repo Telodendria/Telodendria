@@ -1,0 +1,71 @@
+.Dd $Mdocdate: February 12 2023 $
+.Dt USER 3
+.Os Telodendria Project
+.Sh NAME
+.Nm User
+.Nd Convenience functions for working with local users.
+.Sh SYNOPSIS
+.In User.h
+.Ft int
+.Fn UserValidate "char *" "char *"
+.Ft int
+.Fn UserHistoricalValidate "char *" "char *"
+.Ft int
+.Fn UserExists "Db *" "char *"
+.Ft User *
+.Fn UserCreate "Db *" "char *" "char *"
+.Ft User *
+.Fn UserLock "Db *" "char *"
+.Ft User *
+.Fn UserAuthenticate "Db *" "char *"
+.Ft int
+.Fn UserUnlock "User *"
+.Ft UserLoginInfo *
+.Fn UserLogin "User *" "char *" "char *" "char *" "int"
+.Ft char *
+.Fn UserGetName "User *"
+.Ft int
+.Fn UserCheckPassword "User *" "char *"
+.Sh DESCRIPTION
+.Pp
+The
+.Nm
+API provides a wrapper over the database and offers an easy way for managing
+local users. It supports all of the locking mechanisms that the database does,
+and provides features for authenticating local users, among other tasks.
+.Pp
+.Fn UserValidate
+takes a localpart and domain as separate parameters and validates it against the
+rules of the Matrix specification. The reason the domain is required is because
+the spec imposes limitations on the length of the user name, and the longer the
+domain name is, the shorter the local part can be. This function is used to
+ensure that client-provided localparts are valid on this server.
+.Fn UserHistoricalValidate
+is called the exact same way, except it is a little more lenient. It is used to
+validate user parts on other servers, since some usernames might exist that are
+not fully spec compliant, but remain in use due to historical reasons.
+.Pp
+.Fn UserExists
+takes a localpart and checks whether or not it exists in the database.
+.Pp
+.Fn UserCreate
+creates a new user. It takes a localpart, which is assumed to be valid, and
+a password.
+.Pp
+.Fn UserLock
+takes a localpart and obtains a database reference to the user represented by that
+localpart. It behaves analogously to
+.Fn DbLock ,
+and in fact uses it under the hood to ensure that the user can only be modified
+by the thread that has locked the user.
+.Fn UserUnlock
+returns the user reference back to the database. It uses
+.Fn DbUnlock
+under the hood.
+.Pp
+.Fn UserAuthenticate
+takes an access token, figures out what user it belongs to, and returns the
+reference to that user.
+.Sh RETURN VALUES
+.Sh SEE ALSO
+.Xr Db 3
