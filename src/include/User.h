@@ -49,17 +49,16 @@ extern User *
  UserCreate(Db *, char *, char *);
 
 extern User *
- UserLock(Db *, char *name);
+ UserLock(Db *, char *);
 
 extern User *
- UserAuthenticate(Db *, char *accessToken);
+ UserAuthenticate(Db *, char *);
 
 extern int
  UserUnlock(User *);
 
 extern UserLoginInfo *
-UserLogin(User *, char *password, char *deviceId, char *deviceDisplayName,
-          int withRefresh);
+ UserLogin(User *, char *, char *, char *, int);
 
 extern char *
  UserGetName(User *);
