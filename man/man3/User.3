@@ -1,4 +1,4 @@
-.Dd $Mdocdate: February 12 2023 $
+.Dd $Mdocdate: February 14 2023 $
 .Dt USER 3
 .Os Telodendria Project
 .Sh NAME
@@ -65,7 +65,59 @@ under the hood.
 .Pp
 .Fn UserAuthenticate
 takes an access token, figures out what user it belongs to, and returns the
-reference to that user.
+reference to that user. This function should be used by most endpoints that
+require valid user authentication, since most endpoints are authenticated via
+access tokens.
+.Pp
+.Fn UserLogin
+is used for logging in a user. It takes the user's password, device ID, device
+display name, and a boolean value indicating whether or not the client supports
+refresh tokens. This function logs in the user and generates an access token to be
+returned to the client.
+.Pp
+.Fn UserGetName
+gets the name attached to a user object. It can be used for the few cases where
+it's necessary to know the localpart of a user.
+.Pp
+.Fn UserCheckPassword
+takes a password and verifies it against a user object. Telodendria does not
+store passwords in plain text, so this function hashes the password and and
+checks it against what's stored in the database.
 .Sh RETURN VALUES
+.Pp
+.Fn UserValidate ,
+.Fn UserHistoricalValidate ,
+.Fn UserExists ,
+.Fn UserUnlock ,
+and
+.Fn UserCheckPassword
+all return a boolean value. Non-zero values indicate success, and zero values
+indicate failure.
+.Pp
+.Fn UserCreate ,
+.Fn UserLock ,
+and
+.Fn UserAuthenticate
+return a pointer to a User, or NULL if an error occurred.
+.Pp
+.Fn UserGetName
+returns a pointer to the string that holds the localpart of the user represented
+by the given user pointer. This pointer should not be freed by the caller , as it
+is used internally and will be freed when the user is unlocked.
+.Pp
+.Fn UserLogin
+returns a UserLoginInfo struct, which is defined as follows:
+.Bd -literal -offset indent
+typedef struct UserLoginInfo
+{
+    char *accessToken;
+    char *refreshToken;
+    char *deviceId;
+    long tokenLifetime;
+} UserLoginInfo;
+.Ed
+.Pp
+All this information should be returned to the client that is logging in. If the
+client doesn't support refresh tokens, then refreshToken will be NULL.
 .Sh SEE ALSO
 .Xr Db 3

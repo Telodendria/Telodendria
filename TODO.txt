@@ -28,7 +28,7 @@ Milestone: v0.2.0
 [x] Document MemoryHexDump()
 [x] Document DbExists()
 [ ] Document UserInteractiveAuth (move docs from Matrix)
-[ ] Document User
+[x] Document User
 [ ] Move docs from Matrix to User for UserValidate
 [ ] Document Str and remove old functions from Util docs.
 
