@@ -71,7 +71,7 @@ setsubst() {
 
     (
         set | while IFS='=' read -r var val; do
-            val=$(echo "$val" | cut -d "'" -f 2)
+            val=$(echo "$val" | cut -d "'" -f 2- | rev | cut -d "'" -f 2- | rev)
             echo "s|\\\${$var}|$val|g"
         done
 
@@ -164,7 +164,10 @@ recipe_site() {
         exit 1
     fi
 
+    # Set some variables that may be replaced in the files.
     DATE=$(date)
+    USER_DOCS=$(man-table user)
+    DEV_DOCS=$(man-table dev)
 
     cd site/
     find . -type f | while IFS= read -r file; do
