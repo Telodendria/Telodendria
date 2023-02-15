@@ -1,4 +1,4 @@
-.Dd $Mdocdate: December 15 2022 $
+.Dd $Mdocdate: February 15 2023 $
 .Dt UTIL 3
 .Os Telodendria Project
 .Sh NAME
@@ -12,12 +12,6 @@
 .Fn UtilLastModified "char *"
 .Ft int
 .Fn UtilMkdir "const char *" "const mode_t"
-.Ft char *
-.Fn UtilUtf8Encode "unsigned long"
-.Ft char *
-.Fn UtilStringDuplicate "char *"
-.Ft char *
-.Fn UtilStringConcat "char *" "char *"
 .Ft int
 .Fn UtilSleepMillis "long"
 .Ft size_t
@@ -26,8 +20,6 @@
 .Fn UtilGetDelim "char **" "size_t *" "int" "FILE *"
 .Ft ssize_t
 .Fn UtilGetLine "char **" "size_t *" "FILE *"
-.Ft char *
-.Fn UtilRandomString "size_t"
 .Sh DESCRIPTION
 .Pp
 This header holds a number of random functions related to strings,
@@ -55,17 +47,6 @@ behaves just like the system call
 but it creates any intermediate directories if necessary, unlike
 .Xr mkdir 2 .
 .Pp
-.Fn UtilUtf8Encode
-takes a UTF-8 codepoint and encodes it into a string buffer
-containing between 1 and 4 bytes. The string buffer is allocated
-on the heap, so it should be freed when it is no longer needed.
-.Pp
-.Fn UtilStringDuplicate
-duplicates a NULL-terminated string, and returns a new string on the
-heap. This is useful when a function takes in a string that it needs
-to store for for long amounts of time, even perhaps after the
-original string is long gone.
-.Pp
 .Fn UtilSleepMillis
 sleeps the calling thread for the given number of milliseconds. It
 occurred to me that POSIX does not specify a super friendly way to
@@ -78,14 +59,6 @@ uses
 .Xr stat 2
 to get the last modified time of the given file. This is used
 primarily for caching file data.
-.Pp
-.Fn UtilStringConcat
-takes in two NULL-terminated strings and returns their concatenation.
-It works a lot like
-.Xr strcat 3 ,
-but it takes care of allocating memory big enough to hold both
-strings. One or both strings may be NULL. If a string is NULL, it
-is treated like an empty string.
 .Pp
 .Fn UtilParseBytes
 is a highly specialized function used in parsing the configuration file.
@@ -100,12 +73,6 @@ work identically to the POSIX equivalents, documented in
 .Xr getdelim 3 ,
 except it assumes pointers were allocated using the Memory API, and it
 uses the Memory API itself to reallocate necessary pointers.
-.Pp
-.Fn UtilRandomString
-generates a random string of the given length. At the moment, it only
-selects from uppercase and lowercase numbers, but the character set may
-be expanded in the future, or a function may be added to specify an
-arbitrary character set.
 .Sh RETURN VALUES
 .Pp
 .Fn UtilServerTs
@@ -124,13 +91,6 @@ It also sets errno as appropriate.
 returns the result of calling
 .Xr nanosleep 2 .
 .Pp
-.Fn UtilUtf8Encode ,
-.Fn UtilStringDuplicate ,
-and
-.Fn UtilStringConcat
-return a NULL-terminated string on the heap if they succeed, or NULL on failure.
-Typically a failure in these functions indicate an error allocating memory.
-.Pp
 .Fn UtilParseBytes
 returns a number of bytes, or 0 if there was an error parsing the byte string.
 .Pp
@@ -139,7 +99,3 @@ and
 .Fn UtilGetLine
 return the same value as their POSIX equivalents, documented in
 .Xr getdelim 3 .
-.Pp
-.Fn UtilRandomString
-returns a string, allocated on the heap, of the given length, or NULL if there
-was an error allocating memory.

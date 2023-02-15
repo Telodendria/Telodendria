@@ -27,12 +27,13 @@ Milestone: v0.2.0
 
 [x] Document MemoryHexDump()
 [x] Document DbExists()
-[ ] Document UserInteractiveAuth (move docs from Matrix)
 [x] Document User
-[ ] Move docs from Matrix to User for UserValidate
-[ ] Document Str and remove old functions from Util docs.
+[x] Document Str and remove old functions from Util docs.
+[x] Move docs from Matrix to User for UserValidate
+[ ] Document UserInteractiveAuth (move docs from Matrix)
 
 [ ] Clean up scripts (make tools/lib/matrix.sh)
+[ ] Scripts to generate index with list of man pages and releases?
 [x] Update changelog
 [x] Fix man page links on website
 

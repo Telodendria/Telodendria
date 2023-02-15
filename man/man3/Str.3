@@ -1,4 +1,4 @@
-.Dd $Mdocdate: February 14 2023 $
+.Dd $Mdocdate: February 15 2023 $
 .Dt STR 3
 .Os Telodendria Project
 .Sh NAME
@@ -43,4 +43,13 @@ strings may be NULL. If a string is NULL, it is treated like an empty string.
 .Fn StrRandom
 generates a random string of the specified length.
 .Sh RETURN VALUES
+.Pp
+.Fn StrUtf8Encode ,
+.Fn StrDuplicate ,
+.Fn StrConcat ,
+and
+.Fn StrRandom
+return a pointer to a NULL-terminated C string on the heap, or NULL if a memory
+allocation error occurs. Returned pointers should be freed using the Memory API.
 .Sh SEE ALSO
+.Xr Memory 3
