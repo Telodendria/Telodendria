@@ -6,7 +6,7 @@ printf "<th>Man Page</th>"
 printf "<th>Description</th>"
 printf "</tr>"
 
-find man -type f -name '*.[1-9]' | while IFS= read -r file; do
+find man -type f -name '*.[1-9]' | sort -r | while IFS= read -r file; do
     base=$(basename "$file")
 
     name=$(echo "$base" | rev | cut -d '.' -f 2- | rev)
