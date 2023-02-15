@@ -76,6 +76,7 @@ setsubst() {
         done
 
         echo "s|\\\${[a-zA-Z_]*}||g"
+        echo "s|'''|'|g"
     ) > "$SED"
 
     sed -f "$SED" $@
