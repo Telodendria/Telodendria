@@ -171,7 +171,7 @@ StrRandom(size_t len)
         return NULL;
     }
 
-    nums = Malloc(len);
+    nums = Malloc(len * sizeof(int));
     if (!nums)
     {
         Free(str);

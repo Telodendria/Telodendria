@@ -36,7 +36,7 @@ CFLAGS="${CFLAGS} ${DEFINES} ${INCLUDES}"
 LDFLAGS="${LDFLAGS} ${STATIC}"
 
 if [ "$DEBUG" = "1" ]; then
-    CFLAGS="$CFLAGS -O0 -g"
+    CFLAGS="$CFLAGS -O0 -g -pg"
     LDFLAGS="-lm -pthread -v"
     PROG="$PROG-debug"
 fi
