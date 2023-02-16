@@ -1,0 +1,44 @@
+.Dd $Mdocdate: February 16 2023 $
+.Dt RAND 3
+.Os Telodendria Project
+.Sh NAME
+.Nm Rand
+.Nd Thread-safe random numbers.
+.Sh SYNOPSIS
+.In Rand.h
+.Ft int
+.Fn RandInt "unsigned int"
+.Ft void
+.Fn RandIntN "int *" "size_t" "unsigned int"
+.Sh DESCRIPTION
+.Nm
+is used for generating random numbers in a thread-safe way. Currently,
+one seed is shared across all threads, which means only one thread can
+generate random numbers at a time. In the future, a seed pool may be
+maintained. The seed is initialized on the first call to a function
+that needs it. It is initialized with the current timestamp,
+the process ID, and the thread ID. These should be sufficiently random
+sources, so the seed should be secure enough.
+.Pp
+.Fn RandInt
+generates a single random integer between 0 and the passed value.
+.Fn RandIntN
+takes an integer pointer, a buffer size, and the maximum value a
+random number is allowed to be. It generates the number of random
+integers specified by the buffer size, and stores them at the passed
+pointer. This allows a caller to get multiple random numbers at a
+time, as each call to
+.Fn RandInt
+will have to lock and unlock a mutex, whereas
+.Fn RandIntN
+can obtain multiple random integers in a single pass.
+.Sh RETURN VALUES
+.Pp
+.Fn RandInt
+returns the value of
+.Xr rand_r 3
+with the internally-stored seed. The return value should be in the
+range of 0 to RAND_MAX.
+.Sh SEE ALSO
+.Xr Util 3 ,
+.Xr rand 3
