@@ -51,7 +51,7 @@ ROUTE_IMPL(RouteMatrix, args)
 
         Free(pathPart);
 
-        ArrayAdd(versions, JsonValueString(StrDuplicate("v1.5")));
+        ArrayAdd(versions, JsonValueString(StrDuplicate("v1.6")));
 
         response = HashMapCreate();
         HashMapSet(response, "versions", JsonValueArray(versions));
