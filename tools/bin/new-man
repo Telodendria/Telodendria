@@ -25,10 +25,18 @@ fi
     echo ".Sh NAME"
     echo ".Nm ${man}"
     echo ".Nd {SET DESCRIPTION HERE}"
-    echo ".Sh SYNOPSIS"
-    echo ".In ${man}.h"
+
+    if [ "$section" = "3" ]; then
+        echo ".Sh SYNOPSIS"
+        echo ".In ${man}.h"
+    fi
+
     echo ".Sh DESCRIPTION"
-    echo ".Sh RETURN VALUES"
+
+    if [ "$section" = "3" ]; then
+        echo ".Sh RETURN VALUES"
+    fi
+
     echo ".Sh SEE ALSO"
 ) > "$file"
 
