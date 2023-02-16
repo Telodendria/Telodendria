@@ -25,6 +25,7 @@
 
 #include <Memory.h>
 #include <Util.h>
+#include <Rand.h>
 
 #include <stdlib.h>
 #include <string.h>
@@ -153,10 +154,9 @@ char *
 StrRandom(size_t len)
 {
     static const char charset[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    static pthread_mutex_t seedLock = PTHREAD_MUTEX_INITIALIZER;
-    static unsigned int seed = 0;
 
     char *str;
+    int * nums;
     size_t i;
 
     if (!len)
@@ -165,25 +165,27 @@ StrRandom(size_t len)
     }
 
     str = Malloc(len + 1);
+
     if (!str)
     {
         return NULL;
     }
 
-    pthread_mutex_lock(&seedLock);
-
-    if (!seed)
+    nums = Malloc(len);
+    if (!nums)
     {
-        seed = UtilServerTs() ^ getpid() ^ (unsigned long) pthread_self();
+        Free(str);
+        return NULL;
     }
 
+    /* TODO: This seems slow. */
+    RandIntN(nums, len, sizeof(charset) - 1);
     for (i = 0; i < len; i++)
     {
-        str[i] = charset[rand_r(&seed) % (sizeof(charset) - 1)];
+        str[i] = charset[nums[i]];
     }
 
-    pthread_mutex_unlock(&seedLock);
-
+    Free(nums);
     str[len] = '\0';
     return str;
 }
