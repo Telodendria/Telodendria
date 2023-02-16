@@ -45,9 +45,9 @@ ROUTE_IMPL(RouteRefresh, args)
     Db *db = args->matrixArgs->db;
     LogConfig *lc = args->matrixArgs->lc;
 
-    DbRef *rtRef;
-    DbRef * oAtRef;
-    DbRef * nAtRef;
+    DbRef *rtRef = NULL;
+    DbRef *oAtRef = NULL;
+    DbRef *nAtRef = NULL;
 
     if (MATRIX_PATH_PARTS(args->path) > 0)
     {
