@@ -60,8 +60,10 @@ typedef struct RouteArgs
 ROUTE(RouteMainPage);              /* / */
 ROUTE(RouteWellKnown);             /* /.well-known */
 ROUTE(RouteMatrix);                /* /_matrix */
+
 ROUTE(RouteLogin);                 /* /_matrix/client/(r0|v3)/login */
 ROUTE(RouteRegister);              /* /_matrix/client/(r0|v3)/register */
+ROUTE(RouteRefresh);               /* /_matrix/client/(r0|v3)/refresh */
 
 #undef ROUTE
 

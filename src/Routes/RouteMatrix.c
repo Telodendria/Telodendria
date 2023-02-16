@@ -72,6 +72,10 @@ ROUTE_IMPL(RouteMatrix, args)
         {
             response = RouteRegister(args);
         }
+        else if (MATRIX_PATH_EQUALS(pathPart, "refresh"))
+        {
+            response = RouteRefresh(args);
+        }
         else
         {
             HttpResponseStatus(args->context, HTTP_NOT_FOUND);

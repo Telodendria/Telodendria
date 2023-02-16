@@ -38,8 +38,6 @@ ROUTE_IMPL(RouteRegister, args)
     HashMap *request = NULL;
     HashMap *response = NULL;
 
-    char *pathPart = NULL;
-
     JsonValue *val;
 
     char *kind;
@@ -242,7 +240,7 @@ finish:
     }
     else
     {
-        pathPart = MATRIX_PATH_POP(args->path);
+        char *pathPart = MATRIX_PATH_POP(args->path);
 
         if (HttpRequestMethodGet(args->context) == HTTP_GET &&
             MATRIX_PATH_EQUALS(pathPart, "available"))
