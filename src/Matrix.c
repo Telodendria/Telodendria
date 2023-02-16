@@ -330,7 +330,7 @@ MatrixGetAccessToken(HttpServerContext * context, char **accessToken)
         }
 
         /* Seek past "Bearer" */
-        token += 8;
+        token += 7;
 
         /* Seek past any spaces between "Bearer" and the token */
         while (*token && isspace((unsigned char) *token))
