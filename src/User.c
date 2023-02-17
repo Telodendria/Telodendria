@@ -188,9 +188,6 @@ UserCreate(Db * db, char *name, char *password)
     User *user = NULL;
     HashMap *json = NULL;
 
-    char *hash = NULL;
-    char *salt = NULL;
-    char *tmpstr = NULL;
     unsigned long ts = UtilServerTs();
 
     /* TODO: Put some sort of password policy(like for example at least
@@ -224,16 +221,9 @@ UserCreate(Db * db, char *name, char *password)
         return NULL;
     }
 
+    UserSetPassword(user, password);
+
     json = DbJson(user->ref);
-
-    /* Generate stored password using a salt and SHA256 */
-    salt = StrRandom(16);
-    tmpstr = StrConcat(2, password, salt);
-    hash = Sha256(tmpstr);
-    Free(tmpstr);
-    HashMapSet(json, "salt", JsonValueString(salt));
-    HashMapSet(json, "password", JsonValueString(hash));
-
     HashMapSet(json, "createdOn", JsonValueInteger(ts));
     HashMapSet(json, "deactivated", JsonValueBoolean(0));
 
@@ -244,7 +234,6 @@ UserLoginInfo *
 UserLogin(User * user, char *password, char *deviceId, char *deviceDisplayName,
           int withRefresh)
 {
-    DbRef *atRef;
     DbRef *rtRef = NULL;
 
     HashMap *devices;
@@ -269,36 +258,28 @@ UserLogin(User * user, char *password, char *deviceId, char *deviceDisplayName,
     }
 
     result->refreshToken = NULL;
-    result->tokenLifetime = 0;
+
+    if (!deviceId)
+    {
+        deviceId = StrRandom(10);
+    }
+    else
+    {
+        deviceId = StrDuplicate(deviceId);
+    }
 
     /* Generate an access token */
-    result->accessToken = StrRandom(64);
-    atRef = DbCreate(user->db, 3, "tokens", "access", result->accessToken);
-
-    HashMapSet(DbJson(atRef), "user", JsonValueString(StrDuplicate(user->name)));
+    result->accessToken = UserGenerateAccessToken(user, deviceId, withRefresh);
+    UserAccessTokenSave(user->db, result->accessToken);
 
     if (withRefresh)
     {
-        unsigned long ts = UtilServerTs();
-
-        result->tokenLifetime = 1000 * 60 * 60 * 24 * 7;        /* 1 Week */
-
         result->refreshToken = StrRandom(64);
         rtRef = DbCreate(user->db, 3, "tokens", "refresh", result->refreshToken);
 
         HashMapSet(DbJson(rtRef), "refreshes",
-                   JsonValueString(StrDuplicate(result->accessToken)));
-        HashMapSet(DbJson(atRef), "expires", JsonValueInteger(ts + result->tokenLifetime));
+                   JsonValueString(StrDuplicate(result->accessToken->string)));
         DbUnlock(user->db, rtRef);
-    }
-
-    if (!deviceId)
-    {
-        result->deviceId = StrRandom(10);
-    }
-    else
-    {
-        result->deviceId = StrDuplicate(deviceId);
     }
 
     devices = JsonValueAsObject(HashMapGet(DbJson(user->ref), "devices"));
@@ -308,11 +289,13 @@ UserLogin(User * user, char *password, char *deviceId, char *deviceDisplayName,
         HashMapSet(DbJson(user->ref), "devices", JsonValueObject(devices));
     }
 
-    device = JsonValueAsObject(HashMapGet(devices, result->deviceId));
+    device = JsonValueAsObject(HashMapGet(devices, deviceId));
 
     if (device)
     {
         JsonValue *val;
+
+        Free(deviceId);
 
         val = HashMapDelete(device, "accessToken");
         if (val)
@@ -331,7 +314,7 @@ UserLogin(User * user, char *password, char *deviceId, char *deviceDisplayName,
     else
     {
         device = HashMapCreate();
-        HashMapSet(devices, StrDuplicate(result->deviceId), JsonValueObject(device));
+        HashMapSet(devices, deviceId, JsonValueObject(device));
 
         if (deviceDisplayName)
         {
@@ -348,10 +331,7 @@ UserLogin(User * user, char *password, char *deviceId, char *deviceDisplayName,
     }
 
     HashMapSet(device, "accessToken",
-               JsonValueString(StrDuplicate(result->accessToken)));
-
-    HashMapSet(DbJson(atRef), "device", JsonValueString(StrDuplicate(result->deviceId)));
-    DbUnlock(user->db, atRef);
+               JsonValueString(StrDuplicate(result->accessToken->string)));
 
     return result;
 }
@@ -399,4 +379,127 @@ UserCheckPassword(User * user, char *password)
     Free(hashedPwd);
 
     return result;
+}
+
+int
+UserSetPassword(User *user, char *password)
+{
+    HashMap *json;
+
+    char *hash = NULL;
+    char *salt = NULL;
+    char *tmpstr = NULL;
+
+    if (!user || !password)
+    {
+        return 0;
+    }
+
+    json = DbJson(user->ref);
+
+    salt = StrRandom(16);
+    tmpstr = StrConcat(2, password, salt);
+    hash = Sha256(tmpstr);
+    Free(tmpstr);
+
+    JsonValueFree(HashMapSet(json, "salt", JsonValueString(salt)));
+    JsonValueFree(HashMapSet(json, "password", JsonValueString(hash)));
+
+    return 1;
+}
+
+int
+UserDeactivate(User *user)
+{
+    HashMap *json;
+
+    if (!user)
+    {
+        return 0;
+    }
+
+    json = DbJson(user->ref);
+
+    JsonValueFree(HashMapSet(json, "deactivated", JsonValueBoolean(1)));
+
+    return 1;
+}
+
+HashMap *
+UserGetDevices(User *user)
+{
+    HashMap *json;
+
+    if (!user)
+    {
+        return NULL;
+    }
+
+    json = DbJson(user->ref);
+
+    return JsonValueAsObject(HashMapGet(json, "devices"));
+}
+
+UserAccessToken *
+UserGenerateAccessToken(User *user, char *deviceId, int withRefresh)
+{
+    UserAccessToken *token;
+
+    if (!user || !deviceId)
+    {
+        return NULL;
+    }
+
+    token = Malloc(sizeof(UserAccessToken));
+    if (!token)
+    {
+        return NULL;
+    }
+
+    token->user = StrDuplicate(user->name);
+    token->deviceId = StrDuplicate(deviceId);
+
+    token->string = StrRandom(64);
+
+    if (withRefresh)
+    {
+        token->lifetime = 1000 * 60 * 60 * 24 * 7; /* 1 Week */
+    }
+    else
+    {
+        token->lifetime = 0;
+    }
+
+    return token;
+}
+
+int
+UserAccessTokenSave(Db *db, UserAccessToken *token)
+{
+    DbRef *ref;
+    HashMap *json;
+
+    if (!token)
+    {
+        return 0;
+    }
+
+    ref = DbCreate(db, 3, "tokens", "access", token->string);
+
+    if (!ref)
+    {
+        return 0;
+    }
+
+    json = DbJson(ref);
+
+    HashMapSet(json, "user", JsonValueString(token->user));
+    HashMapSet(json, "device", JsonValueString(token->deviceId));
+
+    if (token->lifetime)
+    {
+        HashMapSet(json, "expires", JsonValueInteger(UtilServerTs() + token->lifetime));
+    }
+
+    return DbUnlock(db, ref);
 }

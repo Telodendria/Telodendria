@@ -28,12 +28,18 @@
 
 typedef struct User User;
 
+typedef struct UserAccessToken
+{
+    char *user;
+    char *string;
+    char *deviceId;
+    long lifetime;
+} UserAccessToken;
+
 typedef struct UserLoginInfo
 {
-    char *accessToken;
+    UserAccessToken *accessToken;
     char *refreshToken;
-    char *deviceId;
-    long tokenLifetime;
 } UserLoginInfo;
 
 extern int
@@ -65,5 +71,20 @@ extern char *
 
 extern int
  UserCheckPassword(User *, char *);
+
+extern int
+ UserSetPassword(User *, char *);
+
+extern int
+ UserDeactivate(User *);
+
+extern HashMap *
+ UserGetDevices(User *);
+
+extern UserAccessToken *
+ UserGenerateAccessToken(User *, char *, int);
+
+extern int
+UserAccessTokenSave(Db *, UserAccessToken *);
 
 #endif                             /* TELODENDRIA_USER_H */

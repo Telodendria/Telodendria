@@ -249,14 +249,14 @@ ROUTE_IMPL(RouteLogin, args)
             response = HashMapCreate();
 
             HashMapSet(response, "access_token",
-                       JsonValueString(loginInfo->accessToken));
+                       JsonValueString(loginInfo->accessToken->string));
             HashMapSet(response, "device_id",
-                       JsonValueString(loginInfo->deviceId));
+                       JsonValueString(loginInfo->accessToken->deviceId));
 
             if (refreshToken)
             {
                 HashMapSet(response, "expires_in_ms",
-                           JsonValueInteger(loginInfo->tokenLifetime));
+                           JsonValueInteger(loginInfo->accessToken->lifetime));
                 HashMapSet(response, "refresh_token",
                            JsonValueString(loginInfo->refreshToken));
             }
@@ -275,6 +275,7 @@ ROUTE_IMPL(RouteLogin, args)
              * Don't need to free members; they're attached to the JSON
              * response, they will be freed after the response is sent.
              */
+            Free(loginInfo->accessToken);
             Free(loginInfo);
             UserUnlock(user);
 
