@@ -13,9 +13,9 @@ Milestone: v0.2.0
 
 [ ] Abstract /email/requestToken and /msidsn/requestToken
 
-[ ] User login
-    [ ] User manipulation functions (so we don't use the DB directly)
-    [ ] Refresh tokens
+[~] User login
+    [x] User manipulation functions (so we don't use the DB directly)
+    [x] Refresh tokens
     [ ] Logout
     [ ] Logout all
     [ ] Login fallback (static HTML page)
@@ -31,6 +31,8 @@ Milestone: v0.2.0
 [x] Document User
 [x] Document Str and remove old functions from Util docs.
 [x] Move docs from Matrix to User for UserValidate
+[ ] Document HashMapGetKey()
+[ ] Document new User functions
 [ ] Document new JSON functions
 [ ] Document UserInteractiveAuth (move docs from Matrix)
 

@@ -30,6 +30,8 @@
 #include <HashMap.h>
 #include <Str.h>
 
+#include <User.h>
+
 ROUTE_IMPL(RouteRefresh, args)
 {
     HashMap *request;
@@ -39,15 +41,15 @@ ROUTE_IMPL(RouteRefresh, args)
     char *refreshToken;
 
     char *oldAccessToken;
-    char *newAccessToken;
+    UserAccessToken *newAccessToken;
     char *deviceId;
 
     Db *db = args->matrixArgs->db;
     LogConfig *lc = args->matrixArgs->lc;
 
+    User *user = NULL;
     DbRef *rtRef = NULL;
     DbRef *oAtRef = NULL;
-    DbRef *nAtRef = NULL;
 
     if (MATRIX_PATH_PARTS(args->path) > 0)
     {
@@ -103,24 +105,58 @@ ROUTE_IMPL(RouteRefresh, args)
         DbUnlock(db, rtRef);
         DbDelete(db, 3, "tokens", "refresh", refreshToken);
 
+        rtRef = NULL;
+
         goto finish;
     }
 
     /* Get the user associated with the access token and device */
+    user = UserLock(db, JsonValueAsString(HashMapGet(DbJson(oAtRef), "user")));
+    if (!user)
+    {
+        Log(lc, LOG_ERR, "Access token '%s' points to a user that doesn't exist.",
+            oldAccessToken);
+        Log(lc, LOG_WARNING, "This access token will be deleted.");
+        HttpResponseStatus(args->context, HTTP_INTERNAL_SERVER_ERROR);
+        response = MatrixErrorCreate(M_UNKNOWN);
+
+        DbUnlock(db, rtRef);
+        DbDelete(db, 3, "tokens", "refresh", refreshToken);
+
+        DbUnlock(db, oAtRef);
+        DbDelete(db, 3, "tokens", "access", oldAccessToken);
+
+        rtRef = NULL;
+        oAtRef = NULL;
+
+        goto finish;
+    }
 
     /* Generate a new access token associated with the device and user. */
+    deviceId = JsonValueAsString(HashMapGet(DbJson(oAtRef), "device"));
+    newAccessToken = UserGenerateAccessToken(user, deviceId, 1);
+    UserAccessTokenSave(db, newAccessToken);
 
     /* Replace old access token in User */
+    JsonValueFree(JsonSet(UserGetDevices(user), JsonValueString(newAccessToken->string), 2, deviceId, "accessToken"));
 
     /* Delete old access token */
+    DbUnlock(db, oAtRef);
+    DbDelete(db, 3, "tokens", "access", oldAccessToken);
 
     /* Update the refresh token to point to the new access token */
+    JsonValueFree(HashMapSet(DbJson(rtRef), "refreshes", JsonValueString(StrDuplicate(newAccessToken->string))));
 
     /* Return the new access token and expiration timestamp to the client */
     response = HashMapCreate();
+    HashMapSet(response, "access_token", JsonValueString(StrDuplicate(newAccessToken->string)));
+    HashMapSet(response, "expires_in_ms", JsonValueInteger(newAccessToken->lifetime));
+
+    Free(newAccessToken);
 
 finish:
     JsonFree(request);
     DbUnlock(db, rtRef);
+    UserUnlock(user);
     return response;
 }
