@@ -23,6 +23,7 @@ Milestone: v0.2.0
     [ ] Passwords
     [ ] Registration tokens
     [ ] Caller builds flows
+    [ ] Document UserInteractiveAuth (move docs from Matrix)
 [x] Non-JSON endpoints
     [x] Home page (like Synapse's "it works!")
 
@@ -34,7 +35,6 @@ Milestone: v0.2.0
 [ ] Document HashMapGetKey()
 [ ] Document new User functions
 [ ] Document new JSON functions
-[ ] Document UserInteractiveAuth (move docs from Matrix)
 
 [ ] Clean up scripts (make tools/lib/matrix.sh)
 [x] Scripts to generate index with list of man pages and releases?
@@ -73,6 +73,11 @@ Milestone: v0.5.0
 
 Milestone: v1.0.0
 -----------------
+
+[ ] Stream API
+    [ ] TLS
+    [ ] SOCKS
+[ ] HTTP Client
 
 [~] Client-Server API
     [ ] Modules
