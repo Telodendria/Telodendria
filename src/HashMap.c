@@ -244,6 +244,40 @@ HashMapGet(HashMap * map, const char *key)
     return NULL;
 }
 
+void *
+HashMapGetKey(HashMap * map, const char *key)
+{
+    unsigned long hash;
+    size_t index;
+
+    if (!map || !key)
+    {
+        return NULL;
+    }
+
+    hash = map->hashFunc(key);
+    index = hash % map->capacity;
+
+    for (;;)
+    {
+        HashMapBucket *bucket = map->entries[index];
+
+        if (!bucket)
+        {
+            break;
+        }
+
+        if (bucket->hash == hash)
+        {
+            return bucket->key;
+        }
+
+        index = (index + 1) % map->capacity;
+    }
+
+    return NULL;
+}
+
 int
 HashMapIterate(HashMap * map, char **key, void **value)
 {

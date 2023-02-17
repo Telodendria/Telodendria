@@ -43,6 +43,9 @@ extern void *
  HashMapGet(HashMap *, const char *);
 
 extern void *
+ HashMapGetKey(HashMap *, const char *);
+
+extern void *
  HashMapDelete(HashMap *, const char *);
 
 extern int

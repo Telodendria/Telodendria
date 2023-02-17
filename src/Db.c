@@ -293,6 +293,7 @@ DbCacheEvict(Db * db)
         pthread_mutex_destroy(&ref->lock);
 
         hash = DbHashKey(ref->name);
+        Free(HashMapGetKey(db->cache, hash));
         HashMapDelete(db->cache, hash);
         Free(hash);
 
@@ -621,6 +622,7 @@ DbDelete(Db * db, size_t nArgs,...)
     {
         pthread_mutex_lock(&ref->lock);
 
+        Free(HashMapGetKey(db->cache, hash));
         HashMapDelete(db->cache, hash);
         JsonFree(ref->json);
         StringArrayFree(ref->name);
