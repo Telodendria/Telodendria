@@ -278,7 +278,7 @@ UserLogin(User * user, char *password, char *deviceId, char *deviceDisplayName,
         rtRef = DbCreate(user->db, 3, "tokens", "refresh", result->refreshToken);
 
         HashMapSet(DbJson(rtRef), "refreshes",
-                   JsonValueString(StrDuplicate(result->accessToken->string)));
+          JsonValueString(StrDuplicate(result->accessToken->string)));
         DbUnlock(user->db, rtRef);
     }
 
@@ -331,7 +331,7 @@ UserLogin(User * user, char *password, char *deviceId, char *deviceDisplayName,
     }
 
     HashMapSet(device, "accessToken",
-               JsonValueString(StrDuplicate(result->accessToken->string)));
+          JsonValueString(StrDuplicate(result->accessToken->string)));
 
     return result;
 }
@@ -382,7 +382,7 @@ UserCheckPassword(User * user, char *password)
 }
 
 int
-UserSetPassword(User *user, char *password)
+UserSetPassword(User * user, char *password)
 {
     HashMap *json;
 
@@ -409,7 +409,7 @@ UserSetPassword(User *user, char *password)
 }
 
 int
-UserDeactivate(User *user)
+UserDeactivate(User * user)
 {
     HashMap *json;
 
@@ -426,7 +426,7 @@ UserDeactivate(User *user)
 }
 
 HashMap *
-UserGetDevices(User *user)
+UserGetDevices(User * user)
 {
     HashMap *json;
 
@@ -441,7 +441,7 @@ UserGetDevices(User *user)
 }
 
 UserAccessToken *
-UserGenerateAccessToken(User *user, char *deviceId, int withRefresh)
+UserGenerateAccessToken(User * user, char *deviceId, int withRefresh)
 {
     UserAccessToken *token;
 
@@ -463,7 +463,7 @@ UserGenerateAccessToken(User *user, char *deviceId, int withRefresh)
 
     if (withRefresh)
     {
-        token->lifetime = 1000 * 60 * 60 * 24 * 7; /* 1 Week */
+        token->lifetime = 1000 * 60 * 60 * 24 * 7;      /* 1 Week */
     }
     else
     {
@@ -474,7 +474,7 @@ UserGenerateAccessToken(User *user, char *deviceId, int withRefresh)
 }
 
 int
-UserAccessTokenSave(Db *db, UserAccessToken *token)
+UserAccessTokenSave(Db * db, UserAccessToken * token)
 {
     DbRef *ref;
     HashMap *json;

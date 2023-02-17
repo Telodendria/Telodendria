@@ -105,12 +105,12 @@ extern HashMap *
  JsonDecode(FILE *);
 
 extern JsonValue *
- JsonGet(HashMap *, size_t, ...);
+ JsonGet(HashMap *, size_t,...);
 
 extern JsonValue *
- JsonSet(HashMap *, JsonValue *, size_t, ...);
+ JsonSet(HashMap *, JsonValue *, size_t,...);
 
 extern int
- JsonCreate(HashMap *, JsonValue *, size_t, ...);
+ JsonCreate(HashMap *, JsonValue *, size_t,...);
 
 #endif                             /* TELODENDRIA_JSON_H */

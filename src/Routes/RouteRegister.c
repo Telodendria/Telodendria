@@ -209,14 +209,14 @@ ROUTE_IMPL(RouteRegister, args)
                               initialDeviceDisplayName, refreshToken);
 
             HashMapSet(response, "access_token",
-                       JsonValueString(loginInfo->accessToken->string));
+                     JsonValueString(loginInfo->accessToken->string));
             HashMapSet(response, "device_id",
-                       JsonValueString(loginInfo->accessToken->deviceId));
+                   JsonValueString(loginInfo->accessToken->deviceId));
 
             if (refreshToken)
             {
                 HashMapSet(response, "expires_in_ms",
-                           JsonValueInteger(loginInfo->accessToken->lifetime));
+                  JsonValueInteger(loginInfo->accessToken->lifetime));
                 HashMapSet(response, "refresh_token",
                            JsonValueString(loginInfo->refreshToken));
             }

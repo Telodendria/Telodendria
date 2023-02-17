@@ -147,7 +147,8 @@ ROUTE_IMPL(RouteRefresh, args)
     /* Update the refresh token to point to the new access token */
     JsonValueFree(HashMapSet(DbJson(rtRef), "refreshes", JsonValueString(StrDuplicate(newAccessToken->string))));
 
-    /* Return the new access token and expiration timestamp to the client */
+    /* Return the new access token and expiration timestamp to the
+     * client */
     response = HashMapCreate();
     HashMapSet(response, "access_token", JsonValueString(StrDuplicate(newAccessToken->string)));
     HashMapSet(response, "expires_in_ms", JsonValueInteger(newAccessToken->lifetime));

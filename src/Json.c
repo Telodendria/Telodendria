@@ -1082,7 +1082,7 @@ JsonDecode(FILE * stream)
 }
 
 JsonValue *
-JsonGet(HashMap *json, size_t nArgs, ...)
+JsonGet(HashMap * json, size_t nArgs,...)
 {
     va_list argp;
 
@@ -1090,7 +1090,7 @@ JsonGet(HashMap *json, size_t nArgs, ...)
     JsonValue *val = NULL;
     size_t i;
 
-    if (!json || ! nArgs)
+    if (!json || !nArgs)
     {
         return NULL;
     }
@@ -1123,7 +1123,7 @@ finish:
 }
 
 JsonValue *
-JsonSet(HashMap *json, JsonValue *newVal, size_t nArgs, ...)
+JsonSet(HashMap * json, JsonValue * newVal, size_t nArgs,...)
 {
     HashMap *tmp = json;
     JsonValue *val = NULL;
@@ -1165,7 +1165,7 @@ finish:
 }
 
 int
-JsonCreate(HashMap *json, JsonValue *newVal, size_t nArgs, ...)
+JsonCreate(HashMap * json, JsonValue * newVal, size_t nArgs,...)
 {
     HashMap *tmp = json;
     JsonValue *val = NULL;

@@ -156,7 +156,7 @@ StrRandom(size_t len)
     static const char charset[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
     char *str;
-    int * nums;
+    int *nums;
     size_t i;
 
     if (!len)

@@ -29,24 +29,25 @@
 #include <pthread.h>
 #include <unistd.h>
 
-/* Generate random numbers using rejection sampling.
-* The basic idea is to "reroll" if a number happens to be
-* outside the range. However this could be extremely inefficient.
-*
-* Another idea would just be to "reroll" if the generated number
-* ends up in the previously "biased" range, and THEN do a modulo.
-*
-* This would be far more efficient for small values of max,
-* and fixes the bias issue. */
+/* Generate random numbers using rejection sampling. The basic idea is
+ * to "reroll" if a number happens to be outside the range. However
+ * this could be extremely inefficient.
+ * 
+ * Another idea would just be to "reroll" if the generated number ends up
+ * in the previously "biased" range, and THEN do a modulo.
+ * 
+ * This would be far more efficient for small values of max, and fixes the
+ * bias issue. */
 
-/* This algorithm therefore computes N random numbers generally in 
- * O(N) time, while being less biased. */
+/* This algorithm therefore computes N random numbers generally in O(N)
+ * time, while being less biased. */
 void
-RandIntN(int * buf, size_t size, unsigned int max)
+RandIntN(int *buf, size_t size, unsigned int max)
 {
     static pthread_mutex_t seedLock = PTHREAD_MUTEX_INITIALIZER;
     static unsigned int seed = 0;
     int tmp;
+
     /* Limit the range to banish all previously biased results */
     const int allowed = RAND_MAX - RAND_MAX % max;
 
@@ -58,7 +59,7 @@ RandIntN(int * buf, size_t size, unsigned int max)
         /* Generate a seed from the system time, PID, and TID */
         seed = UtilServerTs() ^ getpid() ^ (unsigned long) pthread_self();
     }
-    
+
     /* Generate {size} random numbers. */
     for (i = 0; i < size; i++)
     {
@@ -73,11 +74,13 @@ RandIntN(int * buf, size_t size, unsigned int max)
     }
     pthread_mutex_unlock(&seedLock);
 }
+
 /* Generate just 1 random number */
 int
 RandInt(unsigned int max)
 {
     int val = 0;
+
     RandIntN(&val, 1, max);
     return val;
 }
