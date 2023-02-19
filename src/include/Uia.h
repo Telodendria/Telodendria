@@ -21,17 +21,26 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-#ifndef TELODENDRIA_USERINTERACTIVEAUTH_H
-#define TELODENDRIA_USERINTERACTIVEAUTH_H
+#ifndef TELODENDRIA_UIA_H
+#define TELODENDRIA_UIA_H
 
+#include <Array.h>
 #include <HashMap.h>
 #include <HttpServer.h>
 #include <Matrix.h>
 
-extern void
- UserInteractiveAuthCleanup(MatrixHttpHandlerArgs *);
+typedef struct UiaStage UiaStage;
 
-extern HashMap *
- UserInteractiveAuth(HttpServerContext *, Db *, HashMap *);
+extern UiaStage *
+UiaBuildStage(char *, HashMap *);
+
+extern Array *
+UiaDummyFlow(void);
+
+extern void
+ UiaCleanup(MatrixHttpHandlerArgs *);
+
+extern int
+UiaComplete(Array *stages, HttpServerContext *, Db *, HashMap *, HashMap **);
 
 #endif

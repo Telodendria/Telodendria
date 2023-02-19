@@ -42,7 +42,7 @@
 #include <Matrix.h>
 #include <Db.h>
 #include <Cron.h>
-#include <UserInteractiveAuth.h>
+#include <Uia.h>
 
 const char
  TelodendriaLogo[TELODENDRIA_LOGO_HEIGHT][TELODENDRIA_LOGO_WIDTH] = {
@@ -558,7 +558,7 @@ main(int argc, char **argv)
 
     Log(lc, LOG_DEBUG, "Registering jobs...");
 
-    CronEvery(cron, 30 * 60 * 1000, (JobFunc *) UserInteractiveAuthCleanup, &matrixArgs);
+    CronEvery(cron, 30 * 60 * 1000, (JobFunc *) UiaCleanup, &matrixArgs);
 
     Log(lc, LOG_NOTICE, "Starting job scheduler...");
     CronStart(cron);

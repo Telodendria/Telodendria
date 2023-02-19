@@ -31,7 +31,7 @@
 #include <Memory.h>
 
 #include <User.h>
-#include <UserInteractiveAuth.h>
+#include <Uia.h>
 
 ROUTE_IMPL(RouteRegister, args)
 {
@@ -53,6 +53,9 @@ ROUTE_IMPL(RouteRegister, args)
     LogConfig *lc = args->matrixArgs->lc;
 
     User *user = NULL;
+
+    Array *uiaFlows;
+    int uiaResult;
 
     if (MATRIX_PATH_PARTS(args->path) == 0)
     {
@@ -102,11 +105,23 @@ ROUTE_IMPL(RouteRegister, args)
             }
         }
 
-        response = UserInteractiveAuth(args->context,
-                                       args->matrixArgs->db, request);
+        uiaFlows = ArrayCreate();
+        ArrayAdd(uiaFlows, UiaDummyFlow());
 
-        if (response)
+        /* TODO: Add registration token flow */
+
+        uiaResult = UiaComplete(uiaFlows, args->context,
+            args->matrixArgs->db, request, &response);
+
+        if (uiaResult < 0)
         {
+            HttpResponseStatus(args->context, HTTP_INTERNAL_SERVER_ERROR);
+            response = MatrixErrorCreate(M_UNKNOWN);
+            goto finish;
+        }
+        else if (!uiaResult)
+        {
+            /* UiaComplete() sets the response and status for us. */
             goto finish;
         }
 

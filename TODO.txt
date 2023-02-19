@@ -19,11 +19,11 @@ Milestone: v0.2.0
     [ ] Logout
     [ ] Logout all
     [ ] Login fallback (static HTML page)
-[ ] User Interactive
+[~] User Interactive
     [ ] Passwords
     [ ] Registration tokens
-    [ ] Caller builds flows
-    [ ] Document UserInteractiveAuth (move docs from Matrix)
+    [~] Caller builds flows
+    [ ] Document Uia (move docs from Matrix)
 [x] Non-JSON endpoints
     [x] Home page (like Synapse's "it works!")
 
