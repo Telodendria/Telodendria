@@ -133,11 +133,6 @@ HttpServerContextFree(HttpServerContext * c)
 
     while (HashMapIterate(c->requestHeaders, &key, &val))
     {
-        /*
-         * These are always parsed from the request, so they should
-         * always be on the heap.
-         */
-        Free(key);
         Free(val);
     }
     HashMapFree(c->requestHeaders);
@@ -154,11 +149,6 @@ HttpServerContextFree(HttpServerContext * c)
          * freeing it because it's probably a stack pointer.
          */
 
-        if (MemoryInfoGet(key))
-        {
-            Free(key);
-        }
-
         if (MemoryInfoGet(val))
         {
             Free(val);
@@ -169,7 +159,6 @@ HttpServerContextFree(HttpServerContext * c)
 
     while (HashMapIterate(c->requestParams, &key, &val))
     {
-        Free(key);
         Free(val);
     }
 
@@ -600,6 +589,7 @@ HttpServerWorkerThread(void *args)
             strcpy(headerValue, headerPtr);
 
             HashMapSet(context->requestHeaders, headerKey, headerValue);
+            Free(headerKey);
         }
 
         server->requestHandler(context, server->handlerArgs);

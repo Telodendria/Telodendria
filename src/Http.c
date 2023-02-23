@@ -479,8 +479,8 @@ HttpParamDecode(char *in)
         if (buf)
         {
             Free(buf);
-            Free(decKey);
         }
+        Free(decKey);
 
         if (*in == '&')
         {

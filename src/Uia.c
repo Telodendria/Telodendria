@@ -92,7 +92,7 @@ BuildFlows(Array * flows)
             ArrayAdd(responseStages, JsonValueString(StrDuplicate(stage->type)));
             if (stage->params)
             {
-                JsonValueFree(HashMapSet(responseParams, StrDuplicate(stage->type), JsonValueObject(stage->params)));
+                JsonValueFree(HashMapSet(responseParams, stage->type, JsonValueObject(stage->params)));
             }
         }
     }

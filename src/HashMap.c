@@ -24,6 +24,7 @@
 #include <HashMap.h>
 
 #include <Memory.h>
+#include <Str.h>
 
 #include <stddef.h>
 #include <string.h>
@@ -202,6 +203,7 @@ HashMapFree(HashMap * map)
         {
             if (map->entries[i])
             {
+                Free(map->entries[i]->key);
                 Free(map->entries[i]);
             }
         }
@@ -236,40 +238,6 @@ HashMapGet(HashMap * map, const char *key)
         if (bucket->hash == hash)
         {
             return bucket->value;
-        }
-
-        index = (index + 1) % map->capacity;
-    }
-
-    return NULL;
-}
-
-void *
-HashMapGetKey(HashMap * map, const char *key)
-{
-    unsigned long hash;
-    size_t index;
-
-    if (!map || !key)
-    {
-        return NULL;
-    }
-
-    hash = map->hashFunc(key);
-    index = hash % map->capacity;
-
-    for (;;)
-    {
-        HashMapBucket *bucket = map->entries[index];
-
-        if (!bucket)
-        {
-            break;
-        }
-
-        if (bucket->hash == hash)
-        {
-            return bucket->key;
         }
 
         index = (index + 1) % map->capacity;
@@ -340,6 +308,8 @@ HashMapSet(HashMap * map, char *key, void *value)
     unsigned long hash;
     size_t index;
 
+    key = StrDuplicate(key);
+
     if (!map || !key || !value)
     {
         return NULL;
@@ -376,6 +346,7 @@ HashMapSet(HashMap * map, char *key, void *value)
         if (!bucket->hash)
         {
             bucket->hash = hash;
+            Free(bucket->key);
             bucket->key = key;
             bucket->value = value;
             break;
@@ -384,6 +355,9 @@ HashMapSet(HashMap * map, char *key, void *value)
         if (bucket->hash == hash)
         {
             void *oldValue = bucket->value;
+
+            Free(bucket->key);
+            bucket->key = key;
 
             bucket->value = value;
             return oldValue;

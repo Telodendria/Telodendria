@@ -295,8 +295,6 @@ UserLogin(User * user, char *password, char *deviceId, char *deviceDisplayName,
     {
         JsonValue *val;
 
-        Free(deviceId);
-
         val = HashMapDelete(device, "accessToken");
         if (val)
         {
@@ -323,6 +321,8 @@ UserLogin(User * user, char *password, char *deviceId, char *deviceDisplayName,
         }
 
     }
+
+    Free(deviceId);
 
     if (result->refreshToken)
     {
@@ -556,17 +556,13 @@ UserDeleteToken(User * user, char *token)
     devicejson = HashMapGet(userjson, "devices");
     if (JsonValueType(devicejson) == JSON_OBJECT)
     {
-        char *key;
-
         /* Delete our object */
         deviceobject = JsonValueAsObject(devicejson);
-        key = HashMapGetKey(deviceobject, deviceid);
         deletedval = HashMapDelete(deviceobject, deviceid);
         if (!deletedval)
         {
             return 0;
         }
-        Free(key);
         JsonValueFree(deletedval);
     }
 

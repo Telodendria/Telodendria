@@ -33,11 +33,13 @@ Milestone: v0.2.0
 [ ] Document new User functions
 [ ] Document new JSON functions
 
-[ ] Refactor usage of StrDuplicate()
+[~] Refactor usage of StrDuplicate()
     - Functions that keep strings do the duplication,
       NOT their callers; callers free strings when they are
       done with them.
-    [ ] Remove HashMapGetKey() function
+    [x] Remove HashMapGetKey() function
+    [x] HashMap
+    [ ] JsonValueString()
 
 Milestone: v0.3.0
 -----------------
