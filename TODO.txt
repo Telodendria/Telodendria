@@ -16,7 +16,7 @@ Milestone: v0.2.0
 [~] User login
     [x] User manipulation functions (so we don't use the DB directly)
     [x] Refresh tokens
-    [ ] Logout
+    [x] Logout
     [ ] Logout all
     [ ] Login fallback (static HTML page)
 [~] User Interactive
