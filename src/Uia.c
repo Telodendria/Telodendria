@@ -39,7 +39,7 @@ struct UiaStage
 };
 
 static HashMap *
-BuildFlows(Array *flows)
+BuildFlows(Array * flows)
 {
     HashMap *response;
     Array *responseFlows;
@@ -101,7 +101,7 @@ BuildFlows(Array *flows)
 }
 
 static int
-BuildResponse(Array *flows, char *session, Db *db, HashMap **response)
+BuildResponse(Array * flows, char *session, Db * db, HashMap ** response)
 {
     DbRef *ref;
     HashMap *json;
@@ -162,6 +162,7 @@ BuildResponse(Array *flows, char *session, Db *db, HashMap **response)
         for (i = 0; i < ArraySize(dbCompleted); i++)
         {
             char *stage = JsonValueAsString(ArrayGet(dbCompleted, i));
+
             ArrayAdd(completed, JsonValueString(StrDuplicate(stage)));
         }
 
@@ -178,6 +179,7 @@ Array *
 UiaDummyFlow(void)
 {
     Array *response = ArrayCreate();
+
     if (!response)
     {
         return NULL;
@@ -189,7 +191,7 @@ UiaDummyFlow(void)
 }
 
 UiaStage *
-UiaBuildStage(char *type, HashMap *params)
+UiaBuildStage(char *type, HashMap * params)
 {
     UiaStage *stage = Malloc(sizeof(UiaStage));
 
@@ -205,8 +207,8 @@ UiaBuildStage(char *type, HashMap *params)
 }
 
 int
-UiaComplete(Array *flows, HttpServerContext * context, Db * db,
-                    HashMap * request, HashMap ** response)
+UiaComplete(Array * flows, HttpServerContext * context, Db * db,
+            HashMap * request, HashMap ** response)
 {
     JsonValue *val;
     HashMap *auth;
@@ -248,7 +250,7 @@ UiaComplete(Array *flows, HttpServerContext * context, Db * db,
     }
 
     auth = JsonValueAsObject(val);
-    val = HashMapGet(request, "session");
+    val = HashMapGet(auth, "session");
 
     if (!val || JsonValueType(val) != JSON_STRING)
     {
@@ -289,10 +291,12 @@ finish:
     for (i = 0; i < ArraySize(flows); i++)
     {
         Array *stages = ArrayGet(flows, i);
+
         for (j = 0; j < ArraySize(stages); j++)
         {
             UiaStage *stage = ArrayGet(stages, j);
-            Free(stage); /* Members are referenced elsewhere */
+
+            Free(stage);           /* Members are referenced elsewhere */
         }
         ArrayFree(stages);
     }

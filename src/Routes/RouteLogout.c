@@ -25,74 +25,78 @@
 
 #include <string.h>
 
-#include <Memory.h>
 #include <Json.h>
 #include <HashMap.h>
 #include <Str.h>
+#include <Memory.h>
+#include <User.h>
 
-ROUTE_IMPL(RouteMatrix, args)
+ROUTE_IMPL(RouteLogout, args)
 {
     HashMap *response = NULL;
-    char *pathPart = MATRIX_PATH_POP(args->path);
 
-    if (!MATRIX_PATH_EQUALS(pathPart, "client") || MATRIX_PATH_PARTS(args->path) < 1)
+    char *tokenstr;
+
+    Db *db = args->matrixArgs->db;
+
+    User *user;
+
+    if (HttpRequestMethodGet(args->context) != HTTP_POST)
     {
-        Free(pathPart);
+        HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
+        return MatrixErrorCreate(M_UNRECOGNIZED);
+    }
+
+    if (MATRIX_PATH_PARTS(args->path) > 1)
+    {
         HttpResponseStatus(args->context, HTTP_NOT_FOUND);
         return MatrixErrorCreate(M_NOT_FOUND);
     }
 
-    Free(pathPart);
-    pathPart = MATRIX_PATH_POP(args->path);
-
-    if (MATRIX_PATH_EQUALS(pathPart, "versions"))
+    response = MatrixGetAccessToken(args->context, &tokenstr);
+    if (response)
     {
-        Array *versions = ArrayCreate();
-
-        Free(pathPart);
-
-        ArrayAdd(versions, JsonValueString(StrDuplicate("v1.6")));
-
-        response = HashMapCreate();
-        HashMapSet(response, "versions", JsonValueArray(versions));
-
         return response;
     }
-    else if (MATRIX_PATH_EQUALS(pathPart, "v3") ||
-             MATRIX_PATH_EQUALS(pathPart, "r0"))
-    {
-        Free(pathPart);
-        pathPart = MATRIX_PATH_POP(args->path);
 
-        if (MATRIX_PATH_EQUALS(pathPart, "login"))
+    user = UserAuthenticate(db, tokenstr);
+    if (!user)
+    {
+        HttpResponseStatus(args->context, HTTP_UNAUTHORIZED);
+        return MatrixErrorCreate(M_UNKNOWN_TOKEN);
+    }
+
+    if (MATRIX_PATH_PARTS(args->path) == 1)
+    {
+        char *pathPart = MATRIX_PATH_POP(args->path);
+
+        if (!MATRIX_PATH_EQUALS(pathPart, "all"))
         {
-            response = RouteLogin(args);
-        }
-        else if (MATRIX_PATH_EQUALS(pathPart, "logout"))
-        {
-            response = RouteLogout(args);
-        }
-        else if (MATRIX_PATH_EQUALS(pathPart, "register"))
-        {
-            response = RouteRegister(args);
-        }
-        else if (MATRIX_PATH_EQUALS(pathPart, "refresh"))
-        {
-            response = RouteRefresh(args);
-        }
-        else
-        {
+            Free(pathPart);
             HttpResponseStatus(args->context, HTTP_NOT_FOUND);
             response = MatrixErrorCreate(M_NOT_FOUND);
+            goto finish;
         }
 
         Free(pathPart);
-        return response;
+
+        /* TODO: Implement /all */
+        HttpResponseStatus(args->context, HTTP_INTERNAL_SERVER_ERROR);
+        response = MatrixErrorCreate(M_UNKNOWN);
     }
     else
     {
-        Free(pathPart);
-        HttpResponseStatus(args->context, HTTP_NOT_FOUND);
-        return MatrixErrorCreate(M_NOT_FOUND);
+        if (!UserDeleteToken(user, tokenstr))
+        {
+            HttpResponseStatus(args->context, HTTP_INTERNAL_SERVER_ERROR);
+            response = MatrixErrorCreate(M_UNKNOWN);
+            goto finish;
+        }
+
+        response = HashMapCreate();
     }
+
+finish:
+    UserUnlock(user);
+    return response;
 }

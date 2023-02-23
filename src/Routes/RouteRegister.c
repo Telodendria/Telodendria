@@ -111,7 +111,7 @@ ROUTE_IMPL(RouteRegister, args)
         /* TODO: Add registration token flow */
 
         uiaResult = UiaComplete(uiaFlows, args->context,
-            args->matrixArgs->db, request, &response);
+                            args->matrixArgs->db, request, &response);
 
         if (uiaResult < 0)
         {

@@ -150,7 +150,7 @@ UserAuthenticate(Db * db, char *accessToken)
         return NULL;
     }
 
-    if (UtilServerTs() >= (unsigned long) expires)
+    if (expires && UtilServerTs() >= (unsigned long) expires)
     {
         UserUnlock(user);
         DbUnlock(db, atRef);
@@ -493,8 +493,8 @@ UserAccessTokenSave(Db * db, UserAccessToken * token)
 
     json = DbJson(ref);
 
-    HashMapSet(json, "user", JsonValueString(token->user));
-    HashMapSet(json, "device", JsonValueString(token->deviceId));
+    HashMapSet(json, "user", JsonValueString(StrDuplicate(token->user)));
+    HashMapSet(json, "device", JsonValueString(StrDuplicate(token->deviceId)));
 
     if (token->lifetime)
     {
@@ -502,4 +502,79 @@ UserAccessTokenSave(Db * db, UserAccessToken * token)
     }
 
     return DbUnlock(db, ref);
+}
+
+int
+UserDeleteToken(User * user, char *token)
+{
+    char *username = NULL;
+    char *deviceid = NULL;
+
+    Db *db = NULL;
+
+    DbRef *tokenref = NULL;
+
+    HashMap *tokenjson = NULL;
+    HashMap *userjson = NULL;
+    HashMap *deviceobject = NULL;
+
+    JsonValue *devicejson = NULL;
+    JsonValue *deletedval = NULL;
+
+    if (!user || !token)
+    {
+        return 0;
+    }
+
+    db = user->db;
+    /* First check if the token even exists */
+    if (!DbExists(db, 3, "tokens", "access", token))
+    {
+        return 0;
+    }
+
+    /* If it does, get it's username. */
+    tokenref = DbLock(db, 3, "tokens", "access", token);
+
+    if (!tokenref)
+    {
+        return 0;
+    }
+    tokenjson = DbJson(tokenref);
+    username = JsonValueAsString(HashMapGet(tokenjson, "user"));
+    deviceid = JsonValueAsString(HashMapGet(tokenjson, "device"));
+
+    if (strcmp(username, UserGetName(user)) != 0)
+    {
+        /* Token does not match user, do not delete it */
+        DbUnlock(db, tokenref);
+        return 0;
+    }
+
+    /* Now delete it from the user */
+    userjson = DbJson(user->ref);
+    devicejson = HashMapGet(userjson, "devices");
+    if (JsonValueType(devicejson) == JSON_OBJECT)
+    {
+        char *key;
+
+        /* Delete our object */
+        deviceobject = JsonValueAsObject(devicejson);
+        key = HashMapGetKey(deviceobject, deviceid);
+        deletedval = HashMapDelete(deviceobject, deviceid);
+        if (!deletedval)
+        {
+            return 0;
+        }
+        Free(key);
+        JsonValueFree(deletedval);
+    }
+
+    /* ... and now the token */
+    if (!DbUnlock(db, tokenref) || !DbDelete(db, 3, "tokens", "access", token))
+    {
+        return 0;
+    }
+
+    return 1;
 }

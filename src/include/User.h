@@ -87,4 +87,7 @@ extern UserAccessToken *
 extern int
  UserAccessTokenSave(Db *, UserAccessToken *);
 
+extern int
+ UserDeleteToken(User *, char *);
+
 #endif                             /* TELODENDRIA_USER_H */

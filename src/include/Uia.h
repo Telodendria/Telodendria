@@ -32,15 +32,15 @@
 typedef struct UiaStage UiaStage;
 
 extern UiaStage *
-UiaBuildStage(char *, HashMap *);
+ UiaBuildStage(char *, HashMap *);
 
 extern Array *
-UiaDummyFlow(void);
+ UiaDummyFlow(void);
 
 extern void
  UiaCleanup(MatrixHttpHandlerArgs *);
 
 extern int
-UiaComplete(Array *stages, HttpServerContext *, Db *, HashMap *, HashMap **);
+ UiaComplete(Array * stages, HttpServerContext *, Db *, HashMap *, HashMap **);
 
 #endif

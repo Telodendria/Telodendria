@@ -271,12 +271,15 @@ ROUTE_IMPL(RouteLogin, args)
               MatrixClientWellKnown(args->matrixArgs->config->baseUrl,
                           args->matrixArgs->config->identityServer)));
 
+            Free(loginInfo->accessToken->user);
+
             /*
-             * Don't need to free members; they're attached to the JSON
+             * Don't need to free other members; they're attached to the JSON
              * response, they will be freed after the response is sent.
              */
             Free(loginInfo->accessToken);
             Free(loginInfo);
+
             UserUnlock(user);
 
             break;
