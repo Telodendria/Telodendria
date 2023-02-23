@@ -16,7 +16,8 @@ Milestone: v0.2.0
 [~] User login
     [x] User manipulation functions (so we don't use the DB directly)
     [x] Refresh tokens
-    [x] Logout
+    [~] Logout
+        [ ] Delete refresh token if present
     [ ] Logout all
     [ ] Login fallback (static HTML page)
 [~] User Interactive
@@ -27,22 +28,25 @@ Milestone: v0.2.0
 [x] Non-JSON endpoints
     [x] Home page (like Synapse's "it works!")
 
-[x] Document MemoryHexDump()
-[x] Document DbExists()
-[x] Document User
-[x] Document Str and remove old functions from Util docs.
-[x] Move docs from Matrix to User for UserValidate
-[ ] Document HashMapGetKey()
+[!] Document HashMapGetKey()
+    - See Refactor below
 [ ] Document new User functions
 [ ] Document new JSON functions
 
-[ ] Clean up scripts (make tools/lib/matrix.sh)
-[x] Scripts to generate index with list of man pages and releases?
-[x] Update changelog
-[x] Fix man page links on website
+[ ] Refactor usage of StrDuplicate()
+    - Functions that keep strings do the duplication,
+      NOT their callers; callers free strings when they are
+      done with them.
+    [ ] Remove HashMapGetKey() function
 
 Milestone: v0.3.0
 -----------------
+
+[ ] Stream API
+    [ ] TLS
+    [ ] SOCKS
+    [ ] Multi-output
+[ ] HTTP Client
 
 [ ] Client-Server API
     [ ] 4: Token-based user registration
@@ -73,11 +77,6 @@ Milestone: v0.5.0
 
 Milestone: v1.0.0
 -----------------
-
-[ ] Stream API
-    [ ] TLS
-    [ ] SOCKS
-[ ] HTTP Client
 
 [~] Client-Server API
     [ ] Modules
