@@ -424,6 +424,20 @@ JsonDecodeString(FILE * in)
         switch (c)
         {
             case '"':
+                if (len >= allocated)
+                {
+                    char *tmp;
+
+                    allocated += 1;
+                    tmp = Realloc(str, allocated * sizeof(char));
+                    if (!tmp)
+                    {
+                        Free(str);
+                        return NULL;
+                    }
+
+                    str = tmp;
+                }
                 str[len] = '\0';
                 return str;
                 break;

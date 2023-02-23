@@ -81,6 +81,21 @@ const char
 };
 
 static void
+TelodendriaHexDump(size_t off, char *hexBuf, char *asciiBuf, void *args)
+{
+    LogConfig *lc = args;
+
+    if (hexBuf && asciiBuf)
+    {
+        Log(lc, LOG_DEBUG, "%04x: %s | %s |", off, hexBuf, asciiBuf);
+    }
+    else
+    {
+        Log(lc, LOG_DEBUG, "%04x", off);
+    }
+}
+
+static void
 TelodendriaMemoryHook(MemoryAction a, MemoryInfo * i, void *args)
 {
     LogConfig *lc = (LogConfig *) args;
@@ -110,21 +125,6 @@ TelodendriaMemoryHook(MemoryAction a, MemoryInfo * i, void *args)
         MemoryInfoGetFile(i), MemoryInfoGetLine(i),
         action, MemoryInfoGetSize(i),
         MemoryInfoGetPointer(i));
-}
-
-static void
-TelodendriaHexDump(size_t off, char *hexBuf, char *asciiBuf, void *args)
-{
-    LogConfig *lc = args;
-
-    if (hexBuf && asciiBuf)
-    {
-        Log(lc, LOG_DEBUG, "%04x: %s | %s |", off, hexBuf, asciiBuf);
-    }
-    else
-    {
-        Log(lc, LOG_DEBUG, "%04x", off);
-    }
 }
 
 static void
