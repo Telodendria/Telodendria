@@ -4,7 +4,7 @@ echo "Telodendria Development Environment"
 echo "-----------------------------------"
 echo
 echo "Tools available:"
-find tools/bin -type f -not -path '*/CVS/*' | while IFS= read -r tool; do
+find tools/bin -type f | grep -v CVS | while IFS= read -r tool; do
     echo "- $(basename $tool)"
 	chmod +x "$tool"
 done
@@ -15,4 +15,3 @@ fi
 
 export PATH="$(pwd)/tools/bin:$PATH"
 export MANPATH="$(pwd)/man:$MANPATH"
-
