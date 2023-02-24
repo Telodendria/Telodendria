@@ -135,6 +135,8 @@ BuildResponse(Array * flows, char *session, Db * db, HashMap ** response)
         DbUnlock(db, ref);
 
         HashMapSet(*response, "completed", JsonValueArray(ArrayCreate()));
+        HashMapSet(*response, "session", JsonValueString(session));
+        Free(session);
     }
     else
     {
@@ -167,11 +169,11 @@ BuildResponse(Array * flows, char *session, Db * db, HashMap ** response)
         }
 
         HashMapSet(*response, "completed", JsonValueArray(completed));
+        HashMapSet(*response, "session", JsonValueString(session));
 
         DbUnlock(db, ref);
     }
 
-    HashMapSet(*response, "session", JsonValueString(session));
     return 0;
 }
 
@@ -200,7 +202,7 @@ UiaBuildStage(char *type, HashMap * params)
         return NULL;
     }
 
-    stage->type = type;
+    stage->type = StrDuplicate(type);
     stage->params = params;
 
     return stage;
@@ -218,9 +220,6 @@ UiaComplete(Array * flows, HttpServerContext * context, Db * db,
     DbRef *dbRef;
     HashMap *dbJson;
 
-    size_t i, j;
-    int ret = 0;
-
     if (!flows)
     {
         return -1;
@@ -228,8 +227,7 @@ UiaComplete(Array * flows, HttpServerContext * context, Db * db,
 
     if (!context || !db || !request || !response)
     {
-        ret = -1;
-        goto finish;
+        return -1;
     }
 
     val = HashMapGet(request, "auth");
@@ -237,16 +235,14 @@ UiaComplete(Array * flows, HttpServerContext * context, Db * db,
     if (!val)
     {
         HttpResponseStatus(context, HTTP_UNAUTHORIZED);
-        ret = BuildResponse(flows, NULL, db, response);
-        goto finish;
+        return BuildResponse(flows, NULL, db, response);
     }
 
     if (JsonValueType(val) != JSON_OBJECT)
     {
         HttpResponseStatus(context, HTTP_BAD_REQUEST);
         *response = MatrixErrorCreate(M_BAD_JSON);
-        ret = 0;
-        goto finish;
+        return 0;
     }
 
     auth = JsonValueAsObject(val);
@@ -256,8 +252,7 @@ UiaComplete(Array * flows, HttpServerContext * context, Db * db,
     {
         HttpResponseStatus(context, HTTP_BAD_REQUEST);
         *response = MatrixErrorCreate(M_BAD_JSON);
-        ret = 0;
-        goto finish;
+        return 0;
     }
 
     session = JsonValueAsString(val);
@@ -267,8 +262,7 @@ UiaComplete(Array * flows, HttpServerContext * context, Db * db,
     {
         HttpResponseStatus(context, HTTP_BAD_REQUEST);
         *response = MatrixErrorCreate(M_BAD_JSON);
-        ret = 0;
-        goto finish;
+        return 0;
     }
 
     authType = JsonValueAsString(val);
@@ -277,17 +271,26 @@ UiaComplete(Array * flows, HttpServerContext * context, Db * db,
     if (!dbRef)
     {
         HttpResponseStatus(context, HTTP_UNAUTHORIZED);
-        ret = BuildResponse(flows, StrDuplicate(session), db, response);
-        goto finish;
+        return BuildResponse(flows, StrDuplicate(session), db, response);
     }
 
     dbJson = DbJson(dbRef);
 
     DbUnlock(db, dbRef);
 
-    ret = 1;
+    return 1;
+}
 
-finish:
+void
+UiaFlowsFree(Array *flows)
+{
+    size_t i, j;
+
+    if (!flows)
+    {
+        return;
+    }
+
     for (i = 0; i < ArraySize(flows); i++)
     {
         Array *stages = ArrayGet(flows, i);
@@ -304,7 +307,6 @@ finish:
         ArrayFree(stages);
     }
     ArrayFree(flows);
-    return ret;
 }
 
 void

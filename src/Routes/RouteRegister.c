@@ -55,7 +55,7 @@ ROUTE_IMPL(RouteRegister, args)
 
     User *user = NULL;
 
-    Array *uiaFlows;
+    Array *uiaFlows = NULL;
     int uiaResult;
 
     if (MATRIX_PATH_PARTS(args->path) == 0)
@@ -241,6 +241,7 @@ ROUTE_IMPL(RouteRegister, args)
 
         UserUnlock(user);
 finish:
+        UiaFlowsFree(uiaFlows);
         Free(username);
         Free(password);
         Free(deviceId);

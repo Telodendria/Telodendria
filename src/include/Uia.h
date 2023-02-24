@@ -41,6 +41,9 @@ extern void
  UiaCleanup(MatrixHttpHandlerArgs *);
 
 extern int
- UiaComplete(Array * stages, HttpServerContext *, Db *, HashMap *, HashMap **);
+ UiaComplete(Array *, HttpServerContext *, Db *, HashMap *, HashMap **);
+
+extern void
+UiaFlowsFree(Array *);
 
 #endif
