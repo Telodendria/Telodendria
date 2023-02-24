@@ -145,15 +145,15 @@ ROUTE_IMPL(RouteRefresh, args)
     DbDelete(db, 3, "tokens", "access", oldAccessToken);
 
     /* Update the refresh token to point to the new access token */
-    JsonValueFree(HashMapSet(DbJson(rtRef), "refreshes", JsonValueString(StrDuplicate(newAccessToken->string))));
+    JsonValueFree(HashMapSet(DbJson(rtRef), "refreshes", JsonValueString(newAccessToken->string)));
 
     /* Return the new access token and expiration timestamp to the
      * client */
     response = HashMapCreate();
-    HashMapSet(response, "access_token", JsonValueString(StrDuplicate(newAccessToken->string)));
+    HashMapSet(response, "access_token", JsonValueString(newAccessToken->string));
     HashMapSet(response, "expires_in_ms", JsonValueInteger(newAccessToken->lifetime));
 
-    Free(newAccessToken);
+    UserAccessTokenFree(newAccessToken);
 
 finish:
     JsonFree(request);

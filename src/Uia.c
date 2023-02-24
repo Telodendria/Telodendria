@@ -89,7 +89,7 @@ BuildFlows(Array * flows)
         {
             UiaStage *stage = ArrayGet(stages, i);
 
-            ArrayAdd(responseStages, JsonValueString(StrDuplicate(stage->type)));
+            ArrayAdd(responseStages, JsonValueString(stage->type));
             if (stage->params)
             {
                 JsonValueFree(HashMapSet(responseParams, stage->type, JsonValueObject(stage->params)));
@@ -163,7 +163,7 @@ BuildResponse(Array * flows, char *session, Db * db, HashMap ** response)
         {
             char *stage = JsonValueAsString(ArrayGet(dbCompleted, i));
 
-            ArrayAdd(completed, JsonValueString(StrDuplicate(stage)));
+            ArrayAdd(completed, JsonValueString(stage));
         }
 
         HashMapSet(*response, "completed", JsonValueArray(completed));
@@ -296,7 +296,10 @@ finish:
         {
             UiaStage *stage = ArrayGet(stages, j);
 
-            Free(stage);           /* Members are referenced elsewhere */
+            Free(stage->type);
+            /* stage->params, if not null, is referenced in the
+             * response body. */
+            Free(stage);
         }
         ArrayFree(stages);
     }

@@ -87,6 +87,9 @@ extern UserAccessToken *
 extern int
  UserAccessTokenSave(Db *, UserAccessToken *);
 
+extern void
+ UserAccessTokenFree(UserAccessToken *);
+
 extern int
  UserDeleteToken(User *, char *);
 

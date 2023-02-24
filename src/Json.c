@@ -174,7 +174,13 @@ JsonValueString(char *string)
     }
 
     value->type = JSON_STRING;
-    value->as.string = string;
+
+    value->as.string = StrDuplicate(string);
+    if (!value->as.string)
+    {
+        Free(value);
+        return NULL;
+    }
 
     return value;
 }
@@ -913,6 +919,7 @@ JsonDecodeValue(JsonParserState * state)
             }
             strcpy(strValue, state->token);
             value = JsonValueString(strValue);
+            Free(strValue);
             break;
         case TOKEN_INTEGER:
             value = JsonValueInteger(atol(state->token));

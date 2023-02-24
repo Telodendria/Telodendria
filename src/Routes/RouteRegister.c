@@ -48,6 +48,7 @@ ROUTE_IMPL(RouteRegister, args)
     int refreshToken = 0;
     int inhibitLogin = 0;
     char *deviceId = NULL;
+    char *fullUsername;
 
     Db *db = args->matrixArgs->db;
     LogConfig *lc = args->matrixArgs->lc;
@@ -205,18 +206,13 @@ ROUTE_IMPL(RouteRegister, args)
             refreshToken = JsonValueAsBoolean(val);
         }
 
-        /* These values are already set */
-        (void) refreshToken;
-        (void) inhibitLogin;
-
-        /* These may be NULL */
-        (void) initialDeviceDisplayName;
-        (void) deviceId;
-
         user = UserCreate(db, username, password);
         response = HashMapCreate();
-        HashMapSet(response, "user_id", JsonValueString(StrConcat(4, "@",
-                                                                  UserGetName(user), ":", args->matrixArgs->config->serverName)));
+
+        fullUsername = StrConcat(4, "@", UserGetName(user), ":", args->matrixArgs->config->serverName);
+        HashMapSet(response, "user_id", JsonValueString(fullUsername));
+        Free(fullUsername);
+
         HttpResponseStatus(args->context, HTTP_OK);
         if (!inhibitLogin)
         {
@@ -236,11 +232,8 @@ ROUTE_IMPL(RouteRegister, args)
                            JsonValueString(loginInfo->refreshToken));
             }
 
-            /*
-             * Don't need to free members; they're attached to the JSON response,
-             * they will be freed after the response is sent.
-             */
-            Free(loginInfo->accessToken);
+            UserAccessTokenFree(loginInfo->accessToken);
+            Free(loginInfo->refreshToken);
             Free(loginInfo);
         }
 

@@ -54,6 +54,7 @@ ROUTE_IMPL(RouteLogin, args)
 
     User *user;
     UserLoginInfo *loginInfo;
+    char *fullUsername;
 
     if (MATRIX_PATH_PARTS(args->path) > 0)
     {
@@ -68,8 +69,7 @@ ROUTE_IMPL(RouteLogin, args)
             enabledFlows = ArrayCreate();
             pwdFlow = HashMapCreate();
 
-            HashMapSet(pwdFlow, "type",
-                   JsonValueString(StrDuplicate("m.login.password")));
+            HashMapSet(pwdFlow, "type", JsonValueString("m.login.password"));
             ArrayAdd(enabledFlows, JsonValueObject(pwdFlow));
             HashMapSet(response, "flows", JsonValueArray(enabledFlows));
             break;
@@ -261,23 +261,18 @@ ROUTE_IMPL(RouteLogin, args)
                            JsonValueString(loginInfo->refreshToken));
             }
 
-            HashMapSet(response, "user_id",
-                       JsonValueString(
-                             StrConcat(4, "@", UserGetName(user), ":",
-                              args->matrixArgs->config->serverName)));
+            fullUsername = StrConcat(4, "@", UserGetName(user), ":",
+                                args->matrixArgs->config->serverName);
+            HashMapSet(response, "user_id", JsonValueString(fullUsername));
+            Free(fullUsername);
 
             HashMapSet(response, "well_known",
                        JsonValueObject(
               MatrixClientWellKnown(args->matrixArgs->config->baseUrl,
                           args->matrixArgs->config->identityServer)));
 
-            Free(loginInfo->accessToken->user);
-
-            /*
-             * Don't need to free other members; they're attached to the JSON
-             * response, they will be freed after the response is sent.
-             */
-            Free(loginInfo->accessToken);
+            UserAccessTokenFree(loginInfo->accessToken);
+            Free(loginInfo->refreshToken);
             Free(loginInfo);
 
             UserUnlock(user);

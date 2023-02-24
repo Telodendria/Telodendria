@@ -304,8 +304,8 @@ MatrixErrorCreate(MatrixError errorArg)
         return NULL;
     }
 
-    HashMapSet(errorObj, "errcode", JsonValueString(StrDuplicate(errcode)));
-    HashMapSet(errorObj, "error", JsonValueString(StrDuplicate(error)));
+    HashMapSet(errorObj, "errcode", JsonValueString(errcode));
+    HashMapSet(errorObj, "error", JsonValueString(error));
 
     return errorObj;
 }
@@ -378,14 +378,14 @@ MatrixClientWellKnown(char *base, char *identity)
     response = HashMapCreate();
     homeserver = HashMapCreate();
 
-    HashMapSet(homeserver, "base_url", JsonValueString(StrDuplicate(base)));
+    HashMapSet(homeserver, "base_url", JsonValueString(base));
     HashMapSet(response, "m.homeserver", JsonValueObject(homeserver));
 
     if (identity)
     {
         HashMap *identityServer = HashMapCreate();
 
-        HashMapSet(identityServer, "base_url", JsonValueString(StrDuplicate(identity)));
+        HashMapSet(identityServer, "base_url", JsonValueString(identity));
         HashMapSet(response, "m.identity_server", identityServer);
     }
 

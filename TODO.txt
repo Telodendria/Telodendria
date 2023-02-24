@@ -28,8 +28,6 @@ Milestone: v0.2.0
 [x] Non-JSON endpoints
     [x] Home page (like Synapse's "it works!")
 
-[!] Document HashMapGetKey()
-    - See Refactor below
 [ ] Document new User functions
 [ ] Document new JSON functions
 
@@ -39,7 +37,8 @@ Milestone: v0.2.0
       done with them.
     [x] Remove HashMapGetKey() function
     [x] HashMap
-    [ ] JsonValueString()
+    [x] JsonValueString()
+    [ ] Db
 
 Milestone: v0.3.0
 -----------------

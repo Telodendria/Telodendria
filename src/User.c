@@ -278,7 +278,7 @@ UserLogin(User * user, char *password, char *deviceId, char *deviceDisplayName,
         rtRef = DbCreate(user->db, 3, "tokens", "refresh", result->refreshToken);
 
         HashMapSet(DbJson(rtRef), "refreshes",
-          JsonValueString(StrDuplicate(result->accessToken->string)));
+                   JsonValueString(result->accessToken->string));
         DbUnlock(user->db, rtRef);
     }
 
@@ -317,7 +317,7 @@ UserLogin(User * user, char *password, char *deviceId, char *deviceDisplayName,
         if (deviceDisplayName)
         {
             HashMapSet(device, "displayName",
-                    JsonValueString(StrDuplicate(deviceDisplayName)));
+                       JsonValueString(deviceDisplayName));
         }
 
     }
@@ -327,11 +327,11 @@ UserLogin(User * user, char *password, char *deviceId, char *deviceDisplayName,
     if (result->refreshToken)
     {
         HashMapSet(device, "refreshToken",
-                 JsonValueString(StrDuplicate(result->refreshToken)));
+                   JsonValueString(result->refreshToken));
     }
 
     HashMapSet(device, "accessToken",
-          JsonValueString(StrDuplicate(result->accessToken->string)));
+               JsonValueString(result->accessToken->string));
 
     return result;
 }
@@ -400,10 +400,13 @@ UserSetPassword(User * user, char *password)
     salt = StrRandom(16);
     tmpstr = StrConcat(2, password, salt);
     hash = Sha256(tmpstr);
-    Free(tmpstr);
 
     JsonValueFree(HashMapSet(json, "salt", JsonValueString(salt)));
     JsonValueFree(HashMapSet(json, "password", JsonValueString(hash)));
+
+    Free(salt);
+    Free(hash);
+    Free(tmpstr);
 
     return 1;
 }
@@ -493,8 +496,8 @@ UserAccessTokenSave(Db * db, UserAccessToken * token)
 
     json = DbJson(ref);
 
-    HashMapSet(json, "user", JsonValueString(StrDuplicate(token->user)));
-    HashMapSet(json, "device", JsonValueString(StrDuplicate(token->deviceId)));
+    HashMapSet(json, "user", JsonValueString(token->user));
+    HashMapSet(json, "device", JsonValueString(token->deviceId));
 
     if (token->lifetime)
     {
@@ -502,6 +505,20 @@ UserAccessTokenSave(Db * db, UserAccessToken * token)
     }
 
     return DbUnlock(db, ref);
+}
+
+void
+UserAccessTokenFree(UserAccessToken * token)
+{
+    if (!token)
+    {
+        return;
+    }
+
+    Free(token->user);
+    Free(token->string);
+    Free(token->deviceId);
+    Free(token);
 }
 
 int
