@@ -16,8 +16,8 @@ Milestone: v0.2.0
 [~] User login
     [x] User manipulation functions (so we don't use the DB directly)
     [x] Refresh tokens
-    [~] Logout
-        [ ] Delete refresh token if present
+    [x] Logout
+        [x] Delete refresh token if present
     [ ] Logout all
     [ ] Login fallback (static HTML page)
 [~] User Interactive
@@ -31,14 +31,14 @@ Milestone: v0.2.0
 [ ] Document new User functions
 [ ] Document new JSON functions
 
-[~] Refactor usage of StrDuplicate()
+[x] Refactor usage of StrDuplicate()
     - Functions that keep strings do the duplication,
       NOT their callers; callers free strings when they are
       done with them.
     [x] Remove HashMapGetKey() function
     [x] HashMap
     [x] JsonValueString()
-    [ ] Db
+    [x] Db
 
 Milestone: v0.3.0
 -----------------
