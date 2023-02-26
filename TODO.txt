@@ -13,9 +13,11 @@ Milestone: v0.2.0
 
 [ ] Abstract /email/requestToken and /msidsn/requestToken
 
-[ ] Json API
-    [ ] Trailing commas should not be allowed in arrays and objects
-    [ ] Fix empty arrays not parsing
+[x] Json API
+    [x] Trailing commas should not be allowed in arrays and objects
+    [x] Fix empty arrays not parsing
+[ ] Db API
+    [ ] If object is in cache, but doesn't exist on disk, delete from cache
 [~] User login
     [x] User manipulation functions (so we don't use the DB directly)
     [x] Refresh tokens

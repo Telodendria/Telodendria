@@ -945,6 +945,7 @@ static HashMap *
 JsonDecodeObject(JsonParserState * state)
 {
     HashMap *obj = HashMapCreate();
+    int comma = 0;
 
     if (!obj)
     {
@@ -986,19 +987,21 @@ JsonDecodeObject(JsonParserState * state)
             Free(key);
 
             JsonTokenSeek(state);
+
+            if (JsonExpect(state, TOKEN_COMMA))
+            {
+                comma = 1;
+                continue;
+            }
+
             if (JsonExpect(state, TOKEN_OBJECT_CLOSE))
             {
                 break;
             }
 
-            if (JsonExpect(state, TOKEN_COMMA))
-            {
-                continue;
-            }
-
             goto error;
         }
-        else if (JsonExpect(state, TOKEN_OBJECT_CLOSE))
+        else if (!comma && JsonExpect(state, TOKEN_OBJECT_CLOSE))
         {
             break;
         }
@@ -1019,6 +1022,7 @@ JsonDecodeArray(JsonParserState * state)
 {
     Array *arr = ArrayCreate();
     size_t i;
+    int comma = 0;
 
     if (!arr)
     {
@@ -1030,6 +1034,12 @@ JsonDecodeArray(JsonParserState * state)
         JsonValue *value;
 
         JsonTokenSeek(state);
+
+        if (!comma && JsonExpect(state, TOKEN_ARRAY_CLOSE))
+        {
+            break;
+        }
+
         value = JsonDecodeValue(state);
 
         if (!value)
@@ -1041,14 +1051,15 @@ JsonDecodeArray(JsonParserState * state)
 
         JsonTokenSeek(state);
 
+        if (JsonExpect(state, TOKEN_COMMA))
+        {
+            comma = 1;
+            continue;
+        }
+
         if (JsonExpect(state, TOKEN_ARRAY_CLOSE))
         {
             break;
-        }
-
-        if (JsonExpect(state, TOKEN_COMMA))
-        {
-            continue;
         }
 
         goto error;
