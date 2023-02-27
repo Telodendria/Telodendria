@@ -44,6 +44,6 @@ extern int
  UiaComplete(Array *, HttpServerContext *, Db *, HashMap *, HashMap **);
 
 extern void
-UiaFlowsFree(Array *);
+ UiaFlowsFree(Array *);
 
 #endif

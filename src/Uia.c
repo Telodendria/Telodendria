@@ -101,9 +101,8 @@ BuildFlows(Array * flows)
 }
 
 static int
-BuildResponse(Array * flows, char *session, Db * db, HashMap ** response)
+BuildResponse(Array * flows, Db * db, HashMap ** response, char *session, DbRef * ref)
 {
-    DbRef *ref;
     HashMap *json;
 
     *response = BuildFlows(flows);
@@ -135,8 +134,6 @@ BuildResponse(Array * flows, char *session, Db * db, HashMap ** response)
         DbUnlock(db, ref);
 
         HashMapSet(*response, "completed", JsonValueArray(ArrayCreate()));
-        HashMapSet(*response, "session", JsonValueString(session));
-        Free(session);
     }
     else
     {
@@ -147,14 +144,6 @@ BuildResponse(Array * flows, char *session, Db * db, HashMap ** response)
         if (!completed)
         {
             JsonFree(*response);
-            return -1;
-        }
-
-        ref = DbLock(db, 2, "user_interactive", session);
-        if (!ref)
-        {
-            JsonFree(*response);
-            ArrayFree(completed);
             return -1;
         }
 
@@ -169,10 +158,12 @@ BuildResponse(Array * flows, char *session, Db * db, HashMap ** response)
         }
 
         HashMapSet(*response, "completed", JsonValueArray(completed));
-        HashMapSet(*response, "session", JsonValueString(session));
 
-        DbUnlock(db, ref);
+        session = StrDuplicate(session);
     }
+
+    HashMapSet(*response, "session", JsonValueString(session));
+    Free(session);
 
     return 0;
 }
@@ -216,9 +207,13 @@ UiaComplete(Array * flows, HttpServerContext * context, Db * db,
     HashMap *auth;
     char *session;
     char *authType;
+    Array *completed;
+    Array *possibleNext;
+    size_t i;
 
     DbRef *dbRef;
     HashMap *dbJson;
+    int ret;
 
     if (!flows)
     {
@@ -235,7 +230,7 @@ UiaComplete(Array * flows, HttpServerContext * context, Db * db,
     if (!val)
     {
         HttpResponseStatus(context, HTTP_UNAUTHORIZED);
-        return BuildResponse(flows, NULL, db, response);
+        return BuildResponse(flows, db, response, NULL, NULL);
     }
 
     if (JsonValueType(val) != JSON_OBJECT)
@@ -256,33 +251,130 @@ UiaComplete(Array * flows, HttpServerContext * context, Db * db,
     }
 
     session = JsonValueAsString(val);
+
+    dbRef = DbLock(db, 2, "user_interactive", session);
+    if (!dbRef)
+    {
+        HttpResponseStatus(context, HTTP_UNAUTHORIZED);
+        return BuildResponse(flows, db, response, NULL, NULL);
+    }
+
+    dbJson = DbJson(dbRef);
+
+    completed = JsonValueAsArray(HashMapGet(dbJson, "completed"));
+    possibleNext = ArrayCreate();
+
+    for (i = 0; i < ArraySize(flows); i++)
+    {
+        size_t j;
+
+        Array *stages = ArrayGet(flows, i);
+
+        if (ArraySize(stages) > ArraySize(completed))
+        {
+            UiaStage *stage = ArrayGet(stages, ArraySize(completed));
+
+            ArrayAdd(possibleNext, stage->type);
+        }
+        else if (ArraySize(stages) == ArraySize(completed))
+        {
+            for (j = 0; j < ArraySize(stages); j++)
+            {
+                UiaStage *stage = ArrayGet(stages, j);
+                char *flowStage = stage->type;
+                char *completedStage = JsonValueAsString(ArrayGet(completed, j));
+
+                if (strcmp(flowStage, completedStage) != 0)
+                {
+                    break;
+                }
+            }
+
+            if (j == ArraySize(stages))
+            {
+                /* Success: completed matches a stage perfectly */
+                ret = 1;
+                goto finish;
+            }
+        }
+    }
+
     val = HashMapGet(auth, "type");
 
     if (!val || JsonValueType(val) != JSON_STRING)
     {
         HttpResponseStatus(context, HTTP_BAD_REQUEST);
         *response = MatrixErrorCreate(M_BAD_JSON);
-        return 0;
+        ret = 0;
+        goto finish;
     }
 
     authType = JsonValueAsString(val);
 
-    dbRef = DbLock(db, 2, "user_interactive", session);
-    if (!dbRef)
+    for (i = 0; i < ArraySize(possibleNext); i++)
     {
-        HttpResponseStatus(context, HTTP_UNAUTHORIZED);
-        return BuildResponse(flows, StrDuplicate(session), db, response);
+        char *possible = ArrayGet(possibleNext, i);
+
+        if (strcmp(authType, possible) == 0)
+        {
+            break;
+        }
     }
 
-    dbJson = DbJson(dbRef);
+    if (i == ArraySize(possibleNext))
+    {
+        HttpResponseStatus(context, HTTP_UNAUTHORIZED);
+        ret = BuildResponse(flows, db, response, session, dbRef);
+        goto finish;
+    }
 
+    if (strcmp(authType, "m.login.dummy") == 0)
+    {
+        /* Do nothing */
+    }
+    else if (strcmp(authType, "m.login.password") == 0)
+    {
+        /* TODO */
+    }
+    else if (strcmp(authType, "m.login.registration_token") == 0)
+    {
+        /* TODO */
+    }
+    else if (strcmp(authType, "m.login.recaptcha") == 0)
+    {
+        /* TODO */
+    }
+    else if (strcmp(authType, "m.login.sso") == 0)
+    {
+        /* TODO */
+    }
+    else if (strcmp(authType, "m.login.email.identity") == 0)
+    {
+        /* TODO */
+    }
+    else if (strcmp(authType, "m.login.msisdn") == 0)
+    {
+        /* TODO */
+    }
+    else
+    {
+        HttpResponseStatus(context, HTTP_UNAUTHORIZED);
+        ret = BuildResponse(flows, db, response, session, dbRef);
+        goto finish;
+    }
+
+    ArrayAdd(completed, JsonValueString(authType));
+
+    ret = 1;
+
+finish:
+    ArrayFree(possibleNext);
     DbUnlock(db, dbRef);
-
-    return 1;
+    return ret;
 }
 
 void
-UiaFlowsFree(Array *flows)
+UiaFlowsFree(Array * flows)
 {
     size_t i, j;
 

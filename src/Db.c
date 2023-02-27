@@ -32,6 +32,9 @@
 #include <fcntl.h>
 #include <unistd.h>
 
+#include <errno.h>
+#include <string.h>
+
 struct Db
 {
     char *dir;
@@ -403,6 +406,38 @@ DbLockFromArr(Db * db, Array * args)
     fp = fopen(file, "r+");
     if (!fp)
     {
+        if (ref)
+        {
+            pthread_mutex_lock(&ref->lock);
+
+            HashMapDelete(db->cache, hash);
+            JsonFree(ref->json);
+            StringArrayFree(ref->name);
+
+            db->cacheSize -= ref->size;
+
+            if (ref->next)
+            {
+                ref->next->prev = ref->prev;
+            }
+            else
+            {
+                db->mostRecent = ref->prev;
+            }
+
+            if (ref->prev)
+            {
+                ref->prev->next = ref->next;
+            }
+            else
+            {
+                db->leastRecent = ref->next;
+            }
+
+            pthread_mutex_unlock(&ref->lock);
+            pthread_mutex_destroy(&ref->lock);
+            Free(ref);
+        }
         ref = NULL;
         goto finish;
     }
@@ -415,6 +450,7 @@ DbLockFromArr(Db * db, Array * args)
     /* Lock the file on the disk */
     if (fcntl(fileno(fp), F_SETLK, &lock) < 0)
     {
+        printf("fcntl() failed on %s (%s)\n", file, strerror(errno));
         fclose(fp);
         ref = NULL;
         goto finish;
