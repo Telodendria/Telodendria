@@ -16,8 +16,9 @@ Milestone: v0.2.0
 [x] Json API
     [x] Trailing commas should not be allowed in arrays and objects
     [x] Fix empty arrays not parsing
-[ ] Db API
-    [ ] If object is in cache, but doesn't exist on disk, delete from cache
+[~] Db API
+    [x] If object is in cache, but doesn't exist on disk, delete from cache
+    [ ] Allow cache to be totally disabled (no MIN_CACHE_SIZE)
 [~] User login
     [x] User manipulation functions (so we don't use the DB directly)
     [x] Refresh tokens
