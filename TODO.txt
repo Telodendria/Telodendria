@@ -22,7 +22,7 @@ Milestone: v0.2.0
     [x] Logout
         [x] Delete refresh token if present
     [ ] Logout all
-    [ ] Login fallback (static HTML page)
+    [~] Login fallback (static HTML page)
 [x] User Interactive
     [x] Passwords
     [x] Caller builds flows

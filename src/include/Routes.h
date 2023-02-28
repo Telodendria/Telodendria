@@ -57,9 +57,9 @@ typedef struct RouteArgs
 	HashMap * \
 	name(RouteArgs * argsName)
 
-ROUTE(RouteMainPage);              /* / */
 ROUTE(RouteWellKnown);             /* /.well-known */
 ROUTE(RouteMatrix);                /* /_matrix */
+ROUTE(RouteStatic);                /* /_matrix/static */
 
 ROUTE(RouteLogin);                 /* /_matrix/client/(r0|v3)/login */
 ROUTE(RouteLogout);                /* /_matrix/client/(r0|v3)/logout */

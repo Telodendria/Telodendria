@@ -100,11 +100,7 @@ MatrixHttpHandler(HttpServerContext * context, void *argp)
 
     pathPart = MATRIX_PATH_POP(pathParts);
 
-    if (!pathPart)
-    {
-        response = RouteMainPage(&routeArgs);
-    }
-    else if (MATRIX_PATH_EQUALS(pathPart, ".well-known"))
+    if (MATRIX_PATH_EQUALS(pathPart, ".well-known"))
     {
         response = RouteWellKnown(&routeArgs);
     }

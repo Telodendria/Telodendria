@@ -21,54 +21,23 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-#include <Routes.h>
+#include <Static.h>
+#include <Html.h>
 
-#include <Telodendria.h>
-
-ROUTE_IMPL(RouteMainPage, args)
+void
+StaticItWorks(FILE * stream)
 {
-    FILE *stream = HttpStream(args->context);
-    size_t i;
-
-    HttpResponseHeader(args->context, "Content-Type", "text/html");
-    HttpSendHeaders(args->context);
+    HtmlBegin(stream, "It works! Telodendria is running.");
 
     fprintf(stream,
-            "<!DOCTYPE html>"
-            "<html>"
-            "<head>"
-            "<meta charset=\"utf-8\">"
-            "<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">"
-            "<title>It Works! | Telodendria</title>"
             "<style>"
-            "body {"
-            "  margin: auto;"
-            "  max-width: 6in;"
-            "  padding: 0.25in;"
-            "  background-color: #0d1117;"
-            "  color: white;"
-            "}"
-            "h1, p, pre {"
+            "p {"
             "  text-align: center;"
             "}"
-            "a {"
-            "  color: #7b8333;"
-            "  text-decoration: none;"
-            "}"
             "</style>"
-            "</head>"
-            "<body>"
-            "<pre style=\"color: #7b8333; font-weight: bold;\">"
             );
 
-    for (i = 0; i < TELODENDRIA_LOGO_HEIGHT; i++)
-    {
-        fprintf(stream, "%s\n", TelodendriaLogo[i]);
-    }
-
     fprintf(stream,
-            "</pre>"
-            "<h1>It works! Telodendria is running</h1>"
             "<p>"
      "Your Telodendria server is listening on this port and is ready "
             "for messages."
@@ -82,10 +51,5 @@ ROUTE_IMPL(RouteMainPage, args)
             "</p>"
             );
 
-    fprintf(stream,
-            "</body>"
-            "</html>"
-            );
-
-    return NULL;
+    HtmlEnd(stream);
 }
