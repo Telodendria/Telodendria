@@ -598,3 +598,72 @@ UserDeleteToken(User * user, char *token)
 
     return 1;
 }
+
+UserId *
+UserParseId(char *id, char *defaultServer)
+{
+    UserId *userId;
+
+    if (!id)
+    {
+        return NULL;
+    }
+
+    id = StrDuplicate(id);
+    if (!id)
+    {
+        return NULL;
+    }
+
+    userId = Malloc(sizeof(UserId));
+    if (!userId)
+    {
+        goto finish;
+    }
+
+    /* Fully-qualified user ID */
+    if (*id == '@')
+    {
+        char *localStart = id + 1;
+        char *serverStart = localStart;
+
+        while (*serverStart != ':' && *serverStart != '\0')
+        {
+            serverStart++;
+        }
+
+        if (*serverStart == '\0')
+        {
+            Free(userId);
+            userId = NULL;
+            goto finish;
+        }
+
+        *serverStart = '\0';
+        serverStart++;
+
+        userId->localpart = StrDuplicate(localStart);
+        userId->server = StrDuplicate(serverStart);
+    }
+    else
+    {
+        /* Treat it as just a localpart */
+        userId->localpart = StrDuplicate(id);
+        userId->server = StrDuplicate(defaultServer);
+    }
+
+finish:
+    Free(id);
+    return userId;
+}
+
+void 
+UserFreeId(UserId *id)
+{
+    if (id)
+    {
+        Free(id->localpart);
+        Free(id->server);
+        Free(id);
+    }
+}

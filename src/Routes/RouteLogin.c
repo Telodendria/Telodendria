@@ -48,7 +48,7 @@ ROUTE_IMPL(RouteLogin, args)
 
     char *password;
     char *type;
-    char *username;
+    UserId *userId = NULL;
 
     Db *db = args->matrixArgs->db;
 
@@ -160,9 +160,17 @@ ROUTE_IMPL(RouteLogin, args)
                 break;
             }
 
-            username = JsonValueAsString(val);
+            userId = UserParseId(JsonValueAsString(val),
+                                 args->matrixArgs->config->serverName);
+            if (!userId)
+            {
+                HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
+                response = MatrixErrorCreate(M_BAD_JSON);
+                break;
+            }
 
-            if (!UserExists(db, username))
+            if (strcmp(userId->server, args->matrixArgs->config->serverName) != 0
+                || !UserExists(db, userId->localpart))
             {
                 HttpResponseStatus(args->context, HTTP_FORBIDDEN);
                 response = MatrixErrorCreate(M_FORBIDDEN);
@@ -225,7 +233,7 @@ ROUTE_IMPL(RouteLogin, args)
                 refreshToken = JsonValueAsBoolean(val);
             }
 
-            user = UserLock(db, username);
+            user = UserLock(db, userId->localpart);
 
             if (!user)
             {
@@ -284,6 +292,7 @@ ROUTE_IMPL(RouteLogin, args)
             break;
     }
 
+    UserFreeId(userId);
     JsonFree(request);
     return response;
 }

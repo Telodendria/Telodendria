@@ -42,6 +42,12 @@ typedef struct UserLoginInfo
     char *refreshToken;
 } UserLoginInfo;
 
+typedef struct UserId
+{
+    char *localpart;
+    char *server;
+} UserId;
+
 extern int
  UserValidate(char *, char *);
 
@@ -92,5 +98,11 @@ extern void
 
 extern int
  UserDeleteToken(User *, char *);
+
+extern UserId *
+ UserParseId(char *, char *);
+
+extern void
+ UserFreeId(UserId *);
 
 #endif                             /* TELODENDRIA_USER_H */
