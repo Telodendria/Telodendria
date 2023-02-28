@@ -657,8 +657,8 @@ finish:
     return userId;
 }
 
-void 
-UserFreeId(UserId *id)
+void
+UserFreeId(UserId * id)
 {
     if (id)
     {

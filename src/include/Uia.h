@@ -41,7 +41,7 @@ extern void
  UiaCleanup(MatrixHttpHandlerArgs *);
 
 extern int
- UiaComplete(Array *, HttpServerContext *, Db *, HashMap *, HashMap **);
+ UiaComplete(Array *, HttpServerContext *, Db *, HashMap *, HashMap **, TelodendriaConfig *);
 
 extern void
  UiaFlowsFree(Array *);

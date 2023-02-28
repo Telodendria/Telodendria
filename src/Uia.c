@@ -31,6 +31,7 @@
 #include <Str.h>
 
 #include <Matrix.h>
+#include <User.h>
 
 struct UiaStage
 {
@@ -201,7 +202,7 @@ UiaBuildStage(char *type, HashMap * params)
 
 int
 UiaComplete(Array * flows, HttpServerContext * context, Db * db,
-            HashMap * request, HashMap ** response)
+   HashMap * request, HashMap ** response, TelodendriaConfig * config)
 {
     JsonValue *val;
     HashMap *auth;
@@ -334,7 +335,52 @@ UiaComplete(Array * flows, HttpServerContext * context, Db * db,
     }
     else if (strcmp(authType, "m.login.password") == 0)
     {
-        /* TODO */
+        char *password = JsonValueAsString(HashMapGet(auth, "password"));
+        HashMap *identifier = JsonValueAsObject(HashMapGet(auth, "identifier"));
+        char *type;
+        UserId *userId;
+        User *user;
+
+        if (!password || !identifier)
+        {
+            HttpResponseStatus(context, HTTP_UNAUTHORIZED);
+            ret = BuildResponse(flows, db, response, session, dbRef);
+            goto finish;
+        }
+
+        type = JsonValueAsString(HashMapGet(identifier, "type"));
+        userId = UserParseId(JsonValueAsString(HashMapGet(identifier, "user")),
+                             config->serverName);
+
+        if (!type || strcmp(type, "m.id.user") != 0
+        || !userId || strcmp(userId->server, config->serverName) != 0)
+        {
+            HttpResponseStatus(context, HTTP_UNAUTHORIZED);
+            ret = BuildResponse(flows, db, response, session, dbRef);
+            UserFreeId(userId);
+            goto finish;
+        }
+
+        user = UserLock(db, userId->localpart);
+        if (!user)
+        {
+            HttpResponseStatus(context, HTTP_UNAUTHORIZED);
+            ret = BuildResponse(flows, db, response, session, dbRef);
+            UserFreeId(userId);
+            goto finish;
+        }
+
+        if (!UserCheckPassword(user, password))
+        {
+            HttpResponseStatus(context, HTTP_UNAUTHORIZED);
+            ret = BuildResponse(flows, db, response, session, dbRef);
+            UserFreeId(userId);
+            UserUnlock(user);
+            goto finish;
+        }
+
+        UserFreeId(userId);
+        UserUnlock(user);
     }
     else if (strcmp(authType, "m.login.registration_token") == 0)
     {

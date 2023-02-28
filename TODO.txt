@@ -13,9 +13,6 @@ Milestone: v0.2.0
 
 [ ] Abstract /email/requestToken and /msidsn/requestToken
 
-[x] Json API
-    [x] Trailing commas should not be allowed in arrays and objects
-    [x] Fix empty arrays not parsing
 [~] Db API
     [x] If object is in cache, but doesn't exist on disk, delete from cache
     [ ] Allow cache to be totally disabled (no MIN_CACHE_SIZE)
@@ -26,25 +23,13 @@ Milestone: v0.2.0
         [x] Delete refresh token if present
     [ ] Logout all
     [ ] Login fallback (static HTML page)
-[~] User Interactive
-    [ ] Passwords
-    [ ] Registration tokens
-    [~] Caller builds flows
-    [ ] Document Uia (move docs from Matrix)
-[x] Non-JSON endpoints
-    [x] Home page (like Synapse's "it works!")
+[x] User Interactive
+    [x] Passwords
+    [x] Caller builds flows
 
 [ ] Document new User functions
 [ ] Document new JSON functions
-
-[x] Refactor usage of StrDuplicate()
-    - Functions that keep strings do the duplication,
-      NOT their callers; callers free strings when they are
-      done with them.
-    [x] Remove HashMapGetKey() function
-    [x] HashMap
-    [x] JsonValueString()
-    [x] Db
+[ ] Document Uia (move docs from Matrix)
 
 Milestone: v0.3.0
 -----------------
@@ -55,10 +40,16 @@ Milestone: v0.3.0
     [ ] Multi-output
 [ ] HTTP Client
 
+[ ] Move configuration to database
+    - How is the initial configuration done?
+    [ ] /_telodendria/admin/config endpoint
+    [ ] Refactor TelodendriaConfig to just Config (ConfigLock() and ConfigUnlock())
+
 [ ] Client-Server API
     [ ] 4: Token-based user registration
-        [ ] Refactor user-interactive auth flow
+        [ ] Implement user-interactive auth flow
         [ ] Token validity endpoint
+        [ ] Add m.login.registration_token to registration endpoint flow
     [ ] 4: Account management
         [ ] Deactivate
         [ ] Change password
