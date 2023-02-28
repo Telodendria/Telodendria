@@ -794,6 +794,25 @@ DbExists(Db * db, size_t nArgs,...)
     return ret;
 }
 
+Array *
+DbList(Db *db, size_t nArgs, ...)
+{
+    Array *result;
+
+    if (!db || !nArgs)
+    {
+        return NULL;
+    }
+
+    result = ArrayCreate();
+    if (!result)
+    {
+        return NULL;
+    }
+
+    return result;
+}
+
 HashMap *
 DbJson(DbRef * ref)
 {

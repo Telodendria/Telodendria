@@ -56,6 +56,9 @@ extern int
 extern int
  DbExists(Db *, size_t,...);
 
+extern Array *
+ DbList(Db *, size_t, ...);
+
 extern HashMap *
  DbJson(DbRef *);
 

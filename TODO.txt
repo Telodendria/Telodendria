@@ -16,6 +16,7 @@ Milestone: v0.2.0
 [~] Db API
     [x] If object is in cache, but doesn't exist on disk, delete from cache
     [ ] Allow cache to be totally disabled (no MIN_CACHE_SIZE)
+    [ ] List keys under a path (DbList() using POSIX opendir())
 [~] User login
     [x] User manipulation functions (so we don't use the DB directly)
     [x] Refresh tokens
@@ -23,9 +24,10 @@ Milestone: v0.2.0
         [x] Delete refresh token if present
     [ ] Logout all
     [~] Login fallback (static HTML page)
-[x] User Interactive
+[~] User Interactive
     [x] Passwords
     [x] Caller builds flows
+    [ ] Clean up old sessions
 
 [ ] Document new User functions
 [ ] Document new JSON functions
