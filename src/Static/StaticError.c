@@ -21,20 +21,21 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-#ifndef TELODENDRIA_STATIC_H
-#define TELODENDRIA_STATIC_H
-
-#include <stdio.h>
-
+#include <Static.h>
+#include <Html.h>
 #include <Http.h>
 
-extern void
- StaticItWorks(FILE *);
+void
+StaticError(FILE * stream, HttpStatus error)
+{
+    char title[10];
 
-extern void
- StaticLogin(FILE *);
+    sprintf(title, "Error %d", error);
 
-extern void
- StaticError(FILE *, HttpStatus);
+    HtmlBegin(stream, title);
 
-#endif                             /* TELODENDRIA_STATIC_H */
+    fprintf(stream, "<h2 style=\"text-align: center\">%s</h2>",
+            HttpStatusToString(error));
+
+    HtmlEnd(stream);
+}

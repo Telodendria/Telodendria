@@ -21,20 +21,37 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-#ifndef TELODENDRIA_STATIC_H
-#define TELODENDRIA_STATIC_H
+#include <Static.h>
+#include <Html.h>
 
-#include <stdio.h>
+void
+StaticLogin(FILE * stream)
+{
+    HtmlBegin(stream, "Log In");
 
-#include <Http.h>
+    fprintf(stream,
+            "<div class=\"form\">"
+            "<form id=\"login-form\">"
+            "<label for=\"user\">Username:</label>"
+            "<input type=\"text\" id=\"user\">"
+            "<label for=\"password\">Password:</label>"
+            "<input type=\"password\" id=\"password\">"
+            "<br>"
+            "<input type=\"submit\" value=\"Log In\">"
+            "</form>"
+            "</div>"
+            );
 
-extern void
- StaticItWorks(FILE *);
+    fprintf(stream,
+            "<script>"
+            "window.addEventListener('load', () => {"
+            "  document.getElementById('login-form').addEventListener('submit', (e) => {"
+            "    e.preventDefault();"
+            "    /* TODO: Submit form here*/"
+            "  });"
+            "});"
+            "</script>"
+            );
 
-extern void
- StaticLogin(FILE *);
-
-extern void
- StaticError(FILE *, HttpStatus);
-
-#endif                             /* TELODENDRIA_STATIC_H */
+    HtmlEnd(stream);
+}

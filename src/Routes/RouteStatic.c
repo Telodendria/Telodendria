@@ -23,15 +23,39 @@
  */
 #include <Routes.h>
 #include <Static.h>
+#include <Memory.h>
 
 ROUTE_IMPL(RouteStatic, args)
 {
     FILE *stream = HttpStream(args->context);
+    char *pathPart = MATRIX_PATH_POP(args->path);
 
     HttpResponseHeader(args->context, "Content-Type", "text/html");
     HttpSendHeaders(args->context);
 
-    StaticItWorks(stream);
+    if (!pathPart)
+    {
+        StaticItWorks(stream);
+    }
+    else if (MATRIX_PATH_EQUALS(pathPart, "client"))
+    {
+        Free(pathPart);
+        pathPart = MATRIX_PATH_POP(args->path);
 
+        if (MATRIX_PATH_EQUALS(pathPart, "login"))
+        {
+            StaticLogin(stream);
+        }
+        else
+        {
+            StaticError(stream, HTTP_NOT_FOUND);
+        }
+    }
+    else
+    {
+        StaticError(stream, HTTP_NOT_FOUND);
+    }
+
+    Free(pathPart);
     return NULL;
 }

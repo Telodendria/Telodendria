@@ -44,12 +44,18 @@ HtmlBegin(FILE * stream, char *title)
             "<meta charset=\"utf-8\">"
             "<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">"
             "<title>%s | Telodendria</title>"
+            ,title
+            );
+
+    fprintf(stream,
             "<style>"
             ":root {"
+            "  color-scheme: dark;"
             "  --accent: #7b8333;"
             "}"
             "body {"
             "  margin: auto;"
+            "  width: 100%%;"
             "  max-width: 8.5in;"
             "  padding: 0.25in;"
             "  background-color: #0d1117;"
@@ -67,11 +73,36 @@ HtmlBegin(FILE * stream, char *title)
             "  text-align: center;"
             "  font-weight: bold;"
             "}"
+            );
+
+    fprintf(stream,
+            ".form {"
+            "  margin: auto;"
+            "  width: 100%%;"
+            "  max-width: 400px;"
+            "  border-radius: 10px;"
+            "  border: 1px var(--accent) solid;"
+            "  padding: 10px;"
+            "}"
+            "form {"
+            "  display: block;"
+            "}"
+            "form > input, label {"
+            "  width: 95%%;"
+            "  height: 25px;"
+            "  display: block;"
+            "  margin-bottom: 5px;"
+            "  margin-left: auto;"
+            "  margin-right: auto;"
+            "}"
             "</style>"
+            );
+
+    fprintf(stream,
             "</head>"
             "<body>"
             "<pre class=\"logo\">"
-            ,title);
+            );
 
     for (i = 0; i < TELODENDRIA_LOGO_HEIGHT; i++)
     {
