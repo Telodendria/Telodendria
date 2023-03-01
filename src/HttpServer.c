@@ -287,7 +287,7 @@ HttpServerCreate(unsigned short port, unsigned int nThreads, unsigned int maxCon
                  HttpHandler * requestHandler, void *handlerArgs)
 {
     HttpServer *server;
-    struct sockaddr_in sa = {0};
+    struct sockaddr_in sa;
 
     if (!requestHandler)
     {
@@ -342,6 +342,8 @@ HttpServerCreate(unsigned short port, unsigned int nThreads, unsigned int maxCon
         goto error;
     }
 #endif
+
+    memset(&sa, 0, sizeof(struct sockaddr_in));
 
     sa.sin_family = AF_INET;
     sa.sin_port = htons(port);
@@ -553,7 +555,7 @@ HttpServerWorkerThread(void *args)
                     break;
                 }
 
-                line[i] = tolower(line[i]);
+                line[i] = tolower((unsigned char) line[i]);
             }
 
             headerKey = Malloc((i + 1) * sizeof(char));
