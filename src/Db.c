@@ -795,7 +795,7 @@ DbExists(Db * db, size_t nArgs,...)
 }
 
 Array *
-DbList(Db *db, size_t nArgs, ...)
+DbList(Db * db, size_t nArgs,...)
 {
     Array *result;
 
