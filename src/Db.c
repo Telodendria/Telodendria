@@ -831,9 +831,10 @@ DbList(Db * db, size_t nArgs,...)
     }
     while ((file = readdir(files)))
     {
-        if (file->d_type == DT_REG && file->d_namlen > 5)
+        size_t namlen = strlen(file->d_name);
+        if (file->d_type == DT_REG && namlen > 5)
         {
-            int nameOffset = file->d_namlen - 5;
+            int nameOffset = namlen - 5;
 
             if (strcmp(file->d_name + nameOffset, ".json") == 0)
             {
