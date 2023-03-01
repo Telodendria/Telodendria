@@ -29,6 +29,7 @@
 #include <Array.h>
 #include <Json.h>
 #include <Str.h>
+#include <Util.h>
 
 #include <Matrix.h>
 #include <User.h>
@@ -132,6 +133,7 @@ BuildResponse(Array * flows, Db * db, HashMap ** response, char *session, DbRef 
 
         json = DbJson(ref);
         HashMapSet(json, "completed", JsonValueArray(ArrayCreate()));
+        HashMapSet(json, "last_access", JsonValueInteger(UtilServerTs()));
         DbUnlock(db, ref);
 
         HashMapSet(*response, "completed", JsonValueArray(ArrayCreate()));
@@ -416,6 +418,7 @@ UiaComplete(Array * flows, HttpServerContext * context, Db * db,
 
 finish:
     ArrayFree(possibleNext);
+    JsonValueFree(HashMapSet(dbJson, "last_access", JsonValueInteger(UtilServerTs())));
     DbUnlock(db, dbRef);
     return ret;
 }
@@ -451,9 +454,38 @@ UiaFlowsFree(Array * flows)
 void
 UiaCleanup(MatrixHttpHandlerArgs * args)
 {
-    Log(args->lc, LOG_DEBUG, "Purging old user interactive auth sessions...");
-    if (!DbDelete(args->db, 1, "user_interactive"))
+    Array *sessions = DbList(args->db, 1, "user_interactive");
+    size_t i;
+
+    Log(args->lc, LOG_DEBUG, "User Interactive Auth sessions: %lu",
+        ArraySize(sessions));
+    for (i = 0; i < ArraySize(sessions); i++)
     {
-        Log(args->lc, LOG_ERR, "Failed to purge user_interactive.");
+        char *session = ArrayGet(sessions, i);
+        DbRef *ref = DbLock(args->db, 2, "user_interactive", session);
+
+        unsigned long lastAccess;
+
+        if (!ref)
+        {
+            Log(args->lc, LOG_ERR, "Unable to lock uia %s for inspection.",
+                session);
+            continue;
+        }
+
+        lastAccess = JsonValueAsInteger(HashMapGet(DbJson(ref), "last_access"));
+
+        /* If last access was greater than 15 minutes ago, remove this
+         * session */
+        if (UtilServerTs() - lastAccess > 1000 * 60 * 15)
+        {
+            DbUnlock(args->db, ref);
+            DbDelete(args->db, 2, "user_interactive", session);
+            Log(args->lc, LOG_DEBUG, "Deleted session %s", session);
+        }
+
+        DbUnlock(args->db, ref);
     }
+
+    DbListFree(sessions);
 }

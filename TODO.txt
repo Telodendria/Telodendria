@@ -24,10 +24,10 @@ Milestone: v0.2.0
         [x] Delete refresh token if present
     [ ] Logout all
     [x] Login fallback (static HTML page)
-[~] User Interactive
+[x] User Interactive
     [x] Passwords
     [x] Caller builds flows
-    [ ] Clean up old sessions
+    [x] Clean up old sessions
 
 [ ] Document new User functions
 [ ] Document new JSON functions

@@ -802,9 +802,9 @@ DbList(Db * db, size_t nArgs,...)
 {
     Array *result;
     Array *path;
-    DIR* files;
-    struct dirent* file;
-    char* dir;
+    DIR *files;
+    struct dirent *file;
+    char *dir;
     va_list ap;
 
     if (!db || !nArgs)
@@ -829,10 +829,12 @@ DbList(Db * db, size_t nArgs,...)
         Free(dir);
         return NULL;
     }
-    while((file = readdir(files))) {
+    while ((file = readdir(files)))
+    {
         if (file->d_type == DT_REG && file->d_namlen > 5)
         {
             int nameOffset = file->d_namlen - 5;
+
             if (strcmp(file->d_name + nameOffset, ".json") == 0)
             {
                 file->d_name[nameOffset] = '\0';
@@ -849,7 +851,7 @@ DbList(Db * db, size_t nArgs,...)
 }
 
 void
-DbListFree(Array *arr)
+DbListFree(Array * arr)
 {
     StringArrayFree(arr);
 }
