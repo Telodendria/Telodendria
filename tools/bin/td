@@ -25,7 +25,7 @@
 : "${DEFINES:=-D_DEFAULT_SOURCE -DTELODENDRIA_VERSION=\"$TELODENDRIA_VERSION\"}"
 
 : "${CC:=cc}"
-: "${CFLAGS:=-Wall -Wextra -pedantic -ansi -O3}"
+: "${CFLAGS:=-Wall -Wextra -pedantic -ansi -O3 -pipe}"
 : "${STATIC:=-static -Wl,-static}"
 : "${LDFLAGS:=-lm -pthread -flto -fdata-sections -ffunction-sections -s -Wl,-gc-sections}"
 : "${PROG:=telodendria}"
