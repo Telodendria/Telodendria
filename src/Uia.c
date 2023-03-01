@@ -411,7 +411,7 @@ UiaComplete(Array * flows, HttpServerContext * context, Db * db,
 
     ArrayAdd(completed, JsonValueString(authType));
 
-    ret = 1; / * TODO: Only return 1 if there are remaining stages */
+    ret = 1; /* TODO: Only return 1 if there are remaining stages */
 
 finish:
     ArrayFree(possibleNext);

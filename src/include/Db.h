@@ -31,6 +31,7 @@
 #include <stddef.h>
 
 #include <HashMap.h>
+#include <Array.h>
 
 typedef struct Db Db;
 typedef struct DbRef DbRef;
