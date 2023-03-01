@@ -28,6 +28,9 @@
 #include <Util.h>
 #include <Str.h>
 
+#include <sys/types.h>
+#include <dirent.h>
+
 #include <pthread.h>
 #include <fcntl.h>
 #include <unistd.h>
@@ -214,12 +217,12 @@ DbHashKey(Array * args)
 }
 
 static char *
-DbDirName(Db * db, Array * args)
+DbDirName(Db * db, Array * args, size_t strip)
 {
     size_t i;
     char *str = StrConcat(2, db->dir, "/");
 
-    for (i = 0; i < ArraySize(args) - 1; i++)
+    for (i = 0; i < ArraySize(args) - strip; i++)
     {
         char *tmp;
 
@@ -597,7 +600,7 @@ DbCreate(Db * db, size_t nArgs,...)
         return NULL;
     }
 
-    dir = DbDirName(db, args);
+    dir = DbDirName(db, args, 1);
     if (UtilMkdir(dir, 0750) < 0)
     {
         Free(file);
@@ -798,6 +801,11 @@ Array *
 DbList(Db * db, size_t nArgs,...)
 {
     Array *result;
+    Array *path;
+    DIR* files;
+    struct dirent* file;
+    char* dir;
+    va_list ap;
 
     if (!db || !nArgs)
     {
@@ -810,7 +818,40 @@ DbList(Db * db, size_t nArgs,...)
         return NULL;
     }
 
+    va_start(ap, nArgs);
+    path = ArrayFromVarArgs(nArgs, ap);
+    dir = DbDirName(db, path, 0);
+
+    files = opendir(dir);
+    if (!files)
+    {
+        ArrayFree(path);
+        Free(dir);
+        return NULL;
+    }
+    while((file = readdir(files))) {
+        if (file->d_type == DT_REG && file->d_namlen > 5)
+        {
+            int nameOffset = file->d_namlen - 5;
+            if (strcmp(file->d_name + nameOffset, ".json") == 0)
+            {
+                file->d_name[nameOffset] = '\0';
+                ArrayAdd(result, StrDuplicate(file->d_name));
+            }
+        }
+    }
+    closedir(files);
+
+    ArrayFree(path);
+    Free(dir);
+
     return result;
+}
+
+void
+DbListFree(Array *arr)
+{
+    StringArrayFree(arr);
 }
 
 HashMap *

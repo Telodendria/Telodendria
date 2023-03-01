@@ -60,6 +60,9 @@ extern int
 extern Array *
  DbList(Db *, size_t,...);
 
+extern void
+DbListFree(Array *);
+
 extern HashMap *
  DbJson(DbRef *);
 
