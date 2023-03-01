@@ -10,7 +10,7 @@ if [ -z "$MXID" ]; then
 	MXID="@${USER}:$(hostname)"
 fi
 
-if [ -z "$DISPLAY_NAME" ]; then
+if [ -z "$DISPLAY_NAME" ] && which getent > /dev/null 2>&1; then
 	DISPLAY_NAME=$(getent passwd "$USER" | cut -d ':' -f 5 | cut -d ',' -f 1)
 fi
 

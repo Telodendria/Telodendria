@@ -242,12 +242,6 @@ recipe_patch() {
         MXID="@${USER}:$(hostname)"
     fi
 
-    # If the user has not set their DISPLAY_NAME, try to deduce it
-    # from their system.
-    if [ -z "$DISPLAY_NAME" ] && which getent > /dev/null 2>&1; then
-        DISPLAY_NAME=$(getent passwd "$USER" | cut -d ':' -f 5 | cut -d ',' -f 1)
-    fi
-
     # If the user has not set their EDITOR, use a safe default.
     # (vi should be available on any POSIX system)
     if [ -z "$EDITOR" ]; then
