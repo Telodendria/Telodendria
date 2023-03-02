@@ -46,9 +46,8 @@ HtmlBegin(FILE * stream, char *title)
             "<title>%s | Telodendria</title>"
             ,title
             );
-
+    HtmlBeginStyle(stream);
     fprintf(stream,
-            "<style>"
             ":root {"
             "  color-scheme: dark;"
             "  --accent: #7b8333;"
@@ -95,8 +94,8 @@ HtmlBegin(FILE * stream, char *title)
             "  margin-left: auto;"
             "  margin-right: auto;"
             "}"
-            "</style>"
             );
+    HtmlEndStyle(stream);
 
     fprintf(stream,
             "</head>"

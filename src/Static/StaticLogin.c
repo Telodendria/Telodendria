@@ -38,22 +38,26 @@ StaticLogin(FILE * stream)
             "<input type=\"password\" id=\"password\">"
             "<br>"
             "<input type=\"submit\" value=\"Log In\">"
-            "</form>"
-            "<style>"
+            "</form>");
+
+    HtmlBeginStyle(stream);
+    fprintf(stream,
             "#error-msg {"
             "  display: none;"
             "  color: red;"
             "  text-align: center;"
             "  font-weight: bold;"
             "  font-size: larger;"
-            "}"
-            "</style>"
+            "}");
+    HtmlEndStyle(stream);
+
+    fprintf(stream,
             "<p id=\"error-msg\"></p>"
             "</div>"
             );
 
+    HtmlBeginJs(stream);
     fprintf(stream,
-            "<script>"
             "function findGetParameter(parameterName) {"
             "  var result = null;"
             "  var tmp = [];"
@@ -136,8 +140,8 @@ StaticLogin(FILE * stream)
             "    sendRequest(request);"
             "  });"
             "});"
-            "</script>"
             );
+    HtmlEndJs(stream);
 
     HtmlEnd(stream);
 }
