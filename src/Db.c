@@ -832,7 +832,7 @@ DbList(Db * db, size_t nArgs,...)
     while ((file = readdir(files)))
     {
         size_t namlen = strlen(file->d_name);
-        if (file->d_type == DT_REG && namlen > 5)
+        if (namlen > 5)
         {
             int nameOffset = namlen - 5;
 
