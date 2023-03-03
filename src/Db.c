@@ -328,7 +328,7 @@ DbOpen(char *dir, size_t cache)
 {
     Db *db;
 
-    if (!dir || cache < DB_MIN_CACHE)
+    if (!dir)
     {
         return NULL;
     }
@@ -344,14 +344,21 @@ DbOpen(char *dir, size_t cache)
 
     pthread_mutex_init(&db->lock, NULL);
 
-    db->cache = HashMapCreate();
-    if (!db->cache)
+    if (db->maxCache)
     {
-        return NULL;
-    }
+        db->cache = HashMapCreate();
+        if (!db->cache)
+        {
+            return NULL;
+        }
 
-    db->mostRecent = NULL;
-    db->leastRecent = NULL;
+        db->mostRecent = NULL;
+        db->leastRecent = NULL;
+    }
+    else
+    {
+        db->cache = NULL;
+    }
 
     return db;
 }
@@ -537,8 +544,6 @@ DbLockFromArr(Db * db, Array * args)
         pthread_mutex_init(&ref->lock, NULL);
         pthread_mutex_lock(&ref->lock);
 
-        ref->ts = UtilServerTs();
-        ref->size = DbComputeSize(ref->json);
 
         for (i = 0; i < ArraySize(args); i++)
         {
@@ -546,16 +551,21 @@ DbLockFromArr(Db * db, Array * args)
         }
         ref->name = name;
 
-        HashMapSet(db->cache, hash, ref);
-        db->cacheSize += ref->size;
+        if (db->cache)
+        {
+            ref->ts = UtilServerTs();
+            ref->size = DbComputeSize(ref->json);
+            HashMapSet(db->cache, hash, ref);
+            db->cacheSize += ref->size;
 
-        ref->next = NULL;
-        ref->prev = db->mostRecent;
-        db->mostRecent = ref;
+            ref->next = NULL;
+            ref->prev = db->mostRecent;
+            db->mostRecent = ref;
 
-        /* Adding this item to the cache may case it to grow too large,
-         * requiring some items to be evicted */
-        DbCacheEvict(db);
+            /* Adding this item to the cache may case it to grow too
+             * large, requiring some items to be evicted */
+            DbCacheEvict(db);
+        }
     }
 
 finish:
@@ -747,16 +757,28 @@ DbUnlock(Db * db, DbRef * ref)
     fflush(ref->fp);
     fclose(ref->fp);
 
-    db->cacheSize -= ref->size;
-    ref->size = DbComputeSize(ref->json);
-    db->cacheSize += ref->size;
+    if (db->cache)
+    {
+        db->cacheSize -= ref->size;
+        ref->size = DbComputeSize(ref->json);
+        db->cacheSize += ref->size;
 
-    pthread_mutex_unlock(&ref->lock);
+        /* If this ref has grown significantly since we last computed
+         * its size, it may have filled the cache and require some
+         * items to be evicted. */
+        DbCacheEvict(db);
+        pthread_mutex_unlock(&ref->lock);
+    }
+    else
+    {
+        JsonFree(ref->json);
+        StringArrayFree(ref->name);
 
-    /* If this ref has grown significantly since we last computed its
-     * size, it may have filled the cache and require some items to be
-     * evicted. */
-    DbCacheEvict(db);
+        pthread_mutex_unlock(&ref->lock);
+        pthread_mutex_destroy(&ref->lock);
+
+        Free(ref);
+    }
 
     pthread_mutex_unlock(&db->lock);
     return 1;

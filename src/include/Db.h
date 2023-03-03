@@ -24,10 +24,6 @@
 #ifndef TELODENDRIA_DB_H
 #define TELODENDRIA_DB_H
 
-#ifndef DB_MIN_CACHE
-#define DB_MIN_CACHE 1024
-#endif
-
 #include <stddef.h>
 
 #include <HashMap.h>

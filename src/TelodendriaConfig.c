@@ -258,7 +258,7 @@ TelodendriaConfigParse(HashMap * config, LogConfig * lc)
 
     CONFIG_OPTIONAL_INTEGER(tConfig->threads, "threads", 1);
     CONFIG_OPTIONAL_INTEGER(tConfig->maxConnections, "maxConnections", 32);
-    CONFIG_OPTIONAL_INTEGER(tConfig->maxCache, "maxCache", DB_MIN_CACHE);
+    CONFIG_OPTIONAL_INTEGER(tConfig->maxCache, "maxCache", 0);
 
     CONFIG_REQUIRE("federation", JSON_BOOLEAN);
     if (JsonValueAsBoolean(value))

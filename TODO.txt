@@ -13,9 +13,9 @@ Milestone: v0.2.0
 
 [ ] Abstract /email/requestToken and /msidsn/requestToken
 
-[~] Db API
+[x] Db API
     [x] If object is in cache, but doesn't exist on disk, delete from cache
-    [ ] Allow cache to be totally disabled (no MIN_CACHE_SIZE)
+    [x] Allow cache to be totally disabled (no MIN_CACHE_SIZE)
     [x] List keys under a path (DbList() using POSIX opendir())
 [~] User login
     [x] User manipulation functions (so we don't use the DB directly)
