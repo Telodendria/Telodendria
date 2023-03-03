@@ -12,26 +12,22 @@ Milestone: v0.2.0
 -----------------
 
 [ ] Abstract /email/requestToken and /msidsn/requestToken
+    - Call it RouteRequestToken
+    - Reference it all the places it's needed
 
-[x] Db API
-    [x] If object is in cache, but doesn't exist on disk, delete from cache
-    [x] Allow cache to be totally disabled (no MIN_CACHE_SIZE)
-    [x] List keys under a path (DbList() using POSIX opendir())
+[ ] User Interactive Authentication
+    [ ] Fix UiaComplete so we can use multi-stage flows
+
 [~] User login
-    [x] User manipulation functions (so we don't use the DB directly)
-    [x] Refresh tokens
-    [x] Logout
-        [x] Delete refresh token if present
     [ ] Logout all
-    [x] Login fallback (static HTML page)
-[x] User Interactive
-    [x] Passwords
-    [x] Caller builds flows
-    [x] Clean up old sessions
 
-[ ] Document new User functions
-[ ] Document new JSON functions
-[ ] Document Uia (move docs from Matrix)
+[ ] Documentation
+    [ ] User functions
+    [ ] Json functions
+    [ ] Db functions
+    [ ] Uia (move docs from Matrix)
+
+[ ] Convert proposals to man pages
 
 Milestone: v0.3.0
 -----------------
@@ -40,10 +36,20 @@ Milestone: v0.3.0
     [ ] TLS
     [ ] SOCKS
     [ ] Multi-output
-[ ] HTTP Client
+[ ] HTTP Client API
+[ ] Option to pretty-print Json
+
+[ ] Simple command line tool to make matrix requests
+    - Built on HTTP client API
+[ ] Simple command line tool for working with JSON
+    - Like a simpler version of jq
+    - Should pretty-print Json
+    - Should be able to query fields for use in shell scripts.
 
 [ ] Move configuration to database
-    - How is the initial configuration done?
+    [ ] Initial configuration
+        [ ] If no config, create one-time use registration token that
+            grants user admin privileges.
     [ ] /_telodendria/admin/config endpoint
     [ ] Refactor TelodendriaConfig to just Config (ConfigLock() and ConfigUnlock())
 
@@ -51,7 +57,10 @@ Milestone: v0.3.0
     [ ] 4: Token-based user registration
         [ ] Implement user-interactive auth flow
         [ ] Token validity endpoint
-        [ ] Add m.login.registration_token to registration endpoint flow
+        [ ] Add m.login.registration_token to registration endpoint
+            flow
+            - Ensure that registration tokens can be used even if
+              registration is disabled.
     [ ] 4: Account management
         [ ] Deactivate
         [ ] Change password
