@@ -826,6 +826,7 @@ DbList(Db * db, size_t nArgs,...)
     if (!files)
     {
         ArrayFree(path);
+        ArrayFree(result);
         Free(dir);
         return NULL;
     }
