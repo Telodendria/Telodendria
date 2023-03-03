@@ -99,6 +99,9 @@ extern void
 extern int
  UserDeleteToken(User *, char *);
 
+extern int
+ UserDeleteTokens(User *);
+
 extern UserId *
  UserParseId(char *, char *);
 

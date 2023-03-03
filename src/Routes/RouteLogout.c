@@ -77,12 +77,17 @@ ROUTE_IMPL(RouteLogout, args)
             response = MatrixErrorCreate(M_NOT_FOUND);
             goto finish;
         }
-
         Free(pathPart);
 
-        /* TODO: Implement /all */
-        HttpResponseStatus(args->context, HTTP_INTERNAL_SERVER_ERROR);
-        response = MatrixErrorCreate(M_UNKNOWN);
+        if (!UserDeleteTokens(user))
+        {
+            /* If we can't delete all of our tokens, then something is
+             * wrong. */
+            HttpResponseStatus(args->context, HTTP_INTERNAL_SERVER_ERROR);
+            response = MatrixErrorCreate(M_UNKNOWN);
+            goto finish;
+        }
+        response = HashMapCreate();
     }
     else
     {

@@ -599,6 +599,47 @@ UserDeleteToken(User * user, char *token)
     return 1;
 }
 
+int
+UserDeleteTokens(User * user)
+{
+    HashMap *devices;
+    char *deviceId;
+    JsonValue *deviceObj;
+
+    if (!user)
+    {
+        return 0;
+    }
+
+    devices = JsonValueAsObject(HashMapGet(DbJson(user->ref), "devices"));
+    if (!devices)
+    {
+        return 0;
+    }
+
+    while (HashMapIterate(devices, &deviceId, (void **) &deviceObj))
+    {
+        HashMap *device = JsonValueAsObject(deviceObj);
+        char *accessToken = JsonValueAsString(HashMapGet(device, "accessToken"));
+        char *refreshToken = JsonValueAsString(HashMapGet(device, "refreshToken"));
+
+        if (accessToken)
+        {
+            DbDelete(user->db, 3, "tokens", "access", accessToken);
+        }
+
+        if (refreshToken)
+        {
+            DbDelete(user->db, 3, "tokens", "refresh", refreshToken);
+        }
+    }
+
+    JsonValueFree(HashMapDelete(DbJson(user->ref), "devices"));
+    HashMapSet(DbJson(user->ref), "devices", JsonValueObject(HashMapCreate()));
+
+    return 1;
+}
+
 UserId *
 UserParseId(char *id, char *defaultServer)
 {

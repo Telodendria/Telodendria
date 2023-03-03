@@ -14,12 +14,13 @@ Milestone: v0.2.0
 [ ] Abstract /email/requestToken and /msidsn/requestToken
     - Call it RouteRequestToken
     - Reference it all the places it's needed
+    - Finish implementing JSON parsing
 
 [ ] User Interactive Authentication
     [ ] Fix UiaComplete so we can use multi-stage flows
 
-[~] User login
-    [ ] Logout all
+[x] User login
+    [x] Logout all
 
 [ ] Documentation
     [ ] User functions
