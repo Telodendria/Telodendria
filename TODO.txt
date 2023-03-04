@@ -28,7 +28,7 @@ Milestone: v0.2.0
     [ ] Db functions
     [ ] Uia (move docs from Matrix)
 
-[ ] Convert proposals to man pages
+[x] Convert proposals to man pages
 
 Milestone: v0.3.0
 -----------------

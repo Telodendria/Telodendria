@@ -1,0 +1,446 @@
+.Dd $Mdocdate: March 4 2023 $
+.Dt ADMIN 7
+.Os Telodendria Project
+.Sh NAME
+.Nm Admin
+.Nd Suggestion on a Telodendria Admin API
+.Sh DESCRIPTION
+.Pp
+This is a suggestion of how the admin API should work; it is subject
+to heavy changes.
+.Pp
+It also acts as a suggestion on how suggestions should be written. It
+might not be accepted, or the format might be changed heavily.
+.Ss Admin Users
+.Pp
+Like in Synapse, there should be a field dictating if the user is an
+admin, and unlike Synapse, there should be privilege levels.
+.Pp
+In the
+.Pa users/[user].json
+file, there should be a field called
+.Dv privileges
+which contains a list of strings.
+.Bd -literal -offset indent
+{
+  "devices": {
+    "foobar": { ... }
+  },
+  "salt": "salt goes here",
+  "deactivated": false,
+  "createdOn": 1700000000000,
+  "password": "hash goes here",
+  "privileges": [
+    "DEACTIVATE",
+    "ISSUE_TOKENS"
+  ]
+}
+.Ed
+.Ss Privileges list
+.Pp
+Here are all of the admin privileges a user can have:
+.Bl -tag -width Ds
+.It Dv DEACTIVATE
+This allows an user to deactivate any users using
+the
+.Dv DELETE /_telodendria/admin/disable/[localpart]
+endpoint.
+.It Dv ISSUE_TOKENS
+This allows users to create, modify and delete registration 
+tokens.
+.It Dv ALL
+Users with this privilege can use
+.Em any
+admin endpoint(and some others).
+.Em THIS PRIVILEGE SHOULD ONLY BE USED WITH TRUSTED USERS.
+.Sh API ENDPOINTS
+.Ss GET /_telodendria/admin/privileges
+.Pp
+Get the priviledges of the user that owns the provided access token.
+.Pp
+.TS
+tab(;) allbox center;
+l l.
+Requires Token;Rate Limited
+Yes;Yes
+.TE
+.Pp
+.TS
+tab(;) allbox center;
+l l.
+Error Response;Description
+200;Privileges successfully returned.
+.TE
+.Pp
+200 Response JSON Format:
+.Pp
+.TS
+tab(;) allbox center;
+l l l.
+Field;Type;Description
+privileges;list;The same data structure described in the database.
+.TE
+.Pp
+200 Response Example:
+.Bd -literal -offset indent
+{
+  "privileges": [
+    "DEACTIVATE",
+    "REMOVE_DEVICES"
+  ]
+}
+.Ed
+.Ss DELETE /_telodendria/admin/deactivate/[localpart]
+.Pp
+Deactivates a local user, optionally with a reason.
+.Pp
+.TS
+tab(;) allbox center;
+l l l.
+Requires Token;Rate Limited;Permissions
+Yes;Yes;DEACTIVATE
+.TE
+.Pp
+Request JSON Format:
+.Pp
+.TS
+tab(;) allbox center;
+l l l l.
+Field;Type;Description;Required
+reason;string;A reason why the user was deactivated;No
+.TE
+.Pp
+Request Example:
+.Bd -literal -offset indent
+{
+  "reason": "Being mean in a lot of rooms."
+}
+.Ed
+.Pp
+.TS
+tab(;) allbox center;
+l l.
+Error Response;Description
+200;User was successfully deactivated.
+403;User does not have the DEACTIVATE permission.
+.TE
+.Pp
+200 Response JSON Format:
+.Pp
+.TS
+tab(;) allbox center;
+l l l.
+Field;Type;Description
+user;localpart;The deactivated user's localpart
+reason;string;T{
+The reason why the user was deactivated.
+Defaults to: ``Deactivated by admin''
+T}
+banned_by;localpart;T{
+The localpart of the admin who deactivated the user.
+T}
+.TE
+.Pp
+403 Response JSON Format:
+.Pp
+.TS
+tab(;) allbox center;
+l l l.
+Field;Type;Description
+errcode;string;Set to ``M_FORBIDDEN''
+error;string;Human-readable explanation of the privilege issue.
+.TE
+.Pp
+200 Response Example:
+.Bd -literal -offset indent
+{
+  "user": "evan",
+  "reason": "Being mean in a lot of rooms",
+  "banned_by": "alice"
+}
+.Ed
+.Pp
+403 Response Example:
+.Bd -literal -offset indent
+{
+  "errcode": "M_FORBIDDEN",
+  "error": "Forbidden access. Bad permissions or not authenticated."
+}
+.Ed
+.Ss PUT /_telodendria/admin/deactivate/[localpart]
+.TS
+tab(;) allbox center;
+l l.
+Requires Token;Rate Limited;Permissions
+Yes;Yes;DEACTIVATE
+.TE
+.Pp
+.Em Description:
+Reactivates a local user.
+.Pp
+.TS
+tab(;) allbox center;
+l l.
+Error Response;Description
+204;User was successfully reactivated.
+403;User does not have the DEACTIVATE permission.
+.TE
+.Pp
+403 Response JSON Format:
+.Pp
+.TS
+tab(;) allbox center;
+l l l.
+Field;Type;Description
+errcode;string;Set to ``M_FORBIDDEN''
+error;string;Human-readable explanation of the privilege issue.
+.TE
+.Pp
+403 Response Example:
+.Bd -literal -offset indent
+{
+  "errcode": "M_FORBIDDEN",
+  "error": "Forbidden access. Bad permissions or not authenticated."
+}
+.Ed
+.Ss GET /_telodendria/admin/tokens
+.Pp
+Gets a list of
+.Em all
+tokens present, and additional information.
+.Pp
+.TS
+tab(;) allbox center;
+l l l.
+Requires Token;Rate Limited;Permissions
+Yes;Yes;ISSUE_TOKENS
+.TE
+.Pp
+.TS
+tab(;) allbox center;
+l l.
+Error Response;Description
+200;Token list was successfully retrieved.
+403;User does not have the ISSUE_TOKENS permission.
+.TE
+.Pp
+200 Response JSON Format:
+.Pp
+.TS
+tab(;) allbox center;
+l l l.
+Field;Type;Description
+tokens;list[TokenInfo];A list of tokens and other information.
+.TE
+.Pp
+.Dv TokenInfo
+JSON Format:
+.Pp
+.TS
+tab(;) allbox center;
+l l l.
+Field;Type;Description
+name;string;The token's name.
+created_by;localpart; The user who has created token.
+created_on;timestamp;The creation date of the token.
+expires_on;timestamp;T{
+The token's expiration date, or 0 if it does not
+expire.
+T}
+used;integer;The number of times the token was used.
+uses;integer;T{
+The number of uses remaining for the token, or -1 if
+there are an unlimited number of uses remaining.
+.TE
+.Pp
+403 Response JSON Format:
+.Pp
+.TS
+tab(;) allbox center;
+l l l.
+Field;Type;Description
+errcode;string;Set to ``M_FORBIDDEN''
+error;string;Human-readable explanation of the privilege issue.
+.TE
+.Pp
+200 Response Example:
+.Bd -literal -offset indent
+{
+  "tokens": [
+    {
+      "name": "forbob",
+      "created_by": "alice",
+      "created_on": 1234567890123,
+      "expires_on": 2147483647000,
+      "used": 1,
+      "uses": 3
+    }
+  ]
+}
+.Ed
+.Pp
+403 Response JSON Format:
+.Bd -literal -offset indent
+{
+  "errcode": "M_FORBIDDEN",
+  "error": "Forbidden access. Bad permissions or not authenticated."
+}
+.Ed
+.Ss GET /_telodendria/admin/tokens/[token]
+.Pp
+Returns information about a specific registration token.
+.Pp
+.TS
+tab(;) allbox center;
+l l l.
+Requires Token;Rate Limited;Permissions
+Yes;Yes;ISSUE_TOKENS
+.TE
+.Pp
+.TS
+tab(;) allbox center;
+l l.
+Error Response;Description
+200;Token information successfully retrieved.
+403;User does not have the ISSUE_TOKENS permission.
+404;The specified token does not exist.
+.TE
+.Pp
+200 Response JSON Format:
+.Pp
+.TS
+tab(;) allbox center;
+l l l.
+Field;Type;Description
+name;string;The token's name.
+created_by;localpart;The user who created the token.
+created_on;timestamp;The creation date of the token.
+expires_on;timestamp;The token's expiration date, if provided.
+used;integer;The number of times the token was used.
+uses;integer;T{
+The number of remaining uses for the token, if set.
+Otherwise, there are unlimited uses remaining.
+T}
+.TE
+.Pp
+200 Response Example:
+.Bd -literal -offset indent
+{
+  "name": "forbob",
+  "created_by": "alice",
+  "created_on": 1234567890123,
+  "used": 1,
+  "uses": 3
+}
+.Ed
+.Ss POST /_telodendria/admin/tokens
+.Pp
+Adds a registration token, and setup expiry date and max uses.
+.Pp
+.TS
+tab(;) allbox center;
+l l l.
+Requires Token;Rate Limited;Permissions
+Yes;Yes;ISSUE_TOKENS
+.TE
+.Pp
+Request JSON Format:
+.Pp
+.TS
+tab(;) allbox center;
+l l l l.
+Field;Type;Description;Required
+lifetime;timestamp;T{
+How long this token should be good for
+T};NO
+max_uses;integer;T{
+The maximum number of uses for this token
+T};NO
+name;string;T{
+A name for the token. If none is provided, then a name
+is randomly generated.
+T};NO
+.TE
+.Pp
+Request Example:
+.Bd -literal -offset indent
+{
+  "name": "OnlyClownsM7iAhUJD",
+  "expires": 2147484637000,
+  "max_uses": 5
+}
+.Ed
+.Pp
+.TS
+tab(;) allbox center;
+l l.
+Error Response;Description
+200;Token was successfully created.
+403;User does not have the ISSUE_TOKENS permission.
+.TE
+.Pp
+200 Response JSON Format:
+.Pp
+.TS
+tab(;) allbox center;
+l l l.
+Field;Type;Description
+name;string;The token's name.
+created_by;localpart;The user who created the token.
+created_on;timestamp;The creation date of the token.
+expires_on;timestamp;T{
+The token's expiration date, if set. If not set, the
+token never expires.
+T}
+used;integer;The number of times the token was used.
+uses;integer;T{
+The number of uses remaining for the token, if set. If
+not set, the token has an unlimited number of uses.
+T}
+.TE
+.Pp
+200 Response Example:
+.Bd -literal -offset indent
+{
+  "name": "OnlyClownsM7iAhUJD",
+  "created_by": "donald",
+  "created_on": 1234567890123,
+  "expires_on": 2147484637000,
+  "used": 0,
+  "uses": 5
+}
+.Ed
+.Pp
+403 Response JSON Format:
+.Bd -literal -offset indent
+{
+  "errcode": "M_FORBIDDEN",
+  "error": "Forbidden access. Bad permissions or not authenticated."
+}
+.Ed
+.Ss DELETE /_telodendria/admin/tokens/[tokenname]
+.TS
+tab(;) allbox center;
+l l l.
+Requires Token;Rate Limited;Permissions
+Yes;Yes;ISSUE_TOKENS
+.TE
+.Pp
+.Em Description:
+Deletes an existing registration token.
+.Pp
+.TS
+tab(;) allbox center;
+l l.
+Error Response;Description
+204;Token was successfully deleted.
+403;User does not have the ISSUE_TOKENS permission.
+.TE
+.Pp
+403 Response JSON Format:
+.Bd -literal -offset indent
+{
+  "errcode": "M_FORBIDDEN",
+  "error": "Forbidden access. Bad permissions or not authenticated."
+}
+.Ed
