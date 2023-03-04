@@ -43,7 +43,8 @@ Here are all of the admin privileges a user can have:
 .It Dv DEACTIVATE
 This allows an user to deactivate any users using
 the
-.Dv DELETE /_telodendria/admin/disable/[localpart]
+.Em DELETE 
+/_telodendria/admin/disable/[localpart]
 endpoint.
 .It Dv ISSUE_TOKENS
 This allows users to create, modify and delete registration 
@@ -54,7 +55,7 @@ Users with this privilege can use
 admin endpoint(and some others).
 .Em THIS PRIVILEGE SHOULD ONLY BE USED WITH TRUSTED USERS.
 .Sh API ENDPOINTS
-.Ss GET /_telodendria/admin/privileges
+.Ss Sy GET No /_telodendria/admin/privileges
 .Pp
 Get the priviledges of the user that owns the provided access token.
 .Pp
@@ -90,7 +91,7 @@ privileges;list;The same data structure described in the database.
   ]
 }
 .Ed
-.Ss DELETE /_telodendria/admin/deactivate/[localpart]
+.Ss Sy DELETE No /_telodendria/admin/deactivate/[localpart]
 .Pp
 Deactivates a local user, optionally with a reason.
 .Pp
@@ -167,10 +168,10 @@ error;string;Human-readable explanation of the privilege issue.
   "error": "Forbidden access. Bad permissions or not authenticated."
 }
 .Ed
-.Ss PUT /_telodendria/admin/deactivate/[localpart]
+.Ss Sy PUT No /_telodendria/admin/deactivate/[localpart]
 .TS
 tab(;) allbox center;
-l l.
+l l l.
 Requires Token;Rate Limited;Permissions
 Yes;Yes;DEACTIVATE
 .TE
@@ -203,7 +204,7 @@ error;string;Human-readable explanation of the privilege issue.
   "error": "Forbidden access. Bad permissions or not authenticated."
 }
 .Ed
-.Ss GET /_telodendria/admin/tokens
+.Ss Sy GET No /_telodendria/admin/tokens
 .Pp
 Gets a list of
 .Em all
@@ -241,7 +242,7 @@ tab(;) allbox center;
 l l l.
 Field;Type;Description
 name;string;The token's name.
-created_by;localpart; The user who has created token.
+created_by;localpart;The user who has created token.
 created_on;timestamp;The creation date of the token.
 expires_on;timestamp;T{
 The token's expiration date, or 0 if it does not
@@ -251,6 +252,7 @@ used;integer;The number of times the token was used.
 uses;integer;T{
 The number of uses remaining for the token, or -1 if
 there are an unlimited number of uses remaining.
+T}
 .TE
 .Pp
 403 Response JSON Format:
@@ -286,7 +288,7 @@ error;string;Human-readable explanation of the privilege issue.
   "error": "Forbidden access. Bad permissions or not authenticated."
 }
 .Ed
-.Ss GET /_telodendria/admin/tokens/[token]
+.Ss Sy GET No /_telodendria/admin/tokens/[token]
 .Pp
 Returns information about a specific registration token.
 .Pp
@@ -333,7 +335,7 @@ T}
   "uses": 3
 }
 .Ed
-.Ss POST /_telodendria/admin/tokens
+.Ss Sy POST No /_telodendria/admin/tokens
 .Pp
 Adds a registration token, and setup expiry date and max uses.
 .Pp
@@ -418,7 +420,7 @@ T}
   "error": "Forbidden access. Bad permissions or not authenticated."
 }
 .Ed
-.Ss DELETE /_telodendria/admin/tokens/[tokenname]
+.Ss Sy DELETE No /_telodendria/admin/tokens/[tokenname]
 .TS
 tab(;) allbox center;
 l l l.
