@@ -212,6 +212,7 @@ UiaComplete(Array * flows, HttpServerContext * context, Db * db,
     char *authType;
     Array *completed;
     Array *possibleNext;
+    int remaining[16]; /* There should never be more than this many stages in a flow, right? */
     size_t i;
 
     DbRef *dbRef;
@@ -278,6 +279,7 @@ UiaComplete(Array * flows, HttpServerContext * context, Db * db,
             UiaStage *stage = ArrayGet(stages, ArraySize(completed));
 
             ArrayAdd(possibleNext, stage->type);
+            remaining[ArraySize(possibleNext) - 1] = ArraySize(stages) - ArraySize(completed);
         }
         else if (ArraySize(stages) == ArraySize(completed))
         {
@@ -413,8 +415,14 @@ UiaComplete(Array * flows, HttpServerContext * context, Db * db,
 
     ArrayAdd(completed, JsonValueString(authType));
 
-    ret = 1;                       /* TODO: Only return 1 if there are
-                                    * remaining stages */
+    if (remaining[i] - 1 > 0)
+    {
+        HttpResponseStatus(context, HTTP_UNAUTHORIZED);
+        ret = BuildResponse(flows, db, response, session, dbRef);
+        goto finish;
+    }
+
+    ret = 1;
 
 finish:
     ArrayFree(possibleNext);

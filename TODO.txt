@@ -16,8 +16,8 @@ Milestone: v0.2.0
     - Reference it all the places it's needed
     - Finish implementing JSON parsing
 
-[ ] User Interactive Authentication
-    [ ] Fix UiaComplete so we can use multi-stage flows
+[x] User Interactive Authentication
+    [x] Fix UiaComplete so we can use multi-stage flows
 
 [x] User login
     [x] Logout all
