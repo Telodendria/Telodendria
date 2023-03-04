@@ -117,7 +117,7 @@ send_patch() {
 		--arg name "$(basename "$PATCHFILE")" \
 		--arg mxc "$MXCID" \
 		--arg msgtype "m.file" \
-		--arg size "$(wc -c "$PATCHFILE" | cut -d" " -f1)" \
+		--argjson size "$(wc -c "$PATCHFILE" | cut -d" " -f1)" \
 		'{
 			"body": $name, 
 			"filename": $name,
