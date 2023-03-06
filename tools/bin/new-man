@@ -16,10 +16,10 @@ if [ -f "$file" ]; then
 fi
 
 (
-    mdocdate=$(date " +%B %d %Y ")
+    mdocdate=$(date "+%B %d %Y")
     uppercase=$(echo "$man" | tr '[:lower:]' '[:upper:]')
 
-    echo ".Dd \$Mdocdate: March 6 2023 ${mdocdate}\$"
+    printf '.Dd $%s: %s $\n' "Mdocdate" "${mdocdate}"
     echo ".Dt ${uppercase} ${section}"
     echo ".Os Telodendria Project"
     echo ".Sh NAME"
