@@ -1,4 +1,4 @@
-.Dd $Mdocdate: February 15 2023 $
+.Dd $Mdocdate: March 6 2023 $
 .Dt MATRIX 3
 .Os Telodendria Project
 .Sh NAME
@@ -11,11 +11,11 @@
 .Ft void
 .Fn MatrixErrorCreate "MatrixError"
 .Ft HashMap *
-.Fn MatrixUserInteractiveAuth "HttpServerContext *" "Db *" "HashMap *"
-.Ft HashMap *
-.Fn MatrixAuthenticate "HttpServerContext *" "Db *"
-.Ft HashMap *
 .Fn MatrixRateLimit "HttpServerContext *" "Db *"
+.Ft HashMap *
+.Fn MatrixGetAccessToken "HttpServerContext *" "char **"
+.Ft HashMap *
+.Fn MatrixClientWellKnown "char *" "char *"
 .Sh DESCRIPTION
 .Nm
 provides some helper functions that bind to the
@@ -84,22 +84,30 @@ typedef enum MatrixError
 } MatrixError;
 .Ed
 .Pp
-.Fn MatrixUserInteractiveAuth
-executes the user interactive authentication flow. A number of Matrix
-client API requests require this flow, so this function provides a
-convenient abstraction. Currently, it only implements a single-stage
-"m.login.dummy" auth, so it's more of a formality than anything else,
-but in the future, this function may support more authentication
-flows.
-.Pp
-.Fn MatrixAuthenticate
-checks the request for a valid access token, which indicates that a
-user is authenticated.
-.Pp
 .Fn MatrixRateLimit
 determines whether or not the request should be rate limited. It is
 expected that this will occur before most, if not all of the caller's
 logic.
+.Pp
+.Fn MatrixGetAccessToken
+reads the request headers and parameters, and attempts to obtain
+the access token it found. The matrix specification says that an
+access token can either be in an
+.Dv Authorization
+header, or in a
+.Dv access_token
+.Sy GET
+paramter. This function checks both, and stores the access token
+it finds in the passed character pointer.
+.Pp
+.Fn MatrixClientWellKnown
+builds a client ``well-known'' JSON object, which contains
+information about the homeserver base URL and identity server,
+both of which should be provided by the caller in that order. This
+object can be sent to a client as-is, as is the case with the
+.Pa /.well-known/matrix/client
+endpoint, or it can be added as a key in a response, as is the
+case with a few endpoints.
 .Sh RETURN VALUES
 .Pp
 .Fn MatrixErrorCreate
@@ -115,6 +123,17 @@ return NULL, then the caller can proceed assuming that all is well
 and no further action needs to be taken. If these functions do not
 return NULL, then the returned JSON object should be passed along to the
 client immediately without continuing.
+.Pp
+.Fn MatrixGetAccessToken
+returns a JSON object that should be immediately passed to the client
+if it is not NULL. This JSON object holds an error message, indicating
+that something went wrong. If this function does return NULL, then
+the access token can be checked for validity. Otherwise, the access
+token is either not valid or not provided so it should not be
+checked.
+.Pp
+.Fn MatrixClientWellKnown
+returns a JSON object, or NULL if something went wrong.
 .Sh SEE ALSO
 .Xr HttpServer 3 ,
 .Xr Log 3 ,
