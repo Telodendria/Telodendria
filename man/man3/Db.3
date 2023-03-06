@@ -1,4 +1,4 @@
-.Dd $Mdocdate: January 9 2023 $
+.Dd $Mdocdate: March 6 2023 $
 .Dt DB 3
 .Os Telodendria Project
 .Sh NAME
@@ -20,6 +20,10 @@
 .Fn DbUnlock "Db *" "DbRef *"
 .Ft int
 .Fn DbExists "Db *" "size_t" "..."
+.Ft Array *
+.Fn DbList "Db *" "size_t" "..."
+.Ft void
+.Fn DbListFree "Array *"
 .Ft HashMap *
 .Fn DbJson "DbRef *"
 .Sh DESCRIPTION
@@ -77,6 +81,14 @@ of that nature.
 .Fn DbDelete
 completely removes an object from the database. It purges it from both the
 cache and the disk as soon as no more references to it are open.
+.Pp
+.Fn DbList
+lists all of the objects at a given path. Unlike the other varargs
+functions, it does not take a path to a specific object; it takes
+a directory to be iterated. Note that the resulting list only contains
+the objects in that directory, not subdirectories.
+.Fn DbListFree
+frees the list returned by this function.
 .Sh RETURN VALUES
 .Pp
 .Fn DbOpen
@@ -98,6 +110,10 @@ isn't, 0 is returned, and it is up to the caller to decide how to proceed.
 follows the same return value conventions as
 .Fn DbUnlock ;
 it reports the status of the deletion operation as a boolean value.
+.Pp
+.Fn DbList
+returns an array of strings, or NULL if there was a memory or
+filesystem error.
 .Pp
 .Fn DbJson
 returns a JSON object. Consult

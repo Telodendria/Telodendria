@@ -25,7 +25,7 @@ Milestone: v0.2.0
 [~] Documentation
     [x] User functions
     [x] Json functions
-    [ ] Db functions
+    [x] Db functions
     [ ] Uia (move docs from Matrix)
 
 [x] Convert proposals to man pages
