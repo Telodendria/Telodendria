@@ -212,7 +212,9 @@ UiaComplete(Array * flows, HttpServerContext * context, Db * db,
     char *authType;
     Array *completed;
     Array *possibleNext;
-    int remaining[16]; /* There should never be more than this many stages in a flow, right? */
+    int remaining[16];             /* There should never be more than
+                                    * this many stages in a flow,
+                                    * right? */
     size_t i;
 
     DbRef *dbRef;
@@ -353,7 +355,7 @@ UiaComplete(Array * flows, HttpServerContext * context, Db * db,
         }
 
         type = JsonValueAsString(HashMapGet(identifier, "type"));
-        userId = UserParseId(JsonValueAsString(HashMapGet(identifier, "user")),
+        userId = UserIdParse(JsonValueAsString(HashMapGet(identifier, "user")),
                              config->serverName);
 
         if (!type || strcmp(type, "m.id.user") != 0
@@ -361,7 +363,7 @@ UiaComplete(Array * flows, HttpServerContext * context, Db * db,
         {
             HttpResponseStatus(context, HTTP_UNAUTHORIZED);
             ret = BuildResponse(flows, db, response, session, dbRef);
-            UserFreeId(userId);
+            UserIdFree(userId);
             goto finish;
         }
 
@@ -370,7 +372,7 @@ UiaComplete(Array * flows, HttpServerContext * context, Db * db,
         {
             HttpResponseStatus(context, HTTP_UNAUTHORIZED);
             ret = BuildResponse(flows, db, response, session, dbRef);
-            UserFreeId(userId);
+            UserIdFree(userId);
             goto finish;
         }
 
@@ -378,12 +380,12 @@ UiaComplete(Array * flows, HttpServerContext * context, Db * db,
         {
             HttpResponseStatus(context, HTTP_UNAUTHORIZED);
             ret = BuildResponse(flows, db, response, session, dbRef);
-            UserFreeId(userId);
+            UserIdFree(userId);
             UserUnlock(user);
             goto finish;
         }
 
-        UserFreeId(userId);
+        UserIdFree(userId);
         UserUnlock(user);
     }
     else if (strcmp(authType, "m.login.registration_token") == 0)

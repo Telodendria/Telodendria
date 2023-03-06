@@ -1,4 +1,4 @@
-.Dd $Mdocdate: February 14 2023 $
+.Dd $Mdocdate: March 6 2023 $
 .Dt USER 3
 .Os Telodendria Project
 .Sh NAME
@@ -26,13 +26,54 @@
 .Fn UserGetName "User *"
 .Ft int
 .Fn UserCheckPassword "User *" "char *"
+.Ft int
+.Fn UserSetPassword "User *" "char *"
+.Ft int
+.Fn UserDeactivate "User *"
+.Ft HashMap *
+.Fn UserGetDevices "User *"
+.Ft UserAccessToken *
+.Fn UserGenerateAccessToken "User *" "char *" "int"
+.Ft int
+.Fn UserAccessTokenSave "Db *" "UserAccessToken *"
+.Ft void
+.Fn UserAccessTokenFree "UserAccessToken *"
+.Ft int
+.Fn UserDeleteToken "User *" "char *"
+.Ft int
+.Fn UserDeleteTokens "User *"
+.Ft UserId *
+.Fn UserIdParse "char *" "char *"
+.Ft void
+.Fn UserIdFree "UserId *"
 .Sh DESCRIPTION
-.Pp
 The
 .Nm
 API provides a wrapper over the database and offers an easy way for managing
 local users. It supports all of the locking mechanisms that the database does,
 and provides features for authenticating local users, among other tasks.
+.Pp
+.Bd -literal -offset indent
+typedef struct UserLoginInfo
+{
+    UserAccessToken *accessToken;
+    char *refreshToken;
+} UserLoginInfo;
+
+typedef struct UserAccessToken
+{
+    char *user;
+    char *string;
+    char *deviceId;
+    long lifetime;
+} UserAccessToken;
+
+typedef struct UserId
+{
+    char *localpart;
+    char *server;
+} UserId;
+.Ed
 .Pp
 .Fn UserValidate
 takes a localpart and domain as separate parameters and validates it against the
@@ -83,14 +124,58 @@ it's necessary to know the localpart of a user.
 takes a password and verifies it against a user object. Telodendria does not
 store passwords in plain text, so this function hashes the password and and
 checks it against what's stored in the database.
+.Pp
+.Fn UserSetPassword
+resets the given user's password by hashing a plain text password and
+storing it in the database.
+.Pp
+.Fn UserDeactivate
+deactivates a user such that it can no longer be used to log in, but
+the username is still taken. This is to prevent future users from
+pretending to be previous users of a given localpart.
+.Pp
+.Fn UserGetDevices
+fetches the devices that belong to the user, in JSON format,
+identical to what's stored in the database. In fact, this JSON is
+still linked to the database, so it should not be freed with
+.Fn JsonFree .
+.Pp
+.Fn UserAccessTokenGenerate ,
+.Fn UserAccessTokenSave ,
+and
+.Fn UserAccessTokenFree
+are used for managing individual access tokens on a user. They
+operate on the UserAccessToken structure.
+.Fn UserAccessTokenGenerate
+takes the user localpart to generate the token for, the device ID,
+for the token, and a boolean value indicating whether or not the token
+should expire.
+.Fn UserAccessTokenSave
+writes the access token to the database.
+.Pp
+.Fn UserDeleteToken
+and
+.Fn UserDeleteTokens
+delete a specific access token/refresh token pair, or all the access
+and refresh tokens for a given user, respectively.
+.Pp
+.Fn UserIdParse
+parses either a localpart or a fully-qualified Matrix ID.
+.Fn UserIdFree
+frees the result of this parsing.
 .Sh RETURN VALUES
 .Pp
 .Fn UserValidate ,
 .Fn UserHistoricalValidate ,
 .Fn UserExists ,
 .Fn UserUnlock ,
+.Fn UserCheckPassword ,
+.Fn UserSetPassword ,
+.Fn UserDeactivate ,
+.Fn UserAccessTokenSave ,
+.Fn UserDeleteToken ,
 and
-.Fn UserCheckPassword
+.Fn UserDeleteTokens
 all return a boolean value. Non-zero values indicate success, and zero values
 indicate failure.
 .Pp
@@ -106,18 +191,29 @@ by the given user pointer. This pointer should not be freed by the caller , as i
 is used internally and will be freed when the user is unlocked.
 .Pp
 .Fn UserLogin
-returns a UserLoginInfo struct, which is defined as follows:
-.Bd -literal -offset indent
-typedef struct UserLoginInfo
-{
-    char *accessToken;
-    char *refreshToken;
-    char *deviceId;
-    long tokenLifetime;
-} UserLoginInfo;
-.Ed
-.Pp
+returns a UserLoginInfo struct, or
+.Dv NULL
+if something goes wrong.
 All this information should be returned to the client that is logging in. If the
 client doesn't support refresh tokens, then refreshToken will be NULL.
+.Pp
+.Fn UserGetDevices
+returns a JSON object that is linked to the database, or NULL if
+there was an error. The result should not be freed with
+.Fn JsonFree
+because it is still directly attached to the database. This object
+is an exact representation of what is stored on the disk.
+.Pp
+.Fn UserAccessTokenGenerate
+generates an access token structure that should be freed when it is
+no longer needed, or
+.Dv NULL
+if there was a memory error.
+.Pp
+.Fn UserIdParse
+returns a UserId structure that should be freed when it is no longer
+needed, or
+.Dv NULL
+if there was a memory error.
 .Sh SEE ALSO
 .Xr Db 3

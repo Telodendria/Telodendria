@@ -160,7 +160,7 @@ ROUTE_IMPL(RouteLogin, args)
                 break;
             }
 
-            userId = UserParseId(JsonValueAsString(val),
+            userId = UserIdParse(JsonValueAsString(val),
                                  args->matrixArgs->config->serverName);
             if (!userId)
             {
@@ -292,7 +292,7 @@ ROUTE_IMPL(RouteLogin, args)
             break;
     }
 
-    UserFreeId(userId);
+    UserIdFree(userId);
     JsonFree(request);
     return response;
 }

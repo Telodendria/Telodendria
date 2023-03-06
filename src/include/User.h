@@ -88,7 +88,7 @@ extern HashMap *
  UserGetDevices(User *);
 
 extern UserAccessToken *
- UserGenerateAccessToken(User *, char *, int);
+ UserAccessTokenGenerate(User *, char *, int);
 
 extern int
  UserAccessTokenSave(Db *, UserAccessToken *);
@@ -103,9 +103,9 @@ extern int
  UserDeleteTokens(User *);
 
 extern UserId *
- UserParseId(char *, char *);
+ UserIdParse(char *, char *);
 
 extern void
- UserFreeId(UserId *);
+ UserIdFree(UserId *);
 
 #endif                             /* TELODENDRIA_USER_H */

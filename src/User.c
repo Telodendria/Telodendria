@@ -269,7 +269,7 @@ UserLogin(User * user, char *password, char *deviceId, char *deviceDisplayName,
     }
 
     /* Generate an access token */
-    result->accessToken = UserGenerateAccessToken(user, deviceId, withRefresh);
+    result->accessToken = UserAccessTokenGenerate(user, deviceId, withRefresh);
     UserAccessTokenSave(user->db, result->accessToken);
 
     if (withRefresh)
@@ -444,7 +444,7 @@ UserGetDevices(User * user)
 }
 
 UserAccessToken *
-UserGenerateAccessToken(User * user, char *deviceId, int withRefresh)
+UserAccessTokenGenerate(User * user, char *deviceId, int withRefresh)
 {
     UserAccessToken *token;
 
@@ -641,7 +641,7 @@ UserDeleteTokens(User * user)
 }
 
 UserId *
-UserParseId(char *id, char *defaultServer)
+UserIdParse(char *id, char *defaultServer)
 {
     UserId *userId;
 
@@ -693,13 +693,19 @@ UserParseId(char *id, char *defaultServer)
         userId->server = StrDuplicate(defaultServer);
     }
 
+    if (!UserHistoricalValidate(userId->localpart, userId->server))
+    {
+        UserIdFree(userId);
+        userId = NULL;
+    }
+
 finish:
     Free(id);
     return userId;
 }
 
 void
-UserFreeId(UserId * id)
+UserIdFree(UserId * id)
 {
     if (id)
     {

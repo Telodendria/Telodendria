@@ -11,7 +11,7 @@ Key:
 Milestone: v0.2.0
 -----------------
 
-[ ] Abstract /email/requestToken and /msidsn/requestToken
+[!] Abstract /email/requestToken and /msidsn/requestToken
     - Call it RouteRequestToken
     - Reference it all the places it's needed
     - Finish implementing JSON parsing
@@ -22,8 +22,8 @@ Milestone: v0.2.0
 [x] User login
     [x] Logout all
 
-[ ] Documentation
-    [ ] User functions
+[~] Documentation
+    [x] User functions
     [ ] Json functions
     [ ] Db functions
     [ ] Uia (move docs from Matrix)
@@ -64,6 +64,7 @@ Milestone: v0.3.0
               registration is disabled.
     [ ] 4: Account management
         [ ] Deactivate
+            [ ] Make sure UserLogin() fails if user is deactivated.
         [ ] Change password
         [ ] Whoami
     [ ] 9: User Data

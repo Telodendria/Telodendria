@@ -134,7 +134,7 @@ ROUTE_IMPL(RouteRefresh, args)
 
     /* Generate a new access token associated with the device and user. */
     deviceId = JsonValueAsString(HashMapGet(DbJson(oAtRef), "device"));
-    newAccessToken = UserGenerateAccessToken(user, deviceId, 1);
+    newAccessToken = UserAccessTokenGenerate(user, deviceId, 1);
     UserAccessTokenSave(db, newAccessToken);
 
     /* Replace old access token in User */
