@@ -1165,7 +1165,8 @@ JsonSet(HashMap * json, JsonValue * newVal, size_t nArgs,...)
         val = HashMapGet(tmp, key);
         if (!val)
         {
-            goto finish;
+            val = JsonValueObject(HashMapCreate());
+            HashMapSet(tmp, key, val);
         }
 
         if (JsonValueType(val) != JSON_OBJECT)
@@ -1182,54 +1183,4 @@ JsonSet(HashMap * json, JsonValue * newVal, size_t nArgs,...)
 finish:
     va_end(argp);
     return val;
-}
-
-int
-JsonCreate(HashMap * json, JsonValue * newVal, size_t nArgs,...)
-{
-    HashMap *tmp = json;
-    JsonValue *val = NULL;
-    size_t i;
-    char *key;
-    int ret = 0;
-
-    va_list argp;
-
-    if (!json || !newVal || !nArgs)
-    {
-        return 0;
-    }
-
-    va_start(argp, nArgs);
-
-    for (i = 0; i < nArgs - 1; i++)
-    {
-        key = va_arg(argp, char *);
-
-        val = HashMapGet(tmp, key);
-        if (!val)
-        {
-            val = JsonValueObject(HashMapCreate());
-            HashMapSet(tmp, key, val);
-        }
-        else if (JsonValueType(val) != JSON_OBJECT)
-        {
-            goto finish;
-        }
-
-        tmp = JsonValueAsObject(val);
-    }
-
-    key = va_arg(argp, char *);
-    if (HashMapGet(tmp, key))
-    {
-        goto finish;
-    }
-
-    HashMapSet(tmp, key, newVal);
-    ret = 1;
-
-finish:
-    va_end(argp);
-    return ret;
 }

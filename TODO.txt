@@ -24,7 +24,7 @@ Milestone: v0.2.0
 
 [~] Documentation
     [x] User functions
-    [ ] Json functions
+    [x] Json functions
     [ ] Db functions
     [ ] Uia (move docs from Matrix)
 

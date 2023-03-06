@@ -110,7 +110,4 @@ extern JsonValue *
 extern JsonValue *
  JsonSet(HashMap *, JsonValue *, size_t,...);
 
-extern int
- JsonCreate(HashMap *, JsonValue *, size_t,...);
-
 #endif                             /* TELODENDRIA_JSON_H */

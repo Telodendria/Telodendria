@@ -1,4 +1,4 @@
-.Dd $Mdocdate: November 30 2022 $
+.Dd $Mdocdate: March 6 2023 $
 .Dt JSON 3
 .Os Telodendria Project
 .Sh NAME
@@ -46,6 +46,10 @@
 .Fn JsonEncode "HashMap *" "FILE *"
 .Ft HashMap *
 .Fn JsonDecode "FILE *"
+.Ft JsonValue *
+.Fn JsonGet "HashMap *" "size_t" "..."
+.Ft JsonValue *
+.Fn JsonSet "HashMap *" "size_t" "..."
 .Sh DESCRIPTION
 .Nm
 is a fully-featured JSON API for C using
@@ -195,6 +199,19 @@ everything accessible from the passed object.
 .Fn JsonDecode
 does the opposite; it reads from a JSON stream and decodes it
 into a hash map of JsonValues.
+.Pp
+.Fn JsonSet
+and
+.Fn JsonGet
+are convenience functions that allow the caller to retrieve and
+manipulate arbitrarily deep keys within a JSON object. They take
+a root JSON object, the number of levels deep to go, and then that
+number of keys as a varargs list. All keys must have objects
+as values, with the exception of the last one, which is the one
+being retrieved or set.
+.Fn JsonSet
+will create any intermediate objects as necessary to set the
+proper key.
 .Sh RETURN VALUES
 .Pp
 .Fn JsonValueType
@@ -223,6 +240,13 @@ success value.
 .Fn JsonDecode
 returns a hash map of JsonValues that can be manipulated by
 this API, or NULL if there was an error parsing the JSON.
+.Pp
+.Fn JsonGet
+returns a JsonValue, or NULL if the requested key is not set
+in the object.
+.Fn JsonGet
+returns the previous value of the provided key, or NULL if there
+was no previous value.
 .Sh SEE ALSO
 .Xr HashMap 3 ,
 .Xr Array 3
