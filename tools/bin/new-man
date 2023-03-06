@@ -19,7 +19,7 @@ fi
     mdocdate=$(date "+%B %d %Y")
     uppercase=$(echo "$man" | tr '[:lower:]' '[:upper:]')
 
-    echo ".Dd \$Mdocdate: February 16 2023 ${mdocdate} \$"
+    echo ".Dd \$Mdocdate: March 6 2023 ${mdocdate} \$"
     echo ".Dt ${uppercase} ${section}"
     echo ".Os Telodendria Project"
     echo ".Sh NAME"
