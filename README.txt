@@ -27,7 +27,7 @@
   | |  __/ | (_) | (_| |  __/ | | | (_| | |  | | (_| |
   |_|\___|_|\___/ \__,_|\___|_| |_|\__,_|_|  |_|\__,_|
 =======================================================
-Copyright (C) 2022 Jordan Bancino <@jordan:bancino.net>
+Copyright (C) 2023 Jordan Bancino <@jordan:bancino.net>
 
 This is the source code for Telodendria, a Matrix homeserver written
 in C. All of the documentation is available as man pages in the
@@ -42,10 +42,12 @@ repository.
 Telodendria/
 	contrib/ - Supplemental files, such as example configs.
 	man/ - The official documentation as man pages.
+    proposals/ - Proposals for new features or fixes, as man pages.
 	site/ - The official website.
 	src/ - The C source code for Telodendria.
 		include/ - Header files for the source code.
-		Routes/ - Where Matrix API endpoints are implemented
+		Routes/ - Where Matrix API endpoints are implemented.
+        Static/ - Endpoints that just generate static HTML pages.
 	tests/ - Unit and integration tests will eventually go here.
 	tools/ - Development environment and tools.
 

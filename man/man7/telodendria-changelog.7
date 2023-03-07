@@ -1,4 +1,4 @@
-.Dd $Mdocdate: January 17 2023 $
+.Dd $Mdocdate: March 7 2023 $
 .Dt TELODENDRIA-CHANGELOG 7
 .Os Telodendria Project
 .Sh NAME
@@ -49,31 +49,16 @@ used to authenticate requests.
 .It
 Added the basic form of the user interactive authentication API,
 which can be used by any endpoints that the spec says require
-it. Currently, it only implements a single dummy login flow,
-so it's more of a formality than anything else, but more login
-flows can easily be added in the future.
+it. Currently, it only implements the dummy and password stages,
+but more stages, such as the registration token stage, will be
+added in future releases.
 .It
 Added a simple landing page that allows those setting up
 .Nm
 to quickly verify that it is accessible where it needs to be.
 .It
-Added a way to safely delete objects from the database.
-While the database is for persistent storage, there may
-be some ephemeral data that lives there only for a short
-while, so it will be necessary to remove that data when
-necessary.
-.It
-Added a thread-safe random string generator, which will
-be used extensively for generating session tokens, device
-IDs, access tokens, and more. This generator is seeded by
-the current timestamp and the thread ID, so it should be
-fairly random.
-.It
-Added a SHA-256 hash function, which at present is used
-to hash passwords.
-.It
-Added a basic job scheduler to execute periodic jobs, such
-as expiring tokens and cleaning up temporary files.
+Added the static login page for clients that don't support
+regular login.
 .El
 .Pp
 Changes:
@@ -125,7 +110,7 @@ Fixed a memory leak that would occur when deleting database
 objects.
 .It
 Fixed a few non-fatal memory warnings that would show up
-as a result of passing a constant string into certain APIs.
+as a result of passing a constant string into certain functions.
 .El
 .Pp
 Misc:
@@ -157,9 +142,37 @@ as possible to allowe debugging the configuration file parsing
 if necessary.
 .El
 .Pp
-And many more small bug fixes and feature additions. Please
-test the current functionality, and report bugs to the Matrix
-rooms.
+\&... And many more bug fixes and feature additions! Too much
+has changed to make a comprehensive change log. A lot of things
+have been done under the hood to make
+.Nm
+easier to develop in the future. Please test the current
+functionality, and report bugs to the Matrix rooms.
+.Pp
+The following platforms have been known to compile and run
+.Nm :
+.Bl -bullet
+.It
+OpenBSD
+.It
+Linux (GNU and non-GNU)
+.It
+Windows (via Cygwin)
+.It
+FreeBSD
+.It
+NetBSD
+.It
+DragonFlyBSD
+.It
+Haiku OS
+.It
+Android (via Termux)
+.El
+.Pp
+.Nm
+is about being portable; if you compile it on an obscure
+operating system, do let me know about it!
 .Sh v0.1.0
 .Pp
 Tuesday, December 13, 2022
