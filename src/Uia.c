@@ -181,13 +181,13 @@ UiaDummyFlow(void)
         return NULL;
     }
 
-    ArrayAdd(response, UiaBuildStage("m.login.dummy", NULL));
+    ArrayAdd(response, UiaStageBuild("m.login.dummy", NULL));
 
     return response;
 }
 
 UiaStage *
-UiaBuildStage(char *type, HashMap * params)
+UiaStageBuild(char *type, HashMap * params)
 {
     UiaStage *stage = Malloc(sizeof(UiaStage));
 

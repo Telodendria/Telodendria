@@ -32,7 +32,7 @@
 typedef struct UiaStage UiaStage;
 
 extern UiaStage *
- UiaBuildStage(char *, HashMap *);
+ UiaStageBuild(char *, HashMap *);
 
 extern Array *
  UiaDummyFlow(void);

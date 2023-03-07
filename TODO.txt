@@ -22,11 +22,11 @@ Milestone: v0.2.0
 [x] User login
     [x] Logout all
 
-[~] Documentation
+[x] Documentation
     [x] User functions
     [x] Json functions
     [x] Db functions
-    [ ] Uia (move docs from Matrix)
+    [x] Uia (move docs from Matrix)
 
 [x] Convert proposals to man pages
 
