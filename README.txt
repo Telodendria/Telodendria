@@ -56,7 +56,8 @@ steps. This is just a reference for me so I don't mess it up.
 
 	- Update tools/bin/td to declare the next version number.
 	- Make sure man/man7/telodendria-changelog.7 is up to date.
-	  with the latest information.
+	  with the latest information. (Be sure to set the date
+      correctly)
 	- Commit all changes.
 	- Run the release recipe: td release
 	- Deploy the site: td site
