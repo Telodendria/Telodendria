@@ -125,4 +125,7 @@ extern HashMap *
 extern char *
  HttpParamEncode(HashMap *);
 
+extern HashMap *
+ HttpParseHeaders(FILE *);
+
 #endif

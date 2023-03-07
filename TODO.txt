@@ -15,7 +15,10 @@ Milestone: v0.3.0
     [ ] TLS
     [ ] SOCKS
     [ ] Multi-output
-[ ] HTTP Client API
+[~] HTTP Client API
+    [ ] Document HttpParseHeaders()
+    [ ] HttpClient man page
+    [ ] Test on other platforms
 [ ] Option to pretty-print Json
 
 [ ] Simple command line tool to make matrix requests

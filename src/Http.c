@@ -26,9 +26,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 
 #include <Memory.h>
 #include <HashMap.h>
+#include <Util.h>
 
 #ifndef TELODENDRIA_STRING_CHUNK
 #define TELODENDRIA_STRING_CHUNK 64
@@ -531,4 +533,106 @@ HttpParamEncode(HashMap * params)
     }
 
     return out;
+}
+
+HashMap *
+HttpParseHeaders(FILE * fp)
+{
+    HashMap *headers;
+
+    char *line;
+    ssize_t lineLen;
+    size_t lineSize;
+
+    char *headerKey;
+    char *headerValue;
+
+    if (!fp)
+    {
+        return NULL;
+    }
+
+
+    headers = HashMapCreate();
+    if (!headers)
+    {
+        return NULL;
+    }
+
+    line = NULL;
+    lineLen = 0;
+
+    while ((lineLen = UtilGetLine(&line, &lineSize, fp)) != -1)
+    {
+        char *headerPtr;
+
+        ssize_t i;
+
+        if (strcmp(line, "\r\n") == 0 || strcmp(line, "\n") == 0)
+        {
+            break;
+        }
+
+        for (i = 0; i < lineLen; i++)
+        {
+            if (line[i] == ':')
+            {
+                line[i] = '\0';
+                break;
+            }
+
+            line[i] = tolower((unsigned char) line[i]);
+        }
+
+        headerKey = Malloc((i + 1) * sizeof(char));
+        if (!headerKey)
+        {
+            goto error;
+        }
+
+        strcpy(headerKey, line);
+
+        headerPtr = line + i + 1;
+
+        while (isspace((unsigned char) *headerPtr))
+        {
+            headerPtr++;
+        }
+
+        for (i = lineLen - 1; i > (line + lineLen) - headerPtr; i--)
+        {
+            if (!isspace((unsigned char) line[i]))
+            {
+                break;
+            }
+            line[i] = '\0';
+        }
+
+        headerValue = Malloc(strlen(headerPtr) + 1);
+        if (!headerValue)
+        {
+            Free(headerKey);
+            goto error;
+        }
+
+        strcpy(headerValue, headerPtr);
+
+        HashMapSet(headers, headerKey, headerValue);
+        Free(headerKey);
+    }
+
+    Free(line);
+    return headers;
+
+error:
+    Free(line);
+
+    while (HashMapIterate(headers, &headerKey, (void **) &headerValue))
+    {
+        Free(headerValue);
+    }
+
+    HashMapFree(headers);
+
+    return NULL;
 }

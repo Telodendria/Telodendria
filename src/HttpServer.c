@@ -96,13 +96,6 @@ HttpServerContextCreate(HttpRequestMethod requestMethod,
         return NULL;
     }
 
-    c->requestHeaders = HashMapCreate();
-    if (!c->requestHeaders)
-    {
-        Free(c);
-        return NULL;
-    }
-
     c->responseHeaders = HashMapCreate();
     if (!c->responseHeaders)
     {
@@ -515,6 +508,7 @@ HttpServerWorkerThread(void *args)
 
         if (strcmp(requestProtocol, "HTTP/1.1") != 0 && strcmp(requestProtocol, "HTTP/1.0") != 0)
         {
+            Free(requestPath);
             goto bad_request;
         }
 
@@ -533,65 +527,14 @@ HttpServerWorkerThread(void *args)
         context = HttpServerContextCreate(requestMethod, requestPath, requestParams, fp);
         if (!context)
         {
+            Free(requestPath);
             goto internal_error;
         }
 
-        while ((lineLen = UtilGetLine(&line, &lineSize, fp)) != -1)
+        context->requestHeaders = HttpParseHeaders(fp);
+        if (!context->requestHeaders)
         {
-            char *headerKey;
-            char *headerValue;
-            char *headerPtr;
-
-            if (strcmp(line, "\r\n") == 0)
-            {
-                break;
-            }
-
-            for (i = 0; i < lineLen; i++)
-            {
-                if (line[i] == ':')
-                {
-                    line[i] = '\0';
-                    break;
-                }
-
-                line[i] = tolower((unsigned char) line[i]);
-            }
-
-            headerKey = Malloc((i + 1) * sizeof(char));
-            if (!headerKey)
-            {
-                goto internal_error;
-            }
-
-            strcpy(headerKey, line);
-
-            headerPtr = line + i + 1;
-
-            while (isspace((unsigned char) *headerPtr))
-            {
-                headerPtr++;
-            }
-
-            for (i = lineLen - 1; i > (line + lineLen) - headerPtr; i--)
-            {
-                if (!isspace((unsigned char) line[i]))
-                {
-                    break;
-                }
-                line[i] = '\0';
-            }
-
-            headerValue = Malloc(strlen(headerPtr) + 1);
-            if (!headerValue)
-            {
-                goto internal_error;
-            }
-
-            strcpy(headerValue, headerPtr);
-
-            HashMapSet(context->requestHeaders, headerKey, headerValue);
-            Free(headerKey);
+            goto internal_error;
         }
 
         server->requestHandler(context, server->handlerArgs);
