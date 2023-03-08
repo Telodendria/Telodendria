@@ -386,7 +386,6 @@ JsonEncodeString(const char *str, FILE * out)
                     fputc(c, out);
                 }
                 break;
-
         }
         i++;
     }
