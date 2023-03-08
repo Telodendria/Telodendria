@@ -101,7 +101,7 @@ query(char *select, HashMap * json)
 
             func = 1;
         }
-        else if (keyName[0] == '!')
+        else if (keyName[0] == '^')
         {
             if (JsonValueType(val) == JSON_OBJECT)
             {

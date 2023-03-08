@@ -49,21 +49,21 @@ fi
 mod_time() {
     if [ -n "$1" ] && [ -f "$1" ]; then
         case "$(uname)" in
-            Linux|CYGWIN_NT*|Haiku)
-                stat -c %Y "$1" 
+            Linux | CYGWIN_NT* | Haiku)
+                stat -c %Y "$1"
                 ;;
-            *BSD|DragonFly|Minix)
-                stat -f %m "$1" 
+            *BSD | DragonFly | Minix)
+                stat -f %m "$1"
                 ;;
             *)
                 # Platform unknown, force rebuilding the whole
                 # project every time.
-                echo "0" 
+                echo "0"
                 ;;
-        esac 
+        esac
     else
-        echo "0" 
-    fi 
+        echo "0"
+    fi
 }
 
 # Substitute shell variables in a stream with their actual value
@@ -79,7 +79,7 @@ setsubst() {
 
         echo "s|\\\${[a-zA-Z_]*}||g"
         echo "s|'''|'|g"
-    ) > "$SED"
+    ) >"$SED"
 
     sed -f "$SED" $@
     rm "$SED"
@@ -104,7 +104,7 @@ recipe_build() {
         if [ $(basename "$obj" .o) != "$MAIN" ]; then
             objs="$objs $obj"
         fi
-    
+
         if [ $(mod_time "$src") -ge $(mod_time "../$obj") ]; then
             echo "CC $(basename $obj)"
             obj_dir=$(dirname "../$obj")
@@ -195,9 +195,9 @@ recipe_site() {
         echo "$dest"
 
         mkdir -p "$dir"
-        setsubst "$file" > "$dest"
+        setsubst "$file" >"$dest"
     done
-    cd - > /dev/null
+    cd - >/dev/null
 
     find man/ -name '*.[1-9]' | while IFS= read -r man; do
         dir=$(dirname "$man")
@@ -206,7 +206,7 @@ recipe_site() {
         mkdir -p "$TELODENDRIA_PUB/$dir/"
         mandoc -Thtml \
             -O style=/style.css,man=/man/man%S/%N.%S.html "$man" \
-            > "$TELODENDRIA_PUB/$dir/$html.html"
+            >"$TELODENDRIA_PUB/$dir/$html.html"
         echo "$TELODENDRIA_PUB/$dir/$html.html"
     done
 }
@@ -235,7 +235,7 @@ recipe_release() {
 
     # Checksum the release tarball.
     sha256 "Telodendria-v$TELODENDRIA_VERSION.tar.gz" \
-        > "Telodendria-v$TELODENDRIA_VERSION.tar.gz.sha256"
+        >"Telodendria-v$TELODENDRIA_VERSION.tar.gz.sha256"
 
     # Sign the release tarball.
     if [ ! -z "$TELODENDRIA_SIGNIFY_SECRET" ]; then
@@ -280,7 +280,7 @@ recipe_patch() {
         echo "    this patch under the conditions specified in it."
         echo
         cvs -q diff -uNp $PATCHSET | grep -v '^\? '
-    ) > "$PATCH_FILE"
+    ) >"$PATCH_FILE"
 
     "$EDITOR" "$PATCH_FILE"
     echo "$PATCH_FILE"
@@ -288,7 +288,7 @@ recipe_patch() {
 
 recipe_diff() {
     tmp_patch="/tmp/telodendria-$(date +%s).patch"
-    cvs -q diff -uNp $PATCHSET > "$tmp_patch"
+    cvs -q diff -uNp $PATCHSET >"$tmp_patch"
     if [ -z "$PAGER" ]; then
         PAGER="less -F"
     fi
@@ -306,4 +306,3 @@ done
 if [ -z "$1" ]; then
     recipe_build
 fi
-

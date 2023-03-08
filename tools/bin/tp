@@ -7,8 +7,8 @@
 . "$(pwd)/tools/lib/common.sh"
 
 if [ -z "$TELODENDRIA_PUB" ]; then
-	echo "TELODENDRIA_PUB not set."
-	exit 1
+    echo "TELODENDRIA_PUB not set."
+    exit 1
 fi
 
 TP_DIR="$TELODENDRIA_PUB/patches"
@@ -16,110 +16,133 @@ TP_DIR="$TELODENDRIA_PUB/patches"
 CURL="curl -s"
 
 if [ ! -d "$TP_DIR" ]; then
-	echo "$TP_DIR does not exist."
-	exit 1
+    echo "$TP_DIR does not exist."
+    exit 1
 fi
 
 matrix_send() {
-	msg="$1"
-	if [ ! -z "$msg" ]; then
-		jq --null-input \
-			--arg body "$msg" \
-			--arg formatted_body "$msg" \
-			--arg format "org.matrix.custom.html" \
-			--arg msgtype "m.text" \
-			'{"body":$body,"formatted_body":$formatted_body,"format":$format,"msgtype":$msgtype}' |
-			$CURL -X PUT -d @- "$HOMESERVER/client/v3/rooms/$PATCHES_ROOM/send/m.room.message/$(date +%s)?access_token=$ACCESS_TOKEN"
-	fi
-}
-
-matrix_get_files() {
-	$CURL "$HOMESERVER/client/v3/sync?access_token=$ACCESS_TOKEN" |
-	jq ".rooms.join.\"$PATCHES_ROOM\".timeline.events[] | select(.type==\"m.room.message\") | .content | select(.msgtype==\"m.file\") | [.body,.info.size,.url] | @tsv" |
-	cut -d '"' -f 2 |
-	sed 's/\\t/,/g' 
+    msg="$1"
+    if [ ! -z "$msg" ]; then
+        (
+            printf '{'
+            printf '"body":'
+            json -e "$msg"
+            printf ',"formatted_body":'
+            json -e "$msg"
+            printf ',"format":"org.matrix.custom.html",'
+            printf '"msgtype":"m.text"'
+            printf '}'
+        ) | $CURL -X PUT -d @- "$HOMESERVER/client/v3/rooms/$PATCHES_ROOM/send/m.room.message/$(date +%s)?access_token=$ACCESS_TOKEN"
+    fi
 }
 
 case "$1" in
-	"ingress")
-		matrix_get_files | while IFS="," read -r file size url; do
-			server=$(echo "$url" | cut -d '/' -f 3)
-			id=$(echo "$url" | cut -d '/' -f 4)
-			ext=$(echo "$file" | rev | cut -d '.' -f 1 | rev)
+    "ingress")
+        timeline="/tmp/timeline.json"
+        $CURL "$HOMESERVER/client/v3/sync?access_token=$ACCESS_TOKEN" |
+            json -s "rooms->join->${PATCHES_ROOM}->timeline" >"$timeline"
 
-			if [ "$ext" != "patch" ] || [ "$size" -gt "$MAX_SIZE" ] || [ -f "$TP_DIR/ingress/$id.patch" ]; then
-				continue
-			fi
+        length=$(cat "$timeline" | json -s "events->@length")
 
-			if ! $CURL -o "$TP_DIR/ingress/$id.patch" "$HOMESERVER/media/v3/download/$server/$id"; then
+        i=0
+        while [ $i -lt $length ]; do
+            content=$(cat "$timeline" | json -s "events[$i]->content->^body->^formatted_body")
+            i=$((i + 1))
+
+            type=$(echo "$content" | json -s "msgtype->@decode")
+            if [ "$type" != "m.file" ]; then
+                continue
+            fi
+
+            size=$(echo "$content" | json -s "info->size")
+            if [ "$size" -gt "$MAX_SIZE" ]; then
+                continue
+            fi
+
+            file=$(echo "$content" | json -s "filename->@decode")
+            ext=$(echo "$file" | rev | cut -d '.' -f 1 | rev)
+            if [ "$ext" != "patch" ]; then
+                continue
+            fi
+
+            url=$(echo "$content" | json -s "url->@decode")
+            id=$(echo "$url" | cut -d '/' -f 4)
+
+            if [ -f "$TP_DIR/ingress/$id.patch" ]; then
+                continue
+            fi
+
+            server=$(echo "$url" | cut -d '/' -f 3)
+
+            if ! $CURL -o "$TP_DIR/ingress/$id.patch" "$HOMESERVER/media/v3/download/$server/$id"; then
                 rm "$TP_DIR/ingress/$id.patch"
                 echo "Failed to fetch mxc://$server/$id."
                 echo "Will try again next time."
                 continue
             fi
 
-			count=$(cat "$TP_DIR/count.txt")
-			count=$((count + 1))
-			cp "$TP_DIR/ingress/$id.patch" "$TP_DIR/p/$count.patch"
-			(
-				cd "$TP_DIR/queued"
-				ln -s "../p/$count.patch" "$count.patch"
-			)
+            count=$(cat "$TP_DIR/count.txt")
+            count=$((count + 1))
+            cp "$TP_DIR/ingress/$id.patch" "$TP_DIR/p/$count.patch"
+            (
+                cd "$TP_DIR/queued"
+                ln -s "../p/$count.patch" "$count.patch"
+            )
 
-			echo "$count" > "$TP_DIR/count.txt"
+            echo "$count" >"$TP_DIR/count.txt"
 
-			matrix_send "Queued <code>$file</code> as <a href=\"https://telodendria.io/patches/p/$count.patch\">#$count</a>" > /dev/null
-		done
-		;;
-	"queue")
-		find "$TP_DIR/queued" -name '*.patch' | while IFS= read -r patch; do
-			n=$(basename "$patch" .patch)
-			echo "Patch #$n:"
-			head -n3 "$patch"
-			echo
-		done
-		;;
-	"view")
-		if [ -f "$TP_DIR/queued/$2.patch" ]; then
-			less "$TP_DIR/queued/$2.patch"
-		else
-			echo "Patch #$2 doesn't exist in the queue."
-			exit 1
-		fi
-		;;
-	"apply")
-		if [ -f "$TP_DIR/queued/$2.patch" ]; then
-			patch < "$TP_DIR/queued/$2.patch"
-		else
-			echo "Patch #$2 doesn't exist in the queue."
-			exit 1
-		fi
-		;;
-	"reverse")
-		if [ -f "$TP_DIR/queued/$2.patch" ]; then
-			patch -R < "$TP_DIR/queued/$2.patch"
-		else
-			echo "Patch #$2 doesn't exist in the queue."
-			exit 1
-		fi
-		;;
-	"accept"|"reject")
-		if [ -f "$TP_DIR/queued/$2.patch" ]; then
-			mv "$TP_DIR/queued/$2.patch" "$TP_DIR/${1}ed/$2.patch"
-			msg="Patch <a href=\"https://telodendria.io/patches/p/$2.patch\">#$2</a> was marked as ${1}ed."
-			msgFile="/tmp/patchmsg-$(date +%s).txt"
-			$EDITOR "$msgFile"
-			if [ -f "$msgFile" ]; then
-				msg="$msg<br><blockquote>$(cat $msgFile)<br>&mdash;$DISPLAY_NAME ($MXID)</blockquote>"
-			fi
-			matrix_send "$msg"
-		else
-			echo "Patch #$2 doesn't exist in the queue."
-			exit 1
-		fi
-		;;
-	*)
-		echo "No action specified."
-		exit 1
-		;;
+            matrix_send "Queued <code>$file</code> as <a href=\"https://telodendria.io/patches/p/$count.patch\">#$count</a>" >/dev/null
+        done
+        ;;
+    "queue")
+        find "$TP_DIR/queued" -name '*.patch' | while IFS= read -r patch; do
+            n=$(basename "$patch" .patch)
+            echo "Patch #$n:"
+            head -n3 "$patch"
+            echo
+        done
+        ;;
+    "view")
+        if [ -f "$TP_DIR/queued/$2.patch" ]; then
+            less "$TP_DIR/queued/$2.patch"
+        else
+            echo "Patch #$2 doesn't exist in the queue."
+            exit 1
+        fi
+        ;;
+    "apply")
+        if [ -f "$TP_DIR/queued/$2.patch" ]; then
+            patch <"$TP_DIR/queued/$2.patch"
+        else
+            echo "Patch #$2 doesn't exist in the queue."
+            exit 1
+        fi
+        ;;
+    "reverse")
+        if [ -f "$TP_DIR/queued/$2.patch" ]; then
+            patch -R <"$TP_DIR/queued/$2.patch"
+        else
+            echo "Patch #$2 doesn't exist in the queue."
+            exit 1
+        fi
+        ;;
+    "accept" | "reject")
+        if [ -f "$TP_DIR/queued/$2.patch" ]; then
+            mv "$TP_DIR/queued/$2.patch" "$TP_DIR/${1}ed/$2.patch"
+            msg="Patch <a href=\"https://telodendria.io/patches/p/$2.patch\">#$2</a> was marked as ${1}ed."
+            msgFile="/tmp/patchmsg-$(date +%s).txt"
+            $EDITOR "$msgFile"
+            if [ -f "$msgFile" ]; then
+                msg="$msg<br><blockquote>$(cat $msgFile)<br>&mdash;$DISPLAY_NAME ($MXID)</blockquote>"
+            fi
+            matrix_send "$msg"
+        else
+            echo "Patch #$2 doesn't exist in the queue."
+            exit 1
+        fi
+        ;;
+    *)
+        echo "No action specified."
+        exit 1
+        ;;
 esac
