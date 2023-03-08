@@ -41,7 +41,7 @@ extern void
  HttpRequestHeader(HttpClientContext *, char *, char *);
 
 extern void
-HttpRequestSendHeaders(HttpClientContext *);
+ HttpRequestSendHeaders(HttpClientContext *);
 
 extern HttpStatus
  HttpRequestSend(HttpClientContext *);

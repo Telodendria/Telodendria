@@ -35,6 +35,8 @@
 CFLAGS="${CFLAGS} ${DEFINES} ${INCLUDES}"
 LDFLAGS="${LDFLAGS} ${STATIC}"
 
+MAIN="Telodendria"
+
 if [ "$DEBUG" = "1" ]; then
     CFLAGS="$CFLAGS -O0 -g -pg"
     LDFLAGS="-lm -pthread -v"
@@ -97,26 +99,41 @@ recipe_build() {
     do_rebuild=0
     objs=""
     for src in $(find . -name '*.c' | cut -d '/' -f 2-); do
-        obj=$(echo "../build/$src" | sed -e 's/\.c$/\.o/')
-        objs="$objs $obj"
+        obj=$(echo "build/$src" | sed -e 's/\.c$/\.o/')
+
+        if [ $(basename "$obj" .o) != "$MAIN" ]; then
+            objs="$objs $obj"
+        fi
     
-        if [ $(mod_time "$src") -ge $(mod_time "$obj") ]; then
+        if [ $(mod_time "$src") -ge $(mod_time "../$obj") ]; then
             echo "CC $(basename $obj)"
-            obj_dir=$(dirname "$obj")
+            obj_dir=$(dirname "../$obj")
             mkdir -p "$obj_dir"
-            if ! $CC $CFLAGS -Iinclude -c -o "$obj" "$src"; then
+            if ! $CC $CFLAGS -Iinclude -c -o "../$obj" "$src"; then
                 exit 1
             fi
             do_rebuild=1
         fi
     done
 
-    if [ $do_rebuild -eq 1 ] || [ ! -f "../build/$PROG" ]; then
+    cd ..
+    if [ $do_rebuild -eq 1 ] || [ ! -f "build/$PROG" ]; then
         echo "LD $PROG"
-        $CC $LDFLAGS -o "../build/$PROG" $objs
-    else
-        echo "Up to date."
+        $CC $LDFLAGS -o "build/$PROG" $objs "build/$MAIN.o"
     fi
+
+    for src in $(find tools/src -name '*.c'); do
+        out=$(basename "$src" .c)
+        out="build/tools/$out"
+
+        if [ $(mod_time "$src") -ge $(mod_time "$out") ]; then
+            echo "CC $(basename $out)"
+            mkdir -p "$(dirname $out)"
+            if ! $CC $CFLAGS $LDFLAGS -Isrc/include -o "$out" $objs "$src"; then
+                exit 1
+            fi
+        fi
+    done
 }
 
 recipe_run() {
@@ -136,7 +153,7 @@ recipe_clean() {
 # Format the source code by updating the copyright headers and
 # then running indent(1) on each source code file.
 recipe_format() {
-    find src -name '*.c' -or -name '*.h' | while IFS= read -r src; do
+    find . -name '*.c' -or -name '*.h' | while IFS= read -r src; do
         if [ -t 1 ]; then
             printf "FMT %s%*c\r" $(basename "$src") "16" " "
         fi

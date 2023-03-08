@@ -18,11 +18,11 @@ Milestone: v0.3.0
 [~] HTTP Client API
     [ ] Document HttpParseHeaders()
     [ ] HttpClient man page
-    [ ] Uia man page
+    [ ] Uri man page
     [ ] Test on other platforms
 [ ] Option to pretty-print Json
 
-[ ] Simple command line tool to make matrix requests
+[x] Simple command line tool to make matrix requests
     - Built on HTTP client API
 [ ] Simple command line tool for working with JSON
     - Like a simpler version of jq
