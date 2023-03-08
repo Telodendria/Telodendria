@@ -44,7 +44,7 @@ struct HttpClientContext
 };
 
 HttpClientContext *
-HttpRequest(HttpRequestMethod method, int flags, char *host, char *path, char *port)
+HttpRequest(HttpRequestMethod method, int flags, unsigned short port, char *host, char *path)
 {
     HttpClientContext *context;
 
@@ -52,10 +52,30 @@ HttpRequest(HttpRequestMethod method, int flags, char *host, char *path, char *p
     struct addrinfo hints, *res, *res0;
     int error;
 
+    char serv[8];
+
     if (!method || !host || !path)
     {
         return NULL;
     }
+
+    if (!port)
+    {
+        if (flags & HTTP_TLS)
+        {
+            strcpy(serv, "https");
+        }
+        else
+        {
+            strcpy(serv, "www");
+        }
+    }
+    else
+    {
+        sprintf(serv, "%hu", port);
+    }
+
+    printf("serv = %s\n", serv);
 
     /* TODO: Not supported yet */
     if (flags & HTTP_TLS)
@@ -72,7 +92,7 @@ HttpRequest(HttpRequestMethod method, int flags, char *host, char *path, char *p
     memset(&hints, 0, sizeof(hints));
     hints.ai_family = AF_UNSPEC;
     hints.ai_socktype = SOCK_STREAM;
-    error = getaddrinfo(host, port, &hints, &res0);
+    error = getaddrinfo(host, serv, &hints, &res0);
 
     if (error)
     {
@@ -116,11 +136,12 @@ HttpRequest(HttpRequestMethod method, int flags, char *host, char *path, char *p
         return NULL;
     }
 
-    fprintf(context->stream, "%s %s HTTP/1.0\r\n",
+    fprintf(context->stream, "%s %s HTTP/1.1\r\n",
             HttpRequestMethodToString(method), path);
 
     HttpRequestHeader(context, "Connection", "close");
     HttpRequestHeader(context, "User-Agent", "Telodendria/" TELODENDRIA_VERSION);
+    HttpRequestHeader(context, "Host", host);
 
     return context;
 }

@@ -21,35 +21,53 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-#ifndef TELODENDRIA_HTTPCLIENT_H
-#define TELODENDRIA_HTTPCLIENT_H
+#include <Uri.h>
 
 #include <stdio.h>
+#include <string.h>
 
-#include <HashMap.h>
-#include <Http.h>
+#include <Memory.h>
 
-#define HTTP_NONE 0
-#define HTTP_TLS (1 << 0)
+Uri *
+UriParse(const char *str)
+{
+    Uri *uri;
+    int res;
 
-typedef struct HttpClientContext HttpClientContext;
+    if (!str)
+    {
+        return NULL;
+    }
 
-extern HttpClientContext *
- HttpRequest(HttpRequestMethod, int, unsigned short, char *, char *);
+    uri = Malloc(sizeof(Uri));
+    if (!uri)
+    {
+        return NULL;
+    }
 
-extern void
- HttpRequestHeader(HttpClientContext *, char *, char *);
+    memset(uri, 0, sizeof(Uri));
 
-extern HttpStatus
- HttpRequestSend(HttpClientContext *);
+    res = sscanf(str, "%7[^:]://%127[^:]:%hu%255[^\n]", uri->proto, uri->host, &uri->port, uri->path) == 4
+            || sscanf(str, "%7[^:]://%127[^/]%255[^\n]", uri->proto, uri->host, uri->path) == 3
+            || sscanf(str, "%7[^:]://%127[^:]%hu[^\n]", uri->proto, uri->host, &uri->port) == 3
+            || sscanf(str, "%7[^:]://%127[^\n]", uri->proto, uri->host) == 2;
 
-extern HashMap *
- HttpResponseHeaders(HttpClientContext *);
+    if (!res)
+    {
+        Free(uri);
+        return NULL;
+    }
 
-extern FILE *
- HttpClientStream(HttpClientContext *);
+    if (!uri->path[0])
+    {
+        strcpy(uri->path, "/");
+    }
 
-extern void
- HttpClientContextFree(HttpClientContext *);
+    return uri;
+}
 
-#endif                             /* TELODENDRIA_HTTPCLIENT_H */
+void
+UriFree(Uri * uri)
+{
+    Free(uri);
+}

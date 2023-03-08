@@ -21,35 +21,25 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-#ifndef TELODENDRIA_HTTPCLIENT_H
-#define TELODENDRIA_HTTPCLIENT_H
+#ifndef TELODENDRIA_URI_H
+#define TELODENDRIA_URI_H
 
-#include <stdio.h>
+#define URI_PROTO_MAX 8
+#define URI_HOST_MAX 128
+#define URI_PATH_MAX 256
 
-#include <HashMap.h>
-#include <Http.h>
+typedef struct Uri
+{
+    char proto[URI_PROTO_MAX];
+    char host[URI_HOST_MAX];
+    char path[URI_PATH_MAX];
+    unsigned short port;
+} Uri;
 
-#define HTTP_NONE 0
-#define HTTP_TLS (1 << 0)
-
-typedef struct HttpClientContext HttpClientContext;
-
-extern HttpClientContext *
- HttpRequest(HttpRequestMethod, int, unsigned short, char *, char *);
-
-extern void
- HttpRequestHeader(HttpClientContext *, char *, char *);
-
-extern HttpStatus
- HttpRequestSend(HttpClientContext *);
-
-extern HashMap *
- HttpResponseHeaders(HttpClientContext *);
-
-extern FILE *
- HttpClientStream(HttpClientContext *);
+extern Uri *
+ UriParse(const char *);
 
 extern void
- HttpClientContextFree(HttpClientContext *);
+ UriFree(Uri *);
 
-#endif                             /* TELODENDRIA_HTTPCLIENT_H */
+#endif                             /* TELODENDRIA_URI_H */
