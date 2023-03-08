@@ -51,7 +51,7 @@ StreamCopy(FILE * in, FILE * out)
 static void
 usage(char *prog)
 {
-    fprintf(stderr, "Usage: %s [-h] METHOD url\n", prog);
+    fprintf(stderr, "Usage: %s [-i -X method -H header] url\n", prog);
 }
 
 int
