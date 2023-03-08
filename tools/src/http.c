@@ -83,7 +83,7 @@ main(int argc, char **argv)
                 if (!method)
                 {
                     fprintf(stderr, "Unknown request method: %s\n", optarg);
-                    return -1;
+                    return 1;
                 }
                 break;
             case 'H':
@@ -107,21 +107,21 @@ main(int argc, char **argv)
                 break;
             default:
                 usage(argv[0]);
-                return -1;
+                return 1;
         }
     }
 
     if (argc - optind < 1)
     {
         usage(argv[0]);
-        return -1;
+        return 1;
     }
 
     uri = UriParse(argv[optind]);
     if (!uri)
     {
         fprintf(stderr, "Failed to parse URI: %s\n", argv[optind]);
-        return -1;
+        return 1;
     }
 
     if (!uri->port)
@@ -140,7 +140,7 @@ main(int argc, char **argv)
     {
         fprintf(stderr, "Unknown protocol: %s\n", uri->proto);
         UriFree(uri);
-        return -1;
+        return 1;
     }
 
     if (strcmp(uri->proto, "https") == 0)
@@ -154,7 +154,7 @@ main(int argc, char **argv)
     {
         fprintf(stderr, "Failed to connect.\n");
         UriFree(uri);
-        return -1;
+        return 1;
     }
 
     while (HashMapIterate(requestHeaders, &key, (void **) &val))
@@ -180,7 +180,7 @@ main(int argc, char **argv)
         fprintf(stderr, "Failed to send request.\n");
         HttpClientContextFree(cx);
         UriFree(uri);
-        return -1;
+        return 1;
     }
 
     if (flags & FLAG_HEADERS)

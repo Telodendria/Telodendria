@@ -28,8 +28,9 @@ Milestone: v0.3.0
     [x] Built on HTTP client API
     [ ] http man page
 [~] Simple command line tool for working with JSON
-    [x] Should pretty-print Json
-    [ ] Query fields for use in shell scripts.
+    [x] Pretty-print Json
+    [x] Query fields for use in shell scripts.
+    [ ] Encode user-provided JSON strings
     [ ] json man page
 
 [ ] Move configuration to database
