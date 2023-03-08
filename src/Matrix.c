@@ -130,7 +130,7 @@ MatrixHttpHandler(HttpServerContext * context, void *argp)
 
         stream = HttpStream(context);
 
-        JsonEncode(response, stream);
+        JsonEncode(response, stream, JSON_DEFAULT);
         JsonFree(response);
 
         fprintf(stream, "\n");

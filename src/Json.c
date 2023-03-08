@@ -561,7 +561,7 @@ JsonDecodeString(FILE * in)
 }
 
 void
-JsonEncodeValue(JsonValue * value, FILE * out)
+JsonEncodeValue(JsonValue * value, FILE * out, int level)
 {
     size_t i;
     size_t len;
@@ -570,23 +570,30 @@ JsonEncodeValue(JsonValue * value, FILE * out)
     switch (value->type)
     {
         case JSON_OBJECT:
-            JsonEncode(value->as.object, out);
+            JsonEncode(value->as.object, out, level >= 0 ? level : level);
             break;
         case JSON_ARRAY:
             arr = value->as.array;
             len = ArraySize(arr);
 
             fputc('[', out);
-
             for (i = 0; i < len; i++)
             {
-                JsonEncodeValue(ArrayGet(arr, i), out);
+                if (level >= 0)
+                {
+                    fprintf(out, "\n%*s", level + 2, "");
+                }
+                JsonEncodeValue(ArrayGet(arr, i), out, level >= 0 ? level + 2 : level);
                 if (i < len - 1)
                 {
                     fputc(',', out);
                 }
             }
 
+            if (level >= 0)
+            {
+                fprintf(out, "\n%*s", level, "");
+            }
             fputc(']', out);
             break;
         case JSON_STRING:
@@ -617,7 +624,7 @@ JsonEncodeValue(JsonValue * value, FILE * out)
 }
 
 int
-JsonEncode(HashMap * object, FILE * out)
+JsonEncode(HashMap * object, FILE * out, int level)
 {
     size_t index;
     size_t count;
@@ -636,22 +643,46 @@ JsonEncode(HashMap * object, FILE * out)
     }
 
     fputc('{', out);
+    if (level >= 0)
+    {
+        fputc('\n', out);
+    }
 
     index = 0;
     while (HashMapIterate(object, &key, (void **) &value))
     {
+        if (level >= 0)
+        {
+            fprintf(out, "%*s", level + 2, "");
+        }
+
         JsonEncodeString(key, out);
+
         fputc(':', out);
-        JsonEncodeValue(value, out);
+        if (level >= 0)
+        {
+            fputc(' ', out);
+        }
+
+        JsonEncodeValue(value, out, level >= 0 ? level + 2 : level);
 
         if (index < count - 1)
         {
             fputc(',', out);
         }
 
+        if (level >= 0)
+        {
+            fputc('\n', out);
+        }
+
         index++;
     }
 
+    if (level >= 0)
+    {
+        fprintf(out, "%*s", level, "");
+    }
     fputc('}', out);
 
     return 1;

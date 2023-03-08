@@ -20,15 +20,17 @@ Milestone: v0.3.0
     [ ] HttpClient man page
     [ ] Uri man page
     [ ] Test on other platforms
-[ ] Option to pretty-print Json
+[~] Option to pretty-print Json
+    [ ] Document JsonEncode() and JsonEncodeValue()
+[ ] Update man page for td
 
 [~] Simple command line tool to make matrix requests
     [x] Built on HTTP client API
     [ ] http man page
 [~] Simple command line tool for working with JSON
-    - Like a simpler version of jq
-    - Should pretty-print Json
-    - Should be able to query fields for use in shell scripts.
+    [x] Should pretty-print Json
+    [ ] Query fields for use in shell scripts.
+    [ ] json man page
 
 [ ] Move configuration to database
     [ ] Initial configuration

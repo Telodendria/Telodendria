@@ -74,7 +74,7 @@ CanonicalJsonEncodeValue(JsonValue * value, FILE * out)
             fputc(']', out);
             break;
         default:
-            JsonEncodeValue(value, out);
+            JsonEncodeValue(value, out, JSON_DEFAULT);
             break;
     }
 }

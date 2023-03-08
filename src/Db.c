@@ -752,7 +752,7 @@ DbUnlock(Db * db, DbRef * ref)
         return 0;
     }
 
-    JsonEncode(ref->json, ref->fp);
+    JsonEncode(ref->json, ref->fp, JSON_DEFAULT);
 
     fflush(ref->fp);
     fclose(ref->fp);

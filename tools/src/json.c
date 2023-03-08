@@ -38,7 +38,7 @@ main(int argc, char **argv)
         return 1;
     }
 
-    JsonEncode(json, stdout);
+    JsonEncode(json, stdout, JSON_PRETTY);
     printf("\n");
 
     return 0;

@@ -31,6 +31,9 @@
 #include <stdio.h>
 #include <stddef.h>
 
+#define JSON_DEFAULT -1
+#define JSON_PRETTY 0
+
 typedef enum JsonType
 {
     JSON_NULL,
@@ -96,10 +99,10 @@ extern void
  JsonEncodeString(const char *, FILE *);
 
 extern void
- JsonEncodeValue(JsonValue * value, FILE * out);
+ JsonEncodeValue(JsonValue * value, FILE * out, int);
 
 extern int
- JsonEncode(HashMap *, FILE *);
+ JsonEncode(HashMap *, FILE *, int);
 
 extern HashMap *
  JsonDecode(FILE *);
