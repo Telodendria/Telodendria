@@ -30,7 +30,7 @@ Milestone: v0.3.0
 [~] Simple command line tool for working with JSON
     [x] Pretty-print Json
     [x] Query fields for use in shell scripts.
-    [ ] Encode user-provided JSON strings
+    [x] Encode user-provided JSON strings
     [ ] json man page
 
 [ ] Move configuration to database

@@ -30,94 +30,91 @@
 #include <Memory.h>
 #include <Json.h>
 
-int
-main(int argc, char **argv)
+#define FLAG_ENCODE (1 << 0)
+#define FLAG_SELECT (1 << 1)
+
+static void
+usage(char *prog)
 {
-    HashMap *json;
+    fprintf(stderr, "Usage: %s [-s query|-e str]\n", prog);
+}
 
-    json = JsonDecode(stdin);
+static void
+query(char *select, HashMap * json)
+{
+    char *key;
+    JsonValue *val = JsonValueObject(json);
 
-    if (!json)
+    key = strtok(select, "->");
+
+    while (key)
     {
-        fprintf(stderr, "Malformed JSON.\n");
-        return 1;
-    }
+        char keyName[128];
+        size_t arrInd;
+        int expectArr = 0;
+        int func = 0;
 
-    if (argc > 1)
-    {
-        char *select = argv[1];
-        char *key;
-        JsonValue *val = JsonValueObject(json);
+        expectArr = (sscanf(key, "%127[^[][%lu]", keyName, &arrInd) == 2);
 
-        key = strtok(select, "->");
-
-        while (key)
+        if (keyName[0] == '@')
         {
-            char keyName[128];
-            size_t arrInd;
-            int expectArr = 0;
-            int func = 0;
-
-            expectArr = (sscanf(key, "%127[^[][%lu]", keyName, &arrInd) == 2);
-
-            if (keyName[0] == '@')
+            if (strcmp(keyName + 1, "length") == 0)
             {
-                if (strcmp(keyName + 1, "length") == 0)
+                switch (JsonValueType(val))
                 {
-                    switch (JsonValueType(val))
-                    {
-                        case JSON_ARRAY:
-                            val = JsonValueInteger(ArraySize(JsonValueAsArray(val)));
-                            break;
-                        case JSON_STRING:
-                            val = JsonValueInteger(strlen(JsonValueAsString(val)));
-                            break;
-                        default:
-                            val = NULL;
-                            break;
-                    }
+                    case JSON_ARRAY:
+                        val = JsonValueInteger(ArraySize(JsonValueAsArray(val)));
+                        break;
+                    case JSON_STRING:
+                        val = JsonValueInteger(strlen(JsonValueAsString(val)));
+                        break;
+                    default:
+                        val = NULL;
+                        break;
                 }
-                else if (JsonValueType(val) == JSON_OBJECT && strcmp(keyName + 1, "keys") == 0)
-                {
-                    HashMap *obj = JsonValueAsObject(val);
-                    Array *arr = ArrayCreate();
-                    char *k;
-                    void *v;
-
-                    while (HashMapIterate(obj, &k, &v))
-                    {
-                        ArrayAdd(arr, JsonValueString(k));
-                    }
-
-                    val = JsonValueArray(arr);
-                }
-                else if (JsonValueType(val) == JSON_STRING && strcmp(keyName + 1, "decode") == 0)
-                {
-                    printf("%s", JsonValueAsString(val));
-                    val = NULL;
-                    break;
-                }
-                else
-                {
-                    val = NULL;
-                    break;
-                }
-
-                func = 1;
             }
-            else if (keyName[0] == '!')
+            else if (JsonValueType(val) == JSON_OBJECT && strcmp(keyName + 1, "keys") == 0)
             {
-                if (JsonValueType(val) == JSON_OBJECT)
-                {
-                    HashMap *obj = JsonValueAsObject(val);
+                HashMap *obj = JsonValueAsObject(val);
+                Array *arr = ArrayCreate();
+                char *k;
+                void *v;
 
-                    JsonValueFree(HashMapDelete(obj, keyName + 1));
+                while (HashMapIterate(obj, &k, &v))
+                {
+                    ArrayAdd(arr, JsonValueString(k));
                 }
-                else if (JsonValueType(val) == JSON_ARRAY)
-                {
-                    size_t i;
 
-                    sscanf(keyName + 1, "%lu", &i);
+                val = JsonValueArray(arr);
+            }
+            else if (JsonValueType(val) == JSON_STRING && strcmp(keyName + 1, "decode") == 0)
+            {
+                printf("%s\n", JsonValueAsString(val));
+                val = NULL;
+                break;
+            }
+            else
+            {
+                val = NULL;
+                break;
+            }
+
+            func = 1;
+        }
+        else if (keyName[0] == '!')
+        {
+            if (JsonValueType(val) == JSON_OBJECT)
+            {
+                HashMap *obj = JsonValueAsObject(val);
+
+                JsonValueFree(HashMapDelete(obj, keyName + 1));
+            }
+            else if (JsonValueType(val) == JSON_ARRAY)
+            {
+                size_t i;
+
+                if (sscanf(keyName + 1, "%lu", &i) == 1)
+                {
                     JsonValueFree(ArrayDelete(JsonValueAsArray(val), i));
                 }
                 else
@@ -125,47 +122,107 @@ main(int argc, char **argv)
                     val = NULL;
                     break;
                 }
-
-                func = 1;
             }
-
-            if (!func)
+            else
             {
-                if (JsonValueType(val) == JSON_OBJECT)
-                {
-                    val = HashMapGet(JsonValueAsObject(val), keyName);
-                }
-                else
-                {
-                    val = NULL;
-                    break;
-                }
-            }
-
-            if (expectArr && JsonValueType(val) == JSON_ARRAY)
-            {
-                val = ArrayGet(JsonValueAsArray(val), arrInd);
-            }
-
-            if (!val)
-            {
+                val = NULL;
                 break;
             }
 
-            key = strtok(NULL, "->");
+            func = 1;
         }
 
-        if (val)
+        if (!func)
         {
-            JsonEncodeValue(val, stdout, JSON_PRETTY);
+            if (JsonValueType(val) == JSON_OBJECT)
+            {
+                val = HashMapGet(JsonValueAsObject(val), keyName);
+            }
+            else
+            {
+                val = NULL;
+                break;
+            }
         }
 
+        if (expectArr && JsonValueType(val) == JSON_ARRAY)
+        {
+            val = ArrayGet(JsonValueAsArray(val), arrInd);
+        }
+
+        if (!val)
+        {
+            break;
+        }
+
+        key = strtok(NULL, "->");
+    }
+
+    if (val)
+    {
+        JsonEncodeValue(val, stdout, JSON_PRETTY);
         printf("\n");
     }
-    else
+}
+
+static void
+encode(char *str)
+{
+    JsonValue *val = JsonValueString(str);
+
+    JsonEncodeValue(val, stdout, JSON_DEFAULT);
+    JsonValueFree(val);
+    printf("\n");
+}
+
+int
+main(int argc, char **argv)
+{
+    HashMap *json;
+    int flag = 0;
+    int ch;
+    char *input;
+
+    while ((ch = getopt(argc, argv, "s:e:")) != -1)
     {
-        JsonEncode(json, stdout, JSON_PRETTY);
-        JsonFree(json);
+        switch (ch)
+        {
+            case 's':
+                flag = FLAG_SELECT;
+                input = optarg;
+                break;
+            case 'e':
+                flag = FLAG_ENCODE;
+                input = optarg;
+                break;
+            default:
+                usage(argv[0]);
+                return 1;
+        }
+    }
+
+    if (flag != FLAG_ENCODE)
+    {
+        json = JsonDecode(stdin);
+
+        if (!json)
+        {
+            fprintf(stderr, "Malformed JSON.\n");
+            return 1;
+        }
+    }
+
+    switch (flag)
+    {
+        case FLAG_SELECT:
+            query(input, json);
+            break;
+        case FLAG_ENCODE:
+            encode(input);
+            break;
+        default:
+            JsonEncode(json, stdout, JSON_PRETTY);
+            break;
     }
 
     MemoryFreeAll();
