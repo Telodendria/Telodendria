@@ -22,8 +22,9 @@ Milestone: v0.3.0
     [ ] Test on other platforms
 [ ] Option to pretty-print Json
 
-[x] Simple command line tool to make matrix requests
-    - Built on HTTP client API
+[~] Simple command line tool to make matrix requests
+    [x] Built on HTTP client API
+    [ ] http man page
 [ ] Simple command line tool for working with JSON
     - Like a simpler version of jq
     - Should pretty-print Json
