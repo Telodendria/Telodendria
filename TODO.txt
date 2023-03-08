@@ -18,6 +18,7 @@ Milestone: v0.3.0
 [~] HTTP Client API
     [ ] Document HttpParseHeaders()
     [ ] HttpClient man page
+    [ ] Uia man page
     [ ] Test on other platforms
 [ ] Option to pretty-print Json
 

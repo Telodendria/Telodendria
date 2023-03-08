@@ -40,6 +40,9 @@ extern HttpClientContext *
 extern void
  HttpRequestHeader(HttpClientContext *, char *, char *);
 
+extern void
+HttpRequestSendHeaders(HttpClientContext *);
+
 extern HttpStatus
  HttpRequestSend(HttpClientContext *);
 

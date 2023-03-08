@@ -75,8 +75,6 @@ HttpRequest(HttpRequestMethod method, int flags, unsigned short port, char *host
         sprintf(serv, "%hu", port);
     }
 
-    printf("serv = %s\n", serv);
-
     /* TODO: Not supported yet */
     if (flags & HTTP_TLS)
     {
@@ -157,6 +155,18 @@ HttpRequestHeader(HttpClientContext * context, char *key, char *val)
     fprintf(context->stream, "%s: %s\r\n", key, val);
 }
 
+void
+HttpRequestSendHeaders(HttpClientContext * context)
+{
+    if (!context)
+    {
+        return;
+    }
+
+    fprintf(context->stream, "\r\n");
+    fflush(context->stream);
+}
+
 HttpStatus
 HttpRequestSend(HttpClientContext * context)
 {
@@ -171,9 +181,6 @@ HttpRequestSend(HttpClientContext * context)
     {
         return 0;
     }
-
-    fprintf(context->stream, "\r\n");
-    fflush(context->stream);
 
     lineLen = UtilGetLine(&line, &lineSize, context->stream);
 

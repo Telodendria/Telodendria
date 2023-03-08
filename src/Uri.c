@@ -49,7 +49,7 @@ UriParse(const char *str)
 
     res = sscanf(str, "%7[^:]://%127[^:]:%hu%255[^\n]", uri->proto, uri->host, &uri->port, uri->path) == 4
             || sscanf(str, "%7[^:]://%127[^/]%255[^\n]", uri->proto, uri->host, uri->path) == 3
-            || sscanf(str, "%7[^:]://%127[^:]%hu[^\n]", uri->proto, uri->host, &uri->port) == 3
+            || sscanf(str, "%7[^:]://%127[^:]:%hu[^\n]", uri->proto, uri->host, &uri->port) == 3
             || sscanf(str, "%7[^:]://%127[^\n]", uri->proto, uri->host) == 2;
 
     if (!res)
