@@ -23,6 +23,7 @@ Milestone: v0.3.0
 [~] Option to pretty-print Json
     [ ] Document JsonEncode() and JsonEncodeValue()
 [ ] Update man page for td
+[ ] Document Telodendria and Main
 
 [~] Simple command line tool to make matrix requests
     [x] Built on HTTP client API

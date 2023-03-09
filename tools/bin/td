@@ -35,7 +35,7 @@
 CFLAGS="${CFLAGS} ${DEFINES} ${INCLUDES}"
 LDFLAGS="${LDFLAGS} ${STATIC}"
 
-MAIN="Telodendria"
+MAIN="Main"
 
 if [ "$DEBUG" = "1" ]; then
     CFLAGS="$CFLAGS -O0 -g -pg"

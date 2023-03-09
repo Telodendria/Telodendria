@@ -198,7 +198,7 @@ HttpRequestSend(HttpClientContext * context)
 
     tmp = line + 9;
 
-    while (isspace(*tmp) && *tmp != '\0')
+    while (isspace((unsigned char) *tmp) && *tmp != '\0')
     {
         tmp++;
     }

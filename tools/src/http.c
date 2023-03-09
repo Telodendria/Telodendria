@@ -98,7 +98,7 @@ main(int argc, char **argv)
                 *val = '\0';
                 val++;
 
-                while (*val && isspace(*val))
+                while (*val && isspace((unsigned char) *val))
                 {
                     val++;
                 }

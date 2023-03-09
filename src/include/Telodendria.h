@@ -24,6 +24,9 @@
 #ifndef TELODENDRIA_H
 #define TELODENDRIA_H
 
+#include <Memory.h>
+#include <Log.h>
+
 #define TELODENDRIA_LOGO_WIDTH 56
 #define TELODENDRIA_LOGO_HEIGHT 22
 
@@ -36,4 +39,15 @@ extern const char
 extern const char
  TelodendriaHeader[TELODENDRIA_HEADER_HEIGHT][TELODENDRIA_HEADER_WIDTH];
 
+extern void
+TelodendriaHexDump(size_t, char *, char *, void *);
+
+extern void
+TelodendriaMemoryHook(MemoryAction, MemoryInfo *, void *);
+
+extern void
+TelodendriaMemoryIterator(MemoryInfo *, void *);
+
+extern void
+TelodendriaPrintHeader(LogConfig *lc);
 #endif
