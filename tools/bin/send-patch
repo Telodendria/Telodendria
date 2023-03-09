@@ -17,154 +17,147 @@ HS_NAME="$(echo "$MXID" | sed "s/\@\(.*\)\:\(.*\)/\2/")"
 
 # Prompts the user for a password, while disabling echo-ing.
 readpwd() {
-	printf "$1"
-	stty -echo -ctlecho
-	read -r "$2"; echo
-	stty echo ctlecho
+    printf "$1"
+    stty -echo -ctlecho
+    read -r "$2"
+    echo
+    stty echo ctlecho
 }
 
 # Calls curl, setting the RETURN variable for the actual
 # reply from the server and the ERROR_CODE variable for a
 # HTTP error code.
 curlec() {
-	RETURN="$(curl -w "\n%{http_code}" "$@" 2> /dev/null)"
-	ERROR_CODE="$(echo "$RETURN" | tail -n1)"
-	RETURN="$(echo "$RETURN" | sed '$d')"
+    RETURN="$(curl -w "\n%{http_code}" "$@" 2>/dev/null)"
+    ERROR_CODE="$(echo "$RETURN" | tail -n1)"
+    RETURN="$(echo "$RETURN" | sed '$d')"
 }
 
 # Prompts user to login and gives out an access token to use
 # in the ACCESS_TOKEN variable
 matrix_login() {
-	# Check authentication methods
-	echo "Checking authentication methods..."
-	curlec "$HS_BASE/_matrix/client/v3/login"
-	AUTH_METHODS=$RETURN
-	if [ $ERROR_CODE -ne 200 ]; then
-		echo "Homeserver does not support login."
-		exit 1;
-	fi;
-	SUPPORTS_PASSWORD="$(echo "$AUTH_METHODS" | jq -r '.flows[].type' | grep "m.login.password" | wc -l)"
-	if [ $SUPPORTS_PASSWORD -lt 1 ]; then
-		echo "Homeserver does not support password authentication."
-		exit 1;
-	fi;
-	# Homeserver does support password authentication, so request
-	# them one.
-	if [ -z "$MXPW" ]; then
-		readpwd "Enter your Matrix password: " MXPW
-	fi
-	# Tries to login using the "Telodendria Patch Script" device
-	# name
-	JSON="$(jq --null-input \
-		--arg username "$UR_NAME" \
-		--arg password "$MXPW" \
-		--arg idtype "m.id.user" \
-		--arg passwordtype "m.login.password" \
-		'{
-			"identifier": {
-				"type": $idtype, 
-				"user": $username
-			}, 
-			"initial_device_display_name": "Telodendria Patch Script", 
-			"type": $passwordtype, 
-			"password": $password
-		}')"
-	curlec -X POST $HS_BASE/_matrix/client/v3/login --data "$JSON"
-	LOGIN=$RETURN
-	if [ $ERROR_CODE -ne 200 ]; then
-		echo "Login failed."
-		exit 1;
-	fi;
-	ACCESS_TOKEN="$(echo "$LOGIN" | jq -r .access_token)"
+    # Check authentication methods
+    echo "Checking authentication methods..."
+    curlec "$HS_BASE/_matrix/client/v3/login"
+    AUTH_METHODS=$RETURN
+    if [ $ERROR_CODE -ne 200 ]; then
+        echo "Homeserver does not support login."
+        exit 1
+    fi
+    if ! echo "$AUTH_METHODS" | grep "m.login.password" >/dev/null; then
+        echo "Homeserver does not support password authentication."
+        exit 1
+    fi
+    # Homeserver does support password authentication, so request
+    # them one.
+    if [ -z "$MXPW" ]; then
+        readpwd "Enter your Matrix password: " MXPW
+    fi
+    # Tries to login using the "Telodendria Patch Script" device
+    # name
+    JSON=$(
+        printf '{'
+        printf '  "identifier": {'
+        printf '    "type": "m.id.user",'
+        printf '    "user": %s' "$(json -e $UR_NAME)"
+        printf '  },'
+        printf '  "initial_device_display_name": "Telodendria Patch Script",'
+        printf '  "type": "m.login.password",'
+        printf '  "password": %s' "$(json -e $MXPW)"
+        printf '}'
+    )
+    curlec -X POST -d "$JSON" $HS_BASE/_matrix/client/v3/login
+    LOGIN=$RETURN
+    if [ $ERROR_CODE -ne 200 ]; then
+        echo "Login failed."
+        exit 1
+    fi
+    ACCESS_TOKEN=$(echo "$LOGIN" | json -s "access_token->@decode")
 }
 
 # Logs out of Matrix using the ACFESS_TOKEN environment variable
 matrix_logout() {
-	if [ -z "$ACCESS_TOKEN" ]; then
-		echo "No access token"
-		exit 1
-	fi
-	curlec -X POST $HS_BASE/_matrix/client/v3/logout -H "Authorization: Bearer $ACCESS_TOKEN"
-	LOGOUT=$RETURN
-	if [ $ERROR_CODE -ne 200 ]; then
-		echo "Logout failed."
-		exit 1
-	fi;
-	echo "Logged out."
+    if [ -z "$ACCESS_TOKEN" ]; then
+        echo "No access token"
+        exit 1
+    fi
+    curlec -X POST $HS_BASE/_matrix/client/v3/logout -H "Authorization: Bearer $ACCESS_TOKEN"
+    LOGOUT=$RETURN
+    if [ $ERROR_CODE -ne 200 ]; then
+        echo "Logout failed."
+        exit 1
+    fi
+    echo "Logged out."
 }
 
 send_patch() {
-	if [ -z "$ACCESS_TOKEN" ]; then
-		matrix_login
-		DO_LOGOUT=1
-	fi
-	# We are sucessfully logged in as our user, now let's 
-	# try to upload and post our patch
-	echo "$PATCHFILE"
-	curlec -X POST "$HS_BASE/_matrix/media/v3/upload" \
-		-H "Content-Type: text/x-patch" \
-		-H "Authorization: Bearer $ACCESS_TOKEN" \
-		-T "$PATCHFILE"
-	MXCID=$RETURN
-	if [ $ERROR_CODE -ne 200 ]; then
-		echo "Upload failed."
-		matrix_logout
-		exit 1;
-	fi;
-	MXCID="$(echo "$MXCID" | jq -r .content_uri)"
-	echo "MXC ID: $MXCID"
-	JSON="$(jq --null-input \
-		--arg name "$(basename "$PATCHFILE")" \
-		--arg mxc "$MXCID" \
-		--arg msgtype "m.file" \
-		--argjson size "$(wc -c "$PATCHFILE" | cut -d" " -f1)" \
-		'{
-			"body": $name, 
-			"filename": $name,
-			"info": {
-				"mimetype": "text/x-patch", 
-				"size": $size
-			}, 
-			"msgtype": $msgtype, 
-			"url": $mxc
-		}')"
-	curl \
-		-X PUT \
-		-H "Authorization: Bearer $ACCESS_TOKEN" \
-		"$HS_BASE/_matrix/client/v3/rooms/$PATCHES_ROOM/send/m.room.message/$(date +%s)" \
-		--data "$JSON" 2> /dev/null > /dev/null && echo "Patch sent."
+    if [ -z "$ACCESS_TOKEN" ]; then
+        matrix_login
+        DO_LOGOUT=1
+    fi
+    # We are sucessfully logged in as our user, now let's
+    # try to upload and post our patch
+    echo "$PATCHFILE"
+    curlec -X POST "$HS_BASE/_matrix/media/v3/upload" \
+        -H "Content-Type: text/x-patch" \
+        -H "Authorization: Bearer $ACCESS_TOKEN" \
+        -T "$PATCHFILE"
+    MXCID=$RETURN
+    if [ $ERROR_CODE -ne 200 ]; then
+        echo "Upload failed."
+        matrix_logout
+        exit 1
+    fi
+    MXCID=$(echo "$MXCID" | json -s "content_uri->@decode")
+    echo "MXC ID: $MXCID"
+    JSON=$(
+        base=$(basename "$PATCHFILE")
+        printf '{'
+        printf '  "body": %s,' "$(json -e $base)"
+        printf '  "filename": %s,' "$(json -e $base)"
+        printf '  "info": {'
+        printf '    "mimetype": "text/x-patch",'
+        printf '    "size": %d' $(wc -c "$PATCHFILE" | awk '{print $1}')
+        printf '  },'
+        printf '  "msgtype": "m.file",'
+        printf '  "url": %s' "$(json -e $MXCID)"
+        printf '}'
+    )
+    curl -X PUT -d "$JSON" -H "Authorization: Bearer $ACCESS_TOKEN" \
+        "$HS_BASE/_matrix/client/v3/rooms/$PATCHES_ROOM/send/m.room.message/$(date +%s)" \
+        2>/dev/null >/dev/null && echo "Patch sent."
 
-	# Log out if we generated an access token
-	if [ "$DO_LOGOUT" -eq "1" ]; then
-		matrix_logout
-	fi
+    # Log out if we generated an access token
+    if [ "$DO_LOGOUT" -eq "1" ]; then
+        matrix_logout
+    fi
 }
 
 # Check if the patch file is valid.
 if [ "$(basename "$PATCHFILE" .patch)" = "$PATCHFILE" ] || [ ! -f "$PATCHFILE" ]; then
-	echo "Format: $0 file.patch"
-	exit 1
+    echo "Format: $0 file.patch"
+    exit 1
 fi
 echo "Sending file '$PATCHFILE'"
 echo "Checking homeserver's real address using .well-known..."
 curlec "https://$HS_NAME/.well-known/matrix/client"
-case "$ERROR_CODE" in 
-	"200")
-		WELL_KNOWN=$RETURN
-		if [ -z "$WELL_KNOWN" ]; then
-		       	echo "well-known test returned 200 but no correct input was given."
-			exit 1
-		fi
-		# well-known entry is correct, we can now store our base endpoint
-		HS_BASE="$(printf "$WELL_KNOWN" | jq -r '.["m.homeserver"].base_url')" && send_patch
-		;;
-	* )
-		echo "$ERROR_CODE"
+case "$ERROR_CODE" in
+    "200")
+        WELL_KNOWN=$RETURN
+        if [ -z "$WELL_KNOWN" ]; then
+            echo "well-known test returned 200 but no correct input was given."
+            exit 1
+        fi
+        # well-known entry is correct, we can now store our base endpoint
+        HS_BASE=$(printf "$WELL_KNOWN" | json -s "m.homeserver->base_url->@decode") && send_patch
+        ;;
+    *)
+        echo "$ERROR_CODE"
 
-		echo "well-known test failed."
-		printf "Please enter your homeserver base URL: "
-		read -r HS_BASE; echo
-		send_patch
-		;;
+        echo "well-known test failed."
+        printf "Please enter your homeserver base URL: "
+        read -r HS_BASE
+        echo
+        send_patch
+        ;;
 esac
-
