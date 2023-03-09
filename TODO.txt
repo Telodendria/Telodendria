@@ -19,7 +19,7 @@ Milestone: v0.3.0
     [ ] Document HttpParseHeaders()
     [ ] HttpClient man page
     [ ] Uri man page
-    [ ] Test on other platforms
+    [x] Test on other platforms
 [~] Option to pretty-print Json
     [ ] Document JsonEncode() and JsonEncodeValue()
 [ ] Update man page for td

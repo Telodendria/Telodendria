@@ -148,4 +148,3 @@ TelodendriaPrintHeader(LogConfig * lc)
         "Documentation/Support: https://telodendria.io");
     Log(lc, LOG_INFO, "");
 }
-

@@ -40,14 +40,15 @@ extern const char
  TelodendriaHeader[TELODENDRIA_HEADER_HEIGHT][TELODENDRIA_HEADER_WIDTH];
 
 extern void
-TelodendriaHexDump(size_t, char *, char *, void *);
+ TelodendriaHexDump(size_t, char *, char *, void *);
 
 extern void
-TelodendriaMemoryHook(MemoryAction, MemoryInfo *, void *);
+ TelodendriaMemoryHook(MemoryAction, MemoryInfo *, void *);
 
 extern void
-TelodendriaMemoryIterator(MemoryInfo *, void *);
+ TelodendriaMemoryIterator(MemoryInfo *, void *);
 
 extern void
-TelodendriaPrintHeader(LogConfig *lc);
+ TelodendriaPrintHeader(LogConfig * lc);
+
 #endif
