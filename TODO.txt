@@ -32,6 +32,7 @@ Milestone: v0.3.0
     [x] Query fields for use in shell scripts.
     [x] Encode user-provided JSON strings
     [ ] json man page
+    [ ] Update man pages for tp and send-patch
 
 [ ] Move configuration to database
     [ ] Initial configuration
