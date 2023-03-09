@@ -5,7 +5,7 @@ echo "-----------------------------------"
 echo
 echo "Tools available:"
 find tools/bin -type f | grep -v CVS | grep -v '#' | while IFS= read -r tool; do
-    echo "- $(basename $tool)"
+    echo "* $(basename $tool)"
 	chmod +x "$tool"
 done
 
@@ -13,7 +13,7 @@ missing=0
 
 for tool in $(find tools/src -type f -name '*.c'); do
     base=$(basename "$tool" .c)
-    printf "- $base"
+    printf "* $base"
     if [ ! -f "build/tools/$base" ]; then
         printf ' (missing)'
         missing=1
