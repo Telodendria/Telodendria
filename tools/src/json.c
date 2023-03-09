@@ -181,7 +181,7 @@ main(int argc, char **argv)
     HashMap *json;
     int flag = 0;
     int ch;
-    char *input;
+    char *input = NULL;
 
     while ((ch = getopt(argc, argv, "s:e:")) != -1)
     {
