@@ -1,5 +1,5 @@
-.Dd $Mdocdate: November 27 2022 $
-.Dt SEND-PATCH 8
+.Dd $Mdocdate: March 10 2023 $
+.Dt SEND-PATCH 1
 .Os Telodendria Project
 .Sh NAME
 .Nm send-patch
@@ -11,11 +11,14 @@
 .Nm
 is a simple shell script for submitting patch files to Telodendria's patch
 room for review. Do note that it depends on
-.Xr jq 1
+.Xr json 1
 and
 .Xr curl 1 ,
-and so may not work out of the box on some systems. However, these tools are
-readily available for most systems. Please consult your package manager's
+and so may not work out of the box on some systems. However,
+.Xr json 1
+ships with Telodendria, and
+.Xr curl 1
+is readily available for most systems. Please consult your package manager's
 manual for installing packages.
 .Pp
 .Nm
@@ -54,10 +57,10 @@ password authentication flow.
 does utilize the
 .Pa .env
 file, just like
-.Xr td 8 .
+.Xr td 1 .
 Consult that page for the specifics of the
 .Pa .env
 file.
 .Sh SEE ALSO
-.Xr td 8
+.Xr td 1
 

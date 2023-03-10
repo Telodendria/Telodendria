@@ -1,4 +1,4 @@
-.Dd $Mdocdate: March 8 2023 $
+.Dd $Mdocdate: March 10 2023 $
 .Dt TELODENDRIA-CHANGELOG 7
 .Os Telodendria Project
 .Sh NAME
@@ -38,13 +38,104 @@ support, an HTTP client, and more! The third major release of
 packs a lot of general improvements on top of supporting more of
 the Matrix specification.
 .Pp
+Matrix Specification:
 .Bl -bullet
 .It
-Added a simple HTTP client API, which will be used for federation.
-This release also ships with a simple command line tool similar to
+Added support for the
+.Pa /_matrix/client/v3/account/whoami
+endpoint.
+.El
+.Pp
+New Features:
+.Bl -bullet
+.It
+Added a new
+.Xr HttpClient 3
+API for making HTTP requests. This will eventually be used for
+federating with other Matrix homeservers.
+.It
+Added support for pretty-printing JSON to
+.Xr Json 3 .
+.Nm
+itself doesn't pretty-print JSON, but this is useful for debugging
+and building useful tools.
+.It
+Added a handful of useful development tools built on the
+.Nm
+APIs. New tools include
+.Xr http 1 ,
+a command line tool for making HTTP requests, similar to
+.Xr curl 1 ,
+.Xr json 1 ,
+a command line tool for working with JSON, similar to
+.Xr jq 1 ,
+and
+.Xr http-debug-server 1 ,
+a simple HTTP server that just prints requests out to standard
+output and returns an empty JSON object. 
+.Nm http
+and
+.Nm json
+are replacements for
 .Xr curl 1
-that can be used for testing
-.Nm .
+and
+.Xr jq 1
+that build on the
+.Xr HttpClient 3
+and
+.Xr Json
+APIs. They exist mainly to test those APIs, but also to reduce
+the number of dependencies that
+.Nm
+has.
+.Nm http-debug-server
+exists to test the
+.Xr HttpServer 3
+and
+.Xr HttpClient
+APIs.
+.It
+Replaced all usage of
+.Xr jq 1
+with the new
+.Xr json 1
+tool.
+.Xr jq 1
+is no longer a development dependency.
+.It
+Added a new
+.Xr tt 1
+script for easily making Matrix requests against
+.Nm
+in development.
+.El
+.Pp
+Fixes and general improvements:
+.Bl -bullet
+.It
+Fixed a few warnings that were generated on some obscure compilers.
+.It
+Moved the
+.Fn main
+function into its own file to make it easier to link other programs
+with the
+.Nm
+APIs.
+.It
+Fixed the development tools environment setup script. Apparently
+using a hyphen as a bullet point is not very portable, because some
+shell implementations of
+.Xr printf 1
+interpret it as a flag. Switched to an asterisk instead.
+.It
+Fixed some intermittent I/O errors that would occur as a result of 
+race conditions in
+.Fn JsonConsumeWhitespace .
+This function, and a few others, expect I/O to be blocking, but
+the
+.Xr HttpServer 3
+sets up I/O to be non-blocking, leading to occasional failures in
+JSON parsing.
 .El
 .Sh v0.2.1
 .Pp
@@ -141,7 +232,7 @@ Misc:
 .Bl -bullet
 .It
 Fixed a bug in
-.Xr td 8
+.Xr td 1 
 that caused
 .Xr cvs 1
 to be invoked in the wrong directory when tagging a new release.
