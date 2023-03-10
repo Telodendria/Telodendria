@@ -222,6 +222,7 @@ main(int argc, char **argv)
             break;
         default:
             JsonEncode(json, stdout, JSON_PRETTY);
+            printf("\n");
             break;
     }
 
