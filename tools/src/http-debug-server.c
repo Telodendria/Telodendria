@@ -47,6 +47,8 @@ HttpHandle(HttpServerContext * cx, void *args)
 
     size_t bytes;
 
+    (void) args;
+
     printf("%s %s\n", HttpRequestMethodToString(method),
            HttpRequestPath(cx));
 
