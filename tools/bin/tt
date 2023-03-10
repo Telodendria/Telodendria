@@ -1,0 +1,48 @@
+#!/usr/bin/env sh
+
+BASE="http://localhost:8008"
+USERNAME="tt_user"
+PASSWORD=$(json -e 'p@s$w0rd')
+
+ENDPOINT="$1"
+
+# Check if user is available. If it is, register it.
+user_available=$(http "$BASE/_matrix/client/v3/register/available?username=$USERNAME" | json -s "available")
+if [ "$user_available" = "true" ]; then
+    session=$(echo '{}' | http -X POST "$BASE/_matrix/client/v3/register" | json -s "session->@decode")
+    (
+        printf '{'
+        printf '  "auth": {'
+        printf '    "type": "m.login.dummy",'
+        printf '    "session": %s' "$(json -e "$session")"
+        printf '  },'
+        printf '  "username": %s,' "$(json -e "$USERNAME")"
+        printf '  "password": %s,' "$PASSWORD"
+        printf '  "inhibit_login": true '
+        printf '}'
+    ) | http -X POST "$BASE/_matrix/client/v3/register" > /dev/null
+fi
+
+# Log in
+ACCESS_TOKEN=$((
+    printf '{'
+    printf '  "identifier": {'
+    printf '    "type": "m.id.user",'
+    printf '    "user": %s' "$(json -e "$USERNAME")"
+    printf '  },'
+    printf '  "type": "m.login.password",'
+    printf '  "password": %s' "$PASSWORD"
+    printf '}'
+) | http -X POST "$BASE/_matrix/client/v3/login" | json -s "access_token->@decode")
+
+if [ -z "$ACCESS_TOKEN" ]; then
+    echo "Unable to log in."
+    exit 1
+fi
+
+# Make request
+http -X POST -H "Authorization: Bearer $ACCESS_TOKEN" "$BASE$ENDPOINT" | json
+
+# Log out
+http -X POST -H "Authorization: Bearer $ACCESS_TOKEN" \
+    "$BASE/_matrix/client/v3/logout" > /dev/null

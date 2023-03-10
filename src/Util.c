@@ -302,7 +302,7 @@ UtilGetLine(char **linePtr, size_t * n, FILE * stream)
 }
 
 size_t
-UtilStreamCopy(FILE *in, FILE *out)
+UtilStreamCopy(FILE * in, FILE * out)
 {
     size_t bytes = 0;
     int c;

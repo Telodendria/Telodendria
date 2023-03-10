@@ -706,6 +706,7 @@ static int
 JsonConsumeWhitespace(JsonParserState * state)
 {
     int c;
+
     while (1)
     {
         c = fgetc(state->stream);

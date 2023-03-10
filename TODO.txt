@@ -25,6 +25,7 @@ Milestone: v0.3.0
     [ ] Document JsonEncode() and JsonEncodeValue()
 [ ] Update man page for td
 [ ] Document Telodendria and Main
+[ ] Document tt and http-debug-server
 
 [~] Simple command line tool to make matrix requests
     [x] Built on HTTP client API
