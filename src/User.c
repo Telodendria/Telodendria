@@ -81,7 +81,7 @@ UserHistoricalValidate(char *localpart, char *domain)
             return 0;
         }
 
-        if (!(c >= 0x21 && c <= 0x39) || (c >= 0x3B && c <= 0x7E))
+        if (!((c >= 0x21 && c <= 0x39) || (c >= 0x3B && c <= 0x7E)))
         {
             return 0;
         }

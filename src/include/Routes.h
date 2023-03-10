@@ -65,6 +65,7 @@ ROUTE(RouteLogin);                 /* /_matrix/client/(r0|v3)/login */
 ROUTE(RouteLogout);                /* /_matrix/client/(r0|v3)/logout */
 ROUTE(RouteRegister);              /* /_matrix/client/(r0|v3)/register */
 ROUTE(RouteRefresh);               /* /_matrix/client/(r0|v3)/refresh */
+ROUTE(RouteWhoami);                /* /_matrix/client/(r0|v3)/whoami */
 
 #undef ROUTE
 

@@ -63,7 +63,7 @@ matrix_login() {
         printf '  },'
         printf '  "initial_device_display_name": "Telodendria Patch Script",'
         printf '  "type": "m.login.password",'
-        printf '  "password": %s' "$(json -e $MXPW)"
+        printf '  "password": %s' "$(json -e "$MXPW")"
         printf '}'
     )
     curlec -X POST -d "$JSON" $HS_BASE/_matrix/client/v3/login

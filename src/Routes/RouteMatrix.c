@@ -86,6 +86,20 @@ ROUTE_IMPL(RouteMatrix, args)
         {
             response = RouteRefresh(args);
         }
+        else if (MATRIX_PATH_EQUALS(pathPart, "account"))
+        {
+            Free(pathPart);
+            pathPart = MATRIX_PATH_POP(args->path);
+            if (MATRIX_PATH_EQUALS(pathPart, "whoami"))
+            {
+                response = RouteWhoami(args);
+            }
+            else
+            {
+                HttpResponseStatus(args->context, HTTP_NOT_FOUND);
+                response = MatrixErrorCreate(M_NOT_FOUND);
+            }
+        }
         else
         {
             HttpResponseStatus(args->context, HTTP_NOT_FOUND);

@@ -50,11 +50,11 @@ Milestone: v0.3.0
             flow
             - Ensure that registration tokens can be used even if
               registration is disabled.
-    [ ] 4: Account management
+    [~] 4: Account management
         [ ] Deactivate
             [ ] Make sure UserLogin() fails if user is deactivated.
         [ ] Change password
-        [ ] Whoami
+        [x] Whoami
     [ ] 9: User Data
     [ ] 5: Capabilities negotiation
     [ ] 10: Security (Rate Limiting)
