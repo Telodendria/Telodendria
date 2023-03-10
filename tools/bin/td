@@ -126,7 +126,7 @@ recipe_build() {
         out=$(basename "$src" .c)
         out="build/tools/$out"
 
-        if [ $(mod_time "$src") -ge $(mod_time "$out") ]; then
+        if [ $(mod_time "$src") -ge $(mod_time "$out") ] || [ $do_rebuild -eq 1 ]; then
             echo "CC $(basename $out)"
             mkdir -p "$(dirname $out)"
             if ! $CC $CFLAGS $LDFLAGS -Isrc/include -o "$out" $objs "$src"; then

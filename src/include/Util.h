@@ -50,4 +50,7 @@ extern ssize_t
 extern ssize_t
  UtilGetLine(char **, size_t *, FILE *);
 
+extern size_t
+UtilStreamCopy(FILE *, FILE *);
+
 #endif                             /* TELODENDRIA_UTIL_H */

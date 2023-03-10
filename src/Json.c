@@ -31,6 +31,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <errno.h>
 
 struct JsonValue
 {
@@ -705,8 +706,33 @@ static int
 JsonConsumeWhitespace(JsonParserState * state)
 {
     int c;
+    while (1)
+    {
+        c = fgetc(state->stream);
 
-    while (isspace(c = fgetc(state->stream)));
+        if (feof(state->stream))
+        {
+            break;
+        }
+
+        if (ferror(state->stream))
+        {
+            if (errno == EAGAIN)
+            {
+                clearerr(state->stream);
+                continue;
+            }
+            else
+            {
+                break;
+            }
+        }
+
+        if (!isspace(c))
+        {
+            break;
+        }
+    }
 
     return c;
 }

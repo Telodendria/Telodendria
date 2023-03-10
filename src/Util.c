@@ -246,7 +246,7 @@ UtilGetDelim(char **linePtr, size_t * n, int delim, FILE * stream)
 
     while (1)
     {
-        c = getc(stream);
+        c = fgetc(stream);
 
         if (ferror(stream) || (c == EOF && curPos == *linePtr))
         {
@@ -299,4 +299,39 @@ ssize_t
 UtilGetLine(char **linePtr, size_t * n, FILE * stream)
 {
     return UtilGetDelim(linePtr, n, '\n', stream);
+}
+
+size_t
+UtilStreamCopy(FILE *in, FILE *out)
+{
+    size_t bytes = 0;
+    int c;
+
+    while (1)
+    {
+        c = fgetc(in);
+
+        if (feof(in))
+        {
+            break;
+        }
+
+        if (ferror(in))
+        {
+            if (errno == EAGAIN)
+            {
+                clearerr(in);
+                continue;
+            }
+            else
+            {
+                break;
+            }
+        }
+
+        fputc(c, out);
+        bytes++;
+    }
+
+    return bytes;
 }

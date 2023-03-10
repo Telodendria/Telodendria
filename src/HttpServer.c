@@ -444,7 +444,7 @@ HttpServerWorkerThread(void *args)
          * Every once in a while, we're too fast for the client. When this
          * happens, UtilGetLine() sets errno to EAGAIN. If we get
          * EAGAIN, then clear the error on the stream and try again
-         * after 1ms. This is typically more than enough time for the
+         * after a few ms. This is typically more than enough time for the
          * client to send data. */
         firstRead = UtilServerTs();
         while ((lineLen = UtilGetLine(&line, &lineSize, fp)) == -1
@@ -453,7 +453,7 @@ HttpServerWorkerThread(void *args)
             clearerr(fp);
 
             /* If the server is stopped, or it's been a while, just
-             * give up. */
+             * give up so we aren't wasting a thread on this client. */
             if (server->stop || (UtilServerTs() - firstRead) > 1000 * 30)
             {
                 goto finish;

@@ -182,6 +182,9 @@ HttpRequestSend(HttpClientContext * context)
         return 0;
     }
 
+    fflush(context->stream);
+    shutdown(fileno(context->stream), SHUT_WR);
+
     lineLen = UtilGetLine(&line, &lineSize, context->stream);
 
     /* Line must contain at least "HTTP/x.x xxx" */

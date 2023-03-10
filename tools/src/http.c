@@ -32,21 +32,9 @@
 #include <HashMap.h>
 #include <HttpClient.h>
 #include <Uri.h>
+#include <Util.h>
 
 #define FLAG_HEADERS (1 << 0)
-
-/* TODO: Will eventually be provided by the Stream API */
-static void
-StreamCopy(FILE * in, FILE * out)
-{
-    int c;
-
-    /* TODO: This should be buffered, not char-by-char */
-    while ((c = fgetc(in)) != EOF)
-    {
-        fputc(c, out);
-    }
-}
 
 static void
 usage(char *prog)
@@ -170,7 +158,7 @@ main(int argc, char **argv)
      * from blocking if no pipe is provided */
     if (!isatty(fileno(stdin)))
     {
-        StreamCopy(stdin, HttpClientStream(cx));
+        UtilStreamCopy(stdin, HttpClientStream(cx));
     }
 
     res = HttpRequestSend(cx);
@@ -197,7 +185,7 @@ main(int argc, char **argv)
         printf("\n");
     }
 
-    StreamCopy(HttpClientStream(cx), stdout);
+    UtilStreamCopy(HttpClientStream(cx), stdout);
 
     HttpClientContextFree(cx);
     UriFree(uri);
