@@ -1,4 +1,4 @@
-.Dd $Mdocdate: December 13 2022 $
+.Dd $Mdocdate: March 12 2023 $
 .Dt HTTP 3
 .Os Telodendria Project
 .Sh NAME
@@ -20,6 +20,8 @@
 .Fn HttpParamDecode "char *"
 .Ft char *
 .Fn HttpParamEncode "HashMap *"
+.Ft HashMap *
+.Fn HttpParseHeaders "FILE *"
 .Sh DESCRIPTION
 .Pp
 .Nm
@@ -148,6 +150,19 @@ and
 .Fn HttpParamEncode
 convert HTTP parameters in the form of "param=value&param2=val2"
 to and from a hash map for easy parsing, manipulation, and encoding.
+.Pp
+.Fn HttpParseHeaders
+reads HTTP headers from a stream and returns a hash map
+of keys and values. All keys are lowercased to make
+querying them consistent and not dependent on the casing
+that was read from the stream. This is useful for both
+client and server code, since the headers are of the same
+format. This function should be used after parsing the
+HTTP status line, because it does not parse that line.
+It will stop when it encounters the first blank line,
+which indicates that the body is beginning. After this
+function completes, the body may be immediately be read
+from the stream without any additional processing.
 .Sh RETURN VALUES
 .Pp
 .Fn HttpStatusToString

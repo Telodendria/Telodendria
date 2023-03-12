@@ -1,0 +1,93 @@
+.Dd $Mdocdate: March 12 2023 $
+.Dt TELODENDRIA 3
+.Os Telodendria Project
+.Sh NAME
+.Nm Telodendria
+.Nd Branding and callback functions specific to Telodendria.
+.Sh SYNOPSIS
+.In Telodendria.h
+.Vt const char
+.Va TelodendriaLogo[][]
+.Pp
+.Vt const char
+.Va TelodendriaHeader[][]
+.Pp
+.Ft void
+.Fn TelodendriaHexDump "size_t" "char *" "char *" "void *"
+.Ft void
+.Fn TelodendriaMemoryHook "MemoryAction" "MemoryInfo *" "void *"
+.Ft void
+.Fn TelodendriaMemoryIterator "MemoryInfo *" "void *"
+.Ft void
+.Fn TelodendriaPrintHeader "LogConfig *"
+.Sh DESCRIPTION
+.Pp
+This API provides the callbacks used to hook Telodendria into
+the various other APIs. It exists primarily to be called by
+.Fn main ,
+but these functions are not static so that
+.Fn
+main can be in a separate compilation unit.
+.Pp
+.Va TelodendriaLogo
+and
+.Va TelodendriaHeader
+are
+.Va TELODENDRIA_LOGO_HEIGHT
+by
+.Va TELODENDRIA_LOGO_WIDTH
+and
+.Va TELODENDRIA_HEADER_HEIGHT
+by
+.Va TELODENDRIA_HEADER_WIDTH
+character arrays, respectively. They hold C strings that
+are used to generate the logo and header.
+.Sy NOTE:
+the Telodendria logo belong solely to the Telodendria
+project. If this code is modified and distributed as a
+package other than the official Telodendria source
+package, the logo must be replaced with a different
+one, or removed entirely. Consult the license section
+of 
+.Xr Telodendria 7
+for details.
+.Pp
+.Fn TelodendriaHexDump
+follows the function prototype required by the
+.Fn MemoryHexDump
+function, documented in
+.Xr Memory 3 .
+This function is responsible for outputting memory
+hex dumps to the log.
+Its fourth parameter is cast to a LogConfig object,
+so one should be passed into the
+.Fn MemoryHexDump
+function.
+.Pp
+.Fn TelodendriaMemoryIterator
+follows the function prototype required by the
+.Fn MemoryIterate
+function, documented in
+.Xr Memory 3 .
+This function is executed at the end of the program's
+execution and detects leaks that occurred during normal
+operation.
+.Pp
+.Fn TelodendriaMemoryHook
+follows the function prototype required by the
+.Fn MemoryHook
+function, documented in
+.Xr Memory 3 .
+This function is executed every time an allocation,
+re-allocation, or free occurs, and is responsible for
+logging memory operations to the log.
+.Pp
+.Fn TelodendriaPrintHeader
+prints the logo and header, along with the copyright
+year and holder, and version number out to the log.
+.Sh RETURN VALUES
+.Pp
+None of the functions in this API return anything.
+.Sh SEE ALSO
+.Xr Memory 3 ,
+.Xr Log 3

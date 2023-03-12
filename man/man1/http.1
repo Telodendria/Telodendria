@@ -1,0 +1,70 @@
+.Dd $Mdocdate: March 12 2023 $
+.Dt HTTP 1
+.Os Telodendria Project
+.Sh NAME
+.Nm http
+.Nd A simple command line utility for making HTTP requests.
+.Sh SYNOPSIS
+.Nm
+.Op Fl i
+.Op Fl X Ar method
+.Op Fl H Ar header
+.Op Fl d Ar data
+.Op URL
+.Sh DESCRIPTION
+.Nm
+Is a command line HTTP client. It is very heavily inspired by
+.Xr curl 1 ,
+and even uses the same flag names when possible. However,
+.Nm
+is designed to be much simpler than
+.Xr curl 1 ,
+and is built on Telodendria's own
+.Xr HttpClient 3
+API. It primarily exists to test
+.Xr HttpClient 3
+and
+.Xr HttpServer 3 ,
+and make development of Telodendria possible without having
+to install any external tools.
+.sp
+The options are as follows:
+.Bl -tag -width Ds
+.It Fl i
+Display the response headers before writing the body.
+.It Fl X Ar method
+Set the request method. This can be any of the options
+allowed by the
+.Xr Http 3
+API; unlike
+.Xr curl 1 ,
+it cannot be any arbitrary string.
+.It Fl H Ar header
+Set a request header, in the form of ``Header: value''. This option
+can be set multiple times to add multiple request headers.
+.It Fl d Ar data
+Send data to the server in the request body. If
+.Ar data
+starts with ``@'', then the file specified after is opened
+and read in. If it is ``@-'', then standard input is used.
+Otherwise, the string is passed to the server as-is.
+.El
+.Pp
+.Nm
+also requires a
+.Ar URL
+to make the request to. The URL is parsed by the
+.Xr Uri 3
+API, so consult that page for the syntax of URLs.
+.Sh EXIT STATUS
+.Nm
+exits with
+.Va EXIT_SUCCESS
+if all command line options were valid, the request was
+made successfully, and the server returns an HTTP code
+that indicates success. It exits with
+.Va EXIT_FAILURE
+in all other scenarios.
+.Sh SEE ALSO
+.Xr HttpClient 3 ,
+.Xr Uri 3

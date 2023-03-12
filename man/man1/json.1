@@ -1,0 +1,111 @@
+.Dd $Mdocdate: March 12 2023 $
+.Dt JSON 1
+.Os Telodendria Project
+.Sh NAME
+.Nm json
+.Nd A simple command line utility for parsing and generating JSON.
+.Sh SYNOPSIS
+.Nm
+.Op Fl s Ar query
+.Op Fl e Ar str
+.Sh DESCRIPTION
+.Nm
+is a simple command line utility for dealing with JSON. It is
+somewhat inspired by
+.Xr jq 1 ,
+but is not compatible in any way with it.
+.Nm
+is designed to be much simpler than
+.Xr jq 1 ,
+and is built on Telodendria's own
+.Xr Json 3
+API. It primarily exists to ease development of Telodendria, and
+to make development possible without having to install any external
+tools.
+.Pp
+The options are as follows. Unless stated otherwise, these options
+are mutually exclusive, and the last one specified takes precedence.
+All positional parameters are ignored.
+.Bl -tag -width Ds
+.It Fl s Ar query
+Use
+.Va query
+to query a field from a JSON object given on the standard input.
+The query syntax very vaguely resembles C code, but it is much
+more primitive. Multiple queries are separated by an arrow
+(``->''). This makes it trivial to drill down into nested
+objects and arrays.
+.Pp
+To select a value from an object, just specify the key. To select
+an element from an array specify the key whose value is the array,
+and then use the C square bracket syntax to select an element.
+.Pp
+A number of ``functions'' exist to make
+.Nm
+more versatile. Functions are called by prefacing the key with
+a ``@'' symbol. Functions can appear anywhere in the query, provided
+they make sense within the context of the JSON object being processed.
+The available functions are as follows:
+.Bl -tag -width Ds
+.It keys
+When applied to an object, outputs an array of keys.
+.It length
+When applied to an array, outputs the number of elements in the
+array. When applied to a string, returns the number of bytes
+needed to store the decoded version of the string.
+.It decode
+When applied to a string, outputs the decoded version of the
+string.
+.El
+.Pp
+When a key is prefaced with the ``^'' symbol, then instead of getting
+the value at that key, it is removed from the object, and the new
+object is passed along. 
+.It Fl e Ar str
+Encode
+.Va str
+as a JSON string and print it to standard output. This is useful for
+generating JSON with shell scripts.
+.El
+.Pp
+If no options are specified, then the default behavior of
+.Nm
+is to read a JSON object given on the standard input and pretty-print
+it to the standard output, or print an error to standard error if
+the given input is invalid.
+.Sh EXAMPLES
+.Pp
+Get the error string of an error returned by a Matrix API endpoint:
+.Bd -literal -offset indent
+json -s 'error->@decode'
+.Ed
+.Pp
+Get the number of stages in the first flow listed in a list
+of user-interactive authentication flows:
+.Bd -literal -offset indent
+json -s 'flows[0]->stages->@length'
+.Ed
+.Pp
+Get the first stage of the first flow listed in a list
+of user-interactive authentication flows:
+.Bd -literal -offset indent
+json -s 'flows[0]->stages[0]->@decode'
+.Ed
+.Pp
+List the keys in a JSON object:
+.Bd -literal -offset indent
+json -s '@keys'
+.Ed
+.Pp
+Get the number of keys in a JSON object:
+.Bd -literal -offset indent
+json -s '@keys->@length'
+.Ed
+.Sh EXIT STATUS
+.Nm
+exits with
+.Va EXIT_SUCCESS
+if all command line options were valid and the given JSON object
+parses successfully. It exits with
+.Va EXIT_FAILURE
+in all other scenarios.

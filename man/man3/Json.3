@@ -1,4 +1,4 @@
-.Dd $Mdocdate: March 6 2023 $
+.Dd $Mdocdate: March 12 2023 $
 .Dt JSON 3
 .Os Telodendria Project
 .Sh NAME
@@ -41,9 +41,9 @@
 .Ft void
 .Fn JsonEncodeString "const char *" "FILE *"
 .Ft void
-.Fn JsonEncodeValue "JsonValue *" "FILE *"
+.Fn JsonEncodeValue "JsonValue *" "FILE *" "int"
 .Ft int
-.Fn JsonEncode "HashMap *" "FILE *"
+.Fn JsonEncode "HashMap *" "FILE *" "int"
 .Ft HashMap *
 .Fn JsonDecode "FILE *"
 .Ft JsonValue *
@@ -190,15 +190,26 @@ from the given  value. This function is exposed via the public
 API so that it is accessible to custom JSON encoders. Normal users
 that are not writing custom encoders should in most cases just use
 .Fn JsonEncode
-to encode an entire object.
+to encode an entire object. The third parameter is an integer that
+represents the indent level of the value to be printed, or a negative
+number if pretty-printing should be disabled, and JSON should be
+printed as minimized as possible. If you want to pretty-print a
+JSON object, set this to
+.Va JSON_PRETTY .
+To get the minified output, set it to
+.Va JSON_DEFAULT .
 .Pp
 .Fn JsonEncode
 encodes a JSON object as minimized JSON and writes it to the given
 output stream. This function is recursive; it will serialize
-everything accessible from the passed object.
+everything accessible from the passed object. The third integer
+parameter has the same behavior asa described above.
+.Pp
 .Fn JsonDecode
-does the opposite; it reads from a JSON stream and decodes it
-into a hash map of JsonValues.
+does the opposite of
+.Fn JsonEncode ;
+it reads from a JSON stream and decodes it into a hash map
+of JsonValues.
 .Pp
 .Fn JsonSet
 and
