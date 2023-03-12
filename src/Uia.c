@@ -89,7 +89,7 @@ BuildFlows(Array * flows)
 
         for (j = 0; j < ArraySize(stages); j++)
         {
-            UiaStage *stage = ArrayGet(stages, i);
+            UiaStage *stage = ArrayGet(stages, j);
 
             ArrayAdd(responseStages, JsonValueString(stage->type));
             if (stage->params)
