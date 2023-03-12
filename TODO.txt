@@ -17,24 +17,24 @@ Milestone: v0.3.0
     [ ] Multi-output
     [ ] Move UtilStreamCopy()
 [~] HTTP Client API
-    [ ] Document HttpParseHeaders()
+    [x] Document HttpParseHeaders()
     [ ] HttpClient man page
     [ ] Uri man page
     [x] Test on other platforms
-[~] Option to pretty-print Json
-    [ ] Document JsonEncode() and JsonEncodeValue()
+[x] Option to pretty-print Json
+    [x] Document JsonEncode() and JsonEncodeValue()
 [ ] Update man page for td
-[ ] Document Telodendria and Main
+[x] Document Telodendria and Main
 [ ] Document tt and http-debug-server
 
-[~] Simple command line tool to make matrix requests
+[x] Simple command line tool to make matrix requests
     [x] Built on HTTP client API
-    [ ] http man page
+    [x] http man page
 [~] Simple command line tool for working with JSON
     [x] Pretty-print Json
     [x] Query fields for use in shell scripts.
     [x] Encode user-provided JSON strings
-    [ ] json man page
+    [x] json man page
     [ ] Update man pages for tp and send-patch
 
 [ ] Move configuration to database

@@ -49,6 +49,6 @@ extern void
  TelodendriaMemoryIterator(MemoryInfo *, void *);
 
 extern void
- TelodendriaPrintHeader(LogConfig * lc);
+ TelodendriaPrintHeader(LogConfig *);
 
 #endif

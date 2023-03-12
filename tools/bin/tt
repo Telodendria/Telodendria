@@ -6,6 +6,8 @@ PASSWORD=$(json -e 'p@s$w0rd')
 
 ENDPOINT="$1"
 
+: "${METH:=GET}"
+
 # Check if user is available. If it is, register it.
 user_available=$(http "$BASE/_matrix/client/v3/register/available?username=$USERNAME" | json -s "available")
 if [ "$user_available" = "true" ]; then
@@ -20,7 +22,7 @@ if [ "$user_available" = "true" ]; then
         printf '  "password": %s,' "$PASSWORD"
         printf '  "inhibit_login": true '
         printf '}'
-    ) | http -X POST "$BASE/_matrix/client/v3/register" > /dev/null
+    ) | http -X POST -d @- "$BASE/_matrix/client/v3/register" > /dev/null
 fi
 
 # Log in
@@ -33,7 +35,7 @@ ACCESS_TOKEN=$((
     printf '  "type": "m.login.password",'
     printf '  "password": %s' "$PASSWORD"
     printf '}'
-) | http -X POST "$BASE/_matrix/client/v3/login" | json -s "access_token->@decode")
+) | http -X POST -d @- "$BASE/_matrix/client/v3/login" | json -s "access_token->@decode")
 
 if [ -z "$ACCESS_TOKEN" ]; then
     echo "Unable to log in."
@@ -41,7 +43,11 @@ if [ -z "$ACCESS_TOKEN" ]; then
 fi
 
 # Make request
-http -X POST -H "Authorization: Bearer $ACCESS_TOKEN" "$BASE$ENDPOINT" | json
+if [ -n "$DATA" ]; then
+    http -X "$METH" -d "$DATA" -H "Authorization: Bearer $ACCESS_TOKEN" "${BASE}${ENDPOINT}" | json
+else
+    http -X "$METH" -H "Authorization: Bearer $ACCESS_TOKEN" "${BASE}${ENDPOINT}" | json
+fi
 
 # Log out
 http -X POST -H "Authorization: Bearer $ACCESS_TOKEN" \

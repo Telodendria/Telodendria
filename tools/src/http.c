@@ -26,6 +26,7 @@
 #include <ctype.h>
 #include <getopt.h>
 #include <unistd.h>
+#include <errno.h>
 
 #include <Memory.h>
 #include <Str.h>
@@ -39,7 +40,7 @@
 static void
 usage(char *prog)
 {
-    fprintf(stderr, "Usage: %s [-i -X method -H header] url\n", prog);
+    fprintf(stderr, "Usage: %s [-i -X method -H header -d data] url\n", prog);
 }
 
 int
@@ -49,6 +50,7 @@ main(int argc, char **argv)
     HttpStatus res;
     HttpRequestMethod method = HTTP_GET;
     Uri *uri;
+    char *data = NULL;
 
     HashMap *requestHeaders = HashMapCreate();
     char *key;
@@ -59,7 +61,7 @@ main(int argc, char **argv)
 
     int ch;
 
-    while ((ch = getopt(argc, argv, "iH:X:")) != -1)
+    while ((ch = getopt(argc, argv, "iH:X:d:")) != -1)
     {
         switch (ch)
         {
@@ -92,6 +94,9 @@ main(int argc, char **argv)
                 }
 
                 HashMapSet(requestHeaders, key, StrDuplicate(val));
+                break;
+            case 'd':
+                data = optarg;
                 break;
             default:
                 usage(argv[0]);
@@ -154,11 +159,37 @@ main(int argc, char **argv)
     HttpRequestSendHeaders(cx);
     HashMapFree(requestHeaders);
 
-    /* Only send stdin if it's not attached to a TTY. This prevents us
-     * from blocking if no pipe is provided */
-    if (!isatty(fileno(stdin)))
+    if (data)
     {
-        UtilStreamCopy(stdin, HttpClientStream(cx));
+        if (*data == '@')
+        {
+            FILE *in;
+
+            data++;
+
+            if (strcmp(data, "-") == 0)
+            {
+                in = stdin;
+            }
+            else
+            {
+                in = fopen(data, "r");
+            }
+
+            if (!in)
+            {
+                fprintf(stderr, "%s: %s\n", data, strerror(errno));
+                return 1;
+            }
+
+            UtilStreamCopy(in, HttpClientStream(cx));
+
+            fclose(in);
+        }
+        else
+        {
+            fprintf(HttpClientStream(cx), "%s", data);
+        }
     }
 
     res = HttpRequestSend(cx);
