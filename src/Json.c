@@ -25,6 +25,7 @@
 
 #include <Memory.h>
 #include <Str.h>
+#include <Util.h>
 
 #include <stdio.h>
 #include <stddef.h>
@@ -705,7 +706,12 @@ JsonFree(HashMap * object)
 static int
 JsonConsumeWhitespace(JsonParserState * state)
 {
+    static const int nRetries = 5;
+    static const int delay = 2;
+
     int c;
+    int tries = 0;
+    int readFlg = 0;
 
     while (1)
     {
@@ -721,13 +727,30 @@ JsonConsumeWhitespace(JsonParserState * state)
             if (errno == EAGAIN)
             {
                 clearerr(state->stream);
-                continue;
+                tries++;
+
+                if (tries >= nRetries || readFlg)
+                {
+                    break;
+                }
+                else
+                {
+                    UtilSleepMillis(delay);
+                    continue;
+                }
             }
             else
             {
                 break;
             }
         }
+
+        /* As soon as we've successfully read a byte, treat
+         * future EAGAINs as EOF, because some clients don't
+         * properly shutdown their sockets.
+         */
+        readFlg = 1;
+        tries = 0;
 
         if (!isspace(c))
         {
