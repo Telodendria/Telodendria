@@ -33,6 +33,21 @@
 #include <User.h>
 #include <Uia.h>
 
+static Array *
+RouteRegisterRegFlow(void)
+{
+    Array *response = ArrayCreate();
+
+    if (!response)
+    {
+        return NULL;
+    }
+
+    ArrayAdd(response, UiaStageBuild("m.login.registration_token", NULL));
+
+    return response;
+}
+
 ROUTE_IMPL(RouteRegister, args)
 {
     HashMap *request = NULL;
@@ -73,13 +88,6 @@ ROUTE_IMPL(RouteRegister, args)
             return MatrixErrorCreate(M_NOT_JSON);
         }
 
-        if (!(args->matrixArgs->config->flags & TELODENDRIA_REGISTRATION))
-        {
-            HttpResponseStatus(args->context, HTTP_FORBIDDEN);
-            response = MatrixErrorCreate(M_FORBIDDEN);
-            goto finish;
-        }
-
         val = HashMapGet(request, "username");
         if (val)
         {
@@ -107,9 +115,12 @@ ROUTE_IMPL(RouteRegister, args)
         }
 
         uiaFlows = ArrayCreate();
-        ArrayAdd(uiaFlows, UiaDummyFlow());
+        ArrayAdd(uiaFlows, RouteRegisterRegFlow());
 
-        /* TODO: Add registration token flow */
+        if (args->matrixArgs->config->flags & TELODENDRIA_REGISTRATION)
+        {
+            ArrayAdd(uiaFlows, UiaDummyFlow());
+        }
 
         uiaResult = UiaComplete(uiaFlows, args->context,
                              args->matrixArgs->db, request, &response,

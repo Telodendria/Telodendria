@@ -109,10 +109,50 @@ ROUTE_IMPL(RouteMatrix, args)
         Free(pathPart);
         return response;
     }
+    else if (MATRIX_PATH_EQUALS(pathPart, "v1"))
+    {
+        /* TODO: This *really* does not look good. */
+        Free(pathPart);
+        pathPart = MATRIX_PATH_POP(args->path);
+        if (MATRIX_PATH_EQUALS(pathPart, "register"))
+        {
+            Free(pathPart);
+            pathPart = MATRIX_PATH_POP(args->path);
+            if (MATRIX_PATH_EQUALS(pathPart, "m.login.registration_token"))
+            {
+                Free(pathPart);
+                pathPart = MATRIX_PATH_POP(args->path);
+                if (MATRIX_PATH_EQUALS(pathPart, "validity"))
+                {
+                    Free(pathPart);
+                    response = RouteTokenValid(args);
+                }
+                else
+                {
+                    Free(pathPart);
+                    HttpResponseStatus(args->context, HTTP_NOT_FOUND);
+                    return MatrixErrorCreate(M_NOT_FOUND);
+                }
+            }
+            else
+            {
+                Free(pathPart);
+                HttpResponseStatus(args->context, HTTP_NOT_FOUND);
+                return MatrixErrorCreate(M_NOT_FOUND);
+            }
+        }
+        else
+        {
+            Free(pathPart);
+            HttpResponseStatus(args->context, HTTP_NOT_FOUND);
+            return MatrixErrorCreate(M_NOT_FOUND);
+        }
+    }
     else
     {
         Free(pathPart);
         HttpResponseStatus(args->context, HTTP_NOT_FOUND);
         return MatrixErrorCreate(M_NOT_FOUND);
     }
+    return response;
 }

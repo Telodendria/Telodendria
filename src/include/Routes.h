@@ -67,6 +67,8 @@ ROUTE(RouteRegister);              /* /_matrix/client/(r0|v3)/register */
 ROUTE(RouteRefresh);               /* /_matrix/client/(r0|v3)/refresh */
 ROUTE(RouteWhoami);                /* /_matrix/client/(r0|v3)/whoami */
 
+ROUTE(RouteTokenValid);            /* /_matrix/client/v1/register/m.login.registration_token/validity */
+
 #undef ROUTE
 
 #endif

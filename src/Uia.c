@@ -25,6 +25,7 @@
 
 #include <string.h>
 
+#include <RegToken.h>
 #include <Memory.h>
 #include <Array.h>
 #include <Json.h>
@@ -390,7 +391,30 @@ UiaComplete(Array * flows, HttpServerContext * context, Db * db,
     }
     else if (strcmp(authType, "m.login.registration_token") == 0)
     {
-        /* TODO */
+        RegTokenInfo *tokenInfo;
+
+        char *token = JsonValueAsString(HashMapGet(auth, "token"));
+
+        if (!RegTokenExists(db, token))
+        {
+            HttpResponseStatus(context, HTTP_UNAUTHORIZED);
+            ret = BuildResponse(flows, db, response, session, dbRef);
+            goto finish;
+        }
+        tokenInfo = RegTokenGetInfo(db, token);
+        if (!RegTokenValid(tokenInfo))
+        {
+            RegTokenClose(tokenInfo);
+            RegTokenFree(tokenInfo);
+
+            HttpResponseStatus(context, HTTP_UNAUTHORIZED);
+            ret = BuildResponse(flows, db, response, session, dbRef);
+            goto finish;
+        }
+        /* Use the token, and then close it. */
+        RegTokenUse(tokenInfo);
+        RegTokenClose(tokenInfo);
+        RegTokenFree(tokenInfo);
     }
     else if (strcmp(authType, "m.login.recaptcha") == 0)
     {
