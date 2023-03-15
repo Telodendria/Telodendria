@@ -11,11 +11,13 @@ Key:
 Milestone: v0.3.0
 -----------------
 
-[ ] Stream API
+[~] Stream API
+    [~] Implementation
+    [ ] Convert all HTTP code and JSON code
+    [ ] Multi-output (proof of concept)
     [ ] TLS
     [ ] SOCKS
-    [ ] Multi-output
-    [ ] Move UtilStreamCopy()
+    [ ] Move/convert UtilStreamCopy()
 [~] HTTP Client API
     [x] Document HttpParseHeaders()
     [ ] HttpClient man page
