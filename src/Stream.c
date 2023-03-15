@@ -4,11 +4,20 @@
 #define STREAM_BUFFER 4096
 #endif
 
+#ifndef STREAM_RETRIES
+#define STREAM_RETRIES 10
+#endif
+
+#ifndef STREAM_DELAY
+#define STREAM_DELAY 2
+#endif
+
 #define STREAM_EOF (1 << 0)
 #define STREAM_ERR (1 << 1)
 
 #include <Io.h>
 #include <Memory.h>
+#include <Util.h>
 
 #include <stdio.h>
 #include <errno.h>
@@ -29,7 +38,7 @@ struct Stream
     size_t ugSize;
     size_t ugLen;
 
-    int flags : 2;
+    int flags:2;
 };
 
 Stream *
@@ -55,7 +64,7 @@ StreamOpen(Io * io)
 }
 
 int
-StreamClose(Stream *stream)
+StreamClose(Stream * stream)
 {
     int ret = 0;
 
@@ -73,6 +82,7 @@ StreamClose(Stream *stream)
     if (stream->wBuf)
     {
         ssize_t writeRes = IoWrite(stream->io, stream->wBuf, stream->wLen);
+
         Free(stream->wBuf);
 
         if (writeRes == -1)
@@ -100,12 +110,12 @@ StreamVprintf(Stream * stream, const char *fmt, va_list ap)
         return -1;
     }
 
-    StreamFlush(stream); /* Flush the buffer out before doing the printf */
+    StreamFlush(stream);           /* Flush the buffer out before doing
+                                    * the printf */
 
     /* Defer printf to underlying Io. We probably should buffer the
      * printf operation just like StreamPutc() so we don't have to
-     * flush the buffer.
-     */
+     * flush the buffer. */
     return IoVprintf(stream->io, fmt, ap);
 }
 
@@ -316,4 +326,59 @@ StreamFlush(Stream * stream)
     }
 
     return 0;
+}
+
+ssize_t
+StreamCopy(Stream * in, Stream * out)
+{
+    ssize_t nBytes = 0;
+    int c;
+    int tries = 0;
+    int readFlg = 0;
+
+    while (1)
+    {
+        c = StreamGetc(in);
+
+        if (StreamEof(in))
+        {
+            break;
+        }
+
+        if (StreamError(in))
+        {
+            if (errno == EAGAIN)
+            {
+                StreamClearError(in);
+                tries++;
+
+                if (tries >= STREAM_RETRIES || readFlg)
+                {
+                    break;
+                }
+                else
+                {
+                    UtilSleepMillis(STREAM_DELAY);
+                    continue;
+                }
+            }
+            else
+            {
+                break;
+            }
+        }
+
+        /* As soon as we've successfully read a byte, treat future
+         * EAGAINs as EOF, because somebody might have forgotten to
+         * close their stream. */
+
+        readFlg = 1;
+        tries = 0;
+
+        StreamPutc(out, c);
+        nBytes++;
+    }
+
+    StreamFlush(out);
+    return nBytes;
 }

@@ -43,4 +43,7 @@ IoVprintf(Io *, const char *, va_list);
 extern int
 IoPrintf(Io *, const char *, ...);
 
+extern ssize_t
+IoCopy(Io *, Io *);
+
 #endif /* TELODENDRIA_IO_H */

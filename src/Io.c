@@ -5,8 +5,8 @@
 #include <errno.h>
 #include <stdio.h>
 
-#ifndef IO_PRINTF_BUFFER
-#define IO_PRINTF_BUFFER 1024
+#ifndef IO_BUFFER
+#define IO_BUFFER 4096
 #endif
 
 struct Io
@@ -177,13 +177,13 @@ IoVprintf(Io *io, const char *fmt, va_list ap)
         return -1;
     }
 
-    buf = Malloc(IO_PRINTF_BUFFER);
+    buf = Malloc(IO_BUFFER);
     if (!buf)
     {
         return -1;
     }
 
-    write = vsnprintf(buf, IO_PRINTF_BUFFER, fmt, ap);
+    write = vsnprintf(buf, IO_BUFFER, fmt, ap);
 
     if (write < 0)
     {
@@ -195,7 +195,7 @@ IoVprintf(Io *io, const char *fmt, va_list ap)
      * be rare, but may occasionally happen. If it does, realloc to
      * the correct size and try again.
      */
-    if (write >= IO_PRINTF_BUFFER)
+    if (write >= IO_BUFFER)
     {
         char *new = Realloc(buf, write + 1);
         if (!new)
@@ -227,4 +227,38 @@ IoPrintf(Io *io, const char *fmt, ...)
     va_end(ap);
 
     return ret;
+}
+
+ssize_t
+IoCopy(Io *in, Io *out)
+{
+    ssize_t nBytes = 0;
+    char buf[IO_BUFFER];
+    ssize_t rRes;
+    ssize_t wRes;
+
+    if (!in || !out)
+    {
+        errno = EBADF;
+        return -1;
+    }
+
+    while ((rRes = IoRead(in, &buf, IO_BUFFER)) != 0)
+    {
+        if (rRes == -1)
+        {
+            return -1;
+        }
+
+        wRes = IoWrite(out, &buf, rRes);
+
+        if (wRes == -1)
+        {
+            return -1;
+        }
+
+        nBytes += wRes;
+    }
+
+    return nBytes;
 }

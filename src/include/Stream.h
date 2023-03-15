@@ -40,4 +40,7 @@ StreamClearError(Stream *);
 extern int
 StreamFlush(Stream *);
 
+extern ssize_t
+StreamCopy(Stream *, Stream *);
+
 #endif /* TELODENDRIA_STREAM_H */
