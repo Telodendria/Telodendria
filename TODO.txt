@@ -17,7 +17,7 @@ Milestone: v0.3.0
     [ ] Multi-output (proof of concept)
     [ ] TLS
     [ ] SOCKS
-    [ ] Move/convert UtilStreamCopy()
+    [x] Move/convert UtilStreamCopy()
 [~] HTTP Client API
     [x] Document HttpParseHeaders()
     [ ] HttpClient man page
