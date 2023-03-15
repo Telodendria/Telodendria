@@ -1,170 +1,319 @@
 #include <Stream.h>
 
+#ifndef STREAM_BUFFER
+#define STREAM_BUFFER 4096
+#endif
+
+#define STREAM_EOF (1 << 0)
+#define STREAM_ERR (1 << 1)
+
+#include <Io.h>
 #include <Memory.h>
 
+#include <stdio.h>
 #include <errno.h>
+#include <string.h>
 
 struct Stream
 {
-    StreamFunctions io;
-    void *cookie;
+    Io *io;
 
-    int *ub;
-    size_t ubSize;
-    size_t ubLen;
+    int *rBuf;
+    size_t rLen;
+    size_t rOff;
+
+    int *wBuf;
+    size_t wLen;
+
+    int *ugBuf;
+    size_t ugSize;
+    size_t ugLen;
+
+    int flags : 2;
 };
 
 Stream *
-StreamCreate(void *cookie, StreamFunctions funcs)
+StreamOpen(Io * io)
 {
     Stream *stream;
 
-    if (!funcs.read || !funcs.write)
+    if (!io)
     {
         return NULL;
     }
 
     stream = Malloc(sizeof(Stream));
-
     if (!stream)
     {
         return NULL;
     }
 
-    stream->cookie = cookie;
-
-    stream->io.read = funcs.read;
-    stream->io.write = funcs.write;
-    stream->io.seek = funcs.seek;
-    stream->io.close = funcs.close;
-
-    stream->ubSize = 0;
+    memset(stream, 0, sizeof(Stream));
+    stream->io = io;
 
     return stream;
-}
-
-ssize_t
-StreamRead(Stream *stream, void *buf, size_t nBytes)
-{
-    if (!stream)
-    {
-        errno = EBADF;
-        return -1;
-    }
-
-    return stream->io.read(stream->cookie, buf, nBytes);
-}
-
-ssize_t
-StreamWrite(Stream *stream, void *buf, size_t nBytes)
-{
-    if (!stream)
-    {
-        errno = EBADF;
-        return -1;
-    }
-
-    return stream->io.write(stream->cookie, buf, nBytes);
-}
-
-off_t
-StreamSeek(Stream *stream, off_t offset, int whence)
-{
-    if (!stream)
-    {
-        errno = EBADF;
-        return -1;
-    }
-
-    if (!stream->io.seek)
-    {
-        errno = EINVAL;
-        return -1;
-    }
-
-    return stream->io.seek(stream->cookie, offset, whence);
 }
 
 int
 StreamClose(Stream *stream)
 {
-    int ret;
+    int ret = 0;
 
     if (!stream)
     {
         errno = EBADF;
-        return -1;
+        return EOF;
     }
 
-    if (stream->io.close)
+    if (stream->rBuf)
     {
-        ret = stream->io.close(stream->cookie);
-    }
-    else
-    {
-        ret = 0;
+        Free(stream->rBuf);
     }
 
-    if (stream->ubSize)
+    if (stream->wBuf)
     {
-        Free(stream->ub);
+        ssize_t writeRes = IoWrite(stream->io, stream->wBuf, stream->wLen);
+        Free(stream->wBuf);
+
+        if (writeRes == -1)
+        {
+            ret = EOF;
+        }
     }
 
+    if (stream->ugBuf)
+    {
+        Free(stream->ugBuf);
+    }
+
+    ret = IoClose(stream->io);
     Free(stream);
 
     return ret;
 }
 
-static ssize_t
-StreamReadFd(void *cookie, void *buf, size_t nBytes)
+int
+StreamVprintf(Stream * stream, const char *fmt, va_list ap)
 {
-    int fd = *((int *) cookie);
-
-    return read(fd, buf, nBytes);
-}
-
-static ssize_t
-StreamWriteFd(void *cookie, void *buf, size_t nBytes)
-{
-    int fd = *((int *) cookie);
-
-    return write(fd, buf, nBytes);
-}
-
-static off_t
-StreamSeekFd(void *cookie, off_t offset, int whence)
-{
-    int fd = *((int *) cookie);
-
-    return lseek(fd, offset, whence);
-}
-
-static int
-StreamCloseFd(void *cookie)
-{
-    int fd = *((int *) cookie);
-
-    return close(fd);
-}
-
-Stream *
-StreamOpen(int fd)
-{
-    int *fdp = Malloc(sizeof(int));
-    StreamFunctions f;
-
-    if (!fdp)
+    if (!stream)
     {
-        return NULL;
+        return -1;
     }
 
-    *fdp = fd;
+    StreamFlush(stream); /* Flush the buffer out before doing the printf */
 
-    f.read = StreamReadFd;
-    f.write = StreamWriteFd;
-    f.seek = StreamSeekFd;
-    f.close = StreamCloseFd;
+    /* Defer printf to underlying Io. We probably should buffer the
+     * printf operation just like StreamPutc() so we don't have to
+     * flush the buffer.
+     */
+    return IoVprintf(stream->io, fmt, ap);
+}
 
-    return StreamCreate(fdp, f);
+int
+StreamPrintf(Stream * stream, const char *fmt,...)
+{
+    int ret;
+    va_list ap;
 
+    va_start(ap, fmt);
+    ret = StreamVprintf(stream, fmt, ap);
+    va_end(ap);
+
+    return ret;
+}
+
+int
+StreamGetc(Stream * stream)
+{
+    int c;
+
+    if (!stream)
+    {
+        errno = EBADF;
+        return EOF;
+    }
+
+    /* Empty the ungetc stack first */
+    if (stream->ugLen)
+    {
+        c = stream->ugBuf[stream->ugLen - 1];
+        stream->ugLen--;
+        return c;
+    }
+
+    if (stream->flags & EOF)
+    {
+        return EOF;
+    }
+
+    if (!stream->rBuf)
+    {
+        /* No buffer allocated yet */
+        stream->rBuf = Malloc(STREAM_BUFFER * sizeof(int));
+        if (!stream->rBuf)
+        {
+            stream->flags |= STREAM_ERR;
+            return EOF;
+        }
+
+        stream->rOff = 0;
+        stream->rLen = 0;
+    }
+
+    if (stream->rOff >= stream->rLen)
+    {
+        /* We read through the entire buffer; get a new one */
+        ssize_t readRes = IoRead(stream->io, stream->rBuf, STREAM_BUFFER);
+
+        if (readRes == 0)
+        {
+            stream->flags |= STREAM_EOF;
+            return EOF;
+        }
+
+        if (readRes == -1)
+        {
+            stream->flags |= STREAM_ERR;
+            return EOF;
+        }
+
+        stream->rOff = 0;
+        stream->rLen = readRes;
+    }
+
+    /* Read the character in the buffer and advance the offset */
+    c = stream->rBuf[stream->rOff];
+    stream->rOff++;
+
+    return c;
+}
+
+int
+StreamUngetc(Stream * stream, int c)
+{
+    if (!stream)
+    {
+        errno = EBADF;
+        return EOF;
+    }
+
+    if (!stream->ugBuf)
+    {
+        stream->ugSize = STREAM_BUFFER;
+        stream->ugBuf = Malloc(stream->ugSize);
+
+        if (!stream->ugBuf)
+        {
+            stream->flags |= STREAM_ERR;
+            return EOF;
+        }
+    }
+
+    if (stream->ugLen >= stream->ugSize)
+    {
+        int *new;
+
+        stream->ugSize += STREAM_BUFFER;
+        new = Realloc(stream->ugBuf, stream->ugSize);
+        if (!new)
+        {
+            stream->flags |= STREAM_ERR;
+            Free(stream->ugBuf);
+            stream->ugBuf = NULL;
+            return EOF;
+        }
+
+        Free(stream->ugBuf);
+        stream->ugBuf = new;
+    }
+
+    stream->ugBuf[stream->ugLen - 1] = c;
+    stream->ugLen++;
+
+    return c;
+}
+
+int
+StreamPutc(Stream * stream, int c)
+{
+    if (!stream)
+    {
+        errno = EBADF;
+        return EOF;
+    }
+
+    if (!stream->wBuf)
+    {
+        stream->wBuf = Malloc(STREAM_BUFFER * sizeof(int));
+        if (!stream->wBuf)
+        {
+            stream->flags |= STREAM_ERR;
+            return EOF;
+        }
+    }
+
+    if (stream->wLen == STREAM_BUFFER)
+    {
+        /* Buffer full; write it */
+        ssize_t writeRes = IoWrite(stream->io, stream->wBuf, stream->wLen);
+
+        if (writeRes == -1)
+        {
+            stream->flags |= STREAM_ERR;
+            return EOF;
+        }
+
+        stream->wLen = 0;
+    }
+
+    stream->wBuf[stream->wLen] = c;
+    stream->wLen++;
+
+    return c;
+}
+
+int
+StreamEof(Stream * stream)
+{
+    return stream && (stream->flags & STREAM_EOF);
+}
+
+int
+StreamError(Stream * stream)
+{
+    return stream && (stream->flags & STREAM_ERR);
+}
+
+void
+StreamClearError(Stream * stream)
+{
+    if (stream)
+    {
+        stream->flags &= ~STREAM_ERR;
+    }
+}
+
+int
+StreamFlush(Stream * stream)
+{
+    if (!stream)
+    {
+        errno = EBADF;
+        return EOF;
+    }
+
+    if (stream->wLen)
+    {
+        ssize_t writeRes = IoWrite(stream->io, stream->wBuf, stream->wLen);
+
+        if (writeRes == -1)
+        {
+            stream->flags |= STREAM_ERR;
+            return EOF;
+        }
+
+        stream->wLen = 0;
+    }
+
+    return 0;
 }
