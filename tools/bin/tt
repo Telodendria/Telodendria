@@ -26,7 +26,7 @@ if [ "$user_available" = "true" ]; then
 fi
 
 # Log in
-ACCESS_TOKEN=$((
+RESPONSE=$((
     printf '{'
     printf '  "identifier": {'
     printf '    "type": "m.id.user",'
@@ -35,10 +35,12 @@ ACCESS_TOKEN=$((
     printf '  "type": "m.login.password",'
     printf '  "password": %s' "$PASSWORD"
     printf '}'
-) | http -X POST -d @- "$BASE/_matrix/client/v3/login" | json -s "access_token->@decode")
+) | http -X POST -d @- "$BASE/_matrix/client/v3/login")
+
+ACCESS_TOKEN=$(echo "$RESPONSE" | json -s "access_token->@decode")
 
 if [ -z "$ACCESS_TOKEN" ]; then
-    echo "Unable to log in."
+    echo "$RESPONSE" | json
     exit 1
 fi
 

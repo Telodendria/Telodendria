@@ -84,6 +84,9 @@ extern int
 extern int
  UserDeactivate(User *);
 
+extern int
+ UserDeactivated(User *);
+
 extern HashMap *
  UserGetDevices(User *);
 

@@ -242,6 +242,15 @@ ROUTE_IMPL(RouteLogin, args)
                 break;
             }
 
+            if (UserDeactivated(user))
+            {
+                UserUnlock(user);
+
+                HttpResponseStatus(args->context, HTTP_FORBIDDEN);
+                response = MatrixErrorCreate(M_USER_DEACTIVATED);
+                break;
+            }
+
             loginInfo = UserLogin(user, password, deviceId,
                               initialDeviceDisplayName, refreshToken);
 

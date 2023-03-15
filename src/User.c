@@ -246,7 +246,7 @@ UserLogin(User * user, char *password, char *deviceId, char *deviceDisplayName,
         return NULL;
     }
 
-    if (!UserCheckPassword(user, password))
+    if (!UserCheckPassword(user, password) || UserDeactivated(user))
     {
         return NULL;
     }
@@ -426,6 +426,21 @@ UserDeactivate(User * user)
     JsonValueFree(HashMapSet(json, "deactivated", JsonValueBoolean(1)));
 
     return 1;
+}
+
+int
+UserDeactivated(User *user)
+{
+    HashMap *json;
+
+    if (!user)
+    {
+        return 1;
+    }
+
+    json = DbJson(user->ref);
+
+    return JsonValueAsBoolean(HashMapGet(json, "deactivated"));
 }
 
 HashMap *

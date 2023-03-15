@@ -460,7 +460,6 @@ DbLockFromArr(Db * db, Array * args)
     /* Lock the file on the disk */
     if (fcntl(fileno(fp), F_SETLK, &lock) < 0)
     {
-        printf("fcntl() failed on %s (%s)\n", file, strerror(errno));
         fclose(fp);
         ref = NULL;
         goto finish;
