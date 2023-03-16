@@ -46,7 +46,7 @@ ROUTE_IMPL(RouteTokenValid, args)
         HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
         return MatrixErrorCreate(M_UNRECOGNIZED);
     }
-    request = JsonDecode(HttpStream(args->context));
+    request = JsonDecode(HttpServerStream(args->context));
     if (!request)
     {
         HttpResponseStatus(args->context, HTTP_BAD_REQUEST);

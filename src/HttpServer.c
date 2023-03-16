@@ -230,7 +230,7 @@ HttpResponseStatus(HttpServerContext * c, HttpStatus status)
 }
 
 FILE *
-HttpStream(HttpServerContext * c)
+HttpServerStream(HttpServerContext * c)
 {
     if (!c)
     {

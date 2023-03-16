@@ -128,7 +128,7 @@ MatrixHttpHandler(HttpServerContext * context, void *argp)
         HttpResponseHeader(context, "Content-Type", "application/json");
         HttpSendHeaders(context);
 
-        stream = HttpStream(context);
+        stream = HttpServerStream(context);
 
         JsonEncode(response, stream, JSON_DEFAULT);
         JsonFree(response);

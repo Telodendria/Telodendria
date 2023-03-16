@@ -13,11 +13,14 @@ Milestone: v0.3.0
 
 [~] Stream API
     [~] Implementation
-    [ ] Convert all HTTP code and JSON code
+    [ ] Convert all code that deals with I/O
     [ ] Multi-output (proof of concept)
+    [ ] Memory streams (proof of concept)
     [ ] TLS
     [ ] SOCKS
     [x] Move/convert UtilStreamCopy()
+    [ ] Io man page
+    [ ] Stream man page
 [~] HTTP Client API
     [x] Document HttpParseHeaders()
     [ ] HttpClient man page

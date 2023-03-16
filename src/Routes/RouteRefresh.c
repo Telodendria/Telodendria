@@ -63,7 +63,7 @@ ROUTE_IMPL(RouteRefresh, args)
         return MatrixErrorCreate(M_UNRECOGNIZED);
     }
 
-    request = JsonDecode(HttpStream(args->context));
+    request = JsonDecode(HttpServerStream(args->context));
     if (!request)
     {
         HttpResponseStatus(args->context, HTTP_BAD_REQUEST);

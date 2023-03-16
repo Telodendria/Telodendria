@@ -74,7 +74,7 @@ ROUTE_IMPL(RouteLogin, args)
             HashMapSet(response, "flows", JsonValueArray(enabledFlows));
             break;
         case HTTP_POST:
-            request = JsonDecode(HttpStream(args->context));
+            request = JsonDecode(HttpServerStream(args->context));
             if (!request)
             {
                 HttpResponseStatus(args->context, HTTP_BAD_REQUEST);

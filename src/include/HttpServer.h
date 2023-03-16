@@ -69,7 +69,7 @@ extern void
  HttpResponseStatus(HttpServerContext *, HttpStatus);
 
 extern FILE *
- HttpStream(HttpServerContext *);
+ HttpServerStream(HttpServerContext *);
 
 extern void
  HttpSendHeaders(HttpServerContext *);

@@ -59,14 +59,14 @@ HttpHandle(HttpServerContext * cx, void *args)
 
     printf("\n");
 
-    bytes = UtilStreamCopy(HttpStream(cx), stdout);
+    bytes = UtilStreamCopy(HttpServerStream(cx), stdout);
 
     printf("\n");
     printf("(%lu bytes)\n", bytes);
 
     HttpSendHeaders(cx);
 
-    fprintf(HttpStream(cx), "{}\n");
+    fprintf(HttpServerStream(cx), "{}\n");
 }
 
 int
