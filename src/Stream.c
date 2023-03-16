@@ -97,17 +97,9 @@ StreamFd(int fd)
 }
 
 Stream *
-StreamOpen(const char *path, const char *mode)
+StreamFile(FILE *fp)
 {
-    FILE *fp = fopen(path, mode);
-    Io *io;
-
-    if (!fp)
-    {
-        return NULL;
-    }
-
-    io = IoFile(fp);
+    Io *io = IoFile(fp);
 
     if (!io)
     {
@@ -115,6 +107,19 @@ StreamOpen(const char *path, const char *mode)
     }
 
     return StreamIo(io);
+}
+
+Stream *
+StreamOpen(const char *path, const char *mode)
+{
+    FILE *fp = fopen(path, mode);
+
+    if (!fp)
+    {
+        return NULL;
+    }
+
+    return StreamFile(fp);
 }
 
 int

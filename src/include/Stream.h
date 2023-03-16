@@ -37,6 +37,9 @@ extern Stream *
  StreamFd(int);
 
 extern Stream *
+ StreamFile(FILE *);
+
+extern Stream *
  StreamOpen(const char *, const char *);
 
 extern int
