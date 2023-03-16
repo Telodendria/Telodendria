@@ -429,7 +429,7 @@ UserDeactivate(User * user)
 }
 
 int
-UserDeactivated(User *user)
+UserDeactivated(User * user)
 {
     HashMap *json;
 

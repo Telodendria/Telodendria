@@ -50,7 +50,7 @@ RegTokenValid(RegTokenInfo * token)
     expiration = JsonValueAsInteger(HashMapGet(tokenJson, "expires_on"));
 
     return (!expiration || (UtilServerTs() <= expiration)) &&
-        (uses == -1 || used < uses);
+            (uses == -1 || used < uses);
 }
 void
 RegTokenUse(RegTokenInfo * token)
@@ -204,9 +204,9 @@ RegTokenCreate(Db * db, char *name, char *owner, unsigned long expires, int uses
         return NULL;
     }
 
-    /* -1 indicates infinite uses; zero and all positive values are a valid
-     * number of uses; althought zero would be rather useless. Anything less
-     * than -1 doesn't make sense. */
+    /* -1 indicates infinite uses; zero and all positive values are a
+     * valid number of uses; althought zero would be rather useless.
+     * Anything less than -1 doesn't make sense. */
     if (uses < -1)
     {
         return NULL;

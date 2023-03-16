@@ -1,3 +1,26 @@
+/*
+ * Copyright (C) 2022-2023 Jordan Bancino <@jordan:bancino.net>
+ *
+ * Permission is hereby granted, free of charge, to any person
+ * obtaining a copy of this software and associated documentation files
+ * (the "Software"), to deal in the Software without restriction,
+ * including without limitation the rights to use, copy, modify, merge,
+ * publish, distribute, sublicense, and/or sell copies of the Software,
+ * and to permit persons to whom the Software is furnished to do so,
+ * subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be
+ * included in all copies or portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT.  IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS
+ * BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
+ * ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
 #include <Io.h>
 
 #include <Memory.h>
@@ -41,7 +64,7 @@ IoCreate(void *cookie, IoFunctions funcs)
 }
 
 ssize_t
-IoRead(Io *io, void *buf, size_t nBytes)
+IoRead(Io * io, void *buf, size_t nBytes)
 {
     if (!io || !io->io.read)
     {
@@ -53,7 +76,7 @@ IoRead(Io *io, void *buf, size_t nBytes)
 }
 
 ssize_t
-IoWrite(Io *io, void *buf, size_t nBytes)
+IoWrite(Io * io, void *buf, size_t nBytes)
 {
     if (!io || !io->io.write)
     {
@@ -65,7 +88,7 @@ IoWrite(Io *io, void *buf, size_t nBytes)
 }
 
 off_t
-IoSeek(Io *io, off_t offset, int whence)
+IoSeek(Io * io, off_t offset, int whence)
 {
     if (!io)
     {
@@ -83,7 +106,7 @@ IoSeek(Io *io, off_t offset, int whence)
 }
 
 int
-IoClose(Io *io)
+IoClose(Io * io)
 {
     int ret;
 
@@ -108,7 +131,7 @@ IoClose(Io *io)
 }
 
 int
-IoVprintf(Io *io, const char *fmt, va_list ap)
+IoVprintf(Io * io, const char *fmt, va_list ap)
 {
     char *buf;
     size_t write;
@@ -134,13 +157,13 @@ IoVprintf(Io *io, const char *fmt, va_list ap)
         return write;
     }
 
-    /* Number of bytes to write exceeded buffer size; this should
-     * be rare, but may occasionally happen. If it does, realloc to
-     * the correct size and try again.
-     */
+    /* Number of bytes to write exceeded buffer size; this should be
+     * rare, but may occasionally happen. If it does, realloc to the
+     * correct size and try again. */
     if (write >= IO_BUFFER)
     {
         char *new = Realloc(buf, write + 1);
+
         if (!new)
         {
             Free(buf);
@@ -160,7 +183,7 @@ IoVprintf(Io *io, const char *fmt, va_list ap)
 }
 
 int
-IoPrintf(Io *io, const char *fmt, ...)
+IoPrintf(Io * io, const char *fmt,...)
 {
     va_list ap;
     int ret;
@@ -173,7 +196,7 @@ IoPrintf(Io *io, const char *fmt, ...)
 }
 
 ssize_t
-IoCopy(Io *in, Io *out)
+IoCopy(Io * in, Io * out)
 {
     ssize_t nBytes = 0;
     char buf[IO_BUFFER];

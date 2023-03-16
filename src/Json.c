@@ -745,10 +745,9 @@ JsonConsumeWhitespace(JsonParserState * state)
             }
         }
 
-        /* As soon as we've successfully read a byte, treat
-         * future EAGAINs as EOF, because some clients don't
-         * properly shutdown their sockets.
-         */
+        /* As soon as we've successfully read a byte, treat future
+         * EAGAINs as EOF, because some clients don't properly shutdown
+         * their sockets. */
         readFlg = 1;
         tries = 0;
 
