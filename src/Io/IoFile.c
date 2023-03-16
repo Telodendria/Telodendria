@@ -43,7 +43,7 @@ IoWriteFile(void *cookie, void *buf, size_t nBytes)
      * fwrite() may be buffered on some platforms, but at this low level,
      * it should not be; buffering happens in Stream, not Io.
      */
-    fflush(fp); 
+    fflush(fp);
 
     return res;
 }

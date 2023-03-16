@@ -61,7 +61,7 @@ extern int
  StreamPutc(Stream *, int);
 
 extern int
-StreamPuts(Stream *, char *);
+ StreamPuts(Stream *, char *);
 
 extern int
  StreamEof(Stream *);

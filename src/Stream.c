@@ -97,7 +97,7 @@ StreamFd(int fd)
 }
 
 Stream *
-StreamFile(FILE *fp)
+StreamFile(FILE * fp)
 {
     Io *io = IoFile(fp);
 
@@ -164,14 +164,13 @@ StreamClose(Stream * stream)
 int
 StreamVprintf(Stream * stream, const char *fmt, va_list ap)
 {
-    /* This might look like very similar code to IoVprintf(),
-     * but I chose not to defer to IoVprintf() because that
-     * would require us to immediately flush the buffer, since
-     * the Io API is unbuffered. StreamPuts() uses StreamPutc()
-     * under the hood, which is buffered. It therefore allows
-     * us to finish filling the buffer and then only flush it
-     * when necessary, preventing superfluous writes.
-     */
+    /* This might look like very similar code to IoVprintf(), but I
+     * chose not to defer to IoVprintf() because that would require us
+     * to immediately flush the buffer, since the Io API is unbuffered.
+     * StreamPuts() uses StreamPutc() under the hood, which is
+     * buffered. It therefore allows us to finish filling the buffer
+     * and then only flush it when necessary, preventing superfluous
+     * writes. */
     char *buf;
     ssize_t len;
 
@@ -382,7 +381,7 @@ StreamPutc(Stream * stream, int c)
 }
 
 int
-StreamPuts(Stream *stream, char *str)
+StreamPuts(Stream * stream, char *str)
 {
     int ret = 0;
 
