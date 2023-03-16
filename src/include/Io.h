@@ -1,8 +1,13 @@
 #ifndef TELODENDRIA_IO_H
 #define TELODENDRIA_IO_H
 
-#include <unistd.h>
+#include <stdio.h>
 #include <stdarg.h>
+#include <unistd.h>
+
+#ifndef IO_BUFFER
+#define IO_BUFFER 4096
+#endif
 
 typedef struct Io Io;
 
@@ -34,9 +39,6 @@ IoSeek(Io *, off_t, int);
 extern int
 IoClose(Io *);
 
-extern Io *
-IoOpen(int);
-
 extern int
 IoVprintf(Io *, const char *, va_list);
 
@@ -45,5 +47,14 @@ IoPrintf(Io *, const char *, ...);
 
 extern ssize_t
 IoCopy(Io *, Io *);
+
+extern Io *
+IoFd(int);
+
+extern Io *
+IoOpen(const char *, int, mode_t);
+
+extern Io *
+IoFile(FILE *);
 
 #endif /* TELODENDRIA_IO_H */

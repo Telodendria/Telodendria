@@ -4,10 +4,7 @@
 
 #include <errno.h>
 #include <stdio.h>
-
-#ifndef IO_BUFFER
-#define IO_BUFFER 4096
-#endif
+#include <fcntl.h>
 
 struct Io
 {
@@ -108,60 +105,6 @@ IoClose(Io *io)
     Free(io);
 
     return ret;
-}
-
-static ssize_t
-IoReadFd(void *cookie, void *buf, size_t nBytes)
-{
-    int fd = *((int *) cookie);
-
-    return read(fd, buf, nBytes);
-}
-
-static ssize_t
-IoWriteFd(void *cookie, void *buf, size_t nBytes)
-{
-    int fd = *((int *) cookie);
-
-    return write(fd, buf, nBytes);
-}
-
-static off_t
-IoSeekFd(void *cookie, off_t offset, int whence)
-{
-    int fd = *((int *) cookie);
-
-    return lseek(fd, offset, whence);
-}
-
-static int
-IoCloseFd(void *cookie)
-{
-    int fd = *((int *) cookie);
-
-    Free(cookie);
-    return close(fd);
-}
-
-Io *
-IoOpen(int fd)
-{
-    int *cookie = Malloc(sizeof(int));
-    IoFunctions f;
-
-    if (!cookie)
-    {
-        return NULL;
-    }
-
-    *cookie = fd;
-
-    f.read = IoReadFd;
-    f.write = IoWriteFd;
-    f.seek = IoSeekFd;
-    f.close = IoCloseFd;
-
-    return IoCreate(cookie, f);
 }
 
 int

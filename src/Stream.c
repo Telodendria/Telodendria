@@ -1,8 +1,13 @@
 #include <Stream.h>
 
-#ifndef STREAM_BUFFER
-#define STREAM_BUFFER 4096
-#endif
+#include <Io.h>
+#include <Memory.h>
+#include <Util.h>
+
+#include <stdio.h>
+#include <errno.h>
+#include <string.h>
+#include <sys/stat.h>
 
 #ifndef STREAM_RETRIES
 #define STREAM_RETRIES 10
@@ -14,14 +19,6 @@
 
 #define STREAM_EOF (1 << 0)
 #define STREAM_ERR (1 << 1)
-
-#include <Io.h>
-#include <Memory.h>
-#include <Util.h>
-
-#include <stdio.h>
-#include <errno.h>
-#include <string.h>
 
 struct Stream
 {
@@ -42,7 +39,7 @@ struct Stream
 };
 
 Stream *
-StreamOpen(Io * io)
+StreamIo(Io * io)
 {
     Stream *stream;
 
@@ -61,6 +58,40 @@ StreamOpen(Io * io)
     stream->io = io;
 
     return stream;
+}
+
+Stream *
+StreamFd(int fd)
+{
+    Io *io = IoFd(fd);
+
+    if (!io)
+    {
+        return NULL;
+    }
+
+    return StreamIo(io);
+}
+
+Stream *
+StreamOpen(const char *path, const char *mode)
+{
+    FILE *fp = fopen(path, mode);
+    Io *io;
+
+    if (!fp)
+    {
+        return NULL;
+    }
+
+    io = IoFile(fp);
+
+    if (!io)
+    {
+        return NULL;
+    }
+
+    return StreamIo(io);
 }
 
 int
@@ -159,7 +190,7 @@ StreamGetc(Stream * stream)
     if (!stream->rBuf)
     {
         /* No buffer allocated yet */
-        stream->rBuf = Malloc(STREAM_BUFFER * sizeof(int));
+        stream->rBuf = Malloc(IO_BUFFER * sizeof(int));
         if (!stream->rBuf)
         {
             stream->flags |= STREAM_ERR;
@@ -173,7 +204,7 @@ StreamGetc(Stream * stream)
     if (stream->rOff >= stream->rLen)
     {
         /* We read through the entire buffer; get a new one */
-        ssize_t readRes = IoRead(stream->io, stream->rBuf, STREAM_BUFFER);
+        ssize_t readRes = IoRead(stream->io, stream->rBuf, IO_BUFFER);
 
         if (readRes == 0)
         {
@@ -209,7 +240,7 @@ StreamUngetc(Stream * stream, int c)
 
     if (!stream->ugBuf)
     {
-        stream->ugSize = STREAM_BUFFER;
+        stream->ugSize = IO_BUFFER;
         stream->ugBuf = Malloc(stream->ugSize);
 
         if (!stream->ugBuf)
@@ -223,7 +254,7 @@ StreamUngetc(Stream * stream, int c)
     {
         int *new;
 
-        stream->ugSize += STREAM_BUFFER;
+        stream->ugSize += IO_BUFFER;
         new = Realloc(stream->ugBuf, stream->ugSize);
         if (!new)
         {
@@ -254,7 +285,7 @@ StreamPutc(Stream * stream, int c)
 
     if (!stream->wBuf)
     {
-        stream->wBuf = Malloc(STREAM_BUFFER * sizeof(int));
+        stream->wBuf = Malloc(IO_BUFFER * sizeof(int));
         if (!stream->wBuf)
         {
             stream->flags |= STREAM_ERR;
@@ -262,7 +293,7 @@ StreamPutc(Stream * stream, int c)
         }
     }
 
-    if (stream->wLen == STREAM_BUFFER)
+    if (stream->wLen == IO_BUFFER)
     {
         /* Buffer full; write it */
         ssize_t writeRes = IoWrite(stream->io, stream->wBuf, stream->wLen);

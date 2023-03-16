@@ -8,7 +8,13 @@
 typedef struct Stream Stream;
 
 extern Stream *
-StreamOpen(Io *io);
+StreamIo(Io *io);
+
+extern Stream *
+StreamFd(int);
+
+extern Stream *
+StreamOpen(const char *, const char *);
 
 extern int
 StreamClose(Stream *);
