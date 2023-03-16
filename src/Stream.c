@@ -164,18 +164,58 @@ StreamClose(Stream * stream)
 int
 StreamVprintf(Stream * stream, const char *fmt, va_list ap)
 {
-    if (!stream)
+    /* This might look like very similar code to IoVprintf(),
+     * but I chose not to defer to IoVprintf() because that
+     * would require us to immediately flush the buffer, since
+     * the Io API is unbuffered. StreamPuts() uses StreamPutc()
+     * under the hood, which is buffered. It therefore allows
+     * us to finish filling the buffer and then only flush it
+     * when necessary, preventing superfluous writes.
+     */
+    char *buf;
+    ssize_t len;
+
+    int ret;
+
+    if (!stream || !fmt)
     {
         return -1;
     }
 
-    StreamFlush(stream);           /* Flush the buffer out before doing
-                                    * the printf */
+    buf = Malloc(IO_BUFFER);
+    if (!buf)
+    {
+        return -1;
+    }
 
-    /* Defer printf to underlying Io. We probably should buffer the
-     * printf operation just like StreamPutc() so we don't have to
-     * flush the buffer. */
-    return IoVprintf(stream->io, fmt, ap);
+    len = vsnprintf(buf, IO_BUFFER, fmt, ap);
+
+    if (len < 0)
+    {
+        Free(buf);
+        return len;
+    }
+
+    if (len >= IO_BUFFER)
+    {
+        char *new = Realloc(buf, len + 1);
+
+        if (!new)
+        {
+            Free(buf);
+            return -1;
+        }
+
+        buf = new;
+
+        vsnprintf(buf, len, fmt, ap);
+    }
+
+    ret = StreamPuts(stream, buf);
+
+    Free(buf);
+
+    return ret;
 }
 
 int
@@ -339,6 +379,31 @@ StreamPutc(Stream * stream, int c)
     stream->wLen++;
 
     return c;
+}
+
+int
+StreamPuts(Stream *stream, char *str)
+{
+    int ret = 0;
+
+    if (!stream)
+    {
+        errno = EBADF;
+        return -1;
+    }
+
+    while (*str)
+    {
+        if (StreamPutc(stream, *str) == EOF)
+        {
+            ret = -1;
+            break;
+        }
+
+        str++;
+    }
+
+    return ret;
 }
 
 int
