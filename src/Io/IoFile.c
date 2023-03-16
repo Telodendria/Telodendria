@@ -37,8 +37,15 @@ static ssize_t
 IoWriteFile(void *cookie, void *buf, size_t nBytes)
 {
     FILE *fp = cookie;
+    size_t res = fwrite(buf, 1, nBytes, fp);
 
-    return fwrite(buf, 1, nBytes, fp);
+    /*
+     * fwrite() may be buffered on some platforms, but at this low level,
+     * it should not be; buffering happens in Stream, not Io.
+     */
+    fflush(fp); 
+
+    return res;
 }
 
 static off_t
