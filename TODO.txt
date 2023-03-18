@@ -12,8 +12,8 @@ Milestone: v0.3.0
 -----------------
 
 [~] Stream API
-    [~] Implementation
-    [ ] Convert all code that deals with I/O
+    [x] Implementation
+    [x] Convert all code that deals with I/O
     [!] Multi-output (proof of concept)
     [!] Memory streams (proof of concept)
     [ ] TLS

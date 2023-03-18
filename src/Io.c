@@ -25,8 +25,9 @@
 
 #include <Memory.h>
 
-#include <errno.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <errno.h>
 #include <fcntl.h>
 
 struct Io
@@ -133,8 +134,9 @@ IoClose(Io * io)
 int
 IoVprintf(Io * io, const char *fmt, va_list ap)
 {
-    char *buf;
-    int write;
+    char *buf = NULL;
+    size_t bufSize = 0;
+    FILE *fp;
 
     int ret;
 
@@ -143,42 +145,21 @@ IoVprintf(Io * io, const char *fmt, va_list ap)
         return -1;
     }
 
-    buf = Malloc(IO_BUFFER);
-    if (!buf)
+    fp = open_memstream(&buf, &bufSize);
+    if (!fp)
     {
         return -1;
     }
 
-    write = vsnprintf(buf, IO_BUFFER, fmt, ap);
+    ret = vfprintf(fp, fmt, ap);
+    fclose(fp);
 
-    if (write < 0)
+    if (ret >= 0)
     {
-        Free(buf);
-        return write;
+        ret = IoWrite(io, buf, bufSize);
     }
 
-    /* Number of bytes to write exceeded buffer size; this should be
-     * rare, but may occasionally happen. If it does, realloc to the
-     * correct size and try again. */
-    if (write >= IO_BUFFER)
-    {
-        char *new = Realloc(buf, write + 1);
-
-        if (!new)
-        {
-            Free(buf);
-            return -1;
-        }
-
-        buf = new;
-
-        /* This time we don't care about the return value */
-        vsnprintf(buf, write, fmt, ap);
-    }
-
-    ret = IoWrite(io, buf, write);
-
-    Free(buf);
+    free(buf); /* Allocated by stdlib, not Memory API */
     return ret;
 }
 
