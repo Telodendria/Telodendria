@@ -8,25 +8,19 @@ ENDPOINT="$1"
 
 : "${METH:=GET}"
 
-# Check if user is available. If it is, register it.
-user_available=$(http "$BASE/_matrix/client/v3/register/available?username=$USERNAME" | json -s "available")
-if [ "$user_available" = "true" ]; then
-    session=$(echo '{}' | http -X POST "$BASE/_matrix/client/v3/register" | json -s "session->@decode")
-    (
-        printf '{'
-        printf '  "auth": {'
-        printf '    "type": "m.login.dummy",'
-        printf '    "session": %s' "$(json -e "$session")"
-        printf '  },'
-        printf '  "username": %s,' "$(json -e "$USERNAME")"
-        printf '  "password": %s,' "$PASSWORD"
-        printf '  "inhibit_login": true '
-        printf '}'
-    ) | http -X POST -d @- "$BASE/_matrix/client/v3/register" > /dev/null
-fi
+register_payload() {
+    printf '{'
+    printf '  "auth": {'
+    printf '    "type": "m.login.dummy",'
+    printf '    "session": %s' "$(json -e "$session")"
+    printf '  },'
+    printf '  "username": %s,' "$(json -e "$USERNAME")"
+    printf '  "password": %s,' "$PASSWORD"
+    printf '  "inhibit_login": true '
+    printf '}'
+}
 
-# Log in
-RESPONSE=$((
+login_payload() {
     printf '{'
     printf '  "identifier": {'
     printf '    "type": "m.id.user",'
@@ -35,7 +29,17 @@ RESPONSE=$((
     printf '  "type": "m.login.password",'
     printf '  "password": %s' "$PASSWORD"
     printf '}'
-) | http -X POST -d @- "$BASE/_matrix/client/v3/login")
+}
+
+# Check if user is available. If it is, register it.
+user_available=$(http "$BASE/_matrix/client/v3/register/available?username=$USERNAME" | json -s "available")
+if [ "$user_available" = "true" ]; then
+    session=$(echo '{}' | http -X POST "$BASE/_matrix/client/v3/register" | json -s "session->@decode")
+    register_payload | http -X POST -d @- "$BASE/_matrix/client/v3/register" > /dev/null
+fi
+
+# Log in
+RESPONSE=$(login_payload | http -X POST -d @- "$BASE/_matrix/client/v3/login")
 
 ACCESS_TOKEN=$(echo "$RESPONSE" | json -s "access_token->@decode")
 
@@ -53,4 +57,4 @@ fi
 
 # Log out
 http -X POST -H "Authorization: Bearer $ACCESS_TOKEN" \
-    "$BASE/_matrix/client/v3/logout" > /dev/null
+    "$BASE/_matrix/client/v3/logout/all" > /dev/null

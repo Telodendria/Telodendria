@@ -27,6 +27,7 @@
 #include <stdio.h>
 
 #include <HashMap.h>
+#include <Stream.h>
 
 typedef enum HttpRequestMethod
 {
@@ -126,6 +127,6 @@ extern char *
  HttpParamEncode(HashMap *);
 
 extern HashMap *
- HttpParseHeaders(FILE *);
+ HttpParseHeaders(Stream *);
 
 #endif

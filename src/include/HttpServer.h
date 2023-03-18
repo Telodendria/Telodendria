@@ -29,6 +29,7 @@
 #include <stdio.h>
 
 #include <HashMap.h>
+#include <Stream.h>
 
 typedef struct HttpServer HttpServer;
 
@@ -68,7 +69,7 @@ extern char *
 extern void
  HttpResponseStatus(HttpServerContext *, HttpStatus);
 
-extern FILE *
+extern Stream *
  HttpServerStream(HttpServerContext *);
 
 extern void

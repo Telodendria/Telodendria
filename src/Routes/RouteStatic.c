@@ -27,7 +27,7 @@
 
 ROUTE_IMPL(RouteStatic, args)
 {
-    FILE *stream = HttpServerStream(args->context);
+    Stream *stream = HttpServerStream(args->context);
     char *pathPart = MATRIX_PATH_POP(args->path);
 
     HttpResponseHeader(args->context, "Content-Type", "text/html");

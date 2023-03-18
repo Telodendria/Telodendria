@@ -27,6 +27,7 @@
 
 #include <HashMap.h>
 #include <Array.h>
+#include <Stream.h>
 
 #include <stdio.h>
 #include <stddef.h>
@@ -96,16 +97,16 @@ extern void
  JsonFree(HashMap *);
 
 extern void
- JsonEncodeString(const char *, FILE *);
+ JsonEncodeString(const char *, Stream *);
 
 extern void
- JsonEncodeValue(JsonValue * value, FILE * out, int);
+ JsonEncodeValue(JsonValue * value, Stream * out, int);
 
 extern int
- JsonEncode(HashMap *, FILE *, int);
+ JsonEncode(HashMap *, Stream *, int);
 
 extern HashMap *
- JsonDecode(FILE *);
+ JsonDecode(Stream *);
 
 extern JsonValue *
  JsonGet(HashMap *, size_t,...);

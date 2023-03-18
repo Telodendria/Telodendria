@@ -38,7 +38,7 @@ struct LogConfig
 {
     int level;
     size_t indent;
-    FILE *out;
+    Stream *out;
     int flags;
     char *tsFmt;
 
@@ -109,7 +109,7 @@ LogConfigFree(LogConfig * config)
         return;
     }
 
-    fclose(config->out);
+    StreamClose(config->out);
     Free(config);
 }
 
@@ -165,7 +165,7 @@ LogConfigLevelSet(LogConfig * config, int level)
 }
 
 void
-LogConfigOutputSet(LogConfig * config, FILE * out)
+LogConfigOutputSet(LogConfig * config, Stream * out)
 {
     if (!config)
     {
@@ -178,7 +178,7 @@ LogConfigOutputSet(LogConfig * config, FILE * out)
     }
     else
     {
-        config->out = stdout;
+        config->out = StreamStdout();
     }
 
 }
@@ -240,7 +240,7 @@ Log(LogConfig * config, int level, const char *msg,...)
     }
 
     doColor = LogConfigFlagGet(config, LOG_FLAG_COLOR)
-            && isatty(fileno(config->out));
+            && isatty(StreamFileno(config->out));
 
     if (doColor)
     {
@@ -276,10 +276,10 @@ Log(LogConfig * config, int level, const char *msg,...)
                 break;
         }
 
-        fputs(ansi, config->out);
+        StreamPuts(config->out, ansi);
     }
 
-    fputc('[', config->out);
+    StreamPutc(config->out, '[');
 
     if (config->tsFmt)
     {
@@ -292,10 +292,10 @@ Log(LogConfig * config, int level, const char *msg,...)
 
         if (tsLength)
         {
-            fputs(tsBuffer, config->out);
+            StreamPuts(config->out, tsBuffer);
             if (!isspace((unsigned char) tsBuffer[tsLength - 1]))
             {
-                fputc(' ', config->out);
+                StreamPutc(config->out, ' ');
             }
         }
     }
@@ -331,32 +331,26 @@ Log(LogConfig * config, int level, const char *msg,...)
             break;
     }
 
-    fprintf(config->out, "%c]", indicator);
+    StreamPrintf(config->out, "%c]", indicator);
 
     if (doColor)
     {
         /* ANSI Reset */
-        fputs("\033[0m", config->out);
+        StreamPuts(config->out, "\033[0m");
     }
 
-    fputc(' ', config->out);
+    StreamPutc(config->out, ' ');
     for (i = 0; i < config->indent; i++)
     {
-        fputc(' ', config->out);
+        StreamPutc(config->out, ' ');
     }
 
     va_start(argp, msg);
-    vfprintf(config->out, msg, argp);
-    fputc('\n', config->out);
+    StreamVprintf(config->out, msg, argp);
+    StreamPutc(config->out, '\n');
     va_end(argp);
 
-    /* If we are debugging, there might be something that's going to
-     * segfault the program coming up, so flush the output stream
-     * immediately. */
-    if (config->level == LOG_DEBUG)
-    {
-        fflush(config->out);
-    }
+    StreamFlush(config->out);
 
     pthread_mutex_unlock(&config->lock);
 }

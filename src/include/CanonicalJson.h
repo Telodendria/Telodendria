@@ -26,10 +26,12 @@
 #define TELODENDRIA_CANONICALJSON_H
 
 #include <stdio.h>
+
 #include <HashMap.h>
+#include <Stream.h>
 
 extern int
- CanonicalJsonEncode(HashMap *, FILE *);
+ CanonicalJsonEncode(HashMap *, Stream *);
 
 extern char *
  CanonicalJsonEncodeToString(HashMap *);

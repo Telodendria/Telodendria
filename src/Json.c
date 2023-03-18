@@ -67,7 +67,7 @@ typedef enum JsonToken
 
 typedef struct JsonParserState
 {
-    FILE *stream;
+    Stream *stream;
 
     JsonToken tokenType;
     char *token;
@@ -334,12 +334,12 @@ JsonValueFree(JsonValue * value)
 }
 
 void
-JsonEncodeString(const char *str, FILE * out)
+JsonEncodeString(const char *str, Stream * out)
 {
     size_t i;
     char c;
 
-    fputc('"', out);
+    StreamPutc(out, '"');
 
     i = 0;
     while ((c = str[i]) != '\0')
@@ -349,23 +349,23 @@ JsonEncodeString(const char *str, FILE * out)
             case '\\':
             case '"':
             case '/':
-                fputc('\\', out);
-                fputc(c, out);
+                StreamPutc(out, '\\');
+                StreamPutc(out, c);
                 break;
             case '\b':
-                fputs("\\b", out);
+                StreamPuts(out, "\\b");
                 break;
             case '\t':
-                fputs("\\t", out);
+                StreamPuts(out, "\\t");
                 break;
             case '\n':
-                fputs("\\n", out);
+                StreamPuts(out, "\\n");
                 break;
             case '\f':
-                fputs("\\f", out);
+                StreamPuts(out, "\\f");
                 break;
             case '\r':
-                fputs("\\r", out);
+                StreamPuts(out, "\\r");
                 break;
             default:              /* Assume UTF-8 input */
                 /*
@@ -381,22 +381,22 @@ JsonEncodeString(const char *str, FILE * out)
                  */
                 if (c <= 0x001F)
                 {
-                    fprintf(out, "\\u%04x", c);
+                    StreamPrintf(out, "\\u%04x", c);
                 }
                 else
                 {
-                    fputc(c, out);
+                    StreamPutc(out, c);
                 }
                 break;
         }
         i++;
     }
 
-    fputc('"', out);
+    StreamPutc(out, '"');
 }
 
 static char *
-JsonDecodeString(FILE * in)
+JsonDecodeString(Stream * in)
 {
     const size_t strBlockSize = 16;
 
@@ -419,7 +419,7 @@ JsonDecodeString(FILE * in)
         return NULL;
     }
 
-    while ((c = fgetc(in)) != EOF)
+    while ((c = StreamGetc(in)) != EOF)
     {
         if (c <= 0x001F)
         {
@@ -449,7 +449,7 @@ JsonDecodeString(FILE * in)
                 return str;
                 break;
             case '\\':
-                c = fgetc(in);
+                c = StreamGetc(in);
                 switch (c)
                 {
                     case '\\':
@@ -479,8 +479,14 @@ JsonDecodeString(FILE * in)
                         a[1] = '\0';
                         break;
                     case 'u':
-                        /* Read \uXXXX point into a 4-byte buffer */
-                        if (fscanf(in, "%04lx", &utf8) != 1)
+                        /* Read 4 characters into a */
+                        if (!StreamGets(in, a, sizeof(a)))
+                        {
+                            Free(str);
+                            return NULL;
+                        }
+                        /* Interpret characters as a hex number */
+                        if (sscanf(a, "%04lx", &utf8) != 1)
                         {
                             /* Bad hex value */
                             Free(str);
@@ -562,7 +568,7 @@ JsonDecodeString(FILE * in)
 }
 
 void
-JsonEncodeValue(JsonValue * value, FILE * out, int level)
+JsonEncodeValue(JsonValue * value, Stream * out, int level)
 {
     size_t i;
     size_t len;
@@ -577,47 +583,47 @@ JsonEncodeValue(JsonValue * value, FILE * out, int level)
             arr = value->as.array;
             len = ArraySize(arr);
 
-            fputc('[', out);
+            StreamPutc(out, '[');
             for (i = 0; i < len; i++)
             {
                 if (level >= 0)
                 {
-                    fprintf(out, "\n%*s", level + 2, "");
+                    StreamPrintf(out, "\n%*s", level + 2, "");
                 }
                 JsonEncodeValue(ArrayGet(arr, i), out, level >= 0 ? level + 2 : level);
                 if (i < len - 1)
                 {
-                    fputc(',', out);
+                    StreamPutc(out, ',');
                 }
             }
 
             if (level >= 0)
             {
-                fprintf(out, "\n%*s", level, "");
+                StreamPrintf(out, "\n%*s", level, "");
             }
-            fputc(']', out);
+            StreamPutc(out, ']');
             break;
         case JSON_STRING:
             JsonEncodeString(value->as.string, out);
             break;
         case JSON_INTEGER:
-            fprintf(out, "%ld", value->as.integer);
+            StreamPrintf(out, "%ld", value->as.integer);
             break;
         case JSON_FLOAT:
-            fprintf(out, "%f", value->as.floating);
+            StreamPrintf(out, "%f", value->as.floating);
             break;
         case JSON_BOOLEAN:
             if (value->as.boolean)
             {
-                fputs("true", out);
+                StreamPuts(out, "true");
             }
             else
             {
-                fputs("false", out);
+                StreamPuts(out, "false");
             }
             break;
         case JSON_NULL:
-            fputs("null", out);
+            StreamPuts(out, "null");
             break;
         default:
             return;
@@ -625,7 +631,7 @@ JsonEncodeValue(JsonValue * value, FILE * out, int level)
 }
 
 int
-JsonEncode(HashMap * object, FILE * out, int level)
+JsonEncode(HashMap * object, Stream * out, int level)
 {
     size_t index;
     size_t count;
@@ -643,10 +649,10 @@ JsonEncode(HashMap * object, FILE * out, int level)
         count++;
     }
 
-    fputc('{', out);
+    StreamPutc(out, '{');
     if (level >= 0)
     {
-        fputc('\n', out);
+        StreamPutc(out, '\n');
     }
 
     index = 0;
@@ -654,27 +660,27 @@ JsonEncode(HashMap * object, FILE * out, int level)
     {
         if (level >= 0)
         {
-            fprintf(out, "%*s", level + 2, "");
+            StreamPrintf(out, "%*s", level + 2, "");
         }
 
         JsonEncodeString(key, out);
 
-        fputc(':', out);
+        StreamPutc(out, ':');
         if (level >= 0)
         {
-            fputc(' ', out);
+            StreamPutc(out, ' ');
         }
 
         JsonEncodeValue(value, out, level >= 0 ? level + 2 : level);
 
         if (index < count - 1)
         {
-            fputc(',', out);
+            StreamPutc(out, ',');
         }
 
         if (level >= 0)
         {
-            fputc('\n', out);
+            StreamPutc(out, '\n');
         }
 
         index++;
@@ -682,9 +688,9 @@ JsonEncode(HashMap * object, FILE * out, int level)
 
     if (level >= 0)
     {
-        fprintf(out, "%*s", level, "");
+        StreamPrintf(out, "%*s", level, "");
     }
-    fputc('}', out);
+    StreamPutc(out, '}');
 
     return 1;
 }
@@ -715,18 +721,18 @@ JsonConsumeWhitespace(JsonParserState * state)
 
     while (1)
     {
-        c = fgetc(state->stream);
+        c = StreamGetc(state->stream);
 
-        if (feof(state->stream))
+        if (StreamEof(state->stream))
         {
             break;
         }
 
-        if (ferror(state->stream))
+        if (StreamError(state->stream))
         {
             if (errno == EAGAIN)
             {
-                clearerr(state->stream);
+                StreamClearError(state->stream);
                 tries++;
 
                 if (tries >= nRetries || readFlg)
@@ -765,7 +771,7 @@ JsonTokenSeek(JsonParserState * state)
 {
     int c = JsonConsumeWhitespace(state);
 
-    if (feof(state->stream))
+    if (StreamEof(state->stream))
     {
         state->tokenType = TOKEN_EOF;
         return;
@@ -822,7 +828,7 @@ JsonTokenSeek(JsonParserState * state)
                 }
                 state->token[0] = c;
 
-                while ((c = fgetc(state->stream)) != EOF)
+                while ((c = StreamGetc(state->stream)) != EOF)
                 {
                     if (c == '.')
                     {
@@ -838,7 +844,7 @@ JsonTokenSeek(JsonParserState * state)
                     }
                     else if (!isdigit(c))
                     {
-                        ungetc(c, state->stream);
+                        StreamUngetc(state->stream, c);
                         break;
                     }
 
@@ -893,7 +899,7 @@ JsonTokenSeek(JsonParserState * state)
                 switch (c)
                 {
                     case 't':
-                        if (!fgets(state->token + 1, 4, state->stream))
+                        if (!StreamGets(state->stream, state->token + 1, 4))
                         {
                             state->tokenType = TOKEN_EOF;
                             Free(state->token);
@@ -914,7 +920,7 @@ JsonTokenSeek(JsonParserState * state)
                         }
                         break;
                     case 'f':
-                        if (!fgets(state->token + 1, 5, state->stream))
+                        if (!StreamGets(state->stream, state->token + 1, 5))
                         {
                             state->tokenType = TOKEN_EOF;
                             Free(state->token);
@@ -935,7 +941,7 @@ JsonTokenSeek(JsonParserState * state)
                         }
                         break;
                     case 'n':
-                        if (!fgets(state->token + 1, 4, state->stream))
+                        if (!StreamGets(state->stream, state->token + 1, 4))
                         {
                             state->tokenType = TOKEN_EOF;
                             Free(state->token);
@@ -1155,7 +1161,7 @@ error:
 }
 
 HashMap *
-JsonDecode(FILE * stream)
+JsonDecode(Stream * stream)
 {
     HashMap *result;
 

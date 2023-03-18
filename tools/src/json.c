@@ -36,7 +36,7 @@
 static void
 usage(char *prog)
 {
-    fprintf(stderr, "Usage: %s [-s query|-e str]\n", prog);
+    StreamPrintf(StreamStderr(), "Usage: %s [-s query|-e str]\n", prog);
 }
 
 static void
@@ -89,7 +89,7 @@ query(char *select, HashMap * json)
             }
             else if (JsonValueType(val) == JSON_STRING && strcmp(keyName + 1, "decode") == 0)
             {
-                printf("%s\n", JsonValueAsString(val));
+                StreamPrintf(StreamStdout(), "%s\n", JsonValueAsString(val));
                 val = NULL;
                 break;
             }
@@ -160,8 +160,8 @@ query(char *select, HashMap * json)
 
     if (val)
     {
-        JsonEncodeValue(val, stdout, JSON_PRETTY);
-        printf("\n");
+        JsonEncodeValue(val, StreamStdout(), JSON_PRETTY);
+        StreamPutc(StreamStdout(), '\n');
     }
 }
 
@@ -170,9 +170,9 @@ encode(char *str)
 {
     JsonValue *val = JsonValueString(str);
 
-    JsonEncodeValue(val, stdout, JSON_DEFAULT);
+    JsonEncodeValue(val, StreamStdout(), JSON_DEFAULT);
     JsonValueFree(val);
-    printf("\n");
+    StreamPutc(StreamStdout(), '\n');
 }
 
 int
@@ -203,11 +203,11 @@ main(int argc, char **argv)
 
     if (flag != FLAG_ENCODE)
     {
-        json = JsonDecode(stdin);
+        json = JsonDecode(StreamStdin());
 
         if (!json)
         {
-            fprintf(stderr, "Malformed JSON.\n");
+            StreamPuts(StreamStderr(), "Malformed JSON.\n");
             return 1;
         }
     }
@@ -221,10 +221,14 @@ main(int argc, char **argv)
             encode(input);
             break;
         default:
-            JsonEncode(json, stdout, JSON_PRETTY);
-            printf("\n");
+            JsonEncode(json, StreamStdout(), JSON_PRETTY);
+            StreamPutc(StreamStdout(), '\n');
             break;
     }
+
+    StreamClose(StreamStdout());
+    StreamClose(StreamStderr());
+    StreamClose(StreamStdin());
 
     MemoryFreeAll();
     return 0;

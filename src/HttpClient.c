@@ -40,7 +40,8 @@
 struct HttpClientContext
 {
     HashMap *responseHeaders;
-    FILE *stream;
+    Stream *stream;
+    int sd;
 };
 
 HttpClientContext *
@@ -126,7 +127,8 @@ HttpRequest(HttpRequestMethod method, int flags, unsigned short port, char *host
 
     freeaddrinfo(res0);
 
-    context->stream = fdopen(sd, "r+");
+    context->sd = sd;
+    context->stream = StreamFd(sd);
     if (!context->stream)
     {
         Free(context);
@@ -134,8 +136,8 @@ HttpRequest(HttpRequestMethod method, int flags, unsigned short port, char *host
         return NULL;
     }
 
-    fprintf(context->stream, "%s %s HTTP/1.1\r\n",
-            HttpRequestMethodToString(method), path);
+    StreamPrintf(context->stream, "%s %s HTTP/1.1\r\n",
+                 HttpRequestMethodToString(method), path);
 
     HttpRequestHeader(context, "Connection", "close");
     HttpRequestHeader(context, "User-Agent", "Telodendria/" TELODENDRIA_VERSION);
@@ -152,7 +154,7 @@ HttpRequestHeader(HttpClientContext * context, char *key, char *val)
         return;
     }
 
-    fprintf(context->stream, "%s: %s\r\n", key, val);
+    StreamPrintf(context->stream, "%s: %s\r\n", key, val);
 }
 
 void
@@ -163,8 +165,8 @@ HttpRequestSendHeaders(HttpClientContext * context)
         return;
     }
 
-    fprintf(context->stream, "\r\n");
-    fflush(context->stream);
+    StreamPuts(context->stream, "\r\n");
+    StreamFlush(context->stream);
 }
 
 HttpStatus
@@ -182,8 +184,8 @@ HttpRequestSend(HttpClientContext * context)
         return 0;
     }
 
-    fflush(context->stream);
-    shutdown(fileno(context->stream), SHUT_WR);
+    StreamFlush(context->stream);
+    shutdown(context->sd, SHUT_WR);
 
     lineLen = UtilGetLine(&line, &lineSize, context->stream);
 
@@ -238,7 +240,7 @@ HttpResponseHeaders(HttpClientContext * context)
     return context->responseHeaders;
 }
 
-FILE *
+Stream *
 HttpClientStream(HttpClientContext * context)
 {
     if (!context)
@@ -267,6 +269,6 @@ HttpClientContextFree(HttpClientContext * context)
 
     HashMapFree(context->responseHeaders);
 
-    fclose(context->stream);
+    StreamClose(context->stream);
     Free(context);
 }

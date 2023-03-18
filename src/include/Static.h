@@ -29,12 +29,12 @@
 #include <Http.h>
 
 extern void
- StaticItWorks(FILE *);
+ StaticItWorks(Stream *);
 
 extern void
- StaticLogin(FILE *);
+ StaticLogin(Stream *);
 
 extern void
- StaticError(FILE *, HttpStatus);
+ StaticError(Stream *, HttpStatus);
 
 #endif                             /* TELODENDRIA_STATIC_H */

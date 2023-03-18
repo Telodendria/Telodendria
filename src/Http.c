@@ -536,7 +536,7 @@ HttpParamEncode(HashMap * params)
 }
 
 HashMap *
-HttpParseHeaders(FILE * fp)
+HttpParseHeaders(Stream * fp)
 {
     HashMap *headers;
 

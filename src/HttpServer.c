@@ -74,7 +74,7 @@ struct HttpServerContext
     HashMap *responseHeaders;
     HttpStatus responseStatus;
 
-    FILE *stream;
+    Stream *stream;
 };
 
 typedef struct HttpServerWorkerThreadArgs
@@ -86,7 +86,7 @@ typedef struct HttpServerWorkerThreadArgs
 
 static HttpServerContext *
 HttpServerContextCreate(HttpRequestMethod requestMethod,
-            char *requestPath, HashMap * requestParams, FILE * stream)
+          char *requestPath, HashMap * requestParams, Stream * stream)
 {
     HttpServerContext *c;
 
@@ -158,7 +158,7 @@ HttpServerContextFree(HttpServerContext * c)
     HashMapFree(c->requestParams);
 
     Free(c->requestPath);
-    fclose(c->stream);
+    StreamClose(c->stream);
 
     Free(c);
 }
@@ -229,7 +229,7 @@ HttpResponseStatus(HttpServerContext * c, HttpStatus status)
     c->responseStatus = status;
 }
 
-FILE *
+Stream *
 HttpServerStream(HttpServerContext * c)
 {
     if (!c)
@@ -243,25 +243,25 @@ HttpServerStream(HttpServerContext * c)
 void
 HttpSendHeaders(HttpServerContext * c)
 {
-    FILE *fp = c->stream;
+    Stream *fp = c->stream;
 
     char *key;
     char *val;
 
-    fprintf(fp, "HTTP/1.0 %d %s\n", c->responseStatus, HttpStatusToString(c->responseStatus));
+    StreamPrintf(fp, "HTTP/1.0 %d %s\n", c->responseStatus, HttpStatusToString(c->responseStatus));
 
     while (HashMapIterate(c->responseHeaders, &key, (void **) &val))
     {
-        fprintf(fp, "%s: %s\n", key, val);
+        StreamPrintf(fp, "%s: %s\n", key, val);
     }
 
-    fprintf(fp, "\n");
+    StreamPuts(fp, "\n");
 }
 
-static FILE *
+static Stream *
 DequeueConnection(HttpServer * server)
 {
-    FILE *fp;
+    Stream *fp;
 
     if (!server)
     {
@@ -409,7 +409,7 @@ HttpServerWorkerThread(void *args)
 
     while (!server->stop)
     {
-        FILE *fp;
+        Stream *fp;
         HttpServerContext *context;
 
         char *line = NULL;
@@ -450,7 +450,7 @@ HttpServerWorkerThread(void *args)
         while ((lineLen = UtilGetLine(&line, &lineSize, fp)) == -1
                && errno == EAGAIN)
         {
-            clearerr(fp);
+            StreamClearError(fp);
 
             /* If the server is stopped, or it's been a while, just
              * give up so we aren't wasting a thread on this client. */
@@ -541,24 +541,24 @@ HttpServerWorkerThread(void *args)
 
         HttpServerContextFree(context);
         fp = NULL;                 /* The above call will close this
-                                    * FILE */
+                                    * Stream */
         goto finish;
 
 internal_error:
-        fprintf(fp, "HTTP/1.0 500 Internal Server Error\n");
-        fprintf(fp, "Connection: close\n");
+        StreamPuts(fp, "HTTP/1.0 500 Internal Server Error\n");
+        StreamPuts(fp, "Connection: close\n");
         goto finish;
 
 bad_request:
-        fprintf(fp, "HTTP/1.0 400 Bad Request\n");
-        fprintf(fp, "Connection: close\n");
+        StreamPuts(fp, "HTTP/1.0 400 Bad Request\n");
+        StreamPuts(fp, "Connection: close\n");
         goto finish;
 
 finish:
         Free(line);
         if (fp)
         {
-            fclose(fp);
+            StreamClose(fp);
         }
     }
 
@@ -570,7 +570,7 @@ HttpServerEventThread(void *args)
 {
     HttpServer *server = (HttpServer *) args;
     struct pollfd pollFds[1];
-    FILE *fp;
+    Stream *fp;
     size_t i;
 
     server->isRunning = 1;
@@ -632,7 +632,7 @@ HttpServerEventThread(void *args)
                 continue;
             }
 
-            fp = fdopen(connFd, "r+");
+            fp = StreamFd(connFd);
             if (!fp)
             {
                 pthread_mutex_unlock(&server->connQueueMutex);
@@ -655,7 +655,7 @@ HttpServerEventThread(void *args)
 
     while ((fp = DequeueConnection(server)))
     {
-        fclose(fp);
+        StreamClose(fp);
     }
 
     server->isRunning = 0;

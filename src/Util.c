@@ -219,7 +219,7 @@ UtilParseBytes(char *str)
 }
 
 ssize_t
-UtilGetDelim(char **linePtr, size_t * n, int delim, FILE * stream)
+UtilGetDelim(char **linePtr, size_t * n, int delim, Stream * stream)
 {
     char *curPos, *newLinePtr;
     size_t newLinePtrLen;
@@ -246,9 +246,9 @@ UtilGetDelim(char **linePtr, size_t * n, int delim, FILE * stream)
 
     while (1)
     {
-        c = fgetc(stream);
+        c = StreamGetc(stream);
 
-        if (ferror(stream) || (c == EOF && curPos == *linePtr))
+        if (StreamError(stream) || (c == EOF && curPos == *linePtr))
         {
             return -1;
         }
@@ -296,31 +296,31 @@ UtilGetDelim(char **linePtr, size_t * n, int delim, FILE * stream)
 }
 
 ssize_t
-UtilGetLine(char **linePtr, size_t * n, FILE * stream)
+UtilGetLine(char **linePtr, size_t * n, Stream * stream)
 {
     return UtilGetDelim(linePtr, n, '\n', stream);
 }
 
 size_t
-UtilStreamCopy(FILE * in, FILE * out)
+UtilStreamCopy(Stream * in, Stream * out)
 {
     size_t bytes = 0;
     int c;
 
     while (1)
     {
-        c = fgetc(in);
+        c = StreamGetc(in);
 
-        if (feof(in))
+        if (StreamEof(in))
         {
             break;
         }
 
-        if (ferror(in))
+        if (StreamError(in))
         {
             if (errno == EAGAIN)
             {
-                clearerr(in);
+                StreamClearError(in);
                 continue;
             }
             else
@@ -329,7 +329,7 @@ UtilStreamCopy(FILE * in, FILE * out)
             }
         }
 
-        fputc(c, out);
+        StreamPutc(out, c);
         bytes++;
     }
 

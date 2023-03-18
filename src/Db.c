@@ -27,6 +27,7 @@
 #include <Json.h>
 #include <Util.h>
 #include <Str.h>
+#include <Stream.h>
 
 #include <sys/types.h>
 #include <dirent.h>
@@ -83,7 +84,8 @@ struct DbRef
     DbRef *prev;
     DbRef *next;
 
-    FILE *fp;
+    int fd;
+    Stream *stream;
 };
 
 static void
@@ -394,8 +396,10 @@ DbLockFromArr(Db * db, Array * args)
     char *file;
     char *hash;
     DbRef *ref;
-    FILE *fp;
     struct flock lock;
+
+    int fd;
+    Stream *stream;
 
     if (!db || !args)
     {
@@ -412,9 +416,8 @@ DbLockFromArr(Db * db, Array * args)
     ref = HashMapGet(db->cache, hash);
     file = DbFileName(db, args);
 
-    /* Open the file for reading and writing so we can lock it */
-    fp = fopen(file, "r+");
-    if (!fp)
+    fd = open(file, O_RDWR);
+    if (fd == -1)
     {
         if (ref)
         {
@@ -452,15 +455,17 @@ DbLockFromArr(Db * db, Array * args)
         goto finish;
     }
 
+    stream = StreamFd(fd);
+
     lock.l_start = 0;
     lock.l_len = 0;
     lock.l_type = F_WRLCK;
     lock.l_whence = SEEK_SET;
 
     /* Lock the file on the disk */
-    if (fcntl(fileno(fp), F_SETLK, &lock) < 0)
+    if (fcntl(fd, F_SETLK, &lock) < 0)
     {
-        fclose(fp);
+        StreamClose(stream);
         ref = NULL;
         goto finish;
     }
@@ -470,17 +475,16 @@ DbLockFromArr(Db * db, Array * args)
         unsigned long diskTs = UtilLastModified(file);
 
         pthread_mutex_lock(&ref->lock);
-        ref->fp = fp;
 
         if (diskTs > ref->ts)
         {
             /* File was modified on disk since it was cached */
-            HashMap *json = JsonDecode(fp);
+            HashMap *json = JsonDecode(ref->stream);
 
             if (!json)
             {
                 pthread_mutex_unlock(&ref->lock);
-                fclose(fp);
+                StreamClose(ref->stream);
                 ref = NULL;
                 goto finish;
             }
@@ -489,7 +493,6 @@ DbLockFromArr(Db * db, Array * args)
             ref->json = json;
             ref->ts = diskTs;
             ref->size = DbComputeSize(ref->json);
-
         }
 
         /* Float this ref to mostRecent */
@@ -525,24 +528,25 @@ DbLockFromArr(Db * db, Array * args)
         ref = Malloc(sizeof(DbRef));
         if (!ref)
         {
-            fclose(fp);
+            StreamClose(stream);
             goto finish;
         }
 
-        ref->json = JsonDecode(fp);
-        ref->fp = fp;
+        ref->json = JsonDecode(stream);
 
         if (!ref->json)
         {
             Free(ref);
-            fclose(fp);
+            StreamClose(stream);
             ref = NULL;
             goto finish;
         }
 
+        ref->fd = fd;
+        ref->stream = stream;
+
         pthread_mutex_init(&ref->lock, NULL);
         pthread_mutex_lock(&ref->lock);
-
 
         for (i = 0; i < ArraySize(args); i++)
         {
@@ -579,7 +583,7 @@ finish:
 DbRef *
 DbCreate(Db * db, size_t nArgs,...)
 {
-    FILE *fp;
+    Stream *fp;
     char *file;
     char *dir;
     va_list ap;
@@ -620,7 +624,7 @@ DbCreate(Db * db, size_t nArgs,...)
 
     Free(dir);
 
-    fp = fopen(file, "w");
+    fp = StreamOpen(file, "w");
     Free(file);
     if (!fp)
     {
@@ -628,9 +632,8 @@ DbCreate(Db * db, size_t nArgs,...)
         return NULL;
     }
 
-    fprintf(fp, "{}");
-    fflush(fp);
-    fclose(fp);
+    StreamPuts(fp, "{}");
+    StreamClose(fp);
 
     ret = DbLockFromArr(db, args);
 
@@ -744,17 +747,16 @@ DbUnlock(Db * db, DbRef * ref)
 
     pthread_mutex_lock(&db->lock);
 
-    rewind(ref->fp);
-    if (ftruncate(fileno(ref->fp), 0) < 0)
+    lseek(ref->fd, 0L, SEEK_SET);
+    if (ftruncate(ref->fd, 0) < 0)
     {
         pthread_mutex_unlock(&db->lock);
         return 0;
     }
 
-    JsonEncode(ref->json, ref->fp, JSON_DEFAULT);
+    JsonEncode(ref->json, ref->stream, JSON_DEFAULT);
 
-    fflush(ref->fp);
-    fclose(ref->fp);
+    StreamClose(ref->stream);
 
     if (db->cache)
     {

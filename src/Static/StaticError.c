@@ -26,7 +26,7 @@
 #include <Http.h>
 
 void
-StaticError(FILE * stream, HttpStatus error)
+StaticError(Stream * stream, HttpStatus error)
 {
     char title[10];
 
@@ -34,8 +34,8 @@ StaticError(FILE * stream, HttpStatus error)
 
     HtmlBegin(stream, title);
 
-    fprintf(stream, "<h2 style=\"text-align: center\">%s</h2>",
-            HttpStatusToString(error));
+    StreamPrintf(stream, "<h2 style=\"text-align: center\">%s</h2>",
+                 HttpStatusToString(error));
 
     HtmlEnd(stream);
 }

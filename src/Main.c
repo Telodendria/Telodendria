@@ -72,7 +72,7 @@ main(int argc, char **argv)
     char *configArg = NULL;
 
     /* Config file */
-    FILE *configFile = NULL;
+    Stream *configFile = NULL;
     HashMap *config = NULL;
 
     /* Program configuration */
@@ -155,11 +155,11 @@ main(int argc, char **argv)
     }
     else if (strcmp(configArg, "-") == 0)
     {
-        configFile = stdin;
+        configFile = StreamStdin();
     }
     else
     {
-        fclose(stdin);
+        StreamClose(StreamStdin());
 #ifdef __OpenBSD__
         if (unveil(configArg, "r") != 0)
         {
@@ -168,7 +168,7 @@ main(int argc, char **argv)
             goto finish;
         }
 #endif
-        configFile = fopen(configArg, "r");
+        configFile = StreamOpen(configArg, "r");
         if (!configFile)
         {
             Log(lc, LOG_ERR, "Unable to open configuration file '%s' for reading.", configArg);
@@ -180,7 +180,7 @@ main(int argc, char **argv)
     Log(lc, LOG_NOTICE, "Processing configuration file '%s'.", configArg);
 
     config = JsonDecode(configFile);
-    fclose(configFile);
+    StreamClose(configFile);
 
     if (!config)
     {
@@ -250,7 +250,7 @@ main(int argc, char **argv)
 
     if (tConfig->flags & TELODENDRIA_LOG_FILE)
     {
-        FILE *logFile = fopen("telodendria.log", "a");
+        Stream *logFile = StreamOpen("telodendria.log", "a");
 
         if (!logFile)
         {
@@ -476,9 +476,9 @@ finish:
      * If we're not logging to standard output, then we can close it. Otherwise,
      * if we are logging to stdout, LogConfigFree() will close it for us.
      */
-    if (!tConfig || !(tConfig->flags & TELODENDRIA_LOG_STDOUT))
+    if (tConfig && !(tConfig->flags & TELODENDRIA_LOG_STDOUT))
     {
-        fclose(stdout);
+        StreamClose(StreamStdout());
     }
 
     DbClose(matrixArgs.db);
@@ -486,15 +486,26 @@ finish:
     LogConfigTimeStampFormatSet(lc, NULL);
     TelodendriaConfigFree(tConfig);
 
-    Log(lc, LOG_DEBUG, "");
-    MemoryIterate(TelodendriaMemoryIterator, lc);
-    Log(lc, LOG_DEBUG, "");
 
     Log(lc, LOG_DEBUG, "Exiting with code '%d'.", exit);
+
+    /*
+     * Uninstall the memory hook because it uses the Log
+     * API, whose configuration is being freed now, so it
+     * won't work anymore.
+     */
+    MemoryHook(NULL, NULL);
+
     LogConfigFree(lc);
 
-    MemoryFreeAll();
+    /* Standard error should never have been opened, but just in case
+     * it was, this doesn't hurt anything. */
+    StreamClose(StreamStderr());
 
-    fclose(stderr);
+    /* Generate a memory report if any leaks occurred. At this point no
+     * memory should be allocated. */
+    TelodendriaGenerateMemReport();
+
+    MemoryFreeAll();
     return exit;
 }

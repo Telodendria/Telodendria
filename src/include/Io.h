@@ -27,6 +27,7 @@
 #include <stdio.h>
 #include <stdarg.h>
 #include <unistd.h>
+#include <sys/types.h>
 
 #ifndef IO_BUFFER
 #define IO_BUFFER 4096

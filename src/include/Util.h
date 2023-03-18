@@ -29,6 +29,8 @@
 #include <stddef.h>
 #include <sys/types.h>
 
+#include <Stream.h>
+
 extern unsigned long
  UtilServerTs(void);
 
@@ -45,12 +47,12 @@ extern size_t
  UtilParseBytes(char *);
 
 extern ssize_t
- UtilGetDelim(char **, size_t *, int, FILE *);
+ UtilGetDelim(char **, size_t *, int, Stream *);
 
 extern ssize_t
- UtilGetLine(char **, size_t *, FILE *);
+ UtilGetLine(char **, size_t *, Stream *);
 
 extern size_t
- UtilStreamCopy(FILE *, FILE *);
+ UtilStreamCopy(Stream *, Stream *);
 
 #endif                             /* TELODENDRIA_UTIL_H */

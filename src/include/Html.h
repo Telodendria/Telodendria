@@ -24,23 +24,23 @@
 #ifndef TELODENDRIA_HTML_H
 #define TELODENDRIA_HTML_H
 
-#include <stdio.h>
+#include <Stream.h>
 
-#define HtmlBeginJs(stream) fprintf(stream, \
+#define HtmlBeginJs(stream) StreamPuts(stream, \
         "<script>" \
         "\n// @license magnet:?xt=" \
         "urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&dn=expat.txt " \
         "Expat\n")
 
-#define HtmlEndJs(stream) fprintf(stream, "\n// @license-end\n</script>")
+#define HtmlEndJs(stream) StreamPuts(stream, "\n// @license-end\n</script>")
 
-#define HtmlBeginStyle(stream) fprintf(stream, "<style>")
-#define HtmlEndStyle(stream) fprintf(stream, "</style>")
-
-extern void
- HtmlBegin(FILE *, char *);
+#define HtmlBeginStyle(stream) StreamPuts(stream, "<style>")
+#define HtmlEndStyle(stream) StreamPuts(stream, "</style>")
 
 extern void
- HtmlEnd(FILE *);
+ HtmlBegin(Stream *, char *);
+
+extern void
+ HtmlEnd(Stream *);
 
 #endif                             /* TELODENDRIA_HTML_H */

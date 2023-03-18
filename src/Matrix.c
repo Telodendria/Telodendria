@@ -39,7 +39,7 @@ MatrixHttpHandler(HttpServerContext * context, void *argp)
 {
     MatrixHttpHandlerArgs *args = (MatrixHttpHandlerArgs *) argp;
     LogConfig *lc = args->lc;
-    FILE *stream;
+    Stream *stream;
     HashMap *response = NULL;
 
     char *key;
@@ -133,7 +133,7 @@ MatrixHttpHandler(HttpServerContext * context, void *argp)
         JsonEncode(response, stream, JSON_DEFAULT);
         JsonFree(response);
 
-        fprintf(stream, "\n");
+        StreamPrintf(stream, "\n");
     }
 
     /*

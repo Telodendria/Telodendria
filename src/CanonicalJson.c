@@ -37,7 +37,7 @@ CanonicalJsonKeyCompare(void *k1, void *k2)
 }
 
 static void
-CanonicalJsonEncodeValue(JsonValue * value, FILE * out)
+CanonicalJsonEncodeValue(JsonValue * value, Stream * out)
 {
     Array *arr;
     size_t i, len;
@@ -52,7 +52,7 @@ CanonicalJsonEncodeValue(JsonValue * value, FILE * out)
             arr = JsonValueAsArray(value);
             len = ArraySize(arr);
 
-            fputc('[', out);
+            StreamPutc(out, '[');
 
             for (i = 0; i < len; i++)
             {
@@ -67,11 +67,11 @@ CanonicalJsonEncodeValue(JsonValue * value, FILE * out)
                 CanonicalJsonEncodeValue(aVal, out);
                 if (i < len - 1)
                 {
-                    fputc(',', out);
+                    StreamPutc(out, ',');
                 }
             }
 
-            fputc(']', out);
+            StreamPutc(out, ']');
             break;
         default:
             JsonEncodeValue(value, out, JSON_DEFAULT);
@@ -80,7 +80,7 @@ CanonicalJsonEncodeValue(JsonValue * value, FILE * out)
 }
 
 int
-CanonicalJsonEncode(HashMap * object, FILE * out)
+CanonicalJsonEncode(HashMap * object, Stream * out)
 {
     char *key;
     JsonValue *value;
@@ -106,7 +106,7 @@ CanonicalJsonEncode(HashMap * object, FILE * out)
 
     ArraySort(keys, CanonicalJsonKeyCompare);
 
-    fputc('{', out);
+    StreamPutc(out, '{');
 
     keyCount = ArraySize(keys);
     for (i = 0; i < keyCount; i++)
@@ -129,16 +129,16 @@ CanonicalJsonEncode(HashMap * object, FILE * out)
         }
 
         JsonEncodeString(key, out);
-        fputc(':', out);
+        StreamPutc(out, ':');
         CanonicalJsonEncodeValue(value, out);
 
         if (i < keyCount - 1)
         {
-            fputc(',', out);
+            StreamPutc(out, ',');
         }
     }
 
-    fputc('}', out);
+    StreamPutc(out, '}');
 
     ArrayFree(keys);
     return 1;

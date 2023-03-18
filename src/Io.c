@@ -134,7 +134,7 @@ int
 IoVprintf(Io * io, const char *fmt, va_list ap)
 {
     char *buf;
-    size_t write;
+    int write;
 
     int ret;
 

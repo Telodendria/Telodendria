@@ -26,6 +26,8 @@
 #include <Memory.h>
 #include <Log.h>
 
+#include <time.h>
+
 const char
  TelodendriaLogo[TELODENDRIA_LOGO_HEIGHT][TELODENDRIA_LOGO_WIDTH] = {
     "            .=                       -=-               ",
@@ -63,21 +65,6 @@ const char
 };
 
 void
-TelodendriaHexDump(size_t off, char *hexBuf, char *asciiBuf, void *args)
-{
-    LogConfig *lc = args;
-
-    if (hexBuf && asciiBuf)
-    {
-        Log(lc, LOG_DEBUG, "%04x: %s | %s |", off, hexBuf, asciiBuf);
-    }
-    else
-    {
-        Log(lc, LOG_DEBUG, "%04x", off);
-    }
-}
-
-void
 TelodendriaMemoryHook(MemoryAction a, MemoryInfo * i, void *args)
 {
     LogConfig *lc = (LogConfig *) args;
@@ -109,20 +96,78 @@ TelodendriaMemoryHook(MemoryAction a, MemoryInfo * i, void *args)
         MemoryInfoGetPointer(i));
 }
 
-void
-TelodendriaMemoryIterator(MemoryInfo * i, void *args)
+static void
+HexDump(size_t off, char *hexBuf, char *asciiBuf, void *args)
 {
-    LogConfig *lc = (LogConfig *) args;
+    FILE *report = args;
 
-    /* We haven't freed the logger memory yet */
-    if (MemoryInfoGetPointer(i) != lc)
+    if (hexBuf && asciiBuf)
     {
-        Log(lc, LOG_WARNING, "%s:%d: %lu bytes of memory at %p leaked.",
+        fprintf(report, "%04lx: %s | %s |\n", off, hexBuf, asciiBuf);
+    }
+    else
+    {
+        fprintf(report, "%04lx\n", off);
+    }
+}
+
+
+static void
+MemoryIterator(MemoryInfo * i, void *args)
+{
+    FILE *report = args;
+
+    fprintf(report, "%s:%d: %lu bytes at %p\n",
             MemoryInfoGetFile(i), MemoryInfoGetLine(i),
             MemoryInfoGetSize(i), MemoryInfoGetPointer(i));
 
-        MemoryHexDump(i, TelodendriaHexDump, lc);
+    MemoryHexDump(i, HexDump, report);
+
+    fprintf(report, "\n");
+}
+
+void
+TelodendriaGenerateMemReport(void)
+{
+    static const char *reportName = "Memory.txt";
+
+    /*
+     * Use C standard IO instead of the Stream or Io APIs, because
+     * those use the Memory API, and that's exactly what we're trying
+     * to assess, so using it would generate false positives. None of
+     * this code should leak memory.
+     */
+    FILE *report;
+    time_t currentTime;
+    struct tm *timeInfo;
+    char tsBuffer[1024];
+
+    if (!MemoryAllocated())
+    {
+        /* No memory leaked, no need to write the report. This is the
+         * ideal situation; we only want the report to show up if leaks
+         * occurred. */
+        return;
     }
+
+    report = fopen(reportName, "a");
+    if (!report)
+    {
+        return;
+    }
+
+    currentTime = time(NULL);
+    timeInfo = localtime(&currentTime);
+    strftime(tsBuffer, sizeof(tsBuffer), "%c", timeInfo);
+
+    fprintf(report, "---------- Telodendria Memory Report ----------\n");
+    fprintf(report, "Date: %s\n", tsBuffer);
+    fprintf(report, "Total Bytes: %lu\n", MemoryAllocated());
+    fprintf(report, "\n");
+
+    MemoryIterate(MemoryIterator, report);
+
+    fclose(report);
 }
 
 void

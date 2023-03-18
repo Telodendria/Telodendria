@@ -49,24 +49,24 @@ HttpHandle(HttpServerContext * cx, void *args)
 
     (void) args;
 
-    printf("%s %s\n", HttpRequestMethodToString(method),
-           HttpRequestPath(cx));
+    StreamPrintf(StreamStdout(), "%s %s\n", HttpRequestMethodToString(method),
+                 HttpRequestPath(cx));
 
     while (HashMapIterate(headers, &key, (void **) &val))
     {
-        printf("%s: %s\n", key, val);
+        StreamPrintf(StreamStdout(), "%s: %s\n", key, val);
     }
 
-    printf("\n");
+    StreamPutc(StreamStdout(), '\n');
 
-    bytes = UtilStreamCopy(HttpServerStream(cx), stdout);
+    bytes = UtilStreamCopy(HttpServerStream(cx), StreamStdout());
 
-    printf("\n");
-    printf("(%lu bytes)\n", bytes);
+    StreamPutc(StreamStdout(), '\n');
+    StreamPrintf(StreamStdout(), "(%lu bytes)\n", bytes);
 
     HttpSendHeaders(cx);
 
-    fprintf(HttpServerStream(cx), "{}\n");
+    StreamPuts(HttpServerStream(cx), "{}\n");
 }
 
 int
@@ -77,12 +77,12 @@ main(void)
     server = HttpServerCreate(8008, 1, 1, HttpHandle, NULL);
     if (!HttpServerStart(server))
     {
-        fprintf(stderr, "Unable to start HTTP server.\n");
+        StreamPuts(StreamStderr(), "Unable to start HTTP server.\n");
         HttpServerFree(server);
         return 1;
     }
 
-    printf("Listening on port 8008.\n");
+    StreamPuts(StreamStdout(), "Listening on port 8008.\n");
 
     sa.sa_handler = SignalHandle;
     sigfillset(&sa.sa_mask);
@@ -90,7 +90,7 @@ main(void)
 
     if (sigaction(SIGINT, &sa, NULL) < 0)
     {
-        fprintf(stderr, "Unable to install signal handler.\n");
+        StreamPuts(StreamStderr(), "Unable to install signal handler.\n");
         HttpServerStop(server);
         HttpServerJoin(server);
         HttpServerFree(server);
@@ -99,7 +99,12 @@ main(void)
 
     HttpServerJoin(server);
 
-    printf("Shutting down.\n");
+    StreamPuts(StreamStdout(), "Shutting down.\n");
     HttpServerStop(server);
+
+    StreamClose(StreamStdout());
+    StreamClose(StreamStderr());
+    StreamClose(StreamStdin());
+
     return 0;
 }

@@ -49,7 +49,7 @@ extern HttpStatus
 extern HashMap *
  HttpResponseHeaders(HttpClientContext *);
 
-extern FILE *
+extern Stream *
  HttpClientStream(HttpClientContext *);
 
 extern void

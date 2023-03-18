@@ -39,7 +39,7 @@ MAIN="Main"
 
 if [ "$DEBUG" = "1" ]; then
     CFLAGS="$CFLAGS -O0 -g -pg"
-    LDFLAGS="-lm -pthread -v"
+    LDFLAGS="-lm -pthread"
     PROG="$PROG-debug"
 fi
 

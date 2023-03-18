@@ -40,7 +40,7 @@
 static void
 usage(char *prog)
 {
-    fprintf(stderr, "Usage: %s [-i -X method -H header -d data] url\n", prog);
+    StreamPrintf(StreamStderr(), "Usage: %s [-i -X method -H header -d data] url\n", prog);
 }
 
 int
@@ -72,7 +72,7 @@ main(int argc, char **argv)
                 method = HttpRequestMethodFromString(optarg);
                 if (!method)
                 {
-                    fprintf(stderr, "Unknown request method: %s\n", optarg);
+                    StreamPrintf(StreamStderr(), "Unknown request method: %s\n", optarg);
                     return 1;
                 }
                 break;
@@ -113,7 +113,7 @@ main(int argc, char **argv)
     uri = UriParse(argv[optind]);
     if (!uri)
     {
-        fprintf(stderr, "Failed to parse URI: %s\n", argv[optind]);
+        StreamPrintf(StreamStderr(), "Failed to parse URI: %s\n", argv[optind]);
         return 1;
     }
 
@@ -131,7 +131,7 @@ main(int argc, char **argv)
 
     if (!uri->port)
     {
-        fprintf(stderr, "Unknown protocol: %s\n", uri->proto);
+        StreamPrintf(StreamStderr(), "Unknown protocol: %s\n", uri->proto);
         UriFree(uri);
         return 1;
     }
@@ -145,7 +145,7 @@ main(int argc, char **argv)
 
     if (!cx)
     {
-        fprintf(stderr, "Failed to connect.\n");
+        StreamPuts(StreamStderr(), "Failed to connect.\n");
         UriFree(uri);
         return 1;
     }
@@ -163,32 +163,32 @@ main(int argc, char **argv)
     {
         if (*data == '@')
         {
-            FILE *in;
+            Stream *in;
 
             data++;
 
             if (strcmp(data, "-") == 0)
             {
-                in = stdin;
+                in = StreamStdin();
             }
             else
             {
-                in = fopen(data, "r");
+                in = StreamOpen(data, "r");
             }
 
             if (!in)
             {
-                fprintf(stderr, "%s: %s\n", data, strerror(errno));
+                StreamPrintf(StreamStderr(), "%s: %s\n", data, strerror(errno));
                 return 1;
             }
 
             UtilStreamCopy(in, HttpClientStream(cx));
 
-            fclose(in);
+            StreamClose(in);
         }
         else
         {
-            fprintf(HttpClientStream(cx), "%s", data);
+            StreamPuts(HttpClientStream(cx), data);
         }
     }
 
@@ -196,7 +196,7 @@ main(int argc, char **argv)
 
     if (!res)
     {
-        fprintf(stderr, "Failed to send request.\n");
+        StreamPuts(StreamStderr(), "Failed to send request.\n");
         HttpClientContextFree(cx);
         UriFree(uri);
         return 1;
@@ -206,20 +206,25 @@ main(int argc, char **argv)
     {
         HashMap *responseHeaders = HttpResponseHeaders(cx);
 
-        printf("HTTP/1.0 %d %s\n", res, HttpStatusToString(res));
+        StreamPrintf(StreamStdout(), "HTTP/1.0 %d %s\n", res, HttpStatusToString(res));
 
         while (HashMapIterate(responseHeaders, &key, (void **) &val))
         {
-            printf("%s: %s\n", key, val);
+            StreamPrintf(StreamStdout(), "%s: %s\n", key, val);
         }
 
-        printf("\n");
+        StreamPutc(StreamStdout(), '\n');
     }
 
-    UtilStreamCopy(HttpClientStream(cx), stdout);
+    UtilStreamCopy(HttpClientStream(cx), StreamStdout());
+    StreamClose(StreamStdout());
 
     HttpClientContextFree(cx);
     UriFree(uri);
+
+    StreamClose(StreamStdout());
+    StreamClose(StreamStderr());
+    StreamClose(StreamStdin());
 
     return !(res == HTTP_OK);
 }

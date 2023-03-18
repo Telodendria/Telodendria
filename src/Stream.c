@@ -28,6 +28,7 @@
 #include <Util.h>
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <errno.h>
 #include <string.h>
 #include <sys/stat.h>
@@ -42,23 +43,26 @@
 
 #define STREAM_EOF (1 << 0)
 #define STREAM_ERR (1 << 1)
+#define STREAM_TTY (1 << 2)
 
 struct Stream
 {
     Io *io;
 
-    int *rBuf;
+    char *rBuf;
     size_t rLen;
     size_t rOff;
 
-    int *wBuf;
+    char *wBuf;
     size_t wLen;
 
-    int *ugBuf;
+    char *ugBuf;
     size_t ugSize;
     size_t ugLen;
 
-    int flags:2;
+    int flags;
+
+    int fd;
 };
 
 Stream *
@@ -79,6 +83,7 @@ StreamIo(Io * io)
 
     memset(stream, 0, sizeof(Stream));
     stream->io = io;
+    stream->fd = -1;
 
     return stream;
 }
@@ -87,26 +92,54 @@ Stream *
 StreamFd(int fd)
 {
     Io *io = IoFd(fd);
+    Stream *stream;
 
     if (!io)
     {
         return NULL;
     }
 
-    return StreamIo(io);
+    stream = StreamIo(io);
+    if (!stream)
+    {
+        return NULL;
+    }
+
+    stream->fd = fd;
+
+    if (isatty(stream->fd))
+    {
+        stream->flags |= STREAM_TTY;
+    }
+
+    return stream;
 }
 
 Stream *
 StreamFile(FILE * fp)
 {
     Io *io = IoFile(fp);
+    Stream *stream;
 
     if (!io)
     {
         return NULL;
     }
 
-    return StreamIo(io);
+    stream = StreamIo(io);
+    if (!stream)
+    {
+        return NULL;
+    }
+
+    stream->fd = fileno(fp);
+
+    if (isatty(stream->fd))
+    {
+        stream->flags |= STREAM_TTY;
+    }
+
+    return stream;
 }
 
 Stream *
@@ -120,6 +153,45 @@ StreamOpen(const char *path, const char *mode)
     }
 
     return StreamFile(fp);
+}
+
+Stream *
+StreamStdout(void)
+{
+    static Stream *stdOut = NULL;
+
+    if (!stdOut)
+    {
+        stdOut = StreamFd(STDOUT_FILENO);
+    }
+
+    return stdOut;
+}
+
+Stream *
+StreamStderr(void)
+{
+    static Stream *stdErr = NULL;
+
+    if (!stdErr)
+    {
+        stdErr = StreamFd(STDERR_FILENO);
+    }
+
+    return stdErr;
+}
+
+Stream *
+StreamStdin(void)
+{
+    static Stream *stdIn = NULL;
+
+    if (!stdIn)
+    {
+        stdIn = StreamFd(STDIN_FILENO);
+    }
+
+    return stdIn;
 }
 
 int
@@ -171,8 +243,10 @@ StreamVprintf(Stream * stream, const char *fmt, va_list ap)
      * buffered. It therefore allows us to finish filling the buffer
      * and then only flush it when necessary, preventing superfluous
      * writes. */
-    char *buf;
-    ssize_t len;
+
+    char *buf = NULL;
+    size_t bufSize = 0;
+    FILE *fp;
 
     int ret;
 
@@ -181,38 +255,22 @@ StreamVprintf(Stream * stream, const char *fmt, va_list ap)
         return -1;
     }
 
-    buf = Malloc(IO_BUFFER);
-    if (!buf)
+    fp = open_memstream(&buf, &bufSize);
+    if (!fp)
     {
         return -1;
     }
 
-    len = vsnprintf(buf, IO_BUFFER, fmt, ap);
+    ret = vfprintf(fp, fmt, ap);
+    fclose(fp);
 
-    if (len < 0)
+    if (ret >= 0)
     {
-        Free(buf);
-        return len;
+        ret = StreamPuts(stream, buf);
     }
 
-    if (len >= IO_BUFFER)
-    {
-        char *new = Realloc(buf, len + 1);
-
-        if (!new)
-        {
-            Free(buf);
-            return -1;
-        }
-
-        buf = new;
-
-        vsnprintf(buf, len, fmt, ap);
-    }
-
-    ret = StreamPuts(stream, buf);
-
-    Free(buf);
+    free(buf);                     /* Allocated by stdlib, not Memory
+                                    * API */
 
     return ret;
 }
@@ -257,7 +315,7 @@ StreamGetc(Stream * stream)
     if (!stream->rBuf)
     {
         /* No buffer allocated yet */
-        stream->rBuf = Malloc(IO_BUFFER * sizeof(int));
+        stream->rBuf = Malloc(IO_BUFFER);
         if (!stream->rBuf)
         {
             stream->flags |= STREAM_ERR;
@@ -319,7 +377,7 @@ StreamUngetc(Stream * stream, int c)
 
     if (stream->ugLen >= stream->ugSize)
     {
-        int *new;
+        char *new;
 
         stream->ugSize += IO_BUFFER;
         new = Realloc(stream->ugBuf, stream->ugSize);
@@ -335,7 +393,7 @@ StreamUngetc(Stream * stream, int c)
         stream->ugBuf = new;
     }
 
-    stream->ugBuf[stream->ugLen - 1] = c;
+    stream->ugBuf[stream->ugLen] = c;
     stream->ugLen++;
 
     return c;
@@ -352,7 +410,7 @@ StreamPutc(Stream * stream, int c)
 
     if (!stream->wBuf)
     {
-        stream->wBuf = Malloc(IO_BUFFER * sizeof(int));
+        stream->wBuf = Malloc(IO_BUFFER);
         if (!stream->wBuf)
         {
             stream->flags |= STREAM_ERR;
@@ -376,6 +434,24 @@ StreamPutc(Stream * stream, int c)
 
     stream->wBuf[stream->wLen] = c;
     stream->wLen++;
+
+    if (stream->flags & STREAM_TTY && c == '\n')
+    {
+        /* Newline encountered on a TTY; write now. This fixes some
+         * strange behavior on certain TTYs where a newline is written
+         * to the screen upon flush even when no newline exists in the
+         * stream. We just flush on newlines, but only if we're
+         * directly writing to a TTY. */
+        ssize_t writeRes = IoWrite(stream->io, stream->wBuf, stream->wLen);
+
+        if (writeRes == -1)
+        {
+            stream->flags |= STREAM_ERR;
+            return EOF;
+        }
+
+        stream->wLen = 0;
+    }
 
     return c;
 }
@@ -403,6 +479,46 @@ StreamPuts(Stream * stream, char *str)
     }
 
     return ret;
+}
+
+char *
+StreamGets(Stream * stream, char *str, int size)
+{
+    int i;
+
+    if (!stream)
+    {
+        errno = EBADF;
+        return NULL;
+    }
+
+    if (size <= 0)
+    {
+        errno = EINVAL;
+        return NULL;
+    }
+
+    for (i = 0; i < size - 1; i++)
+    {
+        int c = StreamGetc(stream);
+
+        if (StreamEof(stream) || StreamError(stream))
+        {
+            break;
+        }
+
+        str[i] = c;
+
+        if (c == '\n')
+        {
+            i++;
+            break;
+        }
+    }
+
+    str[i] = '\0';
+
+    return str;
 }
 
 int
@@ -504,4 +620,10 @@ StreamCopy(Stream * in, Stream * out)
 
     StreamFlush(out);
     return nBytes;
+}
+
+int
+StreamFileno(Stream * stream)
+{
+    return stream ? stream->fd : -1;
 }

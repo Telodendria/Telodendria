@@ -28,7 +28,7 @@
 #include <Telodendria.h>
 
 void
-HtmlBegin(FILE * stream, char *title)
+HtmlBegin(Stream * stream, char *title)
 {
     size_t i;
 
@@ -37,87 +37,87 @@ HtmlBegin(FILE * stream, char *title)
         return;
     }
 
-    fprintf(stream,
-            "<!DOCTYPE html>"
-            "<html>"
-            "<head>"
-            "<meta charset=\"utf-8\">"
-            "<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">"
-            "<title>%s | Telodendria</title>"
-            ,title
+    StreamPrintf(stream,
+                 "<!DOCTYPE html>"
+                 "<html>"
+                 "<head>"
+                 "<meta charset=\"utf-8\">"
+                 "<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">"
+                 "<title>%s | Telodendria</title>"
+                 ,title
             );
     HtmlBeginStyle(stream);
-    fprintf(stream,
-            ":root {"
-            "  color-scheme: dark;"
-            "  --accent: #7b8333;"
-            "}"
-            "body {"
-            "  margin: auto;"
-            "  width: 100%%;"
-            "  max-width: 8.5in;"
-            "  padding: 0.25in;"
-            "  background-color: #0d1117;"
-            "  color: white;"
-            "}"
-            "a {"
-            "  color: var(--accent);"
-            "  text-decoration: none;"
-            "}"
-            "h1 {"
-            "  text-align: center;"
-            "}"
-            ".logo {"
-            "  color: var(--accent);"
-            "  text-align: center;"
-            "  font-weight: bold;"
-            "}"
+    StreamPuts(stream,
+               ":root {"
+               "  color-scheme: dark;"
+               "  --accent: #7b8333;"
+               "}"
+               "body {"
+               "  margin: auto;"
+               "  width: 100%;"
+               "  max-width: 8.5in;"
+               "  padding: 0.25in;"
+               "  background-color: #0d1117;"
+               "  color: white;"
+               "}"
+               "a {"
+               "  color: var(--accent);"
+               "  text-decoration: none;"
+               "}"
+               "h1 {"
+               "  text-align: center;"
+               "}"
+               ".logo {"
+               "  color: var(--accent);"
+               "  text-align: center;"
+               "  font-weight: bold;"
+               "}"
             );
 
-    fprintf(stream,
-            ".form {"
-            "  margin: auto;"
-            "  width: 100%%;"
-            "  max-width: 400px;"
-            "  border-radius: 10px;"
-            "  border: 1px var(--accent) solid;"
-            "  padding: 10px;"
-            "}"
-            "form {"
-            "  display: block;"
-            "}"
-            "form > input, label {"
-            "  width: 95%%;"
-            "  height: 25px;"
-            "  display: block;"
-            "  margin-bottom: 5px;"
-            "  margin-left: auto;"
-            "  margin-right: auto;"
-            "}"
+    StreamPuts(stream,
+               ".form {"
+               "  margin: auto;"
+               "  width: 100%;"
+               "  max-width: 400px;"
+               "  border-radius: 10px;"
+               "  border: 1px var(--accent) solid;"
+               "  padding: 10px;"
+               "}"
+               "form {"
+               "  display: block;"
+               "}"
+               "form > input, label {"
+               "  width: 95%;"
+               "  height: 25px;"
+               "  display: block;"
+               "  margin-bottom: 5px;"
+               "  margin-left: auto;"
+               "  margin-right: auto;"
+               "}"
             );
     HtmlEndStyle(stream);
 
-    fprintf(stream,
-            "</head>"
-            "<body>"
-            "<pre class=\"logo\">"
+    StreamPuts(stream,
+               "</head>"
+               "<body>"
+               "<pre class=\"logo\">"
             );
 
     for (i = 0; i < TELODENDRIA_LOGO_HEIGHT; i++)
     {
-        fprintf(stream, "%s\n", TelodendriaLogo[i]);
+        StreamPrintf(stream, "%s\n", TelodendriaLogo[i]);
     }
 
-    fprintf(stream,
-            "</pre>"
-            "<h1>%s</h1>"
-            ,title);
+    StreamPrintf(stream,
+                 "</pre>"
+                 "<h1>%s</h1>"
+                 ,title);
 }
 
 void
-HtmlEnd(FILE * stream)
+HtmlEnd(Stream * stream)
 {
-    fprintf(stream,
-            "</body>"
-            "</html>");
+    StreamPuts(stream,
+               "</body>"
+               "</html>");
 }

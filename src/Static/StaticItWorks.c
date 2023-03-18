@@ -25,30 +25,30 @@
 #include <Html.h>
 
 void
-StaticItWorks(FILE * stream)
+StaticItWorks(Stream * stream)
 {
     HtmlBegin(stream, "It works! Telodendria is running.");
 
-    fprintf(stream,
-            "<style>"
-            "p {"
-            "  text-align: center;"
-            "}"
-            "</style>"
+    StreamPuts(stream,
+               "<style>"
+               "p {"
+               "  text-align: center;"
+               "}"
+               "</style>"
             );
 
-    fprintf(stream,
-            "<p>"
+    StreamPuts(stream,
+               "<p>"
      "Your Telodendria server is listening on this port and is ready "
-            "for messages."
-            "</p>"
-            "<p>"
-            "To use this server, you'll need <a href=\"https://matrix.org/clients\">"
-            "a Matrix client</a>."
-            "</p>"
-            "<p>"
-            "Welcome to the Matrix universe :)"
-            "</p>"
+               "for messages."
+               "</p>"
+               "<p>"
+               "To use this server, you'll need <a href=\"https://matrix.org/clients\">"
+               "a Matrix client</a>."
+               "</p>"
+               "<p>"
+               "Welcome to the Matrix universe :)"
+               "</p>"
             );
 
     HtmlEnd(stream);

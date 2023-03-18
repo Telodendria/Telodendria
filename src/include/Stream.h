@@ -42,6 +42,15 @@ extern Stream *
 extern Stream *
  StreamOpen(const char *, const char *);
 
+extern Stream *
+ StreamStdout(void);
+
+extern Stream *
+ StreamStderr(void);
+
+extern Stream *
+ StreamStdin(void);
+
 extern int
  StreamClose(Stream *);
 
@@ -63,6 +72,9 @@ extern int
 extern int
  StreamPuts(Stream *, char *);
 
+extern char *
+ StreamGets(Stream *, char *, int);
+
 extern int
  StreamEof(Stream *);
 
@@ -77,5 +89,8 @@ extern int
 
 extern ssize_t
  StreamCopy(Stream *, Stream *);
+
+extern int
+ StreamFileno(Stream *);
 
 #endif                             /* TELODENDRIA_STREAM_H */
