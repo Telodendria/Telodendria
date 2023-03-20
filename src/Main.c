@@ -102,17 +102,6 @@ main(int argc, char **argv)
 
     TelodendriaPrintHeader(lc);
 
-#ifdef __OpenBSD__
-    Log(lc, LOG_DEBUG, "Attempting pledge...");
-
-    if (pledge("stdio rpath wpath cpath flock inet dns getpw id unveil", NULL) != 0)
-    {
-        Log(lc, LOG_ERR, "Pledge failed: %s", strerror(errno));
-        exit = EXIT_FAILURE;
-        goto finish;
-    }
-#endif
-
     while ((opt = getopt(argc, argv, "f:Vvn")) != -1)
     {
         switch (opt)
@@ -160,14 +149,7 @@ main(int argc, char **argv)
     else
     {
         StreamClose(StreamStdin());
-#ifdef __OpenBSD__
-        if (unveil(configArg, "r") != 0)
-        {
-            Log(lc, LOG_ERR, "Unable to unveil() configuration file '%s' for reading.", configArg);
-            exit = EXIT_FAILURE;
-            goto finish;
-        }
-#endif
+
         configFile = StreamOpen(configArg, "r");
         if (!configFile)
         {
@@ -203,17 +185,6 @@ main(int argc, char **argv)
         Log(lc, LOG_INFO, "Configuration is OK.");
         goto finish;
     }
-
-#ifdef __OpenBSD__
-    if (unveil(tConfig->dataDir, "rwc") != 0)
-    {
-        Log(lc, LOG_ERR, "Unveil of data directory failed: %s", strerror(errno));
-        exit = EXIT_FAILURE;
-        goto finish;
-    }
-
-    unveil(NULL, NULL);            /* Done with unveil(), so disable it */
-#endif
 
     if (!tConfig->logTimestamp || strcmp(tConfig->logTimestamp, "default") != 0)
     {
@@ -338,18 +309,6 @@ main(int argc, char **argv)
 
     if (getuid() == 0)
     {
-#ifndef __OpenBSD__                /* chroot() is only useful without
-                                    * unveil() */
-        if (chroot(".") == 0)
-        {
-            Log(lc, LOG_DEBUG, "Changed the root directory to: %s.", tConfig->dataDir);
-        }
-        else
-        {
-            Log(lc, LOG_WARNING, "Unable to chroot into directory: %s.", tConfig->dataDir);
-        }
-#endif
-
         if (userInfo && groupInfo)
         {
             if (setgid(groupInfo->gr_gid) != 0 || setuid(userInfo->pw_uid) != 0)
