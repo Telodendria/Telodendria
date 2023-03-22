@@ -111,8 +111,6 @@ main(int argc, char **argv)
         return EXIT_FAILURE;
     }
 
-    MemoryHook(TelodendriaMemoryHook, NULL);
-
     TelodendriaPrintHeader();
 
     while ((opt = getopt(argc, argv, "f:Vvn")) != -1)
@@ -142,6 +140,7 @@ main(int argc, char **argv)
     if (flags & ARG_VERBOSE)
     {
         LogConfigLevelSet(LogConfigGlobal(), LOG_DEBUG);
+        MemoryHook(TelodendriaMemoryHook, NULL);
     }
 
     if (flags & ARG_VERSION)
