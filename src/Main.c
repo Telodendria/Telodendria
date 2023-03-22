@@ -352,8 +352,6 @@ main(int argc, char **argv)
     }
     else
     {
-        Log(LOG_WARNING, "Not setting root directory, because we are not root.");
-
         if (tConfig->uid && tConfig->gid)
         {
             if (getuid() != userInfo->pw_uid || getgid() != groupInfo->gr_gid)
