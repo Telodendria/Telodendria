@@ -233,6 +233,17 @@ HttpResponseStatus(HttpServerContext * c, HttpStatus status)
     c->responseStatus = status;
 }
 
+HttpStatus
+HttpResponseStatusGet(HttpServerContext *c)
+{
+    if (!c)
+    {
+        return HTTP_STATUS_UNKNOWN;
+    }
+
+    return c->responseStatus;
+}
+
 Stream *
 HttpServerStream(HttpServerContext * c)
 {

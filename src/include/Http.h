@@ -48,6 +48,8 @@ typedef enum HttpRequestMethod
 
 typedef enum HttpStatus
 {
+    HTTP_STATUS_UNKNOWN = 0,
+
     /* Informational responses */
     HTTP_CONTINUE = 100,
     HTTP_SWITCHING_PROTOCOLS = 101,

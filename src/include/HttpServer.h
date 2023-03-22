@@ -69,6 +69,9 @@ extern char *
 extern void
  HttpResponseStatus(HttpServerContext *, HttpStatus);
 
+extern HttpStatus
+ HttpResponseStatusGet(HttpServerContext *);
+
 extern Stream *
  HttpServerStream(HttpServerContext *);
 

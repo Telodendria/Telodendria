@@ -51,10 +51,6 @@ MatrixHttpHandler(HttpServerContext * context, void *argp)
 
     requestPath = HttpRequestPath(context);
 
-    Log(LOG_INFO, "%s %s",
-        HttpRequestMethodToString(HttpRequestMethodGet(context)),
-        requestPath);
-
     HttpResponseStatus(context, HTTP_OK);
     HttpResponseHeader(context, "Server", "Telodendria/" TELODENDRIA_VERSION);
 
@@ -143,6 +139,12 @@ MatrixHttpHandler(HttpServerContext * context, void *argp)
     }
 
     MATRIX_PATH_FREE(pathParts);
+
+    Log(LOG_INFO, "%s %s (%d %s)",
+        HttpRequestMethodToString(HttpRequestMethodGet(context)),
+        requestPath,
+        HttpResponseStatusGet(context),
+        HttpStatusToString(HttpResponseStatusGet(context)));
 }
 
 HashMap *
