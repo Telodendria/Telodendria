@@ -274,8 +274,8 @@ main(int argc, char **argv)
     matrixArgs.config = tConfig;
 
     /* Bind the socket before possibly dropping permissions */
-    httpServer = HttpServerCreate(tConfig->listenPort, tConfig->threads, tConfig->maxConnections,
-                                  MatrixHttpHandler, &matrixArgs);
+    httpServer = HttpServerCreate(HTTP_FLAG_NONE, tConfig->listenPort, tConfig->threads,
+                                  tConfig->maxConnections, MatrixHttpHandler, &matrixArgs);
     if (!httpServer)
     {
         Log(lc, LOG_ERR, "Unable to create HTTP server on port %d: %s",

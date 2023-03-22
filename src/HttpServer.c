@@ -26,6 +26,7 @@
 #include <Queue.h>
 #include <Array.h>
 #include <Util.h>
+#include <Tls.h>
 
 #include <pthread.h>
 #include <stdio.h>
@@ -51,6 +52,7 @@ struct HttpServer
     unsigned int nThreads;
     unsigned int maxConnections;
     pthread_t socketThread;
+    int flags;
 
     volatile unsigned int stop:1;
     volatile unsigned int isRunning:1;
@@ -276,7 +278,7 @@ DequeueConnection(HttpServer * server)
 }
 
 HttpServer *
-HttpServerCreate(unsigned short port, unsigned int nThreads, unsigned int maxConnections,
+HttpServerCreate(int flags, unsigned short port, unsigned int nThreads, unsigned int maxConnections,
                  HttpHandler * requestHandler, void *handlerArgs)
 {
     HttpServer *server;
@@ -287,6 +289,13 @@ HttpServerCreate(unsigned short port, unsigned int nThreads, unsigned int maxCon
         return NULL;
     }
 
+#ifndef TLS_IMPL
+    if (flags & HTTP_FLAG_TLS)
+    {
+        return NULL;
+    }
+#endif
+
     server = Malloc(sizeof(HttpServer));
     if (!server)
     {
@@ -294,6 +303,8 @@ HttpServerCreate(unsigned short port, unsigned int nThreads, unsigned int maxCon
     }
 
     memset(server, 0, sizeof(HttpServer));
+
+    server->flags = flags;
 
     server->threadPool = ArrayCreate();
     if (!server->threadPool)
@@ -632,7 +643,20 @@ HttpServerEventThread(void *args)
                 continue;
             }
 
+#ifdef TLS_IMPL
+            if (server->flags & HTTP_FLAG_TLS)
+            {
+                /* TODO: Get server cert and key in here */
+                fp = TlsServerStream(connFd, NULL, NULL);
+            }
+            else
+            {
+                fp = StreamFd(connFd);
+            }
+#else
             fp = StreamFd(connFd);
+#endif
+
             if (!fp)
             {
                 pthread_mutex_unlock(&server->connQueueMutex);

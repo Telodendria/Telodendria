@@ -57,7 +57,7 @@ main(int argc, char **argv)
     char *val;
 
     int flags = 0;
-    int requestFlags = HTTP_NONE;
+    int requestFlags = HTTP_FLAG_NONE;
 
     int ch;
 
@@ -138,7 +138,7 @@ main(int argc, char **argv)
 
     if (strcmp(uri->proto, "https") == 0)
     {
-        requestFlags |= HTTP_TLS;
+        requestFlags |= HTTP_FLAG_TLS;
     }
 
     cx = HttpRequest(method, requestFlags, uri->port, uri->host, uri->path);

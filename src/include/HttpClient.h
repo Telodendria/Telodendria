@@ -29,9 +29,6 @@
 #include <HashMap.h>
 #include <Http.h>
 
-#define HTTP_NONE 0
-#define HTTP_TLS (1 << 0)
-
 typedef struct HttpClientContext HttpClientContext;
 
 extern HttpClientContext *

@@ -61,7 +61,7 @@ HttpRequest(HttpRequestMethod method, int flags, unsigned short port, char *host
     }
 
 #ifndef TLS_IMPL
-    if (flags & HTTP_TLS)
+    if (flags & HTTP_FLAG_TLS)
     {
         return NULL;
     }
@@ -69,7 +69,7 @@ HttpRequest(HttpRequestMethod method, int flags, unsigned short port, char *host
 
     if (!port)
     {
-        if (flags & HTTP_TLS)
+        if (flags & HTTP_FLAG_TLS)
         {
             strcpy(serv, "https");
         }
@@ -130,7 +130,7 @@ HttpRequest(HttpRequestMethod method, int flags, unsigned short port, char *host
     freeaddrinfo(res0);
 
 #ifdef TLS_IMPL
-    if (flags & HTTP_TLS)
+    if (flags & HTTP_FLAG_TLS)
     {
         context->stream = TlsClientStream(sd, host);
     }

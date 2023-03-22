@@ -29,6 +29,9 @@
 #include <HashMap.h>
 #include <Stream.h>
 
+#define HTTP_FLAG_NONE 0
+#define HTTP_FLAG_TLS (1 << 0)
+
 typedef enum HttpRequestMethod
 {
     HTTP_METHOD_UNKNOWN,

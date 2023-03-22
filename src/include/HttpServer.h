@@ -37,7 +37,7 @@ typedef struct HttpServerContext HttpServerContext;
 typedef void (HttpHandler) (HttpServerContext *, void *);
 
 extern HttpServer *
- HttpServerCreate(unsigned short, unsigned int, unsigned int, HttpHandler *, void *);
+ HttpServerCreate(int, unsigned short, unsigned int, unsigned int, HttpHandler *, void *);
 
 extern void
  HttpServerFree(HttpServer *);

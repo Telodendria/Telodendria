@@ -74,7 +74,7 @@ main(void)
 {
     struct sigaction sa;
 
-    server = HttpServerCreate(8008, 1, 1, HttpHandle, NULL);
+    server = HttpServerCreate(HTTP_FLAG_NONE, 8008, 1, 1, HttpHandle, NULL);
     if (!HttpServerStart(server))
     {
         StreamPuts(StreamStderr(), "Unable to start HTTP server.\n");
