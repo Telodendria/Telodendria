@@ -40,7 +40,10 @@ extern void *
  ArrayGet(Array *, size_t);
 
 extern int
- ArrayInsert(Array *, void *, size_t);
+ ArrayInsert(Array *, size_t, void *);
+
+extern void *
+ArraySet(Array *, size_t, void *);
 
 extern int
  ArrayAdd(Array *, void *);

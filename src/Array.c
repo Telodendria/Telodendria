@@ -46,7 +46,7 @@ ArrayAdd(Array * array, void *value)
         return 0;
     }
 
-    return ArrayInsert(array, value, array->size);
+    return ArrayInsert(array, array->size, value);
 }
 
 Array *
@@ -123,7 +123,7 @@ ArrayGet(Array * array, size_t index)
 
 
 extern int
-ArrayInsert(Array * array, void *value, size_t index)
+ArrayInsert(Array * array, size_t index, void *value)
 {
     size_t i;
 
@@ -161,6 +161,32 @@ ArrayInsert(Array * array, void *value, size_t index)
     array->entries[index] = value;
 
     return 1;
+}
+
+extern void *
+ArraySet(Array * array, size_t index, void * value)
+{
+    void *oldValue;
+
+    if (!value)
+    {
+        return ArrayDelete(array, index);
+    }
+
+    if (!array)
+    {
+        return NULL;
+    }
+
+    if (index >= array->size)
+    {
+        return NULL;
+    }
+
+    oldValue = array->entries[index];
+    array->entries[index] = value;
+
+    return oldValue;
 }
 
 size_t
