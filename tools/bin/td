@@ -32,6 +32,22 @@
 
 . "$(pwd)/tools/lib/common.sh"
 
+if [ -n "$TLS_IMPL" ]; then
+    case "$TLS_IMPL" in
+        "TLS_LIBRESSL")
+            TLS_LIBS="-ltls -lcrypto -lssl"
+            ;;
+        *)
+            echo "Unrecognized TLS implementation: ${TLS_IMPL}"
+            echo "Consult src/include/Tls.h for supported implementations."
+            exit 1
+            ;;
+    esac
+
+    DEFINES="${DEFINES} -DTLS_IMPL=${TLS_IMPL}"
+    LDFLAGS="${LDFLAGS} ${TLS_LIBS}"
+fi
+
 CFLAGS="${CFLAGS} ${DEFINES} ${INCLUDES}"
 LDFLAGS="${LDFLAGS} ${STATIC}"
 

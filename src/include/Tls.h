@@ -2,8 +2,11 @@
 #define TELODENDRIA_TLS_H
 
 #define TLS_LIBRESSL 1
-#define TLS_MBEDTLS 2
-#define TLS_OPENSSL 3
+
+/*
+ * Other TLS_* macros can be declared here as support
+ * for other implementations is added.
+ */
 
 #include <Stream.h>
 
