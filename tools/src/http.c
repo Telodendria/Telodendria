@@ -223,7 +223,6 @@ main(int argc, char **argv)
 
     StreamClose(StreamStdout());
     StreamClose(StreamStderr());
-    StreamClose(StreamStdin());
 
     return !(res == HTTP_OK);
 }
