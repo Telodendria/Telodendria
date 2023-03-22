@@ -44,13 +44,25 @@
 #include <Cron.h>
 #include <Uia.h>
 
-static HttpServer *httpServer = NULL;
+static Array *httpServers = NULL;
 
 static void
 TelodendriaSignalHandler(int signalNo)
 {
+    size_t i;
+
     (void) signalNo;
-    HttpServerStop(httpServer);
+
+    if (!httpServers)
+    {
+        return;
+    }
+
+    for (i = 0; i < ArraySize(httpServers); i++)
+    {
+        HttpServer *server = ArrayGet(httpServers, i);
+        HttpServerStop(server);
+    }
 }
 
 typedef enum ArgFlag
@@ -80,6 +92,10 @@ main(int argc, char **argv)
     /* User validation */
     struct passwd *userInfo = NULL;
     struct group *groupInfo = NULL;
+
+    /* HTTP server management */
+    size_t i;
+    HttpServer *server;
 
     /* Signal handling */
     struct sigaction sigAction;
@@ -269,16 +285,26 @@ main(int argc, char **argv)
     /* Arguments to pass into the HTTP handler */
     matrixArgs.config = tConfig;
 
+    httpServers = ArrayCreate();
+    if (!httpServers)
+    {
+        Log(LOG_ERR, "Error setting up HTTP server.");
+        exit = EXIT_FAILURE;
+        goto finish;
+    }
+
     /* Bind the socket before possibly dropping permissions */
-    httpServer = HttpServerCreate(HTTP_FLAG_NONE, tConfig->listenPort, tConfig->threads,
+    server = HttpServerCreate(HTTP_FLAG_NONE, tConfig->listenPort, tConfig->threads,
              tConfig->maxConnections, MatrixHttpHandler, &matrixArgs);
-    if (!httpServer)
+    if (!server)
     {
         Log(LOG_ERR, "Unable to create HTTP server on port %d: %s",
             tConfig->listenPort, strerror(errno));
         exit = EXIT_FAILURE;
         goto finish;
     }
+
+    ArrayAdd(httpServers, server);
 
     Log(LOG_DEBUG, "Running as uid:gid: %d:%d.", getuid(), getgid());
 
@@ -386,11 +412,20 @@ main(int argc, char **argv)
 
     Log(LOG_NOTICE, "Starting server...");
 
-    if (!HttpServerStart(httpServer))
+    for (i = 0; i < ArraySize(httpServers); i++)
     {
-        Log(LOG_ERR, "Unable to start HTTP server.");
-        exit = EXIT_FAILURE;
-        goto finish;
+        server = ArrayGet(httpServers, i);
+
+        if (!HttpServerStart(server))
+        {
+            Log(LOG_ERR, "Unable to start HTTP server %lu.", i);
+            exit = EXIT_FAILURE;
+            goto finish;
+        }
+        else
+        {
+            Log(LOG_DEBUG, "Started HTTP server %lu.", i);
+        }
     }
 
     Log(LOG_INFO, "Listening on port: %d", tConfig->listenPort);
@@ -406,16 +441,25 @@ main(int argc, char **argv)
         goto finish;
     }
 
-    /* Block this thread until the server is terminated by a signal
+    /* Block this thread until the servers are terminated by a signal
      * handler */
-    HttpServerJoin(httpServer);
+    for (i = 0; i < ArraySize(httpServers); i++)
+    {
+        server = ArrayGet(httpServers, i);
+        HttpServerJoin(server);
+    }
 
 finish:
     Log(LOG_NOTICE, "Shutting down...");
-    if (httpServer)
+    if (httpServers)
     {
-        HttpServerFree(httpServer);
-        Log(LOG_DEBUG, "Freed HTTP Server.");
+        for (i = 0; i < ArraySize(httpServers); i++)
+        {
+            server = ArrayGet(httpServers, i);
+            HttpServerStop(server);
+            HttpServerFree(server);
+        }
+        ArrayFree(httpServers);
     }
 
     if (cron)
