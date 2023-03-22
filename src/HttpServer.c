@@ -53,6 +53,8 @@ struct HttpServer
     unsigned int maxConnections;
     pthread_t socketThread;
     int flags;
+    char *tlsCrt;
+    char *tlsKey;
 
     volatile unsigned int stop:1;
     volatile unsigned int isRunning:1;
@@ -646,8 +648,7 @@ HttpServerEventThread(void *args)
 #ifdef TLS_IMPL
             if (server->flags & HTTP_FLAG_TLS)
             {
-                /* TODO: Get server cert and key in here */
-                fp = TlsServerStream(connFd, NULL, NULL);
+                fp = TlsServerStream(connFd, server->tlsCrt, server->tlsKey);
             }
             else
             {
