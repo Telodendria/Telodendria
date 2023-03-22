@@ -1,38 +1,52 @@
-#ifndef TELODENDRIA_TLS_H
-#define TELODENDRIA_TLS_H
-
-#define TLS_LIBRESSL 1
-
 /*
- * Other TLS_* macros can be declared here as support
- * for other implementations is added.
+ * Copyright (C) 2022-2023 Jordan Bancino <@jordan:bancino.net>
+ *
+ * Permission is hereby granted, free of charge, to any person
+ * obtaining a copy of this software and associated documentation files
+ * (the "Software"), to deal in the Software without restriction,
+ * including without limitation the rights to use, copy, modify, merge,
+ * publish, distribute, sublicense, and/or sell copies of the Software,
+ * and to permit persons to whom the Software is furnished to do so,
+ * subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be
+ * included in all copies or portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+ * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+ * NONINFRINGEMENT.  IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS
+ * BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
+ * ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
  */
 
 #include <Stream.h>
 
 extern Stream *
-TlsClientStream(int, const char *);
+ TlsClientStream(int, const char *);
 
 extern Stream *
-TlsServerStream(int, const char *, const char *);
+ TlsServerStream(int, const char *, const char *);
 
 /*
  * These are provided by individual TLS implementations.
  */
 
 extern void *
-TlsInitClient(int, const char *);
+ TlsInitClient(int, const char *);
 
 extern void *
-TlsInitServer(int, const char *, const char *);
+ TlsInitServer(int, const char *, const char *);
 
 extern ssize_t
-TlsRead(void *, void *, size_t);
+ TlsRead(void *, void *, size_t);
 
 extern ssize_t
-TlsWrite(void *, void *, size_t);
+ TlsWrite(void *, void *, size_t);
 
 extern int
-TlsClose(void *);
+ TlsClose(void *);
 
-#endif /* TELODENDRIA_TLS_H */
+#endif                             /* TELODENDRIA_TLS_H */

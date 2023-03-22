@@ -275,7 +275,7 @@ main(int argc, char **argv)
 
     /* Bind the socket before possibly dropping permissions */
     httpServer = HttpServerCreate(HTTP_FLAG_NONE, tConfig->listenPort, tConfig->threads,
-                                  tConfig->maxConnections, MatrixHttpHandler, &matrixArgs);
+             tConfig->maxConnections, MatrixHttpHandler, &matrixArgs);
     if (!httpServer)
     {
         Log(lc, LOG_ERR, "Unable to create HTTP server on port %d: %s",

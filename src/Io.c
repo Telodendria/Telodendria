@@ -159,7 +159,8 @@ IoVprintf(Io * io, const char *fmt, va_list ap)
         ret = IoWrite(io, buf, bufSize);
     }
 
-    free(buf); /* Allocated by stdlib, not Memory API */
+    free(buf);                     /* Allocated by stdlib, not Memory
+                                    * API */
     return ret;
 }
 
