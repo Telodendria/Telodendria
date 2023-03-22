@@ -46,6 +46,6 @@ extern void
  TelodendriaGenerateMemReport(void);
 
 extern void
- TelodendriaPrintHeader(LogConfig *);
+ TelodendriaPrintHeader(void);
 
 #endif

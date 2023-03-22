@@ -26,6 +26,8 @@
 #if TLS_IMPL == TLS_LIBRESSL
 
 #include <Memory.h>
+#include <Log.h>
+
 #include <tls.h>                   /* LibreSSL TLS */
 
 typedef struct LibreSSLCookie
@@ -77,6 +79,11 @@ TlsInitClient(int fd, const char *serverName)
 error:
     if (cookie->ctx)
     {
+        if (tls_error(cookie->ctx))
+        {
+            Log(LOG_ERR, "TlsInitClient(): %s", tls_error(cookie->ctx));
+        }
+
         tls_free(cookie->ctx);
     }
 
@@ -135,11 +142,20 @@ TlsInitServer(int fd, const char *crt, const char *key)
 error:
     if (cookie->ctx)
     {
+        if (tls_error(cookie->ctx))
+        {
+            Log(LOG_ERR, "TlsInitServer(): %s", tls_error(cookie->ctx));
+        }
         tls_free(cookie->ctx);
     }
 
     if (cookie->cctx)
     {
+        if (tls_error(cookie->cctx))
+        {
+            Log(LOG_ERR, "TlsInitServer(): %s", tls_error(cookie->cctx));
+        }
+
         tls_free(cookie->cctx);
     }
 
@@ -157,16 +173,28 @@ ssize_t
 TlsRead(void *cookie, void *buf, size_t nBytes)
 {
     LibreSSLCookie *tls = cookie;
+    ssize_t ret = tls_read(tls->cctx ? tls->cctx : tls->ctx, buf, nBytes);
 
-    return tls_read(tls->cctx ? tls->cctx : tls->ctx, buf, nBytes);
+    if (ret == -1)
+    {
+        Log(LOG_ERR, "TlsRead(): %s", tls_error(tls->cctx ? tls->cctx : tls->ctx));
+    }
+
+    return ret;
 }
 
 ssize_t
 TlsWrite(void *cookie, void *buf, size_t nBytes)
 {
     LibreSSLCookie *tls = cookie;
+    ssize_t ret = tls_write(tls->cctx ? tls->cctx : tls->ctx, buf, nBytes);
 
-    return tls_write(tls->cctx ? tls->cctx : tls->ctx, buf, nBytes);
+    if (ret == -1)
+    {
+        Log(LOG_ERR, "TlsWrite(): %s", tls_error(tls->cctx ? tls->cctx : tls->ctx));
+    }
+
+    return ret;
 }
 
 int

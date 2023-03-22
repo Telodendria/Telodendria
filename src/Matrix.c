@@ -38,7 +38,6 @@ void
 MatrixHttpHandler(HttpServerContext * context, void *argp)
 {
     MatrixHttpHandlerArgs *args = (MatrixHttpHandlerArgs *) argp;
-    LogConfig *lc = args->lc;
     Stream *stream;
     HashMap *response = NULL;
 
@@ -52,11 +51,9 @@ MatrixHttpHandler(HttpServerContext * context, void *argp)
 
     requestPath = HttpRequestPath(context);
 
-    Log(lc, LOG_INFO, "%s %s",
+    Log(LOG_INFO, "%s %s",
         HttpRequestMethodToString(HttpRequestMethodGet(context)),
         requestPath);
-
-    LogConfigIndent(lc);
 
     HttpResponseStatus(context, HTTP_OK);
     HttpResponseHeader(context, "Server", "Telodendria/" TELODENDRIA_VERSION);
@@ -78,7 +75,7 @@ MatrixHttpHandler(HttpServerContext * context, void *argp)
         HttpResponseStatus(context, HTTP_NO_CONTENT);
         HttpSendHeaders(context);
 
-        goto finish;
+        return;
     }
 
     pathParts = MATRIX_PATH_CREATE();
@@ -146,9 +143,6 @@ MatrixHttpHandler(HttpServerContext * context, void *argp)
     }
 
     MATRIX_PATH_FREE(pathParts);
-
-finish:
-    LogConfigUnindent(lc);
 }
 
 HashMap *

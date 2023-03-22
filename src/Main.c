@@ -63,7 +63,6 @@ typedef enum ArgFlag
 int
 main(int argc, char **argv)
 {
-    LogConfig *lc;
     int exit = EXIT_SUCCESS;
 
     /* Arg parsing */
@@ -90,17 +89,15 @@ main(int argc, char **argv)
 
     memset(&matrixArgs, 0, sizeof(matrixArgs));
 
-    lc = LogConfigCreate();
-
-    if (!lc)
+    if (!LogConfigGlobal())
     {
         printf("Fatal error: unable to allocate memory for logger.\n");
         return EXIT_FAILURE;
     }
 
-    MemoryHook(TelodendriaMemoryHook, lc);
+    MemoryHook(TelodendriaMemoryHook, NULL);
 
-    TelodendriaPrintHeader(lc);
+    TelodendriaPrintHeader();
 
     while ((opt = getopt(argc, argv, "f:Vvn")) != -1)
     {
@@ -128,7 +125,7 @@ main(int argc, char **argv)
 
     if (flags & ARG_VERBOSE)
     {
-        LogConfigLevelSet(lc, LOG_DEBUG);
+        LogConfigLevelSet(LogConfigGlobal(), LOG_DEBUG);
     }
 
     if (flags & ARG_VERSION)
@@ -138,7 +135,7 @@ main(int argc, char **argv)
 
     if (!configArg)
     {
-        Log(lc, LOG_ERR, "No configuration file specified.");
+        Log(LOG_ERR, "No configuration file specified.");
         exit = EXIT_FAILURE;
         goto finish;
     }
@@ -153,25 +150,25 @@ main(int argc, char **argv)
         configFile = StreamOpen(configArg, "r");
         if (!configFile)
         {
-            Log(lc, LOG_ERR, "Unable to open configuration file '%s' for reading.", configArg);
+            Log(LOG_ERR, "Unable to open configuration file '%s' for reading.", configArg);
             exit = EXIT_FAILURE;
             goto finish;
         }
     }
 
-    Log(lc, LOG_NOTICE, "Processing configuration file '%s'.", configArg);
+    Log(LOG_NOTICE, "Processing configuration file '%s'.", configArg);
 
     config = JsonDecode(configFile);
     StreamClose(configFile);
 
     if (!config)
     {
-        Log(lc, LOG_ERR, "Syntax error in configuration file.");
+        Log(LOG_ERR, "Syntax error in configuration file.");
         exit = EXIT_FAILURE;
         goto finish;
     }
 
-    tConfig = TelodendriaConfigParse(config, lc);
+    tConfig = TelodendriaConfigParse(config, LogConfigGlobal());
     JsonFree(config);
 
     if (!tConfig)
@@ -182,13 +179,13 @@ main(int argc, char **argv)
 
     if (flags & ARG_CONFIGTEST)
     {
-        Log(lc, LOG_INFO, "Configuration is OK.");
+        Log(LOG_INFO, "Configuration is OK.");
         goto finish;
     }
 
     if (!tConfig->logTimestamp || strcmp(tConfig->logTimestamp, "default") != 0)
     {
-        LogConfigTimeStampFormatSet(lc, tConfig->logTimestamp);
+        LogConfigTimeStampFormatSet(LogConfigGlobal(), tConfig->logTimestamp);
     }
     else
     {
@@ -198,24 +195,24 @@ main(int argc, char **argv)
 
     if (tConfig->flags & TELODENDRIA_LOG_COLOR)
     {
-        LogConfigFlagSet(lc, LOG_FLAG_COLOR);
+        LogConfigFlagSet(LogConfigGlobal(), LOG_FLAG_COLOR);
     }
     else
     {
-        LogConfigFlagClear(lc, LOG_FLAG_COLOR);
+        LogConfigFlagClear(LogConfigGlobal(), LOG_FLAG_COLOR);
     }
 
-    LogConfigLevelSet(lc, flags & ARG_VERBOSE ? LOG_DEBUG : tConfig->logLevel);
+    LogConfigLevelSet(LogConfigGlobal(), flags & ARG_VERBOSE ? LOG_DEBUG : tConfig->logLevel);
 
     if (chdir(tConfig->dataDir) != 0)
     {
-        Log(lc, LOG_ERR, "Unable to change into data directory: %s.", strerror(errno));
+        Log(LOG_ERR, "Unable to change into data directory: %s.", strerror(errno));
         exit = EXIT_FAILURE;
         goto finish;
     }
     else
     {
-        Log(lc, LOG_DEBUG, "Changed working directory to: %s", tConfig->dataDir);
+        Log(LOG_DEBUG, "Changed working directory to: %s", tConfig->dataDir);
     }
 
 
@@ -225,22 +222,22 @@ main(int argc, char **argv)
 
         if (!logFile)
         {
-            Log(lc, LOG_ERR, "Unable to open log file for appending.");
+            Log(LOG_ERR, "Unable to open log file for appending.");
             exit = EXIT_FAILURE;
             goto finish;
         }
 
-        Log(lc, LOG_INFO, "Logging to the log file. Check there for all future messages.");
-        LogConfigOutputSet(lc, logFile);
+        Log(LOG_INFO, "Logging to the log file. Check there for all future messages.");
+        LogConfigOutputSet(LogConfigGlobal(), logFile);
     }
     else if (tConfig->flags & TELODENDRIA_LOG_STDOUT)
     {
-        Log(lc, LOG_DEBUG, "Already logging to standard output.");
+        Log(LOG_DEBUG, "Already logging to standard output.");
     }
     else if (tConfig->flags & TELODENDRIA_LOG_SYSLOG)
     {
-        Log(lc, LOG_INFO, "Logging to the syslog. Check there for all future messages.");
-        LogConfigFlagSet(lc, LOG_FLAG_SYSLOG);
+        Log(LOG_INFO, "Logging to the syslog. Check there for all future messages.");
+        LogConfigFlagSet(LogConfigGlobal(), LOG_FLAG_SYSLOG);
 
         openlog("telodendria", LOG_PID | LOG_NDELAY, LOG_DAEMON);
         /* Always log everything, because the Log API will control what
@@ -249,28 +246,27 @@ main(int argc, char **argv)
     }
     else
     {
-        Log(lc, LOG_ERR, "Unknown logging method in flags: '%d'", tConfig->flags);
-        Log(lc, LOG_ERR, "This is a programmer error; please report it.");
+        Log(LOG_ERR, "Unknown logging method in flags: '%d'", tConfig->flags);
+        Log(LOG_ERR, "This is a programmer error; please report it.");
         exit = EXIT_FAILURE;
         goto finish;
     }
 
-    Log(lc, LOG_DEBUG, "Configuration:");
-    LogConfigIndent(lc);
-    Log(lc, LOG_DEBUG, "Listen On: %d", tConfig->listenPort);
-    Log(lc, LOG_DEBUG, "Server Name: %s", tConfig->serverName);
-    Log(lc, LOG_DEBUG, "Base URL: %s", tConfig->baseUrl);
-    Log(lc, LOG_DEBUG, "Identity Server: %s", tConfig->identityServer);
-    Log(lc, LOG_DEBUG, "Run As: %s:%s", tConfig->uid, tConfig->gid);
-    Log(lc, LOG_DEBUG, "Data Directory: %s", tConfig->dataDir);
-    Log(lc, LOG_DEBUG, "Threads: %d", tConfig->threads);
-    Log(lc, LOG_DEBUG, "Max Connections: %d", tConfig->maxConnections);
-    Log(lc, LOG_DEBUG, "Max Cache: %ld", tConfig->maxCache);
-    Log(lc, LOG_DEBUG, "Flags: %x", tConfig->flags);
-    LogConfigUnindent(lc);
+    Log(LOG_DEBUG, "Configuration:");
+    LogConfigIndent(LogConfigGlobal());
+    Log(LOG_DEBUG, "Listen On: %d", tConfig->listenPort);
+    Log(LOG_DEBUG, "Server Name: %s", tConfig->serverName);
+    Log(LOG_DEBUG, "Base URL: %s", tConfig->baseUrl);
+    Log(LOG_DEBUG, "Identity Server: %s", tConfig->identityServer);
+    Log(LOG_DEBUG, "Run As: %s:%s", tConfig->uid, tConfig->gid);
+    Log(LOG_DEBUG, "Data Directory: %s", tConfig->dataDir);
+    Log(LOG_DEBUG, "Threads: %d", tConfig->threads);
+    Log(LOG_DEBUG, "Max Connections: %d", tConfig->maxConnections);
+    Log(LOG_DEBUG, "Max Cache: %ld", tConfig->maxCache);
+    Log(LOG_DEBUG, "Flags: %x", tConfig->flags);
+    LogConfigUnindent(LogConfigGlobal());
 
     /* Arguments to pass into the HTTP handler */
-    matrixArgs.lc = lc;
     matrixArgs.config = tConfig;
 
     /* Bind the socket before possibly dropping permissions */
@@ -278,13 +274,13 @@ main(int argc, char **argv)
              tConfig->maxConnections, MatrixHttpHandler, &matrixArgs);
     if (!httpServer)
     {
-        Log(lc, LOG_ERR, "Unable to create HTTP server on port %d: %s",
+        Log(LOG_ERR, "Unable to create HTTP server on port %d: %s",
             tConfig->listenPort, strerror(errno));
         exit = EXIT_FAILURE;
         goto finish;
     }
 
-    Log(lc, LOG_DEBUG, "Running as uid:gid: %d:%d.", getuid(), getgid());
+    Log(LOG_DEBUG, "Running as uid:gid: %d:%d.", getuid(), getgid());
 
     if (tConfig->uid && tConfig->gid)
     {
@@ -293,18 +289,18 @@ main(int argc, char **argv)
 
         if (!userInfo || !groupInfo)
         {
-            Log(lc, LOG_ERR, "Unable to locate the user/group specified in the configuration.");
+            Log(LOG_ERR, "Unable to locate the user/group specified in the configuration.");
             exit = EXIT_FAILURE;
             goto finish;
         }
         else
         {
-            Log(lc, LOG_DEBUG, "Found user/group information using getpwnam() and getgrnam().");
+            Log(LOG_DEBUG, "Found user/group information using getpwnam() and getgrnam().");
         }
     }
     else
     {
-        Log(lc, LOG_DEBUG, "No user/group info specified in the config.");
+        Log(LOG_DEBUG, "No user/group info specified in the config.");
     }
 
     if (getuid() == 0)
@@ -313,35 +309,35 @@ main(int argc, char **argv)
         {
             if (setgid(groupInfo->gr_gid) != 0 || setuid(userInfo->pw_uid) != 0)
             {
-                Log(lc, LOG_ERR, "Unable to set process uid/gid.");
+                Log(LOG_ERR, "Unable to set process uid/gid.");
                 exit = EXIT_FAILURE;
                 goto finish;
             }
             else
             {
-                Log(lc, LOG_DEBUG, "Set uid/gid to %s:%s.", tConfig->uid, tConfig->gid);
+                Log(LOG_DEBUG, "Set uid/gid to %s:%s.", tConfig->uid, tConfig->gid);
             }
         }
         else
         {
-            Log(lc, LOG_WARNING, "We are running as root, and we are not dropping to another user");
-            Log(lc, LOG_WARNING, "because none was specified in the configuration file.");
-            Log(lc, LOG_WARNING, "This is probably a security issue.");
+            Log(LOG_WARNING, "We are running as root, and we are not dropping to another user");
+            Log(LOG_WARNING, "because none was specified in the configuration file.");
+            Log(LOG_WARNING, "This is probably a security issue.");
         }
     }
     else
     {
-        Log(lc, LOG_WARNING, "Not setting root directory, because we are not root.");
+        Log(LOG_WARNING, "Not setting root directory, because we are not root.");
 
         if (tConfig->uid && tConfig->gid)
         {
             if (getuid() != userInfo->pw_uid || getgid() != groupInfo->gr_gid)
             {
-                Log(lc, LOG_WARNING, "Not running as the uid/gid specified in the configuration.");
+                Log(LOG_WARNING, "Not running as the uid/gid specified in the configuration.");
             }
             else
             {
-                Log(lc, LOG_DEBUG, "Running as the uid/gid specified in the configuration.");
+                Log(LOG_DEBUG, "Running as the uid/gid specified in the configuration.");
             }
         }
     }
@@ -359,18 +355,16 @@ main(int argc, char **argv)
 
     if (!tConfig->maxCache)
     {
-        Log(lc, LOG_WARNING, "Database caching is disabled.");
-        Log(lc, LOG_WARNING,
-            "If this is not what you intended, check the config file");
-        Log(lc, LOG_WARNING,
-            "and ensure that maxCache is a valid number of bytes.");
+        Log(LOG_WARNING, "Database caching is disabled.");
+        Log(LOG_WARNING, "If this is not what you intended, check the config file");
+        Log(LOG_WARNING, "and ensure that maxCache is a valid number of bytes.");
     }
 
     matrixArgs.db = DbOpen(".", tConfig->maxCache);
 
     if (!matrixArgs.db)
     {
-        Log(lc, LOG_ERR, "Unable to open data directory as a database.");
+        Log(LOG_ERR, "Unable to open data directory as a database.");
         exit = EXIT_FAILURE;
         goto finish;
     }
@@ -378,28 +372,28 @@ main(int argc, char **argv)
     cron = CronCreate(60 * 1000);  /* 1-minute tick */
     if (!cron)
     {
-        Log(lc, LOG_ERR, "Unable to set up job scheduler.");
+        Log(LOG_ERR, "Unable to set up job scheduler.");
         exit = EXIT_FAILURE;
         goto finish;
     }
 
-    Log(lc, LOG_DEBUG, "Registering jobs...");
+    Log(LOG_DEBUG, "Registering jobs...");
 
     CronEvery(cron, 30 * 60 * 1000, (JobFunc *) UiaCleanup, &matrixArgs);
 
-    Log(lc, LOG_NOTICE, "Starting job scheduler...");
+    Log(LOG_NOTICE, "Starting job scheduler...");
     CronStart(cron);
 
-    Log(lc, LOG_NOTICE, "Starting server...");
+    Log(LOG_NOTICE, "Starting server...");
 
     if (!HttpServerStart(httpServer))
     {
-        Log(lc, LOG_ERR, "Unable to start HTTP server.");
+        Log(LOG_ERR, "Unable to start HTTP server.");
         exit = EXIT_FAILURE;
         goto finish;
     }
 
-    Log(lc, LOG_INFO, "Listening on port: %d", tConfig->listenPort);
+    Log(LOG_INFO, "Listening on port: %d", tConfig->listenPort);
 
     sigAction.sa_handler = TelodendriaSignalHandler;
     sigfillset(&sigAction.sa_mask);
@@ -407,7 +401,7 @@ main(int argc, char **argv)
 
     if (sigaction(SIGINT, &sigAction, NULL) < 0)
     {
-        Log(lc, LOG_ERR, "Unable to install signal handler.");
+        Log(LOG_ERR, "Unable to install signal handler.");
         exit = EXIT_FAILURE;
         goto finish;
     }
@@ -417,18 +411,18 @@ main(int argc, char **argv)
     HttpServerJoin(httpServer);
 
 finish:
-    Log(lc, LOG_NOTICE, "Shutting down...");
+    Log(LOG_NOTICE, "Shutting down...");
     if (httpServer)
     {
         HttpServerFree(httpServer);
-        Log(lc, LOG_DEBUG, "Freed HTTP Server.");
+        Log(LOG_DEBUG, "Freed HTTP Server.");
     }
 
     if (cron)
     {
         CronStop(cron);
         CronFree(cron);
-        Log(lc, LOG_DEBUG, "Stopped and freed job scheduler.");
+        Log(LOG_DEBUG, "Stopped and freed job scheduler.");
     }
 
     /*
@@ -442,11 +436,9 @@ finish:
 
     DbClose(matrixArgs.db);
 
-    LogConfigTimeStampFormatSet(lc, NULL);
     TelodendriaConfigFree(tConfig);
 
-
-    Log(lc, LOG_DEBUG, "Exiting with code '%d'.", exit);
+    Log(LOG_DEBUG, "Exiting with code '%d'.", exit);
 
     /*
      * Uninstall the memory hook because it uses the Log
@@ -455,7 +447,7 @@ finish:
      */
     MemoryHook(NULL, NULL);
 
-    LogConfigFree(lc);
+    LogConfigFree(LogConfigGlobal());
 
     /* Standard error should never have been opened, but just in case
      * it was, this doesn't hurt anything. */

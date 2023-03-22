@@ -69,7 +69,6 @@ typedef enum MatrixError
 
 typedef struct MatrixHttpHandlerArgs
 {
-    LogConfig *lc;
     TelodendriaConfig *config;
     Db *db;
 } MatrixHttpHandlerArgs;

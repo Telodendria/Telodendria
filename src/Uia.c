@@ -491,7 +491,7 @@ UiaCleanup(MatrixHttpHandlerArgs * args)
     Array *sessions = DbList(args->db, 1, "user_interactive");
     size_t i;
 
-    Log(args->lc, LOG_DEBUG, "User Interactive Auth sessions: %lu",
+    Log(LOG_DEBUG, "User Interactive Auth sessions: %lu",
         ArraySize(sessions));
     for (i = 0; i < ArraySize(sessions); i++)
     {
@@ -502,7 +502,7 @@ UiaCleanup(MatrixHttpHandlerArgs * args)
 
         if (!ref)
         {
-            Log(args->lc, LOG_ERR, "Unable to lock uia %s for inspection.",
+            Log(LOG_ERR, "Unable to lock uia %s for inspection.",
                 session);
             continue;
         }
@@ -515,7 +515,7 @@ UiaCleanup(MatrixHttpHandlerArgs * args)
         {
             DbUnlock(args->db, ref);
             DbDelete(args->db, 2, "user_interactive", session);
-            Log(args->lc, LOG_DEBUG, "Deleted session %s", session);
+            Log(LOG_DEBUG, "Deleted session %s", session);
         }
 
         DbUnlock(args->db, ref);

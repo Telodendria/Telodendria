@@ -45,7 +45,6 @@ ROUTE_IMPL(RouteRefresh, args)
     char *deviceId;
 
     Db *db = args->matrixArgs->db;
-    LogConfig *lc = args->matrixArgs->lc;
 
     User *user = NULL;
     DbRef *rtRef = NULL;
@@ -96,9 +95,9 @@ ROUTE_IMPL(RouteRefresh, args)
 
     if (!oAtRef)
     {
-        Log(lc, LOG_ERR, "Refresh token '%s' points to an access token that doesn't exist.",
+        Log(LOG_ERR, "Refresh token '%s' points to an access token that doesn't exist.",
             refreshToken);
-        Log(lc, LOG_WARNING, "This refresh token will be deleted.");
+        Log(LOG_WARNING, "This refresh token will be deleted.");
         HttpResponseStatus(args->context, HTTP_INTERNAL_SERVER_ERROR);
         response = MatrixErrorCreate(M_UNKNOWN);
 
@@ -114,9 +113,9 @@ ROUTE_IMPL(RouteRefresh, args)
     user = UserLock(db, JsonValueAsString(HashMapGet(DbJson(oAtRef), "user")));
     if (!user)
     {
-        Log(lc, LOG_ERR, "Access token '%s' points to a user that doesn't exist.",
+        Log(LOG_ERR, "Access token '%s' points to a user that doesn't exist.",
             oldAccessToken);
-        Log(lc, LOG_WARNING, "This access token will be deleted.");
+        Log(LOG_WARNING, "This access token will be deleted.");
         HttpResponseStatus(args->context, HTTP_INTERNAL_SERVER_ERROR);
         response = MatrixErrorCreate(M_UNKNOWN);
 

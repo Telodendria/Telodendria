@@ -39,6 +39,9 @@ typedef struct LogConfig LogConfig;
 extern LogConfig *
  LogConfigCreate(void);
 
+extern LogConfig *
+ LogConfigGlobal(void);
+
 extern void
  LogConfigFree(LogConfig *);
 
@@ -67,6 +70,12 @@ extern void
  LogConfigTimeStampFormatSet(LogConfig *, char *);
 
 extern void
- Log(LogConfig *, int, const char *,...);
+ Logv(LogConfig *, int, const char *, va_list);
+
+extern void
+ LogTo(LogConfig *, int, const char *,...);
+
+extern void
+ Log(int, const char *, ...);
 
 #endif

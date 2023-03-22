@@ -66,7 +66,6 @@ ROUTE_IMPL(RouteRegister, args)
     char *fullUsername;
 
     Db *db = args->matrixArgs->db;
-    LogConfig *lc = args->matrixArgs->lc;
 
     User *user = NULL;
 
@@ -249,7 +248,7 @@ ROUTE_IMPL(RouteRegister, args)
             Free(loginInfo);
         }
 
-        Log(lc, LOG_INFO, "Registered user '%s'", UserGetName(user));
+        Log(LOG_INFO, "Registered user '%s'", UserGetName(user));
 
         UserUnlock(user);
 finish:

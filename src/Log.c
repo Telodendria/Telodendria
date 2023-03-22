@@ -45,6 +45,8 @@ struct LogConfig
     pthread_mutex_t lock;
 };
 
+LogConfig *globalConfig = NULL;
+
 LogConfig *
 LogConfigCreate(void)
 {
@@ -66,6 +68,17 @@ LogConfigCreate(void)
     LogConfigTimeStampFormatSet(config, "%y-%m-%d %H:%M:%S");
 
     return config;
+}
+
+LogConfig *
+LogConfigGlobal(void)
+{
+    if (!globalConfig)
+    {
+        globalConfig = LogConfigCreate();
+    }
+
+    return globalConfig;
 }
 
 void
@@ -111,6 +124,11 @@ LogConfigFree(LogConfig * config)
 
     StreamClose(config->out);
     Free(config);
+
+    if (config == globalConfig)
+    {
+        globalConfig = NULL;
+    }
 }
 
 void
@@ -202,12 +220,11 @@ LogConfigUnindent(LogConfig * config)
 }
 
 void
-Log(LogConfig * config, int level, const char *msg,...)
+Logv(LogConfig * config, int level, const char *msg, va_list argp)
 {
     size_t i;
     int doColor;
     char indicator;
-    va_list argp;
 
     /*
      * Only proceed if we have a config and its log level is set to a
@@ -232,9 +249,7 @@ Log(LogConfig * config, int level, const char *msg,...)
     {
         /* No further print logic is needed; syslog will handle it all
          * for us. */
-        va_start(argp, msg);
         vsyslog(level, msg, argp);
-        va_end(argp);
         pthread_mutex_unlock(&config->lock);
         return;
     }
@@ -345,12 +360,30 @@ Log(LogConfig * config, int level, const char *msg,...)
         StreamPutc(config->out, ' ');
     }
 
-    va_start(argp, msg);
     StreamVprintf(config->out, msg, argp);
     StreamPutc(config->out, '\n');
-    va_end(argp);
 
     StreamFlush(config->out);
 
     pthread_mutex_unlock(&config->lock);
+}
+
+void
+LogTo(LogConfig *config, int level, const char *fmt, ...)
+{
+    va_list argp;
+
+    va_start(argp, fmt);
+    Logv(config, level, fmt, argp);
+    va_end(argp);
+}
+
+extern void
+Log(int level, const char *fmt, ...)
+{
+    va_list argp;
+
+    va_start(argp, fmt);
+    Logv(LogConfigGlobal(), level, fmt, argp);
+    va_end(argp);
 }

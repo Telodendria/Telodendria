@@ -67,8 +67,9 @@ const char
 void
 TelodendriaMemoryHook(MemoryAction a, MemoryInfo * i, void *args)
 {
-    LogConfig *lc = (LogConfig *) args;
     char *action;
+
+    (void) args;
 
     switch (a)
     {
@@ -89,7 +90,7 @@ TelodendriaMemoryHook(MemoryAction a, MemoryInfo * i, void *args)
             break;
     }
 
-    Log(lc, a == MEMORY_BAD_POINTER ? LOG_WARNING : LOG_DEBUG,
+    Log(a == MEMORY_BAD_POINTER ? LOG_WARNING : LOG_DEBUG,
         "%s:%d: %s %lu bytes of memory at %p.",
         MemoryInfoGetFile(i), MemoryInfoGetLine(i),
         action, MemoryInfoGetSize(i),
@@ -171,25 +172,25 @@ TelodendriaGenerateMemReport(void)
 }
 
 void
-TelodendriaPrintHeader(LogConfig * lc)
+TelodendriaPrintHeader(void)
 {
     size_t i;
 
     for (i = 0; i < TELODENDRIA_LOGO_HEIGHT; i++)
     {
-        Log(lc, LOG_INFO, "%s", TelodendriaLogo[i]);
+        Log(LOG_INFO, "%s", TelodendriaLogo[i]);
     }
 
     for (i = 0; i < TELODENDRIA_HEADER_HEIGHT; i++)
     {
-        Log(lc, LOG_INFO, "%s", TelodendriaHeader[i]);
+        Log(LOG_INFO, "%s", TelodendriaHeader[i]);
     }
 
-    Log(lc, LOG_INFO, "Telodendria v" TELODENDRIA_VERSION);
-    Log(lc, LOG_INFO, "");
-    Log(lc, LOG_INFO,
+    Log(LOG_INFO, "Telodendria v" TELODENDRIA_VERSION);
+    Log(LOG_INFO, "");
+    Log(LOG_INFO,
         "Copyright (C) 2023 Jordan Bancino <@jordan:bancino.net>");
-    Log(lc, LOG_INFO,
+    Log(LOG_INFO,
         "Documentation/Support: https://telodendria.io");
-    Log(lc, LOG_INFO, "");
+    Log(LOG_INFO, "");
 }

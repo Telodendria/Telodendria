@@ -38,17 +38,17 @@
     value = HashMapGet(config, key); \
     if (!value) \
     { \
-        Log(lc, LOG_ERR, "Missing required " key " directive."); \
+        Log(LOG_ERR, "Missing required " key " directive."); \
         goto error; \
     } \
     if (JsonValueType(value) == JSON_NULL) \
     { \
-        Log(lc, LOG_ERR, "Missing value for " key " directive."); \
+        Log(LOG_ERR, "Missing value for " key " directive."); \
         goto error; \
     } \
     if (JsonValueType(value) != type) \
     { \
-        Log(lc, LOG_ERR, "Expected " key " to be of type " #type); \
+        Log(LOG_ERR, "Expected " key " to be of type " #type); \
         goto error; \
     }
 
@@ -61,14 +61,14 @@
     { \
         if (JsonValueType(value) != JSON_STRING) \
         { \
-            Log(lc, LOG_ERR, "Expected " key " to be of type JSON_STRING"); \
+            Log(LOG_ERR, "Expected " key " to be of type JSON_STRING"); \
             goto error; \
         } \
         into = StrDuplicate(JsonValueAsString(value)); \
     } \
     else \
     { \
-        Log(lc, LOG_INFO, "Using default value " #default " for " key "."); \
+        Log(LOG_INFO, "Using default value " #default " for " key "."); \
         into = default ? StrDuplicate(default) : NULL; \
     }
 
@@ -78,14 +78,14 @@
     { \
         if (JsonValueType(value) != JSON_INTEGER) \
         { \
-            Log(lc, LOG_ERR, "Expected " key " to be of type JSON_INTEGER"); \
+            Log(LOG_ERR, "Expected " key " to be of type JSON_INTEGER"); \
             goto error; \
         } \
         into = JsonValueAsInteger(value); \
     } \
     else \
     { \
-        Log(lc, LOG_INFO, "Using default value " #default " for " key "."); \
+        Log(LOG_INFO, "Using default value " #default " for " key "."); \
         into = default; \
     }
 
@@ -128,7 +128,7 @@ ConfigParseLog(LogConfig * lc, TelodendriaConfig * tConfig, HashMap * config)
     }
     else
     {
-        Log(lc, LOG_ERR, "Invalid value for log.output: '%s'.", str);
+        Log(LOG_ERR, "Invalid value for log.output: '%s'.", str);
         goto error;
     }
 
@@ -156,7 +156,7 @@ ConfigParseLog(LogConfig * lc, TelodendriaConfig * tConfig, HashMap * config)
     }
     else
     {
-        Log(lc, LOG_ERR, "Invalid value for log.level: '%s'.", tConfig->logLevel);
+        Log(LOG_ERR, "Invalid value for log.level: '%s'.", tConfig->logLevel);
         goto error;
     }
 
@@ -175,7 +175,7 @@ ConfigParseLog(LogConfig * lc, TelodendriaConfig * tConfig, HashMap * config)
     {
         if (JsonValueType(value) != JSON_BOOLEAN)
         {
-            Log(lc, LOG_ERR, "Expected type JSON_BOOLEAN for log.color.");
+            Log(LOG_ERR, "Expected type JSON_BOOLEAN for log.color.");
             goto error;
         }
 
@@ -222,11 +222,11 @@ TelodendriaConfigParse(HashMap * config, LogConfig * lc)
     }
     else
     {
-        Log(lc, LOG_WARNING, "Base URL not specified. Assuming it's 'https://%s'.", tConfig->serverName);
+        Log(LOG_WARNING, "Base URL not specified. Assuming it's 'https://%s'.", tConfig->serverName);
         tConfig->baseUrl = Malloc(strlen(tConfig->serverName) + 10);
         if (!tConfig->baseUrl)
         {
-            Log(lc, LOG_ERR, "Error allocating memory for default config value 'baseUrl'.");
+            Log(LOG_ERR, "Error allocating memory for default config value 'baseUrl'.");
             goto error;
         }
 
@@ -247,8 +247,8 @@ TelodendriaConfigParse(HashMap * config, LogConfig * lc)
         }
         else
         {
-            Log(lc, LOG_ERR, "Config directive 'runAs' should be a JSON object");
-            Log(lc, LOG_ERR, "that contains a 'uid' and 'gid'.");
+            Log(LOG_ERR, "Config directive 'runAs' should be a JSON object");
+            Log(LOG_ERR, "that contains a 'uid' and 'gid'.");
             goto error;
         }
     }

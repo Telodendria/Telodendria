@@ -6,52 +6,63 @@ Key:
 [ ] Not Started
 [x] Done
 [~] In Progress
-[!] Won't Fix
+[!] Won't Do
 
 Milestone: v0.3.0
 -----------------
 
-[~] Stream API
+[x] Stream API
     [x] Implementation
     [x] Convert all code that deals with I/O
     [!] Multi-output (proof of concept)
     [!] Memory streams (proof of concept)
-    [~] TLS
-    [ ] SOCKS
+    [x] TLS
+    [!] SOCKS
     [x] Move/convert UtilStreamCopy()
-    [ ] Io man page
-    [ ] Stream man page
-    [ ] Tls man page
-[~] HTTP Client API
+[x] HTTP Client API
     [x] Document HttpParseHeaders()
-    [ ] HttpClient man page
-    [ ] Uri man page
     [x] Test on other platforms
 [x] Option to pretty-print Json
     [x] Document JsonEncode() and JsonEncodeValue()
-[ ] Update man page for td
 [x] Document Telodendria and Main
-[ ] Document tt and http-debug-server
 
 [x] Simple command line tool to make matrix requests
     [x] Built on HTTP client API
     [x] http man page
-[~] Simple command line tool for working with JSON
+[x] Simple command line tool for working with JSON
     [x] Pretty-print Json
     [x] Query fields for use in shell scripts.
     [x] Encode user-provided JSON strings
     [x] json man page
-    [ ] Update man pages for tp and send-patch
 
+[x] Global log object
+    - So we don't have to pass LogConfig around everywhere
+    - Also allows debug and error logging in other APIs
 [ ] Proper HTTP request router
     - Support regex matching
-
 [ ] Move configuration to database
     [ ] Initial configuration
         [ ] If no config, create one-time use registration token that
             grants user admin privileges.
     [ ] /_telodendria/admin/config endpoint
     [ ] Refactor TelodendriaConfig to just Config (ConfigLock() and ConfigUnlock())
+[ ] Make 'listen' directive in config an array of objects
+    - Each object has port, threads, maxConnections
+    - If tls is given, it can be null, false, or an object with cert and key
+[ ] Pass TLS certs and keys into HttpServer
+
+[ ] Documentation
+    [ ] Io
+    [ ] Stream
+    [ ] Tls
+    [ ] HttpClient
+    [ ] Uri
+    [ ] td
+    [ ] tt
+    [ ] http-debug-server
+    [ ] tp
+    [ ] send-patch
+    [ ] Log
 
 [~] Client-Server API
     [x] 4: Token-based user registration
