@@ -38,8 +38,7 @@ LDFLAGS="${LDFLAGS} ${STATIC}"
 MAIN="Main"
 
 if [ "$DEBUG" = "1" ]; then
-    CFLAGS="$CFLAGS -O0 -g -pg"
-    LDFLAGS="-lm -pthread"
+    CFLAGS="$CFLAGS -O0 -g"
     PROG="$PROG-debug"
 fi
 
@@ -119,7 +118,7 @@ recipe_build() {
     cd ..
     if [ $do_rebuild -eq 1 ] || [ ! -f "build/$PROG" ]; then
         echo "LD $PROG"
-        $CC $LDFLAGS -o "build/$PROG" $objs "build/$MAIN.o"
+        $CC -o "build/$PROG" $objs ${LDFLAGS} "build/$MAIN.o"
     fi
 
     for src in $(find tools/src -name '*.c'); do
@@ -129,7 +128,7 @@ recipe_build() {
         if [ $(mod_time "$src") -ge $(mod_time "$out") ] || [ $do_rebuild -eq 1 ]; then
             echo "CC $(basename $out)"
             mkdir -p "$(dirname $out)"
-            if ! $CC $CFLAGS $LDFLAGS -Isrc/include -o "$out" $objs "$src"; then
+            if ! $CC $CFLAGS -Isrc/include -o "$out" $objs ${LDFLAGS} "$src"; then
                 exit 1
             fi
         fi
