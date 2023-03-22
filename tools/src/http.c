@@ -217,7 +217,6 @@ main(int argc, char **argv)
     }
 
     UtilStreamCopy(HttpClientStream(cx), StreamStdout());
-    StreamClose(StreamStdout());
 
     HttpClientContextFree(cx);
     UriFree(uri);
