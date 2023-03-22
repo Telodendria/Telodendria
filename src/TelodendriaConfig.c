@@ -90,7 +90,7 @@
     }
 
 int
-ConfigParseRunAs(LogConfig * lc, TelodendriaConfig * tConfig, HashMap * config)
+ConfigParseRunAs(TelodendriaConfig * tConfig, HashMap * config)
 {
     JsonValue *value;
 
@@ -106,7 +106,7 @@ error:
 }
 
 int
-ConfigParseLog(LogConfig * lc, TelodendriaConfig * tConfig, HashMap * config)
+ConfigParseLog(TelodendriaConfig * tConfig, HashMap * config)
 {
     JsonValue *value;
     char *str;
@@ -192,12 +192,12 @@ error:
 }
 
 TelodendriaConfig *
-TelodendriaConfigParse(HashMap * config, LogConfig * lc)
+TelodendriaConfigParse(HashMap * config)
 {
     TelodendriaConfig *tConfig;
     JsonValue *value;
 
-    if (!config || !lc)
+    if (!config)
     {
         return NULL;
     }
@@ -240,7 +240,7 @@ TelodendriaConfigParse(HashMap * config, LogConfig * lc)
     {
         if (JsonValueType(value) == JSON_OBJECT)
         {
-            if (!ConfigParseRunAs(lc, tConfig, JsonValueAsObject(value)))
+            if (!ConfigParseRunAs(tConfig, JsonValueAsObject(value)))
             {
                 goto error;
             }
@@ -273,7 +273,7 @@ TelodendriaConfigParse(HashMap * config, LogConfig * lc)
     }
 
     CONFIG_REQUIRE("log", JSON_OBJECT);
-    if (!ConfigParseLog(lc, tConfig, JsonValueAsObject(value)))
+    if (!ConfigParseLog(tConfig, JsonValueAsObject(value)))
     {
         goto error;
     }

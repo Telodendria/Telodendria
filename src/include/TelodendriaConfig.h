@@ -60,7 +60,7 @@ typedef struct TelodendriaConfig
 } TelodendriaConfig;
 
 extern TelodendriaConfig *
- TelodendriaConfigParse(HashMap *, LogConfig *);
+ TelodendriaConfigParse(HashMap *);
 
 extern void
  TelodendriaConfigFree(TelodendriaConfig *);

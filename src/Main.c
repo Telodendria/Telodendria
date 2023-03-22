@@ -168,7 +168,7 @@ main(int argc, char **argv)
         goto finish;
     }
 
-    tConfig = TelodendriaConfigParse(config, LogConfigGlobal());
+    tConfig = TelodendriaConfigParse(config);
     JsonFree(config);
 
     if (!tConfig)
