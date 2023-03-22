@@ -1,4 +1,4 @@
-.Dd $Mdocdate: March 10 2023 $
+.Dd $Mdocdate: March 22 2023 $
 .Dt TELODENDRIA-CHANGELOG 7
 .Os Telodendria Project
 .Sh NAME
@@ -44,6 +44,10 @@ Matrix Specification:
 Added support for the
 .Pa /_matrix/client/v3/account/whoami
 endpoint.
+.It
+Added support for token-based user registration. Note that there is
+as of yet no admin-facing way to create these registration tokens,
+but the APIs are in place.
 .El
 .Pp
 New Features:
@@ -108,6 +112,11 @@ Added a new
 script for easily making Matrix requests against
 .Nm
 in development.
+.It
+Added TLS support to both the HTTP client and server. Currently,
+.Nm
+only supports LibreSSL, but other TLS libraries should be
+extremely easy to add support for.
 .El
 .Pp
 Fixes and general improvements:
@@ -136,6 +145,35 @@ the
 .Xr HttpServer 3
 sets up I/O to be non-blocking, leading to occasional failures in
 JSON parsing.
+.It
+Abstracted all I/O into the new
+.Xr Io 3
+and
+.Xr Stream 3
+APIs, which provide an input/output-agnostic stream processing.
+This allows for a simple implementation of proxies, TLS, and
+other stream filters without having to change any of the existing
+code.
+.It
+Removed all non-POSIX function calls, including the call to
+.Fn chroot
+and, on OpenBSD, the calls to
+.Fn pledge
+and
+.Fn unveil .
+This may seem like a downgrade in security, but these are
+platform-specific system calls that should be patched in by
+package maintainers if they are desired. They also caused
+problems when implementing other features, because some library
+calls need to be able to access files on the filesystem.
+.It
+Fixed the build script to supply
+.Ev LDFLAGS
+after the object files when linking. Apparently the order in
+which libraries are passed matters to some compilers.
+.It
+Did some general refactoring to make the source code more
+readable and easier to maintain.
 .El
 .Sh v0.2.1
 .Pp
