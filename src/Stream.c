@@ -307,7 +307,7 @@ StreamGetc(Stream * stream)
         return c;
     }
 
-    if (stream->flags & EOF)
+    if (stream->flags & STREAM_EOF)
     {
         return EOF;
     }
