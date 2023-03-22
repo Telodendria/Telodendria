@@ -36,12 +36,12 @@
 #include <Http.h>
 #include <Memory.h>
 #include <Util.h>
+#include <Tls.h>
 
 struct HttpClientContext
 {
     HashMap *responseHeaders;
     Stream *stream;
-    int sd;
 };
 
 HttpClientContext *
@@ -60,6 +60,13 @@ HttpRequest(HttpRequestMethod method, int flags, unsigned short port, char *host
         return NULL;
     }
 
+#ifndef TLS_IMPL
+    if (flags & HTTP_TLS)
+    {
+        return NULL;
+    }
+#endif
+
     if (!port)
     {
         if (flags & HTTP_TLS)
@@ -76,11 +83,6 @@ HttpRequest(HttpRequestMethod method, int flags, unsigned short port, char *host
         sprintf(serv, "%hu", port);
     }
 
-    /* TODO: Not supported yet */
-    if (flags & HTTP_TLS)
-    {
-        return NULL;
-    }
 
     context = Malloc(sizeof(HttpClientContext));
     if (!context)
@@ -127,8 +129,19 @@ HttpRequest(HttpRequestMethod method, int flags, unsigned short port, char *host
 
     freeaddrinfo(res0);
 
-    context->sd = sd;
+#ifdef TLS_IMPL
+    if (flags & HTTP_TLS)
+    {
+        context->stream = TlsClientStream(sd, host);
+    }
+    else
+    {
+        context->stream = StreamFd(sd);
+    }
+#else
     context->stream = StreamFd(sd);
+#endif
+
     if (!context->stream)
     {
         Free(context);
@@ -185,7 +198,6 @@ HttpRequestSend(HttpClientContext * context)
     }
 
     StreamFlush(context->stream);
-    shutdown(context->sd, SHUT_WR);
 
     lineLen = UtilGetLine(&line, &lineSize, context->stream);
 

@@ -16,11 +16,12 @@ Milestone: v0.3.0
     [x] Convert all code that deals with I/O
     [!] Multi-output (proof of concept)
     [!] Memory streams (proof of concept)
-    [ ] TLS
+    [~] TLS
     [ ] SOCKS
     [x] Move/convert UtilStreamCopy()
     [ ] Io man page
     [ ] Stream man page
+    [ ] Tls man page
 [~] HTTP Client API
     [x] Document HttpParseHeaders()
     [ ] HttpClient man page
@@ -41,6 +42,9 @@ Milestone: v0.3.0
     [x] Encode user-provided JSON strings
     [x] json man page
     [ ] Update man pages for tp and send-patch
+
+[ ] Proper HTTP request router
+    - Support regex matching
 
 [ ] Move configuration to database
     [ ] Initial configuration
