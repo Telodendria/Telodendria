@@ -47,7 +47,7 @@ Milestone: v0.3.0
         [ ] If no config, create one-time use registration token that
             grants user admin privileges.
     [ ] /_telodendria/admin/config endpoint
-    [ ] Refactor TelodendriaConfig to just Config (ConfigLock() and ConfigUnlock())
+    [x] Refactor TelodendriaConfig to just Config
 [ ] Proper HTTP request router
     - Support regex matching
 
@@ -64,6 +64,7 @@ Milestone: v0.3.0
     [ ] tp
     [ ] send-patch
     [ ] Log
+    [ ] TelodendriaConfig -> Config
 
 [~] Client-Server API
     [x] 4: Token-based user registration

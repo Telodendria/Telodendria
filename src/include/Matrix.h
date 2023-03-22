@@ -28,7 +28,7 @@
 #include <Log.h>
 #include <HashMap.h>
 
-#include <TelodendriaConfig.h>
+#include <Config.h>
 #include <Db.h>
 
 typedef enum MatrixError
@@ -69,7 +69,7 @@ typedef enum MatrixError
 
 typedef struct MatrixHttpHandlerArgs
 {
-    TelodendriaConfig *config;
+    Config *config;
     Db *db;
 } MatrixHttpHandlerArgs;
 

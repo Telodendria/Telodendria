@@ -34,7 +34,7 @@
 
 #include <Telodendria.h>
 #include <Memory.h>
-#include <TelodendriaConfig.h>
+#include <Config.h>
 #include <Log.h>
 #include <HashMap.h>
 #include <Json.h>
@@ -87,7 +87,7 @@ main(int argc, char **argv)
     HashMap *config = NULL;
 
     /* Program configuration */
-    TelodendriaConfig *tConfig = NULL;
+    Config *tConfig = NULL;
 
     /* User validation */
     struct passwd *userInfo = NULL;
@@ -184,7 +184,7 @@ main(int argc, char **argv)
         goto finish;
     }
 
-    tConfig = TelodendriaConfigParse(config);
+    tConfig = ConfigParse(config);
     JsonFree(config);
 
     if (!tConfig)
@@ -209,7 +209,7 @@ main(int argc, char **argv)
         tConfig->logTimestamp = NULL;
     }
 
-    if (tConfig->flags & TELODENDRIA_LOG_COLOR)
+    if (tConfig->flags & CONFIG_LOG_COLOR)
     {
         LogConfigFlagSet(LogConfigGlobal(), LOG_FLAG_COLOR);
     }
@@ -232,7 +232,7 @@ main(int argc, char **argv)
     }
 
 
-    if (tConfig->flags & TELODENDRIA_LOG_FILE)
+    if (tConfig->flags & CONFIG_LOG_FILE)
     {
         Stream *logFile = StreamOpen("telodendria.log", "a");
 
@@ -246,11 +246,11 @@ main(int argc, char **argv)
         Log(LOG_INFO, "Logging to the log file. Check there for all future messages.");
         LogConfigOutputSet(LogConfigGlobal(), logFile);
     }
-    else if (tConfig->flags & TELODENDRIA_LOG_STDOUT)
+    else if (tConfig->flags & CONFIG_LOG_STDOUT)
     {
         Log(LOG_DEBUG, "Already logging to standard output.");
     }
-    else if (tConfig->flags & TELODENDRIA_LOG_SYSLOG)
+    else if (tConfig->flags & CONFIG_LOG_SYSLOG)
     {
         Log(LOG_INFO, "Logging to the syslog. Check there for all future messages.");
         LogConfigFlagSet(LogConfigGlobal(), LOG_FLAG_SYSLOG);
@@ -473,14 +473,14 @@ finish:
      * If we're not logging to standard output, then we can close it. Otherwise,
      * if we are logging to stdout, LogConfigFree() will close it for us.
      */
-    if (tConfig && !(tConfig->flags & TELODENDRIA_LOG_STDOUT))
+    if (tConfig && !(tConfig->flags & CONFIG_LOG_STDOUT))
     {
         StreamClose(StreamStdout());
     }
 
     DbClose(matrixArgs.db);
 
-    TelodendriaConfigFree(tConfig);
+    ConfigFree(tConfig);
 
     Log(LOG_DEBUG, "Exiting with code '%d'.", exit);
 

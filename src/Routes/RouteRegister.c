@@ -116,7 +116,7 @@ ROUTE_IMPL(RouteRegister, args)
         uiaFlows = ArrayCreate();
         ArrayAdd(uiaFlows, RouteRegisterRegFlow());
 
-        if (args->matrixArgs->config->flags & TELODENDRIA_REGISTRATION)
+        if (args->matrixArgs->config->flags & CONFIG_REGISTRATION)
         {
             ArrayAdd(uiaFlows, UiaDummyFlow());
         }

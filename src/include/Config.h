@@ -22,23 +22,23 @@
  * SOFTWARE.
  */
 
-#ifndef TELODENDRIA_TELODENDRIACONFIG_H
-#define TELODENDRIA_TELODENDRIACONFIG_H
+#ifndef TELODENDRIA_CONFIG_H
+#define TELODENDRIA_CONFIG_H
 
 #include <Log.h>
 #include <HashMap.h>
 
-typedef enum TelodendriaConfigFlag
+typedef enum ConfigFlag
 {
-    TELODENDRIA_FEDERATION = (1 << 0),
-    TELODENDRIA_REGISTRATION = (1 << 1),
-    TELODENDRIA_LOG_COLOR = (1 << 2),
-    TELODENDRIA_LOG_FILE = (1 << 3),
-    TELODENDRIA_LOG_STDOUT = (1 << 4),
-    TELODENDRIA_LOG_SYSLOG = (1 << 5)
-} TelodendriaConfigFlag;
+    CONFIG_FEDERATION = (1 << 0),
+    CONFIG_REGISTRATION = (1 << 1),
+    CONFIG_LOG_COLOR = (1 << 2),
+    CONFIG_LOG_FILE = (1 << 3),
+    CONFIG_LOG_STDOUT = (1 << 4),
+    CONFIG_LOG_SYSLOG = (1 << 5)
+} ConfigFlag;
 
-typedef struct TelodendriaConfig
+typedef struct Config
 {
     char *serverName;
     char *baseUrl;
@@ -57,12 +57,12 @@ typedef struct TelodendriaConfig
 
     char *logTimestamp;
     int logLevel;
-} TelodendriaConfig;
+} Config;
 
-extern TelodendriaConfig *
- TelodendriaConfigParse(HashMap *);
+extern Config *
+ ConfigParse(HashMap *);
 
 extern void
- TelodendriaConfigFree(TelodendriaConfig *);
+ ConfigFree(Config *);
 
-#endif
+#endif /* TELODENDRIA_CONFIG_H */
