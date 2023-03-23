@@ -26,6 +26,8 @@
 
 #include <Stream.h>
 
+#define TLS_LIBRESSL 2
+
 extern Stream *
  TlsClientStream(int, const char *);
 
