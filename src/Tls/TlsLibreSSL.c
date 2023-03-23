@@ -28,6 +28,8 @@
 #include <Memory.h>
 #include <Log.h>
 
+#include <errno.h>
+
 #include <tls.h>                   /* LibreSSL TLS */
 
 typedef struct LibreSSLCookie
@@ -70,6 +72,11 @@ TlsInitClient(int fd, const char *serverName)
     }
 
     if (tls_connect_socket(cookie->ctx, fd, serverName) == -1)
+    {
+        goto error;
+    }
+
+    if (tls_handshake(cookie->ctx) == -1)
     {
         goto error;
     }
@@ -119,25 +126,26 @@ TlsInitServer(int fd, const char *crt, const char *key)
 
     if (tls_config_set_cert_file(cookie->cfg, crt) == -1)
     {
-        Log(LOG_ERR, "Error with certificate file.");
         goto error;
     }
 
     if (tls_config_set_key_file(cookie->cfg, key) == -1)
     {
-        Log(LOG_ERR, "Error with key file.");
         goto error;
     }
 
     if (tls_configure(cookie->ctx, cookie->cfg) == -1)
     {
-        Log(LOG_ERR, "Error configuring context.");
         goto error;
     }
 
-    if (tls_accept_socket(cookie->ctx, &cookie->cctx, fd) == -1)
+    if (tls_accept_fds(cookie->ctx, &cookie->cctx, fd, fd) == -1)
     {
-        Log(LOG_ERR, "Error accepting socket.");
+        goto error;
+    }
+
+    if (tls_handshake(cookie->cctx) == -1)
+    {
         goto error;
     }
 
@@ -177,11 +185,17 @@ ssize_t
 TlsRead(void *cookie, void *buf, size_t nBytes)
 {
     LibreSSLCookie *tls = cookie;
-    ssize_t ret = tls_read(tls->cctx ? tls->cctx : tls->ctx, buf, nBytes);
+    struct tls *ctx = tls->cctx ? tls->cctx : tls->ctx;
+    ssize_t ret = tls_read(ctx, buf, nBytes);
 
     if (ret == -1)
     {
-        Log(LOG_ERR, "TlsRead(): %s", tls_error(tls->cctx ? tls->cctx : tls->ctx));
+        errno = EIO;
+    }
+    else if (ret == TLS_WANT_POLLIN || ret == TLS_WANT_POLLOUT)
+    {
+        errno = EAGAIN;
+        ret = -1;
     }
 
     return ret;
@@ -191,11 +205,17 @@ ssize_t
 TlsWrite(void *cookie, void *buf, size_t nBytes)
 {
     LibreSSLCookie *tls = cookie;
-    ssize_t ret = tls_write(tls->cctx ? tls->cctx : tls->ctx, buf, nBytes);
+    struct tls *ctx = tls->cctx ? tls->cctx : tls->ctx;
+    ssize_t ret = tls_write(ctx, buf, nBytes);
 
     if (ret == -1)
     {
-        Log(LOG_ERR, "TlsWrite(): %s", tls_error(tls->cctx ? tls->cctx : tls->ctx));
+        errno = EIO;
+    }
+    else if (ret == TLS_WANT_POLLIN || ret == TLS_WANT_POLLOUT)
+    {
+        errno = EAGAIN;
+        ret = -1;
     }
 
     return ret;

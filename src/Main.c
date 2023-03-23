@@ -48,22 +48,26 @@
 static Array *httpServers = NULL;
 
 static void
-TelodendriaSignalHandler(int signalNo)
+TelodendriaSignalHandler(int signal)
 {
     size_t i;
 
-    (void) signalNo;
-
-    if (!httpServers)
+    switch (signal)
     {
-        return;
-    }
+        case SIGPIPE:
+            return;
+        case SIGINT:
+            if (!httpServers)
+            {
+                return;
+            }
 
-    for (i = 0; i < ArraySize(httpServers); i++)
-    {
-        HttpServer *server = ArrayGet(httpServers, i);
-
-        HttpServerStop(server);
+            for (i = 0; i < ArraySize(httpServers); i++)
+            {
+                HttpServer *server = ArrayGet(httpServers, i);
+                HttpServerStop(server);
+            }
+            break;
     }
 }
 
@@ -478,16 +482,22 @@ main(int argc, char **argv)
     sigfillset(&sigAction.sa_mask);
     sigAction.sa_flags = SA_RESTART;
 
-    if (sigaction(SIGINT, &sigAction, NULL) < 0)
-    {
-        Log(LOG_ERR, "Unable to install signal handler.");
-        exit = EXIT_FAILURE;
-        goto finish;
+#define SIGACTION(sig, act, oact) \
+    if (sigaction(sig, act, oact) < 0) \
+    { \
+        Log(LOG_ERR, "Unable to install signal handler: %s", #sig); \
+        exit = EXIT_FAILURE; \
+        goto finish; \
+    } \
+    else \
+    { \
+        Log(LOG_DEBUG, "Installed signal handler: %s", #sig); \
     }
-    else
-    {
-        Log(LOG_DEBUG, "Installed SIGINT signal handler.");
-    }
+
+    SIGACTION(SIGINT, &sigAction, NULL);
+    SIGACTION(SIGPIPE, &sigAction, NULL);
+
+#undef SIGACTION
 
     /* Block this thread until the servers are terminated by a signal
      * handler */

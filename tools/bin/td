@@ -55,6 +55,7 @@ MAIN="Main"
 
 if [ "$DEBUG" = "1" ]; then
     CFLAGS="$CFLAGS -O0 -g"
+    LDFLAGS="-lm -pthread ${TLS_LIBS}"
     PROG="$PROG-debug"
 fi
 
