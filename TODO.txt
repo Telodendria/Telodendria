@@ -38,10 +38,10 @@ Milestone: v0.3.0
 [x] Global log object
     - So we don't have to pass LogConfig around everywhere
     - Also allows debug and error logging in other APIs
-[ ] Make 'listen' directive in config an array of objects
+[x] Make 'listen' directive in config an array of objects
     - Each object has port, threads, maxConnections
     - If tls is given, it can be null, false, or an object with cert and key
-[ ] Pass TLS certs and keys into HttpServer
+[x] Pass TLS certs and keys into HttpServer
 [ ] Move configuration to database
     [ ] Initial configuration
         [ ] If no config, create one-time use registration token that

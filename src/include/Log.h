@@ -76,6 +76,6 @@ extern void
  LogTo(LogConfig *, int, const char *,...);
 
 extern void
- Log(int, const char *, ...);
+ Log(int, const char *,...);
 
 #endif

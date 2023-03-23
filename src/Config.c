@@ -29,6 +29,7 @@
 #include <Array.h>
 #include <Str.h>
 #include <Db.h>
+#include <HttpServer.h>
 
 #include <stdlib.h>
 #include <ctype.h>
@@ -89,7 +90,7 @@
         into = default; \
     }
 
-int
+static int
 ConfigParseRunAs(Config * tConfig, HashMap * config)
 {
     JsonValue *value;
@@ -105,7 +106,109 @@ error:
     return 0;
 }
 
-int
+static int
+ConfigParseListen(Config * tConfig, Array * listen)
+{
+    size_t i;
+
+    if (!ArraySize(listen))
+    {
+        Log(LOG_ERR, "Listen array cannot be empty; you must specify at least");
+        Log(LOG_ERR, "one listener.");
+        goto error;
+    }
+
+    if (!tConfig->servers)
+    {
+        tConfig->servers = ArrayCreate();
+        if (!tConfig->servers)
+        {
+            Log(LOG_ERR, "Unable to allocate memory for listener configurations.");
+            goto error;
+        }
+    }
+
+    for (i = 0; i < ArraySize(listen); i++)
+    {
+        JsonValue *val = ArrayGet(listen, i);
+        HashMap *obj;
+        HttpServerConfig *serverCfg = Malloc(sizeof(HttpServerConfig));
+
+        if (!serverCfg)
+        {
+            Log(LOG_ERR, "Unable to allocate memory for listener configuration.");
+            goto error;
+        }
+
+        if (JsonValueType(val) != JSON_OBJECT)
+        {
+            Log(LOG_ERR, "Invalid value in listener array.");
+            Log(LOG_ERR, "All listeners must be objects.");
+            goto error;
+        }
+
+        obj = JsonValueAsObject(val);
+
+        serverCfg->port = JsonValueAsInteger(HashMapGet(obj, "port"));
+        serverCfg->threads = JsonValueAsInteger(HashMapGet(obj, "threads"));
+        serverCfg->maxConnections = JsonValueAsInteger(HashMapGet(obj, "maxConnections"));
+
+        if (!serverCfg->port)
+        {
+            Log(LOG_WARNING, "No or invalid port specified, listener will be ignored.");
+            Free(serverCfg);
+            continue;
+        }
+
+        if (!serverCfg->threads)
+        {
+            Log(LOG_DEBUG, "No or invalid number of threads specified for listener.");
+            Log(LOG_DEBUG, "Using default, which may be subject to change.");
+            serverCfg->threads = 4;
+        }
+
+        if (!serverCfg->maxConnections)
+        {
+            Log(LOG_DEBUG, "No or invalid number of maximum connections specified.");
+            Log(LOG_DEBUG, "Using default, which may be subject to change.");
+            serverCfg->maxConnections = 32;
+        }
+
+        val = HashMapGet(obj, "tls");
+        if ((JsonValueType(val) == JSON_BOOLEAN && !JsonValueAsBoolean(val)) || JsonValueType(val) == JSON_NULL)
+        {
+            serverCfg->flags = HTTP_FLAG_NONE;
+            serverCfg->tlsCert = NULL;
+            serverCfg->tlsKey = NULL;
+        }
+        else if (JsonValueType(val) != JSON_OBJECT)
+        {
+            Log(LOG_ERR, "Invalid value for listener.tls. It must be an object.");
+            goto error;
+        }
+        else
+        {
+            serverCfg->flags = HTTP_FLAG_TLS;
+
+            obj = JsonValueAsObject(val);
+            serverCfg->tlsCert = StrDuplicate(JsonValueAsString(HashMapGet(obj, "cert")));
+            serverCfg->tlsKey = StrDuplicate(JsonValueAsString(HashMapGet(obj, "key")));
+
+            if (!serverCfg->tlsCert || !serverCfg->tlsKey)
+            {
+                Log(LOG_ERR, "TLS cert and key must both be valid file names.");
+                goto error;
+            }
+        }
+        ArrayAdd(tConfig->servers, serverCfg);
+    }
+
+    return 1;
+error:
+    return 0;
+}
+
+static int
 ConfigParseLog(Config * tConfig, HashMap * config)
 {
     JsonValue *value;
@@ -210,7 +313,11 @@ ConfigParse(HashMap * config)
 
     memset(tConfig, 0, sizeof(Config));
 
-    CONFIG_OPTIONAL_INTEGER(tConfig->listenPort, "listen", 8008);
+    CONFIG_REQUIRE("listen", JSON_ARRAY);
+    if (!ConfigParseListen(tConfig, JsonValueAsArray(value)))
+    {
+        goto error;
+    }
 
     CONFIG_REQUIRE("serverName", JSON_STRING);
     CONFIG_COPY_STRING(tConfig->serverName);
@@ -256,8 +363,6 @@ ConfigParse(HashMap * config)
     CONFIG_REQUIRE("dataDir", JSON_STRING);
     CONFIG_COPY_STRING(tConfig->dataDir);
 
-    CONFIG_OPTIONAL_INTEGER(tConfig->threads, "threads", 1);
-    CONFIG_OPTIONAL_INTEGER(tConfig->maxConnections, "maxConnections", 32);
     CONFIG_OPTIONAL_INTEGER(tConfig->maxCache, "maxCache", 0);
 
     CONFIG_REQUIRE("federation", JSON_BOOLEAN);
@@ -302,6 +407,22 @@ ConfigFree(Config * tConfig)
     Free(tConfig->dataDir);
 
     Free(tConfig->logTimestamp);
+
+    if (tConfig->servers)
+    {
+        size_t i;
+
+        for (i = 0; i < ArraySize(tConfig->servers); i++)
+        {
+            HttpServerConfig *serverCfg = ArrayGet(tConfig->servers, i);
+
+            Free(serverCfg->tlsCert);
+            Free(serverCfg->tlsKey);
+            Free(serverCfg);
+        }
+
+        ArrayFree(tConfig->servers);
+    }
 
     Free(tConfig);
 }

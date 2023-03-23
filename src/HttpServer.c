@@ -27,6 +27,7 @@
 #include <Array.h>
 #include <Util.h>
 #include <Tls.h>
+#include <Log.h>
 
 #include <pthread.h>
 #include <stdio.h>
@@ -48,19 +49,12 @@ static const char ENABLE = 1;
 
 struct HttpServer
 {
+    HttpServerConfig config;
     int sd;
-    unsigned int nThreads;
-    unsigned int maxConnections;
     pthread_t socketThread;
-    int flags;
-    char *tlsCrt;
-    char *tlsKey;
 
     volatile unsigned int stop:1;
     volatile unsigned int isRunning:1;
-
-    HttpHandler *requestHandler;
-    void *handlerArgs;
 
     Queue *connQueue;
     pthread_mutex_t connQueueMutex;
@@ -234,7 +228,7 @@ HttpResponseStatus(HttpServerContext * c, HttpStatus status)
 }
 
 HttpStatus
-HttpResponseStatusGet(HttpServerContext *c)
+HttpResponseStatusGet(HttpServerContext * c)
 {
     if (!c)
     {
@@ -291,19 +285,23 @@ DequeueConnection(HttpServer * server)
 }
 
 HttpServer *
-HttpServerCreate(int flags, unsigned short port, unsigned int nThreads, unsigned int maxConnections,
-                 HttpHandler * requestHandler, void *handlerArgs)
+HttpServerCreate(HttpServerConfig * config)
 {
     HttpServer *server;
     struct sockaddr_in sa;
 
-    if (!requestHandler)
+    if (!config)
+    {
+        return NULL;
+    }
+
+    if (!config->handler)
     {
         return NULL;
     }
 
 #ifndef TLS_IMPL
-    if (flags & HTTP_FLAG_TLS)
+    if (config->flags & HTTP_FLAG_TLS)
     {
         return NULL;
     }
@@ -317,7 +315,7 @@ HttpServerCreate(int flags, unsigned short port, unsigned int nThreads, unsigned
 
     memset(server, 0, sizeof(HttpServer));
 
-    server->flags = flags;
+    server->config = *config;
 
     server->threadPool = ArrayCreate();
     if (!server->threadPool)
@@ -325,7 +323,7 @@ HttpServerCreate(int flags, unsigned short port, unsigned int nThreads, unsigned
         goto error;
     }
 
-    server->connQueue = QueueCreate(maxConnections);
+    server->connQueue = QueueCreate(config->maxConnections);
     if (!server->connQueue)
     {
         goto error;
@@ -363,7 +361,7 @@ HttpServerCreate(int flags, unsigned short port, unsigned int nThreads, unsigned
     memset(&sa, 0, sizeof(struct sockaddr_in));
 
     sa.sin_family = AF_INET;
-    sa.sin_port = htons(port);
+    sa.sin_port = htons(config->port);
     sa.sin_addr.s_addr = htonl(INADDR_ANY);
 
     if (bind(server->sd, (struct sockaddr *) & sa, sizeof(sa)) < 0)
@@ -371,15 +369,11 @@ HttpServerCreate(int flags, unsigned short port, unsigned int nThreads, unsigned
         goto error;
     }
 
-    if (listen(server->sd, maxConnections) < 0)
+    if (listen(server->sd, config->maxConnections) < 0)
     {
         goto error;
     }
 
-    server->nThreads = nThreads;
-    server->maxConnections = maxConnections;
-    server->requestHandler = requestHandler;
-    server->handlerArgs = handlerArgs;
     server->stop = 0;
     server->isRunning = 0;
 
@@ -408,6 +402,17 @@ error:
         Free(server);
     }
     return NULL;
+}
+
+HttpServerConfig *
+HttpServerConfigGet(HttpServer * server)
+{
+    if (!server)
+    {
+        return NULL;
+    }
+
+    return &server->config;
 }
 
 void
@@ -561,7 +566,7 @@ HttpServerWorkerThread(void *args)
             goto internal_error;
         }
 
-        server->requestHandler(context, server->handlerArgs);
+        server->config.handler(context, server->config.handlerArgs);
 
         HttpServerContextFree(context);
         fp = NULL;                 /* The above call will close this
@@ -603,7 +608,7 @@ HttpServerEventThread(void *args)
     pollFds[0].fd = server->sd;
     pollFds[0].events = POLLIN;
 
-    for (i = 0; i < server->nThreads; i++)
+    for (i = 0; i < server->config.threads; i++)
     {
         HttpServerWorkerThreadArgs *workerThread = Malloc(sizeof(HttpServerWorkerThreadArgs));
 
@@ -657,9 +662,9 @@ HttpServerEventThread(void *args)
             }
 
 #ifdef TLS_IMPL
-            if (server->flags & HTTP_FLAG_TLS)
+            if (server->config.flags & HTTP_FLAG_TLS)
             {
-                fp = TlsServerStream(connFd, server->tlsCrt, server->tlsKey);
+                fp = TlsServerStream(connFd, server->config.tlsCert, server->config.tlsKey);
             }
             else
             {
@@ -681,7 +686,7 @@ HttpServerEventThread(void *args)
         pthread_mutex_unlock(&server->connQueueMutex);
     }
 
-    for (i = 0; i < server->nThreads; i++)
+    for (i = 0; i < server->config.threads; i++)
     {
         HttpServerWorkerThreadArgs *workerThread = ArrayGet(server->threadPool, i);
 

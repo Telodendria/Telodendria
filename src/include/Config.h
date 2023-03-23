@@ -27,6 +27,7 @@
 
 #include <Log.h>
 #include <HashMap.h>
+#include <Array.h>
 
 typedef enum ConfigFlag
 {
@@ -48,15 +49,14 @@ typedef struct Config
     char *gid;
     char *dataDir;
 
-    unsigned short listenPort;
     unsigned int flags;
-    unsigned int threads;
-    unsigned int maxConnections;
 
     size_t maxCache;
 
     char *logTimestamp;
     int logLevel;
+
+    Array *servers;
 } Config;
 
 extern Config *
@@ -65,4 +65,4 @@ extern Config *
 extern void
  ConfigFree(Config *);
 
-#endif /* TELODENDRIA_CONFIG_H */
+#endif                             /* TELODENDRIA_CONFIG_H */

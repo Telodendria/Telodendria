@@ -43,6 +43,7 @@
 #include <Db.h>
 #include <Cron.h>
 #include <Uia.h>
+#include <Util.h>
 
 static Array *httpServers = NULL;
 
@@ -61,6 +62,7 @@ TelodendriaSignalHandler(int signalNo)
     for (i = 0; i < ArraySize(httpServers); i++)
     {
         HttpServer *server = ArrayGet(httpServers, i);
+
         HttpServerStop(server);
     }
 }
@@ -239,6 +241,7 @@ main(int argc, char **argv)
         {
             Log(LOG_ERR, "Unable to open log file for appending.");
             exit = EXIT_FAILURE;
+            tConfig->flags &= CONFIG_LOG_STDOUT;
             goto finish;
         }
 
@@ -269,14 +272,11 @@ main(int argc, char **argv)
 
     Log(LOG_DEBUG, "Configuration:");
     LogConfigIndent(LogConfigGlobal());
-    Log(LOG_DEBUG, "Listen On: %d", tConfig->listenPort);
     Log(LOG_DEBUG, "Server Name: %s", tConfig->serverName);
     Log(LOG_DEBUG, "Base URL: %s", tConfig->baseUrl);
     Log(LOG_DEBUG, "Identity Server: %s", tConfig->identityServer);
     Log(LOG_DEBUG, "Run As: %s:%s", tConfig->uid, tConfig->gid);
     Log(LOG_DEBUG, "Data Directory: %s", tConfig->dataDir);
-    Log(LOG_DEBUG, "Threads: %d", tConfig->threads);
-    Log(LOG_DEBUG, "Max Connections: %d", tConfig->maxConnections);
     Log(LOG_DEBUG, "Max Cache: %ld", tConfig->maxCache);
     Log(LOG_DEBUG, "Flags: %x", tConfig->flags);
     LogConfigUnindent(LogConfigGlobal());
@@ -292,18 +292,59 @@ main(int argc, char **argv)
         goto finish;
     }
 
-    /* Bind the socket before possibly dropping permissions */
-    server = HttpServerCreate(HTTP_FLAG_NONE, tConfig->listenPort, tConfig->threads,
-             tConfig->maxConnections, MatrixHttpHandler, &matrixArgs);
-    if (!server)
+    /* Bind servers before possibly dropping permissions. */
+    for (i = 0; i < ArraySize(tConfig->servers); i++)
     {
-        Log(LOG_ERR, "Unable to create HTTP server on port %d: %s",
-            tConfig->listenPort, strerror(errno));
+        HttpServerConfig *serverCfg = ArrayGet(tConfig->servers, i);
+
+        Log(LOG_DEBUG, "HTTP listener: %lu", i);
+        LogConfigIndent(LogConfigGlobal());
+        Log(LOG_DEBUG, "Port: %hu", serverCfg->port);
+        Log(LOG_DEBUG, "Threads: %u", serverCfg->threads);
+        Log(LOG_DEBUG, "Max Connections: %u", serverCfg->maxConnections);
+        Log(LOG_DEBUG, "Flags: %d", serverCfg->flags);
+        Log(LOG_DEBUG, "TLS Cert: %s", serverCfg->tlsCert);
+        Log(LOG_DEBUG, "TLS Key: %s", serverCfg->tlsKey);
+        LogConfigUnindent(LogConfigGlobal());
+
+        serverCfg->handler = MatrixHttpHandler;
+        serverCfg->handlerArgs = &matrixArgs;
+
+        if (serverCfg->flags & HTTP_FLAG_TLS)
+        {
+            if (!UtilLastModified(serverCfg->tlsCert))
+            {
+                Log(LOG_ERR, "%s: %s", strerror(errno), serverCfg->tlsCert);
+                exit = EXIT_FAILURE;
+                goto finish;
+            }
+
+            if (!UtilLastModified(serverCfg->tlsKey))
+            {
+                Log(LOG_ERR, "%s: %s", strerror(errno), serverCfg->tlsKey);
+                exit = EXIT_FAILURE;
+                goto finish;
+            }
+        }
+
+        server = HttpServerCreate(serverCfg);
+        if (!server)
+        {
+            Log(LOG_ERR, "Unable to create HTTP server on port %d: %s",
+                serverCfg->port, strerror(errno));
+
+            exit = EXIT_FAILURE;
+            goto finish;
+        }
+        ArrayAdd(httpServers, server);
+    }
+
+    if (!ArraySize(httpServers))
+    {
+        Log(LOG_ERR, "No valid HTTP listeners specified in the configuration.");
         exit = EXIT_FAILURE;
         goto finish;
     }
-
-    ArrayAdd(httpServers, server);
 
     Log(LOG_DEBUG, "Running as uid:gid: %d:%d.", getuid(), getgid());
 
@@ -375,7 +416,6 @@ main(int argc, char **argv)
     tConfig->uid = NULL;
     tConfig->gid = NULL;
 
-
     if (!tConfig->maxCache)
     {
         Log(LOG_WARNING, "Database caching is disabled.");
@@ -390,6 +430,10 @@ main(int argc, char **argv)
         Log(LOG_ERR, "Unable to open data directory as a database.");
         exit = EXIT_FAILURE;
         goto finish;
+    }
+    else
+    {
+        Log(LOG_DEBUG, "Opened database.");
     }
 
     cron = CronCreate(60 * 1000);  /* 1-minute tick */
@@ -411,21 +455,24 @@ main(int argc, char **argv)
 
     for (i = 0; i < ArraySize(httpServers); i++)
     {
+        HttpServerConfig *serverCfg;
+
         server = ArrayGet(httpServers, i);
+        serverCfg = HttpServerConfigGet(server);
 
         if (!HttpServerStart(server))
         {
-            Log(LOG_ERR, "Unable to start HTTP server %lu.", i);
+            Log(LOG_ERR, "Unable to start HTTP server %lu on port %hu.", i, serverCfg->port);
             exit = EXIT_FAILURE;
             goto finish;
         }
         else
         {
             Log(LOG_DEBUG, "Started HTTP server %lu.", i);
+            Log(LOG_INFO, "Listening on port: %hu", serverCfg->port);
         }
     }
 
-    Log(LOG_INFO, "Listening on port: %d", tConfig->listenPort);
 
     sigAction.sa_handler = TelodendriaSignalHandler;
     sigfillset(&sigAction.sa_mask);
@@ -437,6 +484,10 @@ main(int argc, char **argv)
         exit = EXIT_FAILURE;
         goto finish;
     }
+    else
+    {
+        Log(LOG_DEBUG, "Installed SIGINT signal handler.");
+    }
 
     /* Block this thread until the servers are terminated by a signal
      * handler */
@@ -444,6 +495,7 @@ main(int argc, char **argv)
     {
         server = ArrayGet(httpServers, i);
         HttpServerJoin(server);
+        Log(LOG_DEBUG, "Joined HTTP server %lu.", i);
     }
 
 finish:
@@ -452,11 +504,14 @@ finish:
     {
         for (i = 0; i < ArraySize(httpServers); i++)
         {
+            Log(LOG_DEBUG, "Freeing HTTP server %lu...", i);
             server = ArrayGet(httpServers, i);
             HttpServerStop(server);
             HttpServerFree(server);
+            Log(LOG_DEBUG, "Freed HTTP server %lu.", i);
         }
         ArrayFree(httpServers);
+        Log(LOG_DEBUG, "Freed HTTP servers array.");
     }
 
     if (cron)
@@ -466,16 +521,8 @@ finish:
         Log(LOG_DEBUG, "Stopped and freed job scheduler.");
     }
 
-    /*
-     * If we're not logging to standard output, then we can close it. Otherwise,
-     * if we are logging to stdout, LogConfigFree() will close it for us.
-     */
-    if (tConfig && !(tConfig->flags & CONFIG_LOG_STDOUT))
-    {
-        StreamClose(StreamStdout());
-    }
-
     DbClose(matrixArgs.db);
+    Log(LOG_DEBUG, "Closed database.");
 
     ConfigFree(tConfig);
 
@@ -498,6 +545,8 @@ finish:
      * memory should be allocated. */
     TelodendriaGenerateMemReport();
 
+    /* Free any leaked memory now, just in case the operating system
+     * we're running on won't do it for us. */
     MemoryFreeAll();
     return exit;
 }

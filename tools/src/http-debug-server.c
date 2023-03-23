@@ -73,8 +73,16 @@ int
 main(void)
 {
     struct sigaction sa;
+    HttpServerConfig cfg;
 
-    server = HttpServerCreate(HTTP_FLAG_NONE, 8008, 1, 1, HttpHandle, NULL);
+    cfg.flags = HTTP_FLAG_NONE;
+    cfg.port = 8008;
+    cfg.threads = 1;
+    cfg.maxConnections = 1;
+    cfg.handler = HttpHandle;
+    cfg.handlerArgs = NULL;
+
+    server = HttpServerCreate(&cfg);
     if (!HttpServerStart(server))
     {
         StreamPuts(StreamStderr(), "Unable to start HTTP server.\n");

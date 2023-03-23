@@ -119,21 +119,25 @@ TlsInitServer(int fd, const char *crt, const char *key)
 
     if (tls_config_set_cert_file(cookie->cfg, crt) == -1)
     {
+        Log(LOG_ERR, "Error with certificate file.");
         goto error;
     }
 
     if (tls_config_set_key_file(cookie->cfg, key) == -1)
     {
+        Log(LOG_ERR, "Error with key file.");
         goto error;
     }
 
     if (tls_configure(cookie->ctx, cookie->cfg) == -1)
     {
+        Log(LOG_ERR, "Error configuring context.");
         goto error;
     }
 
     if (tls_accept_socket(cookie->ctx, &cookie->cctx, fd) == -1)
     {
+        Log(LOG_ERR, "Error accepting socket.");
         goto error;
     }
 

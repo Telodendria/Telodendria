@@ -369,7 +369,7 @@ Logv(LogConfig * config, int level, const char *msg, va_list argp)
 }
 
 void
-LogTo(LogConfig *config, int level, const char *fmt, ...)
+LogTo(LogConfig * config, int level, const char *fmt,...)
 {
     va_list argp;
 
@@ -379,7 +379,7 @@ LogTo(LogConfig *config, int level, const char *fmt, ...)
 }
 
 extern void
-Log(int level, const char *fmt, ...)
+Log(int level, const char *fmt,...)
 {
     va_list argp;
 

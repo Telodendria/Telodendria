@@ -205,7 +205,7 @@ UiaStageBuild(char *type, HashMap * params)
 
 int
 UiaComplete(Array * flows, HttpServerContext * context, Db * db,
-   HashMap * request, HashMap ** response, Config * config)
+            HashMap * request, HashMap ** response, Config * config)
 {
     JsonValue *val;
     HashMap *auth;

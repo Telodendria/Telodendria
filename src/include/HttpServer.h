@@ -36,8 +36,25 @@ typedef struct HttpServer HttpServer;
 typedef struct HttpServerContext HttpServerContext;
 typedef void (HttpHandler) (HttpServerContext *, void *);
 
+typedef struct HttpServerConfig
+{
+    unsigned short port;
+    unsigned int threads;
+    unsigned int maxConnections;
+
+    int flags;
+    char *tlsCert;
+    char *tlsKey;
+
+    HttpHandler *handler;
+    void *handlerArgs;
+} HttpServerConfig;
+
 extern HttpServer *
- HttpServerCreate(int, unsigned short, unsigned int, unsigned int, HttpHandler *, void *);
+ HttpServerCreate(HttpServerConfig *);
+
+extern HttpServerConfig *
+ HttpServerConfigGet(HttpServer *);
 
 extern void
  HttpServerFree(HttpServer *);

@@ -164,7 +164,7 @@ ArrayInsert(Array * array, size_t index, void *value)
 }
 
 extern void *
-ArraySet(Array * array, size_t index, void * value)
+ArraySet(Array * array, size_t index, void *value)
 {
     void *oldValue;
 
