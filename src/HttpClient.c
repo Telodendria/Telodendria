@@ -210,7 +210,6 @@ HttpRequestSend(HttpClientContext * context)
 
     if (lineLen == -1)
     {
-        Log(LOG_ERR, "HttpRequestSend(): %s", strerror(errno));
         return 0;
     }
 

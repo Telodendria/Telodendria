@@ -37,6 +37,9 @@ if [ -n "$TLS_IMPL" ]; then
         "LIBRESSL")
             TLS_LIBS="-ltls -lcrypto -lssl"
             ;;
+        "OPENSSL")
+            TLS_LIBS="-lcrypto -lssl"
+            ;;
         *)
             echo "Unrecognized TLS implementation: ${TLS_IMPL}"
             echo "Consult src/include/Tls.h for supported implementations."

@@ -65,6 +65,7 @@ TelodendriaSignalHandler(int signal)
             for (i = 0; i < ArraySize(httpServers); i++)
             {
                 HttpServer *server = ArrayGet(httpServers, i);
+
                 HttpServerStop(server);
             }
             break;
