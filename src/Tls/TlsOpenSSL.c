@@ -176,6 +176,8 @@ error:
         SSL_CTX_free(cookie->ctx);
     }
 
+    Free(cookie);
+
     return NULL;
 }
 
