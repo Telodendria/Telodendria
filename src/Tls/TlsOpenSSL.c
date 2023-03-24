@@ -103,7 +103,6 @@ error:
     }
 
     return NULL;
-    return NULL;
 }
 
 void *
