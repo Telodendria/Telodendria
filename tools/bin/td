@@ -34,17 +34,18 @@
 
 if [ -n "$TLS_IMPL" ]; then
     case "$TLS_IMPL" in
-        "TLS_LIBRESSL")
+        "LIBRESSL")
             TLS_LIBS="-ltls -lcrypto -lssl"
             ;;
         *)
             echo "Unrecognized TLS implementation: ${TLS_IMPL}"
             echo "Consult src/include/Tls.h for supported implementations."
+            echo "Note that the TLS_ prefix is omitted in TLS_IMPL."
             exit 1
             ;;
     esac
 
-    DEFINES="${DEFINES} -DTLS_IMPL=${TLS_IMPL}"
+    DEFINES="${DEFINES} -DTLS_IMPL=TLS_${TLS_IMPL}"
     LDFLAGS="${LDFLAGS} ${TLS_LIBS}"
 fi
 
