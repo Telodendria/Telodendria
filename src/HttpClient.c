@@ -29,6 +29,7 @@
 #include <ctype.h>
 
 #include <unistd.h>
+#include <errno.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netdb.h>
@@ -200,6 +201,18 @@ HttpRequestSend(HttpClientContext * context)
     StreamFlush(context->stream);
 
     lineLen = UtilGetLine(&line, &lineSize, context->stream);
+
+    while (lineLen == -1 && errno == EAGAIN)
+    {
+        StreamClearError(context->stream);
+        lineLen = UtilGetLine(&line, &lineSize, context->stream);
+    }
+
+    if (lineLen == -1)
+    {
+        Log(LOG_ERR, "HttpRequestSend(): %s", strerror(errno));
+        return 0;
+    }
 
     /* Line must contain at least "HTTP/x.x xxx" */
     if (lineLen < 12)
