@@ -124,32 +124,38 @@ TlsInitServer(int fd, const char *crt, const char *key)
     cookie->ctx = SSL_CTX_new(cookie->method);
     if (!cookie->ctx)
     {
+        Log(LOG_ERR, "TlsServerInit(): Unable to create SSL Context.");
         goto error;
     }
 
     if (SSL_CTX_use_certificate_file(cookie->ctx, crt, SSL_FILETYPE_PEM) <= 0)
     {
+        Log(LOG_ERR, "TlsServerInit(): Unable to set certificate file.");
         goto error;
     }
 
     if (SSL_CTX_use_PrivateKey_file(cookie->ctx, key, SSL_FILETYPE_PEM) <= 0)
     {
+        Log(LOG_ERR, "TlsServerInit(): Unable to set key file.");
         goto error;
     }
 
     cookie->ssl = SSL_new(cookie->ctx);
     if (!cookie->ssl)
     {
+        Log(LOG_ERR, "TlsServerInit(): Unable to create SSL object.");
         goto error;
     }
 
     if (!SSL_set_fd(cookie->ssl, fd))
     {
+        Log(LOG_ERR, "TlsServerInit(): Unable to set file descriptor.");
         goto error;
     }
 
     if (SSL_accept(cookie->ssl) <= 0)
     {
+        Log(LOG_ERR, "TlsServerInit(): Unable to accept connection.");
         goto error;
     }
 
@@ -189,7 +195,11 @@ TlsRead(void *cookie, void *buf, size_t nBytes)
             case SSL_ERROR_WANT_WRITE:
             case SSL_ERROR_WANT_CONNECT:
             case SSL_ERROR_WANT_ACCEPT:
+            case SSL_ERROR_WANT_X509_LOOKUP:
                 errno = EAGAIN;
+                break;
+            case SSL_ERROR_ZERO_RETURN:
+                ret = 0;
                 break;
             default:
                 errno = EIO;
@@ -215,7 +225,11 @@ TlsWrite(void *cookie, void *buf, size_t nBytes)
             case SSL_ERROR_WANT_WRITE:
             case SSL_ERROR_WANT_CONNECT:
             case SSL_ERROR_WANT_ACCEPT:
+            case SSL_ERROR_WANT_X509_LOOKUP:
                 errno = EAGAIN;
+                break;
+            case SSL_ERROR_ZERO_RETURN:
+                ret = 0;
                 break;
             default:
                 errno = EIO;
