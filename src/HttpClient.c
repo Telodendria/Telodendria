@@ -50,7 +50,7 @@ HttpRequest(HttpRequestMethod method, int flags, unsigned short port, char *host
 {
     HttpClientContext *context;
 
-    int sd;
+    int sd = -1;
     struct addrinfo hints, *res, *res0;
     int error;
 
