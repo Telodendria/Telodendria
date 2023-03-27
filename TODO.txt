@@ -50,6 +50,8 @@ Milestone: v0.3.0
     [x] Refactor TelodendriaConfig to just Config
 [ ] Proper HTTP request router
     - Support regex matching
+[ ] Debug OpenSSL
+[ ] Replace all usages of curl with http
 
 [ ] Documentation
     [ ] Array
