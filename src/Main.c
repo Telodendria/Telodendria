@@ -252,6 +252,7 @@ main(int argc, char **argv)
 
         Log(LOG_INFO, "Logging to the log file. Check there for all future messages.");
         LogConfigOutputSet(LogConfigGlobal(), logFile);
+        StreamClose(StreamStdout());
     }
     else if (tConfig->flags & CONFIG_LOG_STDOUT)
     {
