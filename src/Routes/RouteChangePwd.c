@@ -53,7 +53,6 @@ ROUTE_IMPL(RouteChangePwd, args)
 
     HashMap *request = NULL;
     HashMap *response = NULL;
-    HashMap *devices = NULL;
 
     JsonValue *val = NULL;
 
@@ -64,7 +63,6 @@ ROUTE_IMPL(RouteChangePwd, args)
 
     char *token;
     char *newPassword;
-    char *key;
 
     if (MATRIX_PATH_PARTS(args->path) != 0 ||
         HttpRequestMethodGet(args->context) != HTTP_POST)

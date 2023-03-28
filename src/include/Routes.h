@@ -65,8 +65,10 @@ ROUTE(RouteLogin);                 /* /_matrix/client/(r0|v3)/login */
 ROUTE(RouteLogout);                /* /_matrix/client/(r0|v3)/logout */
 ROUTE(RouteRegister);              /* /_matrix/client/(r0|v3)/register */
 ROUTE(RouteRefresh);               /* /_matrix/client/(r0|v3)/refresh */
-ROUTE(RouteWhoami);                /* /_matrix/client/(r0|v3)/account/whoami */
-ROUTE(RouteChangePwd);             /* /_matrix/client/(r0|v3)/account/password */
+ROUTE(RouteWhoami);                /* /_matrix/client/(r0|v3)/account/wh
+                                    * oami */
+ROUTE(RouteChangePwd);             /* /_matrix/client/(r0|v3)/account/pa
+                                    * ssword */
 
 ROUTE(RouteTokenValid);            /* /_matrix/client/v1/register/m.logi
                                     * n.registration_token/validity */
