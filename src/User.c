@@ -615,7 +615,7 @@ UserDeleteToken(User * user, char *token)
 }
 
 int
-UserDeleteTokens(User * user)
+UserDeleteTokens(User * user, char *exempt)
 {
     HashMap *devices;
     char *deviceId;
@@ -638,6 +638,11 @@ UserDeleteTokens(User * user)
         char *accessToken = JsonValueAsString(HashMapGet(device, "accessToken"));
         char *refreshToken = JsonValueAsString(HashMapGet(device, "refreshToken"));
 
+        if (exempt && (strcmp(accessToken, exempt) == 0))
+        {
+            continue;
+        }
+
         if (accessToken)
         {
             DbDelete(user->db, 3, "tokens", "access", accessToken);
@@ -647,10 +652,9 @@ UserDeleteTokens(User * user)
         {
             DbDelete(user->db, 3, "tokens", "refresh", refreshToken);
         }
-    }
 
-    JsonValueFree(HashMapDelete(DbJson(user->ref), "devices"));
-    HashMapSet(DbJson(user->ref), "devices", JsonValueObject(HashMapCreate()));
+        JsonValueFree(HashMapDelete(devices, deviceId));
+    }
 
     return 1;
 }

@@ -79,7 +79,7 @@ Milestone: v0.3.0
     [~] 4: Account management
         [~] Deactivate
             [x] Make sure UserLogin() fails if user is deactivated.
-        [ ] Change password
+        [x] Change password
         [x] Whoami
     [ ] 9: User Data
     [ ] 5: Capabilities negotiation

@@ -94,6 +94,10 @@ ROUTE_IMPL(RouteMatrix, args)
             {
                 response = RouteWhoami(args);
             }
+            else if (MATRIX_PATH_EQUALS(pathPart, "password"))
+            {
+                response = RouteChangePwd(args);
+            }
             else
             {
                 HttpResponseStatus(args->context, HTTP_NOT_FOUND);

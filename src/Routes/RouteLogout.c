@@ -79,7 +79,7 @@ ROUTE_IMPL(RouteLogout, args)
         }
         Free(pathPart);
 
-        if (!UserDeleteTokens(user))
+        if (!UserDeleteTokens(user, NULL))
         {
             /* If we can't delete all of our tokens, then something is
              * wrong. */

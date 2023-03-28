@@ -103,7 +103,7 @@ extern int
  UserDeleteToken(User *, char *);
 
 extern int
- UserDeleteTokens(User *);
+ UserDeleteTokens(User *, char *);
 
 extern UserId *
  UserIdParse(char *, char *);
