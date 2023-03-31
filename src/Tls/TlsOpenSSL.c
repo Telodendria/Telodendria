@@ -39,6 +39,29 @@ typedef struct OpenSSLCookie
     SSL *ssl;
 } OpenSSLCookie;
 
+static char *
+SSLErrorString(int err)
+{
+    switch (err) {
+        case SSL_ERROR_NONE:
+            return "No error.";
+        case SSL_ERROR_ZERO_RETURN:
+            return "The TLS/SSL connection has been closed.";
+        case SSL_ERROR_WANT_READ:
+        case SSL_ERROR_WANT_WRITE:
+        case SSL_ERROR_WANT_CONNECT:
+        case SSL_ERROR_WANT_ACCEPT:
+            return "The operation did not complete.";
+        case SSL_ERROR_WANT_X509_LOOKUP:
+            return "X509 lookup failed.";
+        case SSL_ERROR_SYSCALL:
+            return "I/O Error.";
+        case SSL_ERROR_SSL:
+            return "SSL library error.";
+    }
+    return NULL;
+}
+
 void *
 TlsInitClient(int fd, const char *serverName)
 {
@@ -110,6 +133,7 @@ TlsInitServer(int fd, const char *crt, const char *key)
 {
     OpenSSLCookie *cookie;
     char errorStr[256];
+    int acceptRet = 0;
 
     cookie = Malloc(sizeof(OpenSSLCookie));
     if (!cookie)
@@ -123,44 +147,54 @@ TlsInitServer(int fd, const char *crt, const char *key)
     cookie->ctx = SSL_CTX_new(cookie->method);
     if (!cookie->ctx)
     {
-        Log(LOG_ERR, "TlsServerInit(): Unable to create SSL Context.");
+        Log(LOG_ERR, "TlsInitServer(): Unable to create SSL Context.");
         goto error;
     }
 
     if (SSL_CTX_use_certificate_file(cookie->ctx, crt, SSL_FILETYPE_PEM) <= 0)
     {
-        Log(LOG_ERR, "TlsServerInit(): Unable to set certificate file.");
+        Log(LOG_ERR, "TlsInitServer(): Unable to set certificate file.");
         goto error;
     }
 
     if (SSL_CTX_use_PrivateKey_file(cookie->ctx, key, SSL_FILETYPE_PEM) <= 0)
     {
-        Log(LOG_ERR, "TlsServerInit(): Unable to set key file.");
+        Log(LOG_ERR, "TlsInitServer(): Unable to set key file.");
         goto error;
     }
 
     cookie->ssl = SSL_new(cookie->ctx);
     if (!cookie->ssl)
     {
-        Log(LOG_ERR, "TlsServerInit(): Unable to create SSL object.");
+        Log(LOG_ERR, "TlsInitServer(): Unable to create SSL object.");
         goto error;
     }
 
     if (!SSL_set_fd(cookie->ssl, fd))
     {
-        Log(LOG_ERR, "TlsServerInit(): Unable to set file descriptor.");
+        Log(LOG_ERR, "TlsInitServer(): Unable to set file descriptor.");
         goto error;
     }
 
-    if (SSL_accept(cookie->ssl) <= 0)
+    while ((acceptRet = SSL_accept(cookie->ssl)) <= 0)
     {
-        Log(LOG_ERR, "TlsServerInit(): Unable to accept connection.");
-        goto error;
+        switch (SSL_get_error(cookie->ssl, acceptRet))
+        {
+            case SSL_ERROR_WANT_READ:
+            case SSL_ERROR_WANT_WRITE:
+            case SSL_ERROR_WANT_CONNECT:
+            case SSL_ERROR_WANT_ACCEPT:
+                continue;
+            default:
+                Log(LOG_ERR, "TlsInitServer(): Unable to accept connection.");
+                goto error;
+        }
     }
 
     return cookie;
 
 error:
+    Log(LOG_ERR, "TlsServerInit(): %s", SSLErrorString(SSL_get_error(cookie->ssl, acceptRet)));
     Log(LOG_ERR, "TlsServerInit(): %s", ERR_error_string(ERR_get_error(), errorStr));
 
     if (cookie->ssl)

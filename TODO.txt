@@ -42,16 +42,18 @@ Milestone: v0.3.0
     - Each object has port, threads, maxConnections
     - If tls is given, it can be null, false, or an object with cert and key
 [x] Pass TLS certs and keys into HttpServer
+[x] Debug OpenSSL
+[ ] Replace all usages of curl with http
+[ ] Proper HTTP request router
+    - Support regex matching
+[ ] Token permissions
+
 [ ] Move configuration to database
     [ ] Initial configuration
         [ ] If no config, create one-time use registration token that
             grants user admin privileges.
     [ ] /_telodendria/admin/config endpoint
     [x] Refactor TelodendriaConfig to just Config
-[ ] Proper HTTP request router
-    - Support regex matching
-[ ] Debug OpenSSL
-[ ] Replace all usages of curl with http
 
 [ ] Documentation
     [ ] Array
