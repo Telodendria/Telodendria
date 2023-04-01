@@ -150,7 +150,7 @@ HttpRequest(HttpRequestMethod method, int flags, unsigned short port, char *host
         return NULL;
     }
 
-    StreamPrintf(context->stream, "%s %s HTTP/1.1\r\n",
+    StreamPrintf(context->stream, "%s %s HTTP/1.0\r\n",
                  HttpRequestMethodToString(method), path);
 
     HttpRequestHeader(context, "Connection", "close");

@@ -155,7 +155,6 @@ main(int argc, char **argv)
         Free(val);
     }
 
-    HttpRequestSendHeaders(cx);
     HashMapFree(requestHeaders);
 
     if (data)
@@ -181,14 +180,28 @@ main(int argc, char **argv)
                 return 1;
             }
 
+            HttpRequestSendHeaders(cx);
             StreamCopy(in, HttpClientStream(cx));
-
             StreamClose(in);
         }
         else
         {
+            char *lenStr;
+            int len = strlen(data);
+            int nBytes = snprintf(NULL, 0, "%d", len);
+
+            lenStr = Malloc(nBytes + 1);
+            snprintf(lenStr, nBytes + 1, "%d", len);
+
+            HttpRequestHeader(cx, "Content-Length", lenStr);
+            Free(lenStr);
+            HttpRequestSendHeaders(cx);
             StreamPuts(HttpClientStream(cx), data);
         }
+    }
+    else
+    {
+        HttpRequestSendHeaders(cx);
     }
 
     res = HttpRequestSend(cx);
