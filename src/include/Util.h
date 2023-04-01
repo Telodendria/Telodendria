@@ -52,7 +52,4 @@ extern ssize_t
 extern ssize_t
  UtilGetLine(char **, size_t *, Stream *);
 
-extern size_t
- UtilStreamCopy(Stream *, Stream *);
-
 #endif                             /* TELODENDRIA_UTIL_H */

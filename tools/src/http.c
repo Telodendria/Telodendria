@@ -33,7 +33,6 @@
 #include <HashMap.h>
 #include <HttpClient.h>
 #include <Uri.h>
-#include <Util.h>
 
 #define FLAG_HEADERS (1 << 0)
 
@@ -182,7 +181,7 @@ main(int argc, char **argv)
                 return 1;
             }
 
-            UtilStreamCopy(in, HttpClientStream(cx));
+            StreamCopy(in, HttpClientStream(cx));
 
             StreamClose(in);
         }
@@ -216,7 +215,7 @@ main(int argc, char **argv)
         StreamPutc(StreamStdout(), '\n');
     }
 
-    UtilStreamCopy(HttpClientStream(cx), StreamStdout());
+    StreamCopy(HttpClientStream(cx), StreamStdout());
 
     HttpClientContextFree(cx);
     UriFree(uri);

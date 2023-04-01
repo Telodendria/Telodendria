@@ -301,37 +301,3 @@ UtilGetLine(char **linePtr, size_t * n, Stream * stream)
     return UtilGetDelim(linePtr, n, '\n', stream);
 }
 
-size_t
-UtilStreamCopy(Stream * in, Stream * out)
-{
-    size_t bytes = 0;
-    int c;
-
-    while (1)
-    {
-        c = StreamGetc(in);
-
-        if (StreamEof(in))
-        {
-            break;
-        }
-
-        if (StreamError(in))
-        {
-            if (errno == EAGAIN)
-            {
-                StreamClearError(in);
-                continue;
-            }
-            else
-            {
-                break;
-            }
-        }
-
-        StreamPutc(out, c);
-        bytes++;
-    }
-
-    return bytes;
-}

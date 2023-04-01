@@ -59,7 +59,7 @@ HttpHandle(HttpServerContext * cx, void *args)
 
     StreamPutc(StreamStdout(), '\n');
 
-    bytes = UtilStreamCopy(HttpServerStream(cx), StreamStdout());
+    bytes = StreamCopy(HttpServerStream(cx), StreamStdout());
 
     StreamPutc(StreamStdout(), '\n');
     StreamPrintf(StreamStdout(), "(%lu bytes)\n", bytes);
