@@ -521,6 +521,31 @@ StreamGets(Stream * stream, char *str, int size)
     return str;
 }
 
+off_t
+StreamSeek(Stream *stream, off_t offset, int whence)
+{
+    off_t result;
+
+    if (!stream)
+    {
+        errno = EBADF;
+        return -1;
+    }
+
+    result = IoSeek(stream->io, offset, whence);
+    if (result < 0)
+    {
+        return result;
+    }
+
+    /* Successful seek; clear the buffers */
+    stream->rOff = 0;
+    stream->wLen = 0;
+    stream->ugLen = 0;
+
+    return result;
+}
+
 int
 StreamEof(Stream * stream)
 {

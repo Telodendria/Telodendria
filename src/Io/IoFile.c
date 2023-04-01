@@ -52,8 +52,16 @@ static off_t
 IoSeekFile(void *cookie, off_t offset, int whence)
 {
     FILE *fp = cookie;
+    off_t ret = fseeko(fp, offset, whence);
 
-    return fseeko(fp, offset, whence);
+    if (ret > -1)
+    {
+        return ftello(fp);
+    }
+    else
+    {
+        return ret;
+    }
 }
 
 static int

@@ -24,13 +24,13 @@ readpwd() {
     stty echo ctlecho
 }
 
-# Calls curl, setting the RETURN variable for the actual
-# reply from the server and the ERROR_CODE variable for a
-# HTTP error code.
-curlec() {
-    RETURN="$(curl -w "\n%{http_code}" "$@" 2>/dev/null)"
-    ERROR_CODE="$(echo "$RETURN" | tail -n1)"
-    RETURN="$(echo "$RETURN" | sed '$d')"
+# Makes an HTTP request, setting the RETURN variable for the
+# actual reply from the server and the ERROR_CODE variable
+# for a HTTP error code.
+request() {
+    RETURN=$(http -i "$@" 2>/dev/null)
+    ERROR_CODE=$(echo "$RETURN" | head -n1 | awk '{print $2}')
+    RETURN=$(echo "$RETURN" | sed '1,/^[[:space:]]*$/d')
 }
 
 # Prompts user to login and gives out an access token to use
@@ -38,7 +38,7 @@ curlec() {
 matrix_login() {
     # Check authentication methods
     echo "Checking authentication methods..."
-    curlec "$HS_BASE/_matrix/client/v3/login"
+    request "$HS_BASE/_matrix/client/v3/login"
     AUTH_METHODS=$RETURN
     if [ $ERROR_CODE -ne 200 ]; then
         echo "Homeserver does not support login."
@@ -66,10 +66,11 @@ matrix_login() {
         printf '  "password": %s' "$(json -e "$MXPW")"
         printf '}'
     )
-    curlec -X POST -d "$JSON" $HS_BASE/_matrix/client/v3/login
-    LOGIN=$RETURN
+    request -X POST -d "$JSON" $HS_BASE/_matrix/client/v3/login
+    LOGIN="$RETURN"
     if [ $ERROR_CODE -ne 200 ]; then
         echo "Login failed."
+        echo "$RETURN"
         exit 1
     fi
     ACCESS_TOKEN=$(echo "$LOGIN" | json -s "access_token->@decode")
@@ -81,10 +82,11 @@ matrix_logout() {
         echo "No access token"
         exit 1
     fi
-    curlec -X POST $HS_BASE/_matrix/client/v3/logout -H "Authorization: Bearer $ACCESS_TOKEN"
+    request -X POST -H "Authorization: Bearer $ACCESS_TOKEN" "$HS_BASE/_matrix/client/v3/logout"
     LOGOUT=$RETURN
     if [ $ERROR_CODE -ne 200 ]; then
         echo "Logout failed."
+        echo "$RETURN"
         exit 1
     fi
     echo "Logged out."
@@ -98,13 +100,15 @@ send_patch() {
     # We are sucessfully logged in as our user, now let's
     # try to upload and post our patch
     echo "$PATCHFILE"
-    curlec -X POST "$HS_BASE/_matrix/media/v3/upload" \
+    request -X POST \
         -H "Content-Type: text/x-patch" \
         -H "Authorization: Bearer $ACCESS_TOKEN" \
-        -T "$PATCHFILE"
+        -d "@$PATCHFILE" \
+        "$HS_BASE/_matrix/media/v3/upload"
     MXCID=$RETURN
     if [ $ERROR_CODE -ne 200 ]; then
         echo "Upload failed."
+        echo "$RETURN"
         matrix_logout
         exit 1
     fi
@@ -123,7 +127,7 @@ send_patch() {
         printf '  "url": %s' "$(json -e $MXCID)"
         printf '}'
     )
-    curl -X PUT -d "$JSON" -H "Authorization: Bearer $ACCESS_TOKEN" \
+    http -X PUT -d "$JSON" -H "Authorization: Bearer $ACCESS_TOKEN" \
         "$HS_BASE/_matrix/client/v3/rooms/$PATCHES_ROOM/send/m.room.message/$(date +%s)" \
         2>/dev/null >/dev/null && echo "Patch sent."
 
@@ -140,7 +144,7 @@ if [ "$(basename "$PATCHFILE" .patch)" = "$PATCHFILE" ] || [ ! -f "$PATCHFILE" ]
 fi
 echo "Sending file '$PATCHFILE'"
 echo "Checking homeserver's real address using .well-known..."
-curlec "https://$HS_NAME/.well-known/matrix/client"
+request "https://$HS_NAME/.well-known/matrix/client"
 case "$ERROR_CODE" in
     "200")
         WELL_KNOWN=$RETURN

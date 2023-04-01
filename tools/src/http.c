@@ -162,6 +162,7 @@ main(int argc, char **argv)
         if (*data == '@')
         {
             Stream *in;
+            int len;
 
             data++;
 
@@ -178,6 +179,22 @@ main(int argc, char **argv)
             {
                 StreamPrintf(StreamStderr(), "%s: %s\n", data, strerror(errno));
                 return 1;
+            }
+
+            len = StreamSeek(in, 0, SEEK_END);
+            if (len > -1)
+            {
+                char *lenStr;
+                int nBytes;
+
+                StreamSeek(in, 0, SEEK_SET);
+                nBytes = snprintf(NULL, 0, "%d", len);
+
+                lenStr = Malloc(nBytes + 1);
+                snprintf(lenStr, nBytes + 1, "%d", len);
+
+                HttpRequestHeader(cx, "Content-Length", lenStr);
+                Free(lenStr);
             }
 
             HttpRequestSendHeaders(cx);

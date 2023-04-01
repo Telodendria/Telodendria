@@ -75,6 +75,9 @@ extern int
 extern char *
  StreamGets(Stream *, char *, int);
 
+extern off_t
+ StreamSeek(Stream *, off_t, int);
+
 extern int
  StreamEof(Stream *);
 
