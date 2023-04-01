@@ -43,7 +43,7 @@ Milestone: v0.3.0
     - If tls is given, it can be null, false, or an object with cert and key
 [x] Pass TLS certs and keys into HttpServer
 [x] Debug OpenSSL
-[ ] Replace all usages of curl with http
+[x] Replace all usages of curl with http
 [ ] Proper HTTP request router
     - Support regex matching
 [ ] Token permissions

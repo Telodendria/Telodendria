@@ -42,8 +42,9 @@ typedef struct OpenSSLCookie
 static char *
 SSLErrorString(int err)
 {
-    switch (err) {
-        case SSL_ERROR_NONE:
+    switch (err)
+    {
+            case SSL_ERROR_NONE:
             return "No error.";
         case SSL_ERROR_ZERO_RETURN:
             return "The TLS/SSL connection has been closed.";

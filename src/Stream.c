@@ -522,7 +522,7 @@ StreamGets(Stream * stream, char *str, int size)
 }
 
 off_t
-StreamSeek(Stream *stream, off_t offset, int whence)
+StreamSeek(Stream * stream, off_t offset, int whence)
 {
     off_t result;
 

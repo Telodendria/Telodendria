@@ -300,4 +300,3 @@ UtilGetLine(char **linePtr, size_t * n, Stream * stream)
 {
     return UtilGetDelim(linePtr, n, '\n', stream);
 }
-
