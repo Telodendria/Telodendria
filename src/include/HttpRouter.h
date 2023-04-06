@@ -21,39 +21,25 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+#ifndef TELODENDRIA_HTTPROUTER_H
+#define TELODENDRIA_HTTPROUTER_H
 
-#ifndef TELODENDRIA_HASHMAP_H
-#define TELODENDRIA_HASHMAP_H
+#include <Array.h>
 
-#include <stddef.h>
+typedef struct HttpRouter HttpRouter;
 
-typedef struct HashMap HashMap;
+typedef void *(HttpRouteFunc) (Array *, void *);
 
-extern HashMap *
- HashMapCreate(void);
-
-extern void
- HashMapMaxLoadSet(HashMap *, float);
+extern HttpRouter *
+ HttpRouterCreate(void);
 
 extern void
- HashMapFunctionSet(HashMap *, unsigned long (*) (const char *));
-
-extern void *
- HashMapSet(HashMap *, char *, void *);
-
-extern void *
- HashMapGet(HashMap *, const char *);
-
-extern void *
- HashMapDelete(HashMap *, const char *);
+ HttpRouterFree(HttpRouter *);
 
 extern int
- HashMapIterate(HashMap *, char **, void **);
+ HttpRouterAdd(HttpRouter *, char *, HttpRouteFunc *);
 
 extern int
- HashMapIterateReentrant(HashMap *, char **, void **, size_t *);
+ HttpRouterRoute(HttpRouter *, char *, void *, void **);
 
-extern void
- HashMapFree(HashMap *);
-
-#endif                             /* TELODENDRIA_HASHMAP_H */
+#endif                             /* TELODENDRIA_HTTPROUTER_H */

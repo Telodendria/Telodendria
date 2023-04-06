@@ -101,6 +101,50 @@ StrDuplicate(const char *inStr)
 }
 
 char *
+StrSubstr(const char *inStr, size_t start, size_t end)
+{
+    size_t len;
+    size_t i;
+    size_t j;
+
+    char *outStr;
+
+    if (!inStr)
+    {
+        return NULL;
+    }
+
+    if (start >= end)
+    {
+        return NULL;
+    }
+
+    len = end - start;
+
+    outStr = Malloc(len + 1);
+    if (!outStr)
+    {
+        return NULL;
+    }
+
+    j = 0;
+    for (i = start; i < end; i++)
+    {
+        if (inStr[i] == '\0')
+        {
+            break;
+        }
+
+        outStr[j] = inStr[i];
+        j++;
+    }
+
+    outStr[j] = '\0';
+
+    return outStr;
+}
+
+char *
 StrConcat(size_t nStr,...)
 {
     va_list argp;

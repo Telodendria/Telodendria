@@ -33,6 +33,9 @@ extern char *
  StrDuplicate(const char *);
 
 extern char *
+ StrSubstr(const char *, size_t, size_t);
+
+extern char *
  StrConcat(size_t,...);
 
 extern char *

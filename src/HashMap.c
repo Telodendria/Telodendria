@@ -247,26 +247,26 @@ HashMapGet(HashMap * map, const char *key)
 }
 
 int
-HashMapIterate(HashMap * map, char **key, void **value)
+HashMapIterateReentrant(HashMap * map, char **key, void **value, size_t * i)
 {
     if (!map)
     {
         return 0;
     }
 
-    if (map->iterator >= map->capacity)
+    if (*i >= map->capacity)
     {
-        map->iterator = 0;
+        *i = 0;
         *key = NULL;
         *value = NULL;
         return 0;
     }
 
-    while (map->iterator < map->capacity)
+    while (*i < map->capacity)
     {
-        HashMapBucket *bucket = map->entries[map->iterator];
+        HashMapBucket *bucket = map->entries[*i];
 
-        map->iterator++;
+        *i = *i + 1;
 
         if (bucket && bucket->hash)
         {
@@ -276,8 +276,21 @@ HashMapIterate(HashMap * map, char **key, void **value)
         }
     }
 
-    map->iterator = 0;
+    *i = 0;
     return 0;
+}
+
+int
+HashMapIterate(HashMap * map, char **key, void **value)
+{
+    if (!map)
+    {
+        return 0;
+    }
+    else
+    {
+        return HashMapIterateReentrant(map, key, value, &map->iterator);
+    }
 }
 
 void
