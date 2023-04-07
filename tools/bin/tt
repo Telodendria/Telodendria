@@ -12,7 +12,7 @@ register_payload() {
     printf '{'
     printf '  "auth": {'
     printf '    "type": "m.login.dummy",'
-    printf '    "session": %s' "$(json -e "$session")"
+    printf '    "session": %s' "$(json -e "$1")"
     printf '  },'
     printf '  "username": %s,' "$(json -e "$USERNAME")"
     printf '  "password": %s,' "$PASSWORD"
@@ -34,8 +34,8 @@ login_payload() {
 # Check if user is available. If it is, register it.
 user_available=$(http "$BASE/_matrix/client/v3/register/available?username=$USERNAME" | json -s "available")
 if [ "$user_available" = "true" ]; then
-    session=$(echo '{}' | http -X POST "$BASE/_matrix/client/v3/register" | json -s "session->@decode")
-    register_payload | http -X POST -d @- "$BASE/_matrix/client/v3/register" > /dev/null
+    session=$(http -X POST -d '{}' "$BASE/_matrix/client/v3/register" | json -s "session->@decode")
+    register_payload "$session" | http -X POST -d @- "$BASE/_matrix/client/v3/register" > /dev/null
 fi
 
 # Log in
