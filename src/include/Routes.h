@@ -63,6 +63,7 @@ ROUTE(RouteWhoami);
 ROUTE(RouteChangePwd);
 ROUTE(RouteTokenValid);
 ROUTE(RouteUserProfile);
+ROUTE(RouteRequestToken);
 
 ROUTE(RouteStaticDefault);
 ROUTE(RouteStaticLogin);

@@ -60,10 +60,8 @@ RouterBuild(void)
 
     R("/_matrix/client/v1/register/m.login.registration_token/validity", RouteTokenValid);
 
-#if 0
     R("/_matrix/client/v3/account/password/(email|msisdn)/requestToken", RouteRequestToken);
     R("/_matrix/client/v3/register/(email|msisdn)/requestToken", RouteRequestToken);
-#endif
 
     R("/_matrix/client/v3/profile/(.*)", RouteUserProfile);
     R("/_matrix/client/v3/profile/(.*)/(avatar_url|displayname)", RouteUserProfile);

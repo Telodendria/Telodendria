@@ -44,10 +44,10 @@ Milestone: v0.3.0
 [x] Pass TLS certs and keys into HttpServer
 [x] Debug OpenSSL
 [x] Replace all usages of curl with http
-[~] Proper HTTP request router
+[x] Proper HTTP request router
     [x] Support regex matching
     [x] Replace current routing system
-    [ ] Add route for requestToken endpoints
+    [x] Add route for requestToken endpoints
     [x] Move TelodendriaBuildRouter() to Routes
 [ ] Token permissions
 

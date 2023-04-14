@@ -38,6 +38,9 @@ extern char *
 extern char *
  StrConcat(size_t,...);
 
+extern int
+ StrBlank(const char *str);
+
 extern char *
  StrRandom(size_t);
 

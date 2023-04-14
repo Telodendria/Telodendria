@@ -29,6 +29,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 #include <stdarg.h>
 #include <pthread.h>
 #include <unistd.h>
@@ -192,6 +193,25 @@ StrConcat(size_t nStr,...)
     va_end(argp);
     str[strLen] = '\0';
     return str;
+}
+
+int
+StrBlank(const char *str)
+{
+    int blank = 1;
+    size_t i = 0;
+
+    while (str[i])
+    {
+        blank &= isspace(str[i]);
+        /* No need to continue if we don't have a blank */
+        if (!blank)
+        {
+            break;
+        }
+        i++;
+    }
+    return blank;
 }
 
 char *
