@@ -87,7 +87,7 @@ Milestone: v0.3.0
             [x] Make sure UserLogin() fails if user is deactivated.
         [x] Change password
         [x] Whoami
-    [ ] 9: User Data
+    [~] 9: User Data
     [ ] 5: Capabilities negotiation
     [ ] 10: Security (Rate Limiting)
 

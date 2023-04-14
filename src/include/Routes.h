@@ -73,6 +73,11 @@ ROUTE(RouteChangePwd);             /* /_matrix/client/(r0|v3)/account/pa
 ROUTE(RouteTokenValid);            /* /_matrix/client/v1/register/m.logi
                                     * n.registration_token/validity */
 
+ROUTE(RouteUserProfile);           /* This route handles:
+                                    /_matrix/client/(r0|v3)/profile/(.*),
+                                    /_matrix/client/(r0|v3)/profile/(.*)/avatar_url and 
+                                    /_matrix/client/(r0|v3)/profile/(.*)/displayname*/
+
 #undef ROUTE
 
 #endif

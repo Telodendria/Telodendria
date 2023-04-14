@@ -104,6 +104,10 @@ ROUTE_IMPL(RouteMatrix, args)
                 response = MatrixErrorCreate(M_NOT_FOUND);
             }
         }
+        else if (MATRIX_PATH_EQUALS(pathPart, "profile"))
+        {
+            response = RouteUserProfile(args);
+        }
         else
         {
             HttpResponseStatus(args->context, HTTP_NOT_FOUND);

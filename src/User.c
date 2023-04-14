@@ -614,6 +614,35 @@ UserDeleteToken(User * user, char *token)
     return 1;
 }
 
+char *
+UserGetProfile(User *user, char *name)
+{
+    HashMap *json = NULL;
+
+    if (!user || !name)
+    {
+        return NULL;
+    }
+
+    json = DbJson(user->ref);
+    
+    return JsonValueAsString(JsonGet(json, 2, "profile", name));
+}
+
+void
+UserSetProfile(User *user, char *name, char *val)
+{
+    HashMap *json = NULL;
+
+    if (!user || !name || !val)
+    {
+        return;
+    }
+
+    json = DbJson(user->ref);
+    JsonValueFree(JsonSet(json, JsonValueString(val), 2, "profile", name));
+}
+
 int
 UserDeleteTokens(User * user, char *exempt)
 {

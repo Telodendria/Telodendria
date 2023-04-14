@@ -26,6 +26,8 @@
 
 #include <Db.h>
 
+#include <Json.h>
+
 typedef struct User User;
 
 typedef struct UserAccessToken
@@ -101,6 +103,12 @@ extern void
 
 extern int
  UserDeleteToken(User *, char *);
+
+extern char *
+ UserGetProfile(User *, char *);
+
+extern void
+ UserSetProfile(User *, char *, char *);
 
 extern int
  UserDeleteTokens(User *, char *);
