@@ -48,6 +48,7 @@ Milestone: v0.3.0
     [x] Support regex matching
     [x] Replace current routing system
     [ ] Add route for requestToken endpoints
+    [x] Move TelodendriaBuildRouter() to Routes
 [ ] Token permissions
 
 [ ] Move configuration to database

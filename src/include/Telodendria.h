@@ -49,7 +49,4 @@ extern void
 extern void
  TelodendriaPrintHeader(void);
 
-extern HttpRouter *
- TelodendriaBuildRouter(void);
-
 #endif

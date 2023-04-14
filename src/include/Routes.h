@@ -29,6 +29,7 @@
 #include <HashMap.h>
 #include <Array.h>
 #include <HttpServer.h>
+#include <HttpRouter.h>
 #include <Matrix.h>
 
 #define MATRIX_PATH_EQUALS(pathPart, str) \
@@ -39,6 +40,9 @@ typedef struct RouteArgs
     MatrixHttpHandlerArgs *matrixArgs;
     HttpServerContext *context;
 } RouteArgs;
+
+HttpRouter *
+ RouterBuild(void);
 
 #define ROUTE(name) \
 	extern void * \

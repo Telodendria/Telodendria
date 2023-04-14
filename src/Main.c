@@ -39,6 +39,7 @@
 #include <HashMap.h>
 #include <Json.h>
 #include <HttpServer.h>
+#include <Routes.h>
 #include <Matrix.h>
 #include <Db.h>
 #include <Cron.h>
@@ -179,7 +180,7 @@ main(int argc, char **argv)
     }
 
     Log(LOG_NOTICE, "Building routing tree...");
-    matrixArgs.router = TelodendriaBuildRouter();
+    matrixArgs.router = RouterBuild();
     if (!matrixArgs.router)
     {
         Log(LOG_ERR, "Unable to build routing tree.");
