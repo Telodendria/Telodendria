@@ -31,8 +31,9 @@
 #include <Memory.h>
 #include <User.h>
 
-ROUTE_IMPL(RouteLogin, args)
+ROUTE_IMPL(RouteLogin, path, argp)
 {
+    RouteArgs *args = argp;
     HashMap *request = NULL;
     HashMap *response = NULL;
     Array *enabledFlows;
@@ -56,11 +57,7 @@ ROUTE_IMPL(RouteLogin, args)
     UserLoginInfo *loginInfo;
     char *fullUsername;
 
-    if (MATRIX_PATH_PARTS(args->path) > 0)
-    {
-        HttpResponseStatus(args->context, HTTP_NOT_FOUND);
-        return MatrixErrorCreate(M_NOT_FOUND);
-    }
+    (void) path;
 
     switch (HttpRequestMethodGet(args->context))
     {

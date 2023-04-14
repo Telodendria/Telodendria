@@ -46,7 +46,8 @@ Milestone: v0.3.0
 [x] Replace all usages of curl with http
 [~] Proper HTTP request router
     [x] Support regex matching
-    [ ] Replace current routing system
+    [x] Replace current routing system
+    [ ] Add route for requestToken endpoints
 [ ] Token permissions
 
 [ ] Move configuration to database

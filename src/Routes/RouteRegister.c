@@ -48,8 +48,9 @@ RouteRegisterRegFlow(void)
     return response;
 }
 
-ROUTE_IMPL(RouteRegister, args)
+ROUTE_IMPL(RouteRegister, path, argp)
 {
+    RouteArgs *args = argp;
     HashMap *request = NULL;
     HashMap *response = NULL;
 
@@ -72,7 +73,7 @@ ROUTE_IMPL(RouteRegister, args)
     Array *uiaFlows = NULL;
     int uiaResult;
 
-    if (MATRIX_PATH_PARTS(args->path) == 0)
+    if (ArraySize(path) == 0)
     {
         if (HttpRequestMethodGet(args->context) != HTTP_POST)
         {
@@ -261,10 +262,8 @@ finish:
     }
     else
     {
-        char *pathPart = MATRIX_PATH_POP(args->path);
-
         if (HttpRequestMethodGet(args->context) == HTTP_GET &&
-            MATRIX_PATH_EQUALS(pathPart, "available"))
+            MATRIX_PATH_EQUALS(ArrayGet(path, 0), "available"))
         {
             username = HashMapGet(
                         HttpRequestParams(args->context), "username");
@@ -290,32 +289,11 @@ finish:
                 response = MatrixErrorCreate(M_USER_IN_USE);
             }
         }
-        else if (HttpRequestMethodGet(args->context) == HTTP_POST &&
-                 (MATRIX_PATH_EQUALS(pathPart, "email") ||
-                  MATRIX_PATH_EQUALS(pathPart, "msisdn")))
-        {
-            Free(pathPart);
-            pathPart = MATRIX_PATH_POP(args->path);
-            if (!MATRIX_PATH_EQUALS(pathPart, "requestToken"))
-            {
-                HttpResponseStatus(args->context, HTTP_NOT_FOUND);
-                response = MatrixErrorCreate(M_UNRECOGNIZED);
-            }
-            else
-            {
-                /* TODO: Validate request body and potentially return
-                 * M_BAD_JSON */
-                HttpResponseStatus(args->context, HTTP_FORBIDDEN);
-                response = MatrixErrorCreate(M_THREEPID_DENIED);
-            }
-        }
         else
         {
             HttpResponseStatus(args->context, HTTP_NOT_FOUND);
             response = MatrixErrorCreate(M_UNRECOGNIZED);
         }
-
-        Free(pathPart);
     }
 
     return response;

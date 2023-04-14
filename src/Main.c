@@ -178,6 +178,15 @@ main(int argc, char **argv)
         }
     }
 
+    Log(LOG_NOTICE, "Building routing tree...");
+    matrixArgs.router = TelodendriaBuildRouter();
+    if (!matrixArgs.router)
+    {
+        Log(LOG_ERR, "Unable to build routing tree.");
+        exit = EXIT_FAILURE;
+        goto finish;
+    }
+
     Log(LOG_NOTICE, "Processing configuration file '%s'.", configArg);
 
     config = JsonDecode(configFile);
@@ -236,7 +245,6 @@ main(int argc, char **argv)
     {
         Log(LOG_DEBUG, "Changed working directory to: %s", tConfig->dataDir);
     }
-
 
     if (tConfig->flags & CONFIG_LOG_FILE)
     {
@@ -535,6 +543,9 @@ finish:
 
     DbClose(matrixArgs.db);
     Log(LOG_DEBUG, "Closed database.");
+
+    HttpRouterFree(matrixArgs.router);
+    Log(LOG_DEBUG, "Freed routing tree.");
 
     ConfigFree(tConfig);
 

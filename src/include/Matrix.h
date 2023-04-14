@@ -25,6 +25,7 @@
 #define TELODENDRIA_MATRIX_H
 
 #include <HttpServer.h>
+#include <HttpRouter.h>
 #include <Log.h>
 #include <HashMap.h>
 
@@ -71,6 +72,7 @@ typedef struct MatrixHttpHandlerArgs
 {
     Config *config;
     Db *db;
+    HttpRouter *router;
 } MatrixHttpHandlerArgs;
 
 extern void

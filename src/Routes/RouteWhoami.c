@@ -31,8 +31,9 @@
 #include <Memory.h>
 #include <User.h>
 
-ROUTE_IMPL(RouteWhoami, args)
+ROUTE_IMPL(RouteWhoami, path, argp)
 {
+    RouteArgs *args = argp;
     Db *db = args->matrixArgs->db;
 
     HashMap *response = NULL;
@@ -44,11 +45,7 @@ ROUTE_IMPL(RouteWhoami, args)
     char *userID;
     char *deviceID;
 
-    if (MATRIX_PATH_PARTS(args->path) != 0)
-    {
-        HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-        return MatrixErrorCreate(M_UNRECOGNIZED);
-    }
+    (void) path;
 
     /* Get the request */
     response = MatrixGetAccessToken(args->context, &token);

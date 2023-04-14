@@ -31,14 +31,6 @@
 #include <HttpServer.h>
 #include <Matrix.h>
 
-#define MATRIX_PATH Array
-#define MATRIX_PATH_CREATE() ArrayCreate()
-#define MATRIX_PATH_APPEND(path, part) ArrayAdd(path, part)
-#define MATRIX_PATH_FREE(path) ArrayFree(path)
-
-#define MATRIX_PATH_POP(path) ArrayDelete(path, 0)
-#define MATRIX_PATH_PARTS(path) ArraySize(path)
-
 #define MATRIX_PATH_EQUALS(pathPart, str) \
 	((pathPart != NULL) && (strcmp(pathPart, str) == 0))
 
@@ -46,37 +38,30 @@ typedef struct RouteArgs
 {
     MatrixHttpHandlerArgs *matrixArgs;
     HttpServerContext *context;
-    MATRIX_PATH *path;
 } RouteArgs;
 
 #define ROUTE(name) \
-	extern HashMap * \
-	name(RouteArgs *)
+	extern void * \
+	name(Array *, void *)
 
-#define ROUTE_IMPL(name, argsName) \
-	HashMap * \
-	name(RouteArgs * argsName)
+#define ROUTE_IMPL(name, matchesName, argsName) \
+	void * \
+	name(Array * matchesName, void * argsName)
 
-ROUTE(RouteWellKnown);             /* /.well-known */
-ROUTE(RouteMatrix);                /* /_matrix */
-ROUTE(RouteStatic);                /* /_matrix/static */
+ROUTE(RouteVersions);
+ROUTE(RouteWellKnown);
 
-ROUTE(RouteLogin);                 /* /_matrix/client/(r0|v3)/login */
-ROUTE(RouteLogout);                /* /_matrix/client/(r0|v3)/logout */
-ROUTE(RouteRegister);              /* /_matrix/client/(r0|v3)/register */
-ROUTE(RouteRefresh);               /* /_matrix/client/(r0|v3)/refresh */
-ROUTE(RouteWhoami);                /* /_matrix/client/(r0|v3)/account/wh
-                                    * oami */
-ROUTE(RouteChangePwd);             /* /_matrix/client/(r0|v3)/account/pa
-                                    * ssword */
+ROUTE(RouteLogin);
+ROUTE(RouteLogout);
+ROUTE(RouteRegister);
+ROUTE(RouteRefresh);
+ROUTE(RouteWhoami);
+ROUTE(RouteChangePwd);
+ROUTE(RouteTokenValid);
+ROUTE(RouteUserProfile);
 
-ROUTE(RouteTokenValid);            /* /_matrix/client/v1/register/m.logi
-                                    * n.registration_token/validity */
-
-ROUTE(RouteUserProfile);           /* This route handles:
-                                    /_matrix/client/(r0|v3)/profile/(.*),
-                                    /_matrix/client/(r0|v3)/profile/(.*)/avatar_url and 
-                                    /_matrix/client/(r0|v3)/profile/(.*)/displayname*/
+ROUTE(RouteStaticDefault);
+ROUTE(RouteStaticLogin);
 
 #undef ROUTE
 

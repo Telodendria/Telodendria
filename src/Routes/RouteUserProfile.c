@@ -31,8 +31,9 @@
 #include <Json.h>
 #include <Str.h>
 
-ROUTE_IMPL(RouteUserProfile, args)
+ROUTE_IMPL(RouteUserProfile, path, argp)
 {
+    RouteArgs *args = argp;
     Db *db = args->matrixArgs->db;
 
     HashMap *request = NULL;
@@ -47,13 +48,7 @@ ROUTE_IMPL(RouteUserProfile, args)
     char *token = NULL;
     char *value = NULL;
 
-    if (MATRIX_PATH_PARTS(args->path) < 1)
-    {
-        HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-        response = MatrixErrorCreate(M_MISSING_PARAM);
-        goto finish;
-    }
-    username = MATRIX_PATH_POP(args->path);
+    username = ArrayGet(path, 0);
     userId = UserIdParse(username, serverName);
     if (!userId)
     {
@@ -80,15 +75,10 @@ ROUTE_IMPL(RouteUserProfile, args)
                 response = MatrixErrorCreate(M_NOT_FOUND);
                 goto finish;
             }
-            if (MATRIX_PATH_PARTS(args->path) > 1)
+
+            if (ArraySize(path) > 1)
             {
-                HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-                response = MatrixErrorCreate(M_INVALID_PARAM);
-                goto finish;
-            }
-            else if (MATRIX_PATH_PARTS(args->path) == 1)
-            {
-                entry = MATRIX_PATH_POP(args->path);
+                entry = ArrayGet(path, 1);
                 response = HashMapCreate();
 
                 value = UserGetProfile(user, entry);
@@ -111,7 +101,7 @@ ROUTE_IMPL(RouteUserProfile, args)
             }
             goto finish;
         case HTTP_PUT:
-            if (MATRIX_PATH_PARTS(args->path) == 1)
+            if (ArraySize(path) > 1)
             {
                 request = JsonDecode(HttpServerStream(args->context));
                 if (!request)
@@ -132,7 +122,7 @@ ROUTE_IMPL(RouteUserProfile, args)
                     response = MatrixErrorCreate(M_UNKNOWN_TOKEN);
                     goto finish;
                 }
-                entry = MATRIX_PATH_POP(args->path);
+                entry = ArrayGet(path, 1);
                 if (strcmp(entry, "displayname") == 0 ||
                     strcmp(entry, "avatar_url") == 0)
                 {

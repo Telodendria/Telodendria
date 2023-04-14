@@ -32,8 +32,9 @@
 
 #include <User.h>
 
-ROUTE_IMPL(RouteRefresh, args)
+ROUTE_IMPL(RouteRefresh, path, argp)
 {
+    RouteArgs *args = argp;
     HashMap *request;
     HashMap *response = NULL;
 
@@ -50,11 +51,7 @@ ROUTE_IMPL(RouteRefresh, args)
     DbRef *rtRef = NULL;
     DbRef *oAtRef = NULL;
 
-    if (MATRIX_PATH_PARTS(args->path) > 0)
-    {
-        HttpResponseStatus(args->context, HTTP_NOT_FOUND);
-        return MatrixErrorCreate(M_NOT_FOUND);
-    }
+    (void) path;
 
     if (HttpRequestMethodGet(args->context) != HTTP_POST)
     {

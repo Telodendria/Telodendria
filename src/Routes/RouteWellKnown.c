@@ -30,29 +30,17 @@
 #include <HashMap.h>
 #include <Str.h>
 
-ROUTE_IMPL(RouteWellKnown, args)
+ROUTE_IMPL(RouteWellKnown, path, argp)
 {
-    char *pathPart = MATRIX_PATH_POP(args->path);
+    RouteArgs *args = argp;
 
-    if (!MATRIX_PATH_EQUALS(pathPart, "matrix") || MATRIX_PATH_PARTS(args->path) != 1)
+    if (MATRIX_PATH_EQUALS(ArrayGet(path, 0), "client"))
     {
-        Free(pathPart);
-        HttpResponseStatus(args->context, HTTP_NOT_FOUND);
-        return MatrixErrorCreate(M_NOT_FOUND);
-    }
-
-    Free(pathPart);
-    pathPart = MATRIX_PATH_POP(args->path);
-
-    if (MATRIX_PATH_EQUALS(pathPart, "client"))
-    {
-        Free(pathPart);
         return MatrixClientWellKnown(args->matrixArgs->config->baseUrl,
                             args->matrixArgs->config->identityServer);
     }
     else
     {
-        Free(pathPart);
         HttpResponseStatus(args->context, HTTP_NOT_FOUND);
         return MatrixErrorCreate(M_NOT_FOUND);
     }

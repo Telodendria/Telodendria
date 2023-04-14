@@ -22,40 +22,42 @@
  * SOFTWARE.
  */
 #include <Routes.h>
-#include <Static.h>
-#include <Memory.h>
+#include <Html.h>
 
-ROUTE_IMPL(RouteStatic, args)
+ROUTE_IMPL(RouteStaticDefault, path, argp)
 {
+    RouteArgs *args = argp;
     Stream *stream = HttpServerStream(args->context);
-    char *pathPart = MATRIX_PATH_POP(args->path);
+
+    (void) path;
 
     HttpResponseHeader(args->context, "Content-Type", "text/html");
     HttpSendHeaders(args->context);
+    HtmlBegin(stream, "It works! Telodendria is running.");
 
-    if (!pathPart)
-    {
-        StaticItWorks(stream);
-    }
-    else if (MATRIX_PATH_EQUALS(pathPart, "client"))
-    {
-        Free(pathPart);
-        pathPart = MATRIX_PATH_POP(args->path);
+    StreamPuts(stream,
+               "<style>"
+               "p {"
+               "  text-align: center;"
+               "}"
+               "</style>"
+            );
 
-        if (MATRIX_PATH_EQUALS(pathPart, "login"))
-        {
-            StaticLogin(stream);
-        }
-        else
-        {
-            StaticError(stream, HTTP_NOT_FOUND);
-        }
-    }
-    else
-    {
-        StaticError(stream, HTTP_NOT_FOUND);
-    }
+    StreamPuts(stream,
+               "<p>"
+     "Your Telodendria server is listening on this port and is ready "
+               "for messages."
+               "</p>"
+               "<p>"
+               "To use this server, you'll need <a href=\"https://matrix.org/clients\">"
+               "a Matrix client</a>."
+               "</p>"
+               "<p>"
+               "Welcome to the Matrix universe :)"
+               "</p>"
+            );
 
-    Free(pathPart);
+    HtmlEnd(stream);
+
     return NULL;
 }

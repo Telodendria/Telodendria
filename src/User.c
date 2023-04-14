@@ -615,7 +615,7 @@ UserDeleteToken(User * user, char *token)
 }
 
 char *
-UserGetProfile(User *user, char *name)
+UserGetProfile(User * user, char *name)
 {
     HashMap *json = NULL;
 
@@ -625,12 +625,12 @@ UserGetProfile(User *user, char *name)
     }
 
     json = DbJson(user->ref);
-    
+
     return JsonValueAsString(JsonGet(json, 2, "profile", name));
 }
 
 void
-UserSetProfile(User *user, char *name, char *val)
+UserSetProfile(User * user, char *name, char *val)
 {
     HashMap *json = NULL;
 

@@ -26,6 +26,9 @@
 #include <Memory.h>
 #include <Log.h>
 
+#include <HttpRouter.h>
+#include <Routes.h>
+
 #include <time.h>
 
 const char
@@ -193,4 +196,54 @@ TelodendriaPrintHeader(void)
     Log(LOG_INFO,
         "Documentation/Support: https://telodendria.io");
     Log(LOG_INFO, "");
+}
+
+HttpRouter *
+TelodendriaBuildRouter(void)
+{
+    HttpRouter *router = HttpRouterCreate();
+
+    if (!router)
+    {
+        return NULL;
+    }
+
+#define R(path, func) \
+    if (!HttpRouterAdd(router, path, func)) \
+    { \
+        Log(LOG_ERR, "Unable to add route: %s", path); \
+        HttpRouterFree(router); \
+        return NULL; \
+    }
+
+    R("/.well-known/matrix/(client|server)", RouteWellKnown);
+
+    R("/_matrix/client/versions", RouteVersions);
+
+    R("/_matrix/static", RouteStaticDefault);
+    R("/_matrix/static/client/login", RouteStaticLogin);
+
+    R("/_matrix/client/v3/login", RouteLogin);
+    R("/_matrix/client/v3/logout", RouteLogout);
+    R("/_matrix/client/v3/logout/(all)", RouteLogout);
+    R("/_matrix/client/v3/register", RouteRegister);
+    R("/_matrix/client/v3/register/(available)", RouteRegister);
+    R("/_matrix/client/v3/refresh", RouteRefresh);
+
+    R("/_matrix/client/v3/account/whoami", RouteWhoami);
+    R("/_matrix/client/v3/account/password", RouteChangePwd);
+
+    R("/_matrix/client/v1/register/m.login.registration_token/validity", RouteTokenValid);
+
+#if 0
+    R("/_matrix/client/v3/account/password/(email|msisdn)/requestToken", RouteRequestToken);
+    R("/_matrix/client/v3/register/(email|msisdn)/requestToken", RouteRequestToken);
+#endif
+
+    R("/_matrix/client/v3/profile/(.*)", RouteUserProfile);
+    R("/_matrix/client/v3/profile/(.*)/(avatar_url|displayname)", RouteUserProfile);
+
+#undef R
+
+    return router;
 }

@@ -32,6 +32,7 @@
 #include <Json.h>
 #include <Str.h>
 
+#include <HttpRouter.h>
 #include <Routes.h>
 
 void
@@ -41,12 +42,7 @@ MatrixHttpHandler(HttpServerContext * context, void *argp)
     Stream *stream;
     HashMap *response = NULL;
 
-    char *key;
-
     char *requestPath;
-    char *requestPathCpy;
-    MATRIX_PATH *pathParts;
-    char *pathPart;
     RouteArgs routeArgs;
 
     requestPath = HttpRequestPath(context);
@@ -74,46 +70,21 @@ MatrixHttpHandler(HttpServerContext * context, void *argp)
         return;
     }
 
-    pathParts = MATRIX_PATH_CREATE();
-    requestPathCpy = StrDuplicate(requestPath);
-    key = requestPathCpy;
-
-    while ((pathPart = strtok_r(key, "/", &key)))
-    {
-        char *decoded = HttpUrlDecode(pathPart);
-
-        MATRIX_PATH_APPEND(pathParts, decoded);
-    }
-
-    Free(requestPathCpy);
-
     routeArgs.matrixArgs = args;
     routeArgs.context = context;
-    routeArgs.path = pathParts;
 
-    pathPart = MATRIX_PATH_POP(pathParts);
-
-    if (MATRIX_PATH_EQUALS(pathPart, ".well-known"))
+    if (!HttpRouterRoute(args->router, requestPath, &routeArgs, (void **) &response))
     {
-        response = RouteWellKnown(&routeArgs);
-    }
-    else if (MATRIX_PATH_EQUALS(pathPart, "_matrix"))
-    {
-        response = RouteMatrix(&routeArgs);
-    }
-    else
-    {
+        HttpResponseHeader(context, "Content-Type", "application/json");
         HttpResponseStatus(context, HTTP_NOT_FOUND);
         response = MatrixErrorCreate(M_NOT_FOUND);
     }
-
-    Free(pathPart);
 
     /*
      * If the route handler returned a JSON object, take care
      * of sending it here.
      *
-     * Otherwise, if the route handler returned NULL, so assume
+     * Otherwise, if the route handler returned NULL, assume
      * that it sent its own headers and and body.
      */
     if (response)
@@ -128,17 +99,6 @@ MatrixHttpHandler(HttpServerContext * context, void *argp)
 
         StreamPrintf(stream, "\n");
     }
-
-    /*
-     * By this point, there should be no path parts remaining, but if
-     * there are, free them up now.
-     */
-    while ((pathPart = MATRIX_PATH_POP(pathParts)) != NULL)
-    {
-        Free(pathPart);
-    }
-
-    MATRIX_PATH_FREE(pathParts);
 
     Log(LOG_INFO, "%s %s (%d %s)",
         HttpRequestMethodToString(HttpRequestMethodGet(context)),

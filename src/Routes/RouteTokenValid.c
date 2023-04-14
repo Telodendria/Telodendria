@@ -30,8 +30,9 @@
 #include <HashMap.h>
 #include <Str.h>
 
-ROUTE_IMPL(RouteTokenValid, args)
+ROUTE_IMPL(RouteTokenValid, path, argp)
 {
+    RouteArgs *args = argp;
     Db *db = args->matrixArgs->db;
 
     HashMap *response = NULL;
@@ -41,11 +42,14 @@ ROUTE_IMPL(RouteTokenValid, args)
 
     char *tokenstr;
 
+    (void) path;
+
     if (HttpRequestMethodGet(args->context) != HTTP_GET)
     {
         HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
         return MatrixErrorCreate(M_UNRECOGNIZED);
     }
+
     request = JsonDecode(HttpServerStream(args->context));
     if (!request)
     {
@@ -62,8 +66,10 @@ ROUTE_IMPL(RouteTokenValid, args)
 
         return response;
     }
+
     info = RegTokenGetInfo(db, tokenstr);
     response = HashMapCreate();
+
     if (!RegTokenValid(info))
     {
         JsonFree(request);

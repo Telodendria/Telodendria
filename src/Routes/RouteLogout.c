@@ -31,8 +31,9 @@
 #include <Memory.h>
 #include <User.h>
 
-ROUTE_IMPL(RouteLogout, args)
+ROUTE_IMPL(RouteLogout, path, argp)
 {
+    RouteArgs *args = argp;
     HashMap *response = NULL;
 
     char *tokenstr;
@@ -45,12 +46,6 @@ ROUTE_IMPL(RouteLogout, args)
     {
         HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
         return MatrixErrorCreate(M_UNRECOGNIZED);
-    }
-
-    if (MATRIX_PATH_PARTS(args->path) > 1)
-    {
-        HttpResponseStatus(args->context, HTTP_NOT_FOUND);
-        return MatrixErrorCreate(M_NOT_FOUND);
     }
 
     response = MatrixGetAccessToken(args->context, &tokenstr);
@@ -66,18 +61,14 @@ ROUTE_IMPL(RouteLogout, args)
         return MatrixErrorCreate(M_UNKNOWN_TOKEN);
     }
 
-    if (MATRIX_PATH_PARTS(args->path) == 1)
+    if (ArraySize(path) == 1)
     {
-        char *pathPart = MATRIX_PATH_POP(args->path);
-
-        if (!MATRIX_PATH_EQUALS(pathPart, "all"))
+        if (!MATRIX_PATH_EQUALS(ArrayGet(path, 0), "all"))
         {
-            Free(pathPart);
             HttpResponseStatus(args->context, HTTP_NOT_FOUND);
             response = MatrixErrorCreate(M_NOT_FOUND);
             goto finish;
         }
-        Free(pathPart);
 
         if (!UserDeleteTokens(user, NULL))
         {

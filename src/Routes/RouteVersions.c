@@ -21,21 +21,22 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-#include <Static.h>
-#include <Html.h>
-#include <Http.h>
+#include <Routes.h>
 
-void
-StaticError(Stream * stream, HttpStatus error)
+#include <Json.h>
+#include <Array.h>
+#include <HashMap.h>
+
+ROUTE_IMPL(RouteVersions, path, argp)
 {
-    char title[10];
+    HashMap *response = HashMapCreate();
+    Array *versions = ArrayCreate();
 
-    sprintf(title, "Error %d", error);
+    (void) path;
+    (void) argp;
 
-    HtmlBegin(stream, title);
+    ArrayAdd(versions, JsonValueString("v1.6"));
 
-    StreamPrintf(stream, "<h2 style=\"text-align: center\">%s</h2>",
-                 HttpStatusToString(error));
-
-    HtmlEnd(stream);
+    HashMapSet(response, "versions", JsonValueArray(versions));
+    return response;
 }

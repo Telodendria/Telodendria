@@ -45,8 +45,9 @@ PasswordFlow(void)
     return ret;
 }
 
-ROUTE_IMPL(RouteChangePwd, args)
+ROUTE_IMPL(RouteChangePwd, path, argp)
 {
+    RouteArgs *args = argp;
     Db *db = args->matrixArgs->db;
 
     User *user = NULL;
@@ -64,8 +65,9 @@ ROUTE_IMPL(RouteChangePwd, args)
     char *token;
     char *newPassword;
 
-    if (MATRIX_PATH_PARTS(args->path) != 0 ||
-        HttpRequestMethodGet(args->context) != HTTP_POST)
+    (void) path;
+
+    if (HttpRequestMethodGet(args->context) != HTTP_POST)
     {
         HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
         return MatrixErrorCreate(M_UNRECOGNIZED);

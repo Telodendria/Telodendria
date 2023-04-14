@@ -26,6 +26,7 @@
 
 #include <Memory.h>
 #include <Log.h>
+#include <HttpRouter.h>
 
 #define TELODENDRIA_LOGO_WIDTH 56
 #define TELODENDRIA_LOGO_HEIGHT 22
@@ -47,5 +48,8 @@ extern void
 
 extern void
  TelodendriaPrintHeader(void);
+
+extern HttpRouter *
+ TelodendriaBuildRouter(void);
 
 #endif

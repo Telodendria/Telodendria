@@ -21,12 +21,19 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-#include <Static.h>
+#include <Routes.h>
 #include <Html.h>
 
-void
-StaticLogin(Stream * stream)
+ROUTE_IMPL(RouteStaticLogin, path, argp)
 {
+    RouteArgs *args = argp;
+    Stream *stream = HttpServerStream(args->context);
+
+    (void) path;
+
+    HttpResponseHeader(args->context, "Content-Type", "text/html");
+    HttpSendHeaders(args->context);
+
     HtmlBegin(stream, "Log In");
 
     StreamPuts(stream,
@@ -144,4 +151,6 @@ StaticLogin(Stream * stream)
     HtmlEndJs(stream);
 
     HtmlEnd(stream);
+
+    return NULL;
 }
