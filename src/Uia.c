@@ -416,22 +416,8 @@ UiaComplete(Array * flows, HttpServerContext * context, Db * db,
         RegTokenClose(tokenInfo);
         RegTokenFree(tokenInfo);
     }
-    else if (strcmp(authType, "m.login.recaptcha") == 0)
-    {
-        /* TODO */
-    }
-    else if (strcmp(authType, "m.login.sso") == 0)
-    {
-        /* TODO */
-    }
-    else if (strcmp(authType, "m.login.email.identity") == 0)
-    {
-        /* TODO */
-    }
-    else if (strcmp(authType, "m.login.msisdn") == 0)
-    {
-        /* TODO */
-    }
+    /* TODO: implement m.login.recaptcha, m.login.sso,
+     * m.login.email.identity, m.login.msisdn here */
     else
     {
         HttpResponseStatus(context, HTTP_UNAUTHORIZED);

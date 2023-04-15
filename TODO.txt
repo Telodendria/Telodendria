@@ -49,6 +49,9 @@ Milestone: v0.3.0
     [x] Replace current routing system
     [x] Add route for requestToken endpoints
     [x] Move TelodendriaBuildRouter() to Routes
+[ ] User-Interactive fallback
+    [ ] Password
+    [ ] Registration token
 [ ] Token permissions
 
 [ ] Move configuration to database

@@ -47,6 +47,7 @@ RouterBuild(void)
 
     R("/_matrix/static", RouteStaticDefault);
     R("/_matrix/static/client/login", RouteStaticLogin);
+    R("/_matrix/client/v3/auth/(.*)/fallback/web", RouteUiaFallback);
 
     R("/_matrix/client/v3/login", RouteLogin);
     R("/_matrix/client/v3/logout", RouteLogout);

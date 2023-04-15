@@ -65,6 +65,7 @@ ROUTE(RouteTokenValid);
 ROUTE(RouteUserProfile);
 ROUTE(RouteRequestToken);
 
+ROUTE(RouteUiaFallback);
 ROUTE(RouteStaticDefault);
 ROUTE(RouteStaticLogin);
 
