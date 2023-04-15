@@ -49,7 +49,7 @@ Milestone: v0.3.0
     [x] Replace current routing system
     [x] Add route for requestToken endpoints
     [x] Move TelodendriaBuildRouter() to Routes
-[ ] User-Interactive fallback
+[~] User-Interactive fallback
     [ ] Password
     [ ] Registration token
 [ ] Token permissions
@@ -111,7 +111,7 @@ Milestone: v0.5.0
     [ ] Modules
         [ ] Content Repository
 
-Milestone: v1.0.0
+Milestone: v0.6.0
 -----------------
 
 [~] Client-Server API
@@ -121,9 +121,25 @@ Milestone: v1.0.0
         [ ] Receipts
         [ ] Fully Read Markers
         [ ] Send-To-Device Messaging
+
+Milestone: v0.7.0
+-----------------
+
 [ ] Server-Server API
+
+Milestone: v0.8.0
+-----------------
+
 [ ] Application Service API
+
+Milestone: v0.9.0
+-----------------
+
 [ ] Identity Service API
+
+Milestone: v1.0.0
+-----------------
+
 [ ] Push Gateway API
 [ ] Room Versions
 
