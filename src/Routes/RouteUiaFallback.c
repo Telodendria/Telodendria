@@ -70,7 +70,7 @@ ROUTE_IMPL(RouteUiaFallback, path, argp)
     {
         HttpResponseStatus(args->context, HTTP_NOT_FOUND);
         StreamPrintf(stream,
-            "<p>Unknown auth type: <code>%s</code></p>", authType);
+               "<p>Unknown auth type: <code>%s</code></p>", authType);
     }
 
     HtmlEnd(stream);

@@ -40,7 +40,7 @@ typedef struct RegTokenInfo
     unsigned long created;
     unsigned long expires;
 
-    int grants; /* privileges */
+    int grants;                    /* privileges */
 
 } RegTokenInfo;
 

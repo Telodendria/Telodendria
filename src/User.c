@@ -689,7 +689,7 @@ UserDeleteTokens(User * user, char *exempt)
 }
 
 int
-UserGetPrivileges(User *user)
+UserGetPrivileges(User * user)
 {
     if (!user)
     {
@@ -700,7 +700,7 @@ UserGetPrivileges(User *user)
 }
 
 int
-UserSetPrivileges(User *user, int privileges)
+UserSetPrivileges(User * user, int privileges)
 {
     JsonValue *val;
 
@@ -726,7 +726,7 @@ UserSetPrivileges(User *user, int privileges)
 }
 
 int
-UserDecodePrivileges(JsonValue *val)
+UserDecodePrivileges(JsonValue * val)
 {
     int privileges = USER_NONE;
 
@@ -740,17 +740,17 @@ UserDecodePrivileges(JsonValue *val)
 
     if (JsonValueType(val) == JSON_ARRAY)
     {
-            arr = JsonValueAsArray(val);
-            for (i = 0; i < ArraySize(arr); i++)
+        arr = JsonValueAsArray(val);
+        for (i = 0; i < ArraySize(arr); i++)
+        {
+            val = ArrayGet(arr, i);
+            if (!val || JsonValueType(val) != JSON_STRING)
             {
-                val = ArrayGet(arr, i);
-                if (!val || JsonValueType(val) != JSON_STRING)
-                {
-                    continue;
-                }
-
-                privileges |= UserDecodePrivilege(JsonValueAsString(val));
+                continue;
             }
+
+            privileges |= UserDecodePrivilege(JsonValueAsString(val));
+        }
     }
 
 finish:
@@ -794,6 +794,7 @@ JsonValue *
 UserEncodePrivileges(int privileges)
 {
     Array *arr = ArrayCreate();
+
     if (!arr)
     {
         return NULL;
