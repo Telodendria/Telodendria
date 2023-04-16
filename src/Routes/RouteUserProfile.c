@@ -127,7 +127,7 @@ ROUTE_IMPL(RouteUserProfile, path, argp)
                     strcmp(entry, "avatar_url") == 0)
                 {
                     /* Check if user has privilege to do that action. */
-                    if (!strcmp(userId->localpart, UserGetName(user)))
+                    if (strcmp(userId->localpart, UserGetName(user)) == 0)
                     {
                         value = JsonValueAsString(HashMapGet(request, entry));
                         /* TODO: Make UserSetProfile notify other

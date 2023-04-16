@@ -40,6 +40,8 @@ typedef struct RegTokenInfo
     unsigned long created;
     unsigned long expires;
 
+    int grants; /* privileges */
+
 } RegTokenInfo;
 
 
@@ -56,7 +58,7 @@ extern RegTokenInfo *
  RegTokenGetInfo(Db *, char *);
 
 extern RegTokenInfo *
- RegTokenCreate(Db *, char *, char *, unsigned long, int);
+ RegTokenCreate(Db *, char *, char *, unsigned long, int, int);
 
 extern void
  RegTokenFree(RegTokenInfo *);

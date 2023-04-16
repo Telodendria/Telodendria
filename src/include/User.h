@@ -28,6 +28,14 @@
 
 #include <Json.h>
 
+#define USER_DEACTIVATE (1 << 0)
+#define USER_ISSUE_TOKENS (1 << 1)
+#define USER_CONFIG (1 << 2)
+#define USER_GRANT_PRIVILEGES (1 << 3)
+
+#define USER_NONE 0
+#define USER_ALL ((1 << 4) - 1)
+
 typedef struct User User;
 
 typedef struct UserAccessToken
@@ -112,6 +120,16 @@ extern void
 
 extern int
  UserDeleteTokens(User *, char *);
+
+extern int UserGetPrivileges(User *);
+
+extern int UserSetPrivileges(User *, int);
+
+extern int UserDecodePrivileges(JsonValue *);
+
+extern JsonValue *UserEncodePrivileges(int);
+
+extern int UserDecodePrivilege(const char *);
 
 extern UserId *
  UserIdParse(char *, char *);

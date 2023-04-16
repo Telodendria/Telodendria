@@ -30,6 +30,7 @@
 #include <Json.h>
 #include <Util.h>
 #include <Str.h>
+#include <User.h>
 
 int
 RegTokenValid(RegTokenInfo * token)
@@ -139,6 +140,9 @@ RegTokenGetInfo(Db * db, char *token)
     ret->used =
             JsonValueAsInteger(HashMapGet(tokenJson, "used"));
 
+    ret->grants =
+            UserDecodePrivileges(HashMapGet(tokenJson, "grants"));
+
     return ret;
 }
 
@@ -192,7 +196,7 @@ RegTokenVerify(char *token)
 }
 
 RegTokenInfo *
-RegTokenCreate(Db * db, char *name, char *owner, unsigned long expires, int uses)
+RegTokenCreate(Db * db, char *name, char *owner, unsigned long expires, int uses, int privileges)
 {
     RegTokenInfo *ret;
     HashMap *tokenJson;
@@ -233,6 +237,7 @@ RegTokenCreate(Db * db, char *name, char *owner, unsigned long expires, int uses
     ret->uses = uses;
     ret->created = timestamp;
     ret->expires = expires;
+    ret->grants = privileges;
 
     /* Write user info to database. */
     tokenJson = DbJson(ret->ref);
@@ -246,6 +251,7 @@ RegTokenCreate(Db * db, char *name, char *owner, unsigned long expires, int uses
                JsonValueInteger(ret->used));
     HashMapSet(tokenJson, "uses",
                JsonValueInteger(ret->uses));
+    HashMapSet(tokenJson, "grants", UserEncodePrivileges(privileges));
 
     return ret;
 }

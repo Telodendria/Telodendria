@@ -688,6 +688,140 @@ UserDeleteTokens(User * user, char *exempt)
     return 1;
 }
 
+int
+UserGetPrivileges(User *user)
+{
+    if (!user)
+    {
+        return USER_NONE;
+    }
+
+    return UserDecodePrivileges(HashMapGet(DbJson(user->ref), "privileges"));
+}
+
+int
+UserSetPrivileges(User *user, int privileges)
+{
+    JsonValue *val;
+
+    if (!user)
+    {
+        return 0;
+    }
+
+    if (!privileges)
+    {
+        JsonValueFree(HashMapDelete(DbJson(user->ref), "privileges"));
+        return 1;
+    }
+
+    val = UserEncodePrivileges(privileges);
+    if (!val)
+    {
+        return 0;
+    }
+
+    JsonValueFree(HashMapSet(DbJson(user->ref), "privileges", val));
+    return 1;
+}
+
+int
+UserDecodePrivileges(JsonValue *val)
+{
+    int privileges = USER_NONE;
+
+    size_t i;
+    Array *arr;
+
+    if (!val)
+    {
+        goto finish;
+    }
+
+    if (JsonValueType(val) == JSON_ARRAY)
+    {
+            arr = JsonValueAsArray(val);
+            for (i = 0; i < ArraySize(arr); i++)
+            {
+                val = ArrayGet(arr, i);
+                if (!val || JsonValueType(val) != JSON_STRING)
+                {
+                    continue;
+                }
+
+                privileges |= UserDecodePrivilege(JsonValueAsString(val));
+            }
+    }
+
+finish:
+    return privileges;
+}
+
+int
+UserDecodePrivilege(const char *p)
+{
+    if (!p)
+    {
+        return USER_NONE;
+    }
+    else if (strcmp(p, "ALL") == 0)
+    {
+        return USER_ALL;
+    }
+    else if (strcmp(p, "DEACTIVATE") == 0)
+    {
+        return USER_DEACTIVATE;
+    }
+    else if (strcmp(p, "ISSUE_TOKENS") == 0)
+    {
+        return USER_ISSUE_TOKENS;
+    }
+    else if (strcmp(p, "CONFIG") == 0)
+    {
+        return USER_CONFIG;
+    }
+    else if (strcmp(p, "GRANT_PRIVILEGES") == 0)
+    {
+        return USER_GRANT_PRIVILEGES;
+    }
+    else
+    {
+        return USER_NONE;
+    }
+}
+
+JsonValue *
+UserEncodePrivileges(int privileges)
+{
+    Array *arr = ArrayCreate();
+    if (!arr)
+    {
+        return NULL;
+    }
+
+    if (privileges & USER_ALL)
+    {
+        ArrayAdd(arr, JsonValueString("ALL"));
+        goto finish;
+    }
+
+#define A(priv, as) \
+    if (privileges & priv) \
+    { \
+        ArrayAdd(arr, JsonValueString(as)); \
+    }
+
+    A(USER_DEACTIVATE, "DEACTIVATE");
+    A(USER_ISSUE_TOKENS, "ISSUE_TOKENS");
+    A(USER_CONFIG, "CONFIG");
+    A(USER_GRANT_PRIVILEGES, "GRANT_PRIVILEGES");
+
+#undef A
+
+finish:
+    return JsonValueArray(arr);
+}
+
 UserId *
 UserIdParse(char *id, char *defaultServer)
 {
