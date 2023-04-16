@@ -415,6 +415,13 @@ UiaComplete(Array * flows, HttpServerContext * context, Db * db,
         RegTokenUse(tokenInfo);
         RegTokenClose(tokenInfo);
         RegTokenFree(tokenInfo);
+
+        /*
+         * Drop the registration token into the session storage because
+         * the registration endpoint will have to extract the proper
+         * privileges to set on the user based on the token.
+         */
+        JsonValueFree(HashMapSet(dbJson, "registration_token", JsonValueString(token)));
     }
     /* TODO: implement m.login.recaptcha, m.login.sso,
      * m.login.email.identity, m.login.msisdn here */

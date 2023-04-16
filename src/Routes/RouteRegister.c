@@ -32,6 +32,7 @@
 
 #include <User.h>
 #include <Uia.h>
+#include <RegToken.h>
 
 static Array *
 RouteRegisterRegFlow(void)
@@ -72,6 +73,9 @@ ROUTE_IMPL(RouteRegister, path, argp)
 
     Array *uiaFlows = NULL;
     int uiaResult;
+
+    char *session;
+    DbRef *sessionRef;
 
     if (ArraySize(path) == 0)
     {
@@ -147,7 +151,6 @@ ROUTE_IMPL(RouteRegister, path, argp)
             response = MatrixErrorCreate(M_INVALID_PARAM);
             goto finish;
         }
-
 
         val = HashMapGet(request, "password");
         if (!val)
@@ -247,6 +250,32 @@ ROUTE_IMPL(RouteRegister, path, argp)
             UserAccessTokenFree(loginInfo->accessToken);
             Free(loginInfo->refreshToken);
             Free(loginInfo);
+        }
+
+        session = JsonValueAsString(JsonGet(request, 2, "auth", "session"));
+        sessionRef = DbLock(db, 2, "user_interactive", session);
+        if (sessionRef)
+        {
+            char *token = JsonValueAsString(HashMapGet(DbJson(sessionRef), "registration_token"));
+
+            /* Grant the privileges specified by the given token */
+            if (token)
+            {
+                RegTokenInfo *info = RegTokenGetInfo(db, token);
+
+                if (info)
+                {
+                    UserSetPrivileges(user, info->grants);
+                    RegTokenClose(info);
+                    RegTokenFree(info);
+                }
+            }
+            DbUnlock(db, sessionRef);
+        }
+        else
+        {
+            Log(LOG_WARNING, "Unable to lock UIA session reference to check");
+            Log(LOG_WARNING, "privileges for user registration.");
         }
 
         Log(LOG_INFO, "Registered user '%s'", UserGetName(user));

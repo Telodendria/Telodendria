@@ -49,12 +49,9 @@ Milestone: v0.3.0
     [x] Replace current routing system
     [x] Add route for requestToken endpoints
     [x] Move TelodendriaBuildRouter() to Routes
-[~] User-Interactive fallback
-    [ ] Password
-    [ ] Registration token
-[ ] Token permissions
 
-[ ] Move configuration to database
+[~] Move configuration to database
+    [x] Token permissions
     [ ] Initial configuration
         [ ] If no config, create one-time use registration token that
             grants user admin privileges.
@@ -87,6 +84,9 @@ Milestone: v0.3.0
             flow
             - Ensure that registration tokens can be used even if
               registration is disabled.
+        [~] User-Interactive fallback
+            [ ] Password
+            [ ] Registration token
     [~] 4: Account management
         [~] Deactivate
             [x] Make sure UserLogin() fails if user is deactivated.
@@ -98,6 +98,8 @@ Milestone: v0.3.0
 
 Milestone: v0.4.0
 -----------------
+
+[ ] HTTP/1.1 support
 
 [ ] Client-Server API
     [ ] 6: Filtering
