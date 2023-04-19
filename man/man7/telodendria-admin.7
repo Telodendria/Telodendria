@@ -1,0 +1,420 @@
+.Dd $Mdocdate: April 19 2023 $
+.Dt TELODENDRIA-ADMIN 7
+.Os Telodendria Project
+.Sh NAME
+.Nm telodendria-admin
+.Nd Administrator API documention.
+.Sh DESCRIPTION
+.Pp
+Telodendria provides an administrator API that allows for administrator control
+over the homeserver. This includes profiling and examining the state of Telodendria,
+as well as managing users and media.
+.Pp
+Like Synapse, Telodendria supports designating specific users as administrators.
+However, unlike Synapse, it uses a more finely-grained privilege model that allows
+a server administrator to designate specific administration tasks to other users
+while not compromising and granting them full administrative access to the server.
+.Pp
+To authenticate with the administrator API, simply use a regular
+access token.
+.Ss Privileges
+.Pp
+Here are all of the privileges a local user can have. Unless otherwise specified,
+these privileges only grant access to certain parts of the administrator API; the
+regular Matrix API is unaffected.
+.Bl -tag -width -Ds
+.It Dv DEACTIVATE
+Allows a user to deactivate any other local users.
+.It Dv ISSUE_TOKENS
+Allows a user to create, modify, and delete registration tokens.
+.It Dv CONFIG
+Allows a user to modify the Telodendria server daemon's configuration.
+.It Dv GRANT_PRIVILEGES
+Allows a user to modify his or her own privileges or the privileges of other
+local users.
+.It Dv PROC_CONTROL
+Allows a user to get statistics on the running process, as well as shutdown and
+restart the Telodendria daemon itself. Typically this will pair well with
+.Dv CONFIG ,
+because there are certain configuration options that require the process to be
+restarted.
+.El
+.Pp
+There is also a special ``pseudo-privilege'':
+.Bl -tag -width Ds
+.It Dv ALL
+Grants a user all of the aforementioned privileges, as well as privileges that
+do not yet exist. That is, if an update to Telodendria adds more privileges,
+users with this privilege will automatically gain those new privileges in
+addition to having all of the existing privileges.
+.Pp
+This privilege should only be used with fully-trusted users. It is typical for
+a server administrator to not fully trust anyone else, and be the only one that
+holds an account with this privilege level.
+.El
+.Sh API ENDPOINTS
+.Pp
+The following API endpoints are implemented for the installed version of
+Telodendria.
+.Pp
+Unless otherwise indicated, HTTP response codes that are not 200 Ok
+will be accompanied by a standard Matrix API error. Consult the Matrix specification
+for the format of these errors. The following error conditions are assumed to be
+possible for all of the endpoints listed here:
+.Pp
+.TS
+tab(;) allbox expand;
+lfB lfB
+l l.
+Response Code;Description
+400;T{
+The user is not authenticated, did not provide a valid JSON object,
+or provided a JSON object with invalid parameters. 
+T}
+403;T{
+The user does not have the privileges necessary to carry out the
+specified action.
+T}
+500;T{
+A fatal server error occured. Check the logs for more information.
+T}
+.TE
+.Ss Sy GET No /_telodendria/admin/privileges/[localpart]
+.Pp
+Retrieve the permissions for a user. If the localpart is
+omitted, then retrieve the privileges for the user that owns
+the access token being used. Note that the owner of the
+access token must have the
+.Dv GRANT_PRIVILEGES
+privilege.
+.Pp
+.TS
+tab(;) allbox expand;
+lfB lfB
+l l.
+Requires Token;Rate Limited
+Yes;Yes
+.TE
+.TS
+tab(;) allbox expand;
+lfB lfB
+l l.
+Response Code;Description
+200;T{
+The privileges were successfully retrieved.
+T}
+.TE
+.Pp
+200 Response Format:
+.TS
+tab(;) allbox expand;
+lfB lfB lfB
+l l l.
+Field;Type;Description
+privileges;Array;T{
+An array of privileges, as described above. The
+privileges are represented as strings in JSON.
+T}
+.TE
+.Ss Sy POST No /_telodendria/admin/privileges/[localpart]
+.Pp
+Update the privileges of a local user by replacing the
+privileges array with the one specified in the request.
+Like the
+.Sy GET
+version of this endpoint, the localpart can be omitted to
+operate on the user that owns the access token.
+.Pp
+.TS
+tab(;) allbox expand;
+lfB lfB
+l l.
+Requires Token;Rate Limited
+Yes;Yes
+.TE
+.TS
+tab(;) allbox expand;
+lfB lfB
+l l.
+Response Code;Description
+200;T{
+The privileges were successfully replaced.
+T}
+.TE
+.Pp
+Request Format:
+.TS
+tab(;) allbox expand;
+lfB lfB lfB
+l l l.
+Field;Type;Description
+privileges;Array;T{
+An array of privileges, as described above. The
+privileges are represented as strings in JSON.
+T}
+.TE
+.Pp
+200 Response Format:
+.TS
+tab(;) allbox expand;
+lfB lfB lfB
+l l l.
+Field;Type;Description
+privileges;Array;T{
+An array of privileges, as described above. The
+privileges are represented as strings in JSON.
+T}
+.TE
+.Ss Sy PUT No /_telodendria/admin/privileges/[localpart]
+.Pp
+Update the privileges of a local user by adding the privileges
+specified in the request to the user's existing privileges.
+.Pp
+.TS
+tab(;) allbox expand;
+lfB lfB
+l l.
+Requires Token;Rate Limited
+Yes;Yes
+.TE
+.TS
+tab(;) allbox expand;
+lfB lfB
+l l.
+Response Code;Description
+200;T{
+The requested privileges were successfully added.
+T}
+.TE
+.Pp
+Request Format:
+.TS
+tab(;) allbox expand;
+lfB lfB lfB
+l l l.
+Field;Type;Description
+privileges;Array;T{
+An array of privileges, as described above. The
+privileges are represented as strings in JSON.
+T}
+.TE
+.Pp
+200 Response Format:
+.TS
+tab(;) allbox expand;
+lfB lfB lfB
+l l l.
+Field;Type;Description
+privileges;Array;T{
+An array of privileges, as described above. The
+privileges are represented as strings in JSON.
+T}
+.TE
+.Ss Sy DELETE No /_telodendria/admin/privileges/[localpart]
+.Pp
+Update the privileges of a local user by removing the privileges
+specified in the request from the user's existing privileges.
+.Pp
+.TS
+tab(;) allbox expand;
+lfB lfB
+l l.
+Requires Token;Rate Limited
+Yes;Yes
+.TE
+.TS
+tab(;) allbox expand;
+lfB lfB
+l l.
+Response Code;Description
+200;T{
+The requested privileges were successfully removed.
+T}
+.TE
+.Pp
+Request Format:
+.TS
+tab(;) allbox expand;
+lfB lfB lfB
+l l l.
+Field;Type;Description
+privileges;Array;T{
+An array of privileges, as described above. The
+privileges are represented as strings in JSON.
+T}
+.TE
+.Pp
+200 Response Format:
+.TS
+tab(;) allbox expand;
+lfB lfB lfB
+l l l.
+Field;Type;Description
+privileges;Array;T{
+An array of privileges, as described above. The
+privileges are represented as strings in JSON.
+T}
+.TE
+.Ss Sy POST No /_telodendria/admin/config
+.Pp
+Installs a new configuration. It validates the request body, ensuring it is a
+proper configuration, then replaces the existing configuration with the new one.
+.Pp
+.TS
+tab(;) allbox expand;
+lfB lfB
+l l.
+Requires Token; Rate Limited
+Yes;Yes
+.TE
+.TS
+tab(;) allbox expand;
+lfB lfB
+l l.
+Response Code;Description
+200;T{
+The new configuration was successfully installed.
+T}
+.TE
+.Pp
+Consult the
+.Xr telodendria-config 7
+manual page for a full description of the configuration object that should
+be submitted. That page lists all the fields, and notes which ones are
+required.
+.Pp
+200 Response Format:
+.TS
+tab(;) allbox expand;
+lfB lfB lfB
+l l l.
+Field;Type;Description
+restart_required;Boolean;T{
+Whether or not the process needs to be restart to finish applying the
+configuration. If this is true, the restart endpoint may be used.
+T}
+.TE
+.Ss Sy GET No /_telodendria/admin/config
+.Pp
+Retrieve the current configuration.
+.Pp
+.TS
+tab(;) allbox expand;
+lfB lfB
+l l.
+Requires Token;Rate Limited
+Yes;Yes
+.TE
+.TS
+tab(;) allbox expand;
+lfB lfB
+l l.
+Response Code;Description
+200;T{
+The current configuration was successfully retrieved.
+T}
+.TE
+.Pp
+Consult the
+.Xr telodendria-config 7
+manual page for a full description of the configuration object that
+is returned. Note that this is the same object that was submitted
+using the
+.Sy POST
+version of this endpoint, otherwise it is the default configuration.
+.Ss Sy GET No /_telodendria/admin/stats
+.Pp
+Retrieve statistics about the currently running Telodendria process.
+.Pp
+.TS
+tab(;) allbox expand;
+lfB lfB
+l l.
+Requires Token;Rate Limited
+Yes;Yes
+.TE
+.TS
+tab(;) allbox expand;
+lfB lfB
+l l.
+Response Code;Description
+200;T{
+The server statistics were successfully retrieved.
+T}
+.TE
+.Pp
+200 Response Format:
+.TS
+tab(;) allbox expand;
+lfB lfB lfB
+l l l.
+Field;Type;Description
+memory_allocated;Integer;T{
+The total amount of memory allocated, measured in bytes.
+T}
+uptime;Integer;T{
+The total uptime of the server process, measured in milliseconds.
+T}
+version;String;T{
+The current version of Telodendria.
+T}
+.TE
+.Ss Sy POST No /_telodendria/admin/restart
+.Pp
+Restart the Telodendria daemon cleanly. This endpoint will respond immediately
+after signaling to the daemon that it should be restarted as soon as possible.
+Note that the restart may not happen instantaneously, as Telodendria will finish
+processing all current requests before restarting. Also note that this is not a
+``true'' restart; the process does not exit and restart, rather, Telodendria
+simply tears down its state, and then jumps back to the beginning of its code
+and starts over.
+.Pp
+.TS
+tab(;) allbox expand;
+lfB lfB
+l l.
+Requires Token;Rate Limited
+Yes;Yes
+.TE
+.TS
+tab(;) allbox expand;
+lfB lfB
+l l.
+Response Code;Description
+200;T{
+The restart request was successfully sent.
+T}
+.TE
+.Pp
+On success, this endpoint simply returns an empty JSON object.
+.Ss Sy POST No /_telodendria/admin/shutdown
+.Pp
+Shut down the Telodendria process cleanly. This endpoint will respond immediately
+after signaling to the daemon that it should be shut down as soon as possible.
+Note that the shutdown may not happen instantaneously, as Telodnedria will
+finish processing all current requests before shutting down. Also note that once
+shut down, Telodendria may be automatically restarted by the system's service
+manager, otherwise, it will have to be manually restarted. This is a ``true''
+shutdown, the Telodendria process exits as soon as possible.
+.Pp
+.TS
+tab(;) allbox expand;
+lfB lfB
+l l.
+Requires Token;Rate Limited
+Yes;Yes
+.TE
+.TS
+tab(;) allbox expand;
+lfB lfB
+l l.
+Response Code;Description
+200;T{
+The shutdown request was successfully sent.
+T}
+.TE
+.Pp
+On success, this endpoint simply returns an empty JSON object.
+.Sh SEE ALSO
+.Xr telodendria-config 7 ,
+.Xr telodendria-setup 7

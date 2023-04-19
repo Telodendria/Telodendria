@@ -62,8 +62,7 @@ ROUTE_IMPL(RoutePrivileges, path, argp)
     }
 
     /* If a user was specified in the URL, switch to that user after
-     * verifying that the current user has privileges to do so
-     */
+     * verifying that the current user has privileges to do so */
     if (ArraySize(path) == 1)
     {
         UserUnlock(user);

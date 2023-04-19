@@ -73,12 +73,12 @@ Milestone: v0.3.0
     [ ] send-patch
     [ ] Log
     [ ] TelodendriaConfig -> Config
-    [ ] telodendria.conf
     [ ] HashMap
     [ ] HttpRouter
     [ ] Str
-    [ ] telodendria-admin
+    [x] telodendria-admin
     [ ] telodendria-setup
+    [ ] telodendria-config
     [ ] Refactor dev pages so function description and
         return value are in the same location.
 
