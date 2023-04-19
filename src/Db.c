@@ -346,6 +346,9 @@ DbOpen(char *dir, size_t cache)
 
     pthread_mutex_init(&db->lock, NULL);
 
+    db->mostRecent = NULL;
+    db->leastRecent = NULL;
+
     if (db->maxCache)
     {
         db->cache = HashMapCreate();
@@ -353,9 +356,6 @@ DbOpen(char *dir, size_t cache)
         {
             return NULL;
         }
-
-        db->mostRecent = NULL;
-        db->leastRecent = NULL;
     }
     else
     {
@@ -363,6 +363,18 @@ DbOpen(char *dir, size_t cache)
     }
 
     return db;
+}
+
+void
+DbMaxCacheSet(Db * db, size_t cache)
+{
+    if (!db)
+    {
+        return;
+    }
+
+    db->maxCache = cache;
+    DbCacheEvict(db);
 }
 
 void
@@ -520,7 +532,7 @@ DbLockFromArr(Db * db, Array * args)
     }
     else
     {
-        Array *name = ArrayCreate();
+        Array *name;
         size_t i;
 
         /* Not in cache; load from disk */
@@ -548,13 +560,14 @@ DbLockFromArr(Db * db, Array * args)
         pthread_mutex_init(&ref->lock, NULL);
         pthread_mutex_lock(&ref->lock);
 
+        name = ArrayCreate();
         for (i = 0; i < ArraySize(args); i++)
         {
             ArrayAdd(name, StrDuplicate(ArrayGet(args, i)));
         }
         ref->name = name;
 
-        if (db->cache)
+        if (db->maxCache)
         {
             ref->ts = UtilServerTs();
             ref->size = DbComputeSize(ref->json);
@@ -758,7 +771,7 @@ DbUnlock(Db * db, DbRef * ref)
 
     StreamClose(ref->stream);
 
-    if (db->cache)
+    if (db->maxCache)
     {
         db->cacheSize -= ref->size;
         ref->size = DbComputeSize(ref->json);
@@ -886,4 +899,17 @@ HashMap *
 DbJson(DbRef * ref)
 {
     return ref ? ref->json : NULL;
+}
+
+int
+DbJsonSet(DbRef * ref, HashMap * json)
+{
+    if (!ref || !json)
+    {
+        return 0;
+    }
+
+    JsonFree(ref->json);
+    ref->json = JsonDuplicate(json);
+    return 1;
 }

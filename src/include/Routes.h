@@ -69,6 +69,9 @@ ROUTE(RouteUiaFallback);
 ROUTE(RouteStaticDefault);
 ROUTE(RouteStaticLogin);
 
+ROUTE(RouteProcControl);
+ROUTE(RouteConfig);
+
 #undef ROUTE
 
 #endif

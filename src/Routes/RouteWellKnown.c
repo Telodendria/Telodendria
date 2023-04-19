@@ -33,15 +33,26 @@
 ROUTE_IMPL(RouteWellKnown, path, argp)
 {
     RouteArgs *args = argp;
+    HashMap *response;
+
+    Config *config = ConfigLock(args->matrixArgs->db);
+    if (!config)
+    {
+        Log(LOG_ERR, "Well-known endpoint failed to lock configuration.");
+        HttpResponseStatus(args->context, HTTP_INTERNAL_SERVER_ERROR);
+        return MatrixErrorCreate(M_UNKNOWN);
+    }
 
     if (MATRIX_PATH_EQUALS(ArrayGet(path, 0), "client"))
     {
-        return MatrixClientWellKnown(args->matrixArgs->config->baseUrl,
-                            args->matrixArgs->config->identityServer);
+        response = MatrixClientWellKnown(config->baseUrl, config->identityServer);
     }
     else
     {
         HttpResponseStatus(args->context, HTTP_NOT_FOUND);
-        return MatrixErrorCreate(M_NOT_FOUND);
+        response = MatrixErrorCreate(M_NOT_FOUND);
     }
+
+    ConfigUnlock(config);
+    return response;
 }

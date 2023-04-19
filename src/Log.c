@@ -122,7 +122,6 @@ LogConfigFree(LogConfig * config)
         return;
     }
 
-    StreamClose(config->out);
     Free(config);
 
     if (config == globalConfig)

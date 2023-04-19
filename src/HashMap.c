@@ -321,9 +321,13 @@ HashMapSet(HashMap * map, char *key, void *value)
     unsigned long hash;
     size_t index;
 
-    key = StrDuplicate(key);
-
     if (!map || !key || !value)
+    {
+        return NULL;
+    }
+
+    key = StrDuplicate(key);
+    if (!key)
     {
         return NULL;
     }

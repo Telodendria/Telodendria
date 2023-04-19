@@ -77,19 +77,29 @@ ROUTE_IMPL(RouteRegister, path, argp)
     char *session;
     DbRef *sessionRef;
 
+    Config *config = ConfigLock(db);
+    if (!config)
+    {
+        Log(LOG_ERR, "Registration endpoint failed to lock configuration.");
+        HttpResponseStatus(args->context, HTTP_INTERNAL_SERVER_ERROR);
+        return MatrixErrorCreate(M_UNKNOWN);
+    }
+
     if (ArraySize(path) == 0)
     {
         if (HttpRequestMethodGet(args->context) != HTTP_POST)
         {
             HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-            return MatrixErrorCreate(M_UNRECOGNIZED);
+            response = MatrixErrorCreate(M_UNRECOGNIZED);
+            goto end;
         }
 
         request = JsonDecode(HttpServerStream(args->context));
         if (!request)
         {
             HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-            return MatrixErrorCreate(M_NOT_JSON);
+            response = MatrixErrorCreate(M_NOT_JSON);
+            goto end;
         }
 
         val = HashMapGet(request, "username");
@@ -103,7 +113,7 @@ ROUTE_IMPL(RouteRegister, path, argp)
             }
             username = StrDuplicate(JsonValueAsString(val));
 
-            if (!UserValidate(username, args->matrixArgs->config->serverName))
+            if (!UserValidate(username, config->serverName))
             {
                 HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
                 response = MatrixErrorCreate(M_INVALID_USERNAME);
@@ -121,14 +131,14 @@ ROUTE_IMPL(RouteRegister, path, argp)
         uiaFlows = ArrayCreate();
         ArrayAdd(uiaFlows, RouteRegisterRegFlow());
 
-        if (args->matrixArgs->config->flags & CONFIG_REGISTRATION)
+        if (config->flags & CONFIG_REGISTRATION)
         {
             ArrayAdd(uiaFlows, UiaDummyFlow());
         }
 
         uiaResult = UiaComplete(uiaFlows, args->context,
-                             args->matrixArgs->db, request, &response,
-                                args->matrixArgs->config);
+                             db, request, &response,
+                                config);
 
         if (uiaResult < 0)
         {
@@ -224,7 +234,7 @@ ROUTE_IMPL(RouteRegister, path, argp)
         user = UserCreate(db, username, password);
         response = HashMapCreate();
 
-        fullUsername = StrConcat(4, "@", UserGetName(user), ":", args->matrixArgs->config->serverName);
+        fullUsername = StrConcat(4, "@", UserGetName(user), ":", config->serverName);
         HashMapSet(response, "user_id", JsonValueString(fullUsername));
         Free(fullUsername);
 
@@ -302,7 +312,7 @@ finish:
                 HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
                 response = MatrixErrorCreate(M_MISSING_PARAM);
             }
-            else if (!UserValidate(username, args->matrixArgs->config->serverName))
+            else if (!UserValidate(username, config->serverName))
             {
                 HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
                 response = MatrixErrorCreate(M_INVALID_USERNAME);
@@ -325,5 +335,7 @@ finish:
         }
     }
 
+end:
+    ConfigUnlock(config);
     return response;
 }

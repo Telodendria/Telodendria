@@ -57,6 +57,14 @@ ROUTE_IMPL(RouteLogin, path, argp)
     UserLoginInfo *loginInfo;
     char *fullUsername;
 
+    Config *config = ConfigLock(db);
+    if (!config)
+    {
+        Log(LOG_ERR, "Login endpoint failed to lock configuration.");
+        HttpResponseStatus(args->context, HTTP_INTERNAL_SERVER_ERROR);
+        return MatrixErrorCreate(M_UNKNOWN);
+    }
+
     (void) path;
 
     switch (HttpRequestMethodGet(args->context))
@@ -157,8 +165,7 @@ ROUTE_IMPL(RouteLogin, path, argp)
                 break;
             }
 
-            userId = UserIdParse(JsonValueAsString(val),
-                                 args->matrixArgs->config->serverName);
+            userId = UserIdParse(JsonValueAsString(val), config->serverName);
             if (!userId)
             {
                 HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
@@ -166,7 +173,7 @@ ROUTE_IMPL(RouteLogin, path, argp)
                 break;
             }
 
-            if (strcmp(userId->server, args->matrixArgs->config->serverName) != 0
+            if (strcmp(userId->server, config->serverName) != 0
                 || !UserExists(db, userId->localpart))
             {
                 HttpResponseStatus(args->context, HTTP_FORBIDDEN);
@@ -276,14 +283,13 @@ ROUTE_IMPL(RouteLogin, path, argp)
             }
 
             fullUsername = StrConcat(4, "@", UserGetName(user), ":",
-                                args->matrixArgs->config->serverName);
+                                config->serverName);
             HashMapSet(response, "user_id", JsonValueString(fullUsername));
             Free(fullUsername);
 
             HashMapSet(response, "well_known",
                        JsonValueObject(
-              MatrixClientWellKnown(args->matrixArgs->config->baseUrl,
-                          args->matrixArgs->config->identityServer)));
+              MatrixClientWellKnown(config->baseUrl, config->identityServer)));
 
             UserAccessTokenFree(loginInfo->accessToken);
             Free(loginInfo->refreshToken);
@@ -300,5 +306,6 @@ ROUTE_IMPL(RouteLogin, path, argp)
 
     UserIdFree(userId);
     JsonFree(request);
+    ConfigUnlock(config);
     return response;
 }

@@ -158,10 +158,9 @@ recipe_build() {
 
 recipe_run() {
     if [ -f "build/$PROG" ]; then
-        "build/$PROG" -f contrib/development.conf
+        "build/$PROG" -d data
 
-        dataDir=$(< contrib/development.conf json -s "dataDir->@decode")
-        if [ -f "$dataDir/Memory.txt" ]; then
+        if [ -f "data/Memory.txt" ]; then
             echo "WARNING: Memory.txt exists in the data directory; this means"
             echo "Telodendria is leaking memory. Please fix memory leaks."
         fi

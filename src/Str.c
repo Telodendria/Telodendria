@@ -89,6 +89,11 @@ StrDuplicate(const char *inStr)
     size_t len;
     char *outStr;
 
+    if (!inStr)
+    {
+        return NULL;
+    }
+
     len = strlen(inStr);
     outStr = Malloc(len + 1);      /* For the null terminator */
     if (!outStr)

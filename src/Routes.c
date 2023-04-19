@@ -67,6 +67,9 @@ RouterBuild(void)
     R("/_matrix/client/v3/profile/(.*)", RouteUserProfile);
     R("/_matrix/client/v3/profile/(.*)/(avatar_url|displayname)", RouteUserProfile);
 
+    R("/_telodendria/admin/(restart|shutdown|stats)", RouteProcControl);
+    R("/_telodendria/admin/config", RouteConfig);
+
 #undef R
 
     return router;

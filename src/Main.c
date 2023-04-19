@@ -28,6 +28,7 @@
 #include <unistd.h>
 #include <errno.h>
 #include <signal.h>
+#include <limits.h>
 
 #include <grp.h>
 #include <pwd.h>
@@ -39,17 +40,41 @@
 #include <HashMap.h>
 #include <Json.h>
 #include <HttpServer.h>
-#include <Routes.h>
-#include <Matrix.h>
 #include <Db.h>
 #include <Cron.h>
 #include <Uia.h>
 #include <Util.h>
+#include <Str.h>
 
-static Array *httpServers = NULL;
+#include <Matrix.h>
+#include <User.h>
+#include <RegToken.h>
+#include <Routes.h>
+
+static Array *httpServers;
+static volatile int restart;
+static unsigned long startTs;
+
+void
+Restart(void)
+{
+    raise(SIGUSR1);
+}
+
+void
+Shutdown(void)
+{
+    raise(SIGINT);
+}
+
+unsigned long
+Uptime(void)
+{
+    return UtilServerTs() - startTs;
+}
 
 static void
-TelodendriaSignalHandler(int signal)
+SignalHandler(int signal)
 {
     size_t i;
 
@@ -57,6 +82,9 @@ TelodendriaSignalHandler(int signal)
     {
         case SIGPIPE:
             return;
+        case SIGUSR1:
+            restart = 1;
+            /* Fall through */
         case SIGINT:
             if (!httpServers)
             {
@@ -76,30 +104,26 @@ TelodendriaSignalHandler(int signal)
 typedef enum ArgFlag
 {
     ARG_VERSION = (1 << 0),
-    ARG_CONFIGTEST = (1 << 1),
     ARG_VERBOSE = (1 << 2)
 } ArgFlag;
 
 int
 main(int argc, char **argv)
 {
-    int exit = EXIT_SUCCESS;
+    int exit;
 
     /* Arg parsing */
     int opt;
-    int flags = 0;
-    char *configArg = NULL;
-
-    /* Config file */
-    Stream *configFile = NULL;
-    HashMap *config = NULL;
+    int flags;
+    char *dbPath;
 
     /* Program configuration */
-    Config *tConfig = NULL;
+    Config *tConfig;
+    Stream *logFile;
 
     /* User validation */
-    struct passwd *userInfo = NULL;
-    struct group *groupInfo = NULL;
+    struct passwd *userInfo;
+    struct group *groupInfo;
 
     /* HTTP server management */
     size_t i;
@@ -109,7 +133,30 @@ main(int argc, char **argv)
     struct sigaction sigAction;
 
     MatrixHttpHandlerArgs matrixArgs;
-    Cron *cron = NULL;
+    Cron *cron;
+
+    char startDir[PATH_MAX];
+
+start:
+    /* Global variables */
+    httpServers = NULL;
+    restart = 0;
+
+    /* For getopt() */
+    opterr = 1;
+    optind = 1;
+
+    /* Local variables */
+    exit = EXIT_SUCCESS;
+    flags = 0;
+    dbPath = NULL;
+    tConfig = NULL;
+    logFile = NULL;
+    userInfo = NULL;
+    groupInfo = NULL;
+    cron = NULL;
+
+    startTs = UtilServerTs();
 
     memset(&matrixArgs, 0, sizeof(matrixArgs));
 
@@ -121,21 +168,18 @@ main(int argc, char **argv)
 
     TelodendriaPrintHeader();
 
-    while ((opt = getopt(argc, argv, "f:Vvn")) != -1)
+    while ((opt = getopt(argc, argv, "d:Vv")) != -1)
     {
         switch (opt)
         {
-            case 'f':
-                configArg = optarg;
+            case 'd':
+                dbPath = optarg;
                 break;
             case 'V':
                 flags |= ARG_VERSION;
                 break;
             case 'v':
                 flags |= ARG_VERBOSE;
-                break;
-            case 'n':
-                flags |= ARG_CONFIGTEST;
                 break;
             case '?':
                 exit = EXIT_FAILURE;
@@ -156,27 +200,41 @@ main(int argc, char **argv)
         goto finish;
     }
 
-    if (!configArg)
+    if (!dbPath)
     {
-        Log(LOG_ERR, "No configuration file specified.");
+        Log(LOG_ERR, "No database directory specified.");
         exit = EXIT_FAILURE;
         goto finish;
     }
-    else if (strcmp(configArg, "-") == 0)
+
+    if (!getcwd(startDir, PATH_MAX))
     {
-        configFile = StreamStdin();
+        Log(LOG_ERR, "Unable to determine current working directory.");
+        exit = EXIT_FAILURE;
+        goto finish;
+    }
+
+    if (chdir(dbPath) != 0)
+    {
+        Log(LOG_ERR, "Unable to change into data directory: %s.", strerror(errno));
+        exit = EXIT_FAILURE;
+        goto finish;
     }
     else
     {
-        StreamClose(StreamStdin());
+        Log(LOG_DEBUG, "Changed working directory to: %s", dbPath);
+    }
 
-        configFile = StreamOpen(configArg, "r");
-        if (!configFile)
-        {
-            Log(LOG_ERR, "Unable to open configuration file '%s' for reading.", configArg);
-            exit = EXIT_FAILURE;
-            goto finish;
-        }
+    matrixArgs.db = DbOpen(".", 0);
+    if (!matrixArgs.db)
+    {
+        Log(LOG_ERR, "Unable to open data directory as a database.");
+        exit = EXIT_FAILURE;
+        goto finish;
+    }
+    else
+    {
+        Log(LOG_DEBUG, "Opened database.");
     }
 
     Log(LOG_NOTICE, "Building routing tree...");
@@ -188,30 +246,56 @@ main(int argc, char **argv)
         goto finish;
     }
 
-    Log(LOG_NOTICE, "Processing configuration file '%s'.", configArg);
-
-    config = JsonDecode(configFile);
-    StreamClose(configFile);
-
-    if (!config)
+    if (!ConfigExists(matrixArgs.db))
     {
-        Log(LOG_ERR, "Syntax error in configuration file.");
-        exit = EXIT_FAILURE;
-        goto finish;
+        char *token;
+        RegTokenInfo *info;
+
+        Log(LOG_NOTICE, "No configuration exists in the opened database.");
+        Log(LOG_NOTICE, "A default configuration will be created, and a");
+        Log(LOG_NOTICE, "new single-use registration token that grants all");
+        Log(LOG_NOTICE, "privileges will be created so an admin user can");
+        Log(LOG_NOTICE, "be created to configure this database using the");
+        Log(LOG_NOTICE, "administrator API.");
+
+        if (!ConfigCreateDefault(matrixArgs.db))
+        {
+            Log(LOG_ERR, "Unable to create default configuration.");
+            exit = EXIT_FAILURE;
+            goto finish;
+        }
+
+        token = StrRandom(32);
+        info = RegTokenCreate(matrixArgs.db, token, NULL, 0, 1, USER_ALL);
+        if (!info)
+        {
+            Free(token);
+            Log(LOG_ERR, "Unable to create admin registration token.");
+            exit = EXIT_FAILURE;
+            goto finish;
+        }
+
+        Log(LOG_NOTICE, "Admin Registration token: %s", token);
+
+        Free(token);
+        RegTokenClose(info);
+        RegTokenFree(info);
     }
 
-    tConfig = ConfigParse(config);
-    JsonFree(config);
+    Log(LOG_NOTICE, "Loading configuration...");
 
+    tConfig = ConfigLock(matrixArgs.db);
     if (!tConfig)
     {
+        Log(LOG_ERR, "Error locking the configuration.");
+        Log(LOG_ERR, "The configuration object is corrupted or otherwise invalid.");
+        Log(LOG_ERR, "Please restore from a backup.");
         exit = EXIT_FAILURE;
         goto finish;
-    }
-
-    if (flags & ARG_CONFIGTEST)
+    } else if (!tConfig->ok)
     {
-        Log(LOG_INFO, "Configuration is OK.");
+        Log(LOG_ERR, tConfig->err);
+        exit = EXIT_FAILURE;
         goto finish;
     }
 
@@ -236,20 +320,9 @@ main(int argc, char **argv)
 
     LogConfigLevelSet(LogConfigGlobal(), flags & ARG_VERBOSE ? LOG_DEBUG : tConfig->logLevel);
 
-    if (chdir(tConfig->dataDir) != 0)
-    {
-        Log(LOG_ERR, "Unable to change into data directory: %s.", strerror(errno));
-        exit = EXIT_FAILURE;
-        goto finish;
-    }
-    else
-    {
-        Log(LOG_DEBUG, "Changed working directory to: %s", tConfig->dataDir);
-    }
-
     if (tConfig->flags & CONFIG_LOG_FILE)
     {
-        Stream *logFile = StreamOpen("telodendria.log", "a");
+        logFile = StreamOpen("telodendria.log", "a");
 
         if (!logFile)
         {
@@ -261,7 +334,6 @@ main(int argc, char **argv)
 
         Log(LOG_INFO, "Logging to the log file. Check there for all future messages.");
         LogConfigOutputSet(LogConfigGlobal(), logFile);
-        StreamClose(StreamStdout());
     }
     else if (tConfig->flags & CONFIG_LOG_STDOUT)
     {
@@ -291,13 +363,9 @@ main(int argc, char **argv)
     Log(LOG_DEBUG, "Base URL: %s", tConfig->baseUrl);
     Log(LOG_DEBUG, "Identity Server: %s", tConfig->identityServer);
     Log(LOG_DEBUG, "Run As: %s:%s", tConfig->uid, tConfig->gid);
-    Log(LOG_DEBUG, "Data Directory: %s", tConfig->dataDir);
     Log(LOG_DEBUG, "Max Cache: %ld", tConfig->maxCache);
     Log(LOG_DEBUG, "Flags: %x", tConfig->flags);
     LogConfigUnindent(LogConfigGlobal());
-
-    /* Arguments to pass into the HTTP handler */
-    matrixArgs.config = tConfig;
 
     httpServers = ArrayCreate();
     if (!httpServers)
@@ -423,11 +491,9 @@ main(int argc, char **argv)
 
     /* These config values are no longer needed; don't hold them in
      * memory anymore */
-    Free(tConfig->dataDir);
     Free(tConfig->uid);
     Free(tConfig->gid);
 
-    tConfig->dataDir = NULL;
     tConfig->uid = NULL;
     tConfig->gid = NULL;
 
@@ -438,18 +504,10 @@ main(int argc, char **argv)
         Log(LOG_WARNING, "and ensure that maxCache is a valid number of bytes.");
     }
 
-    matrixArgs.db = DbOpen(".", tConfig->maxCache);
+    DbMaxCacheSet(matrixArgs.db, tConfig->maxCache);
 
-    if (!matrixArgs.db)
-    {
-        Log(LOG_ERR, "Unable to open data directory as a database.");
-        exit = EXIT_FAILURE;
-        goto finish;
-    }
-    else
-    {
-        Log(LOG_DEBUG, "Opened database.");
-    }
+    ConfigUnlock(tConfig);
+    tConfig = NULL;
 
     cron = CronCreate(60 * 1000);  /* 1-minute tick */
     if (!cron)
@@ -489,7 +547,7 @@ main(int argc, char **argv)
     }
 
 
-    sigAction.sa_handler = TelodendriaSignalHandler;
+    sigAction.sa_handler = SignalHandler;
     sigfillset(&sigAction.sa_mask);
     sigAction.sa_flags = SA_RESTART;
 
@@ -507,6 +565,7 @@ main(int argc, char **argv)
 
     SIGACTION(SIGINT, &sigAction, NULL);
     SIGACTION(SIGPIPE, &sigAction, NULL);
+    SIGACTION(SIGUSR1, &sigAction, NULL);
 
 #undef SIGACTION
 
@@ -542,15 +601,14 @@ finish:
         Log(LOG_DEBUG, "Stopped and freed job scheduler.");
     }
 
+    ConfigUnlock(tConfig);
+    Log(LOG_DEBUG, "Unlocked configuration.");
+
     DbClose(matrixArgs.db);
     Log(LOG_DEBUG, "Closed database.");
 
     HttpRouterFree(matrixArgs.router);
     Log(LOG_DEBUG, "Freed routing tree.");
-
-    ConfigFree(tConfig);
-
-    Log(LOG_DEBUG, "Exiting with code '%d'.", exit);
 
     /*
      * Uninstall the memory hook because it uses the Log
@@ -560,6 +618,19 @@ finish:
     MemoryHook(NULL, NULL);
 
     LogConfigFree(LogConfigGlobal());
+    StreamClose(logFile);
+
+    if (restart)
+    {
+        /*
+         * Change back into starting directory so initial chdir()
+         * call works.
+         */
+        chdir(startDir);
+        goto start;
+    }
+
+    StreamClose(StreamStdout());
 
     /* Standard error should never have been opened, but just in case
      * it was, this doesn't hurt anything. */
@@ -572,5 +643,6 @@ finish:
     /* Free any leaked memory now, just in case the operating system
      * we're running on won't do it for us. */
     MemoryFreeAll();
+
     return exit;
 }

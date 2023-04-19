@@ -42,11 +42,21 @@ ROUTE_IMPL(RouteUserProfile, path, argp)
     UserId *userId = NULL;
     User *user = NULL;
 
-    char *serverName = args->matrixArgs->config->serverName;
+    char *serverName;
     char *username = NULL;
     char *entry = NULL;
     char *token = NULL;
     char *value = NULL;
+
+    Config *config = ConfigLock(db);
+    if (!config)
+    {
+        Log(LOG_ERR, "User profile endpoint failed to lock configuration.");
+        HttpResponseStatus(args->context, HTTP_INTERNAL_SERVER_ERROR);
+        return MatrixErrorCreate(M_UNKNOWN);
+    }
+
+    serverName = config->serverName;
 
     username = ArrayGet(path, 0);
     userId = UserIdParse(username, serverName);
@@ -160,6 +170,7 @@ ROUTE_IMPL(RouteUserProfile, path, argp)
             break;
     }
 finish:
+    ConfigUnlock(config);
     Free(username);
     Free(entry);
     UserIdFree(userId);

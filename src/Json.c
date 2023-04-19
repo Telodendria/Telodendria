@@ -701,12 +701,90 @@ JsonFree(HashMap * object)
     char *key;
     JsonValue *value;
 
+    if (!object)
+    {
+        return;
+    }
+
     while (HashMapIterate(object, &key, (void **) &value))
     {
         JsonValueFree(value);
     }
 
     HashMapFree(object);
+}
+
+JsonValue *
+JsonValueDuplicate(JsonValue *val)
+{
+    JsonValue *new;
+    size_t i;
+
+    if (!val)
+    {
+        return NULL;
+    }
+
+    new = JsonValueAllocate();
+    if (!new)
+    {
+        return NULL;
+    }
+
+    new->type = val->type;
+
+    switch(val->type)
+    {
+        case JSON_OBJECT:
+            new->as.object = JsonDuplicate(val->as.object);
+            break;
+        case JSON_ARRAY:
+            new->as.array = ArrayCreate();
+            for (i = 0; i < ArraySize(val->as.array); i++)
+            {
+                ArrayAdd(new->as.array, JsonValueDuplicate(ArrayGet(val->as.array, i)));
+            }
+            break;
+        case JSON_STRING:
+            new->as.string = StrDuplicate(val->as.string);
+            break;
+        case JSON_INTEGER:
+        case JSON_FLOAT:
+        case JSON_BOOLEAN:
+            /* These are by value, not by reference */
+            new->as = val->as;
+        case JSON_NULL:
+        default:
+            break;
+    }
+
+    return new;
+}
+
+HashMap *
+JsonDuplicate(HashMap * object)
+{
+    HashMap *new;
+    char *key;
+    JsonValue *val;
+
+    if (!object)
+    {
+        return NULL;
+    }
+
+    new = HashMapCreate();
+    if (!new)
+    {
+        return NULL;
+    }
+
+    while (HashMapIterate(object, &key, (void **) &val))
+    {
+        HashMapSet(new, key, JsonValueDuplicate(val));
+    }
+
+    return new;
 }
 
 static int

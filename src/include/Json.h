@@ -93,8 +93,15 @@ extern JsonValue *
 extern void
  JsonValueFree(JsonValue *);
 
+extern JsonValue *
+ JsonValueDuplicate(JsonValue *);
+
+extern HashMap *
+ JsonDuplicate(HashMap *);
+
 extern void
  JsonFree(HashMap *);
+
 
 extern void
  JsonEncodeString(const char *, Stream *);

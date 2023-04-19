@@ -52,10 +52,11 @@ Milestone: v0.3.0
 
 [~] Move configuration to database
     [x] Token permissions
-    [ ] Initial configuration
-        [ ] If no config, create one-time use registration token that
+    [x] Initial configuration
+        [x] If no config, create one-time use registration token that
             grants user admin privileges.
-    [ ] /_telodendria/admin/config endpoint
+    [~] /_telodendria/admin/config endpoint
+    [x] JsonDuplicate()
     [x] Refactor TelodendriaConfig to just Config
 
 [ ] Documentation
@@ -72,9 +73,11 @@ Milestone: v0.3.0
     [ ] send-patch
     [ ] Log
     [ ] TelodendriaConfig -> Config
+    [ ] telodendria.conf
     [ ] HashMap
     [ ] HttpRouter
     [ ] Str
+    [ ] Admin API
 
 [~] Client-Server API
     [x] 4: Token-based user registration
@@ -91,7 +94,9 @@ Milestone: v0.3.0
         [~] Deactivate
             [x] Make sure UserLogin() fails if user is deactivated.
         [x] Change password
-        [x] Whoami
+        [~] Whoami
+            [ ] Attach device id to user object
+            [ ] Use UserAuthenticate()
     [~] 9: User Data
     [ ] 5: Capabilities negotiation
     [ ] 10: Security (Rate Limiting)

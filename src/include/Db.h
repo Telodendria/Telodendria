@@ -36,6 +36,9 @@ extern Db *
  DbOpen(char *, size_t);
 
 extern void
+DbMaxCacheSet(Db *, size_t);
+
+extern void
  DbClose(Db *);
 
 extern DbRef *
@@ -61,5 +64,8 @@ extern void
 
 extern HashMap *
  DbJson(DbRef *);
+
+extern int
+ DbJsonSet(DbRef *, HashMap *);
 
 #endif

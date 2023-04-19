@@ -70,7 +70,6 @@ typedef enum MatrixError
 
 typedef struct MatrixHttpHandlerArgs
 {
-    Config *config;
     Db *db;
     HttpRouter *router;
 } MatrixHttpHandlerArgs;

@@ -32,9 +32,10 @@
 #define USER_ISSUE_TOKENS (1 << 1)
 #define USER_CONFIG (1 << 2)
 #define USER_GRANT_PRIVILEGES (1 << 3)
+#define USER_PROC_CONTROL (1 << 4)
 
 #define USER_NONE 0
-#define USER_ALL ((1 << 4) - 1)
+#define USER_ALL ((1 << 5) - 1)
 
 typedef struct User User;
 

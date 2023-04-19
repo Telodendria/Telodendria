@@ -784,6 +784,10 @@ UserDecodePrivilege(const char *p)
     {
         return USER_GRANT_PRIVILEGES;
     }
+    else if (strcmp(p, "PROC_CONTROL") == 0)
+    {
+        return USER_PROC_CONTROL;
+    }
     else
     {
         return USER_NONE;
@@ -816,6 +820,7 @@ UserEncodePrivileges(int privileges)
     A(USER_ISSUE_TOKENS, "ISSUE_TOKENS");
     A(USER_CONFIG, "CONFIG");
     A(USER_GRANT_PRIVILEGES, "GRANT_PRIVILEGES");
+    A(USER_PROC_CONTROL, "PROC_CONTROL");
 
 #undef A
 

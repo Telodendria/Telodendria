@@ -203,7 +203,7 @@ RegTokenCreate(Db * db, char *name, char *owner, unsigned long expires, int uses
 
     unsigned long timestamp = UtilServerTs();
 
-    if (!db || !name || !owner)
+    if (!db || !name)
     {
         return NULL;
     }

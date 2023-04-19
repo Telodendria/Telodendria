@@ -25,9 +25,9 @@
 #ifndef TELODENDRIA_CONFIG_H
 #define TELODENDRIA_CONFIG_H
 
-#include <Log.h>
 #include <HashMap.h>
 #include <Array.h>
+#include <Db.h>
 
 typedef enum ConfigFlag
 {
@@ -41,13 +41,15 @@ typedef enum ConfigFlag
 
 typedef struct Config
 {
+    Db *db;
+    DbRef *ref;
+
     char *serverName;
     char *baseUrl;
     char *identityServer;
 
     char *uid;
     char *gid;
-    char *dataDir;
 
     unsigned int flags;
 
@@ -57,12 +59,27 @@ typedef struct Config
     int logLevel;
 
     Array *servers;
+
+    int ok;
+    char *err;
 } Config;
 
-extern Config *
- ConfigParse(HashMap *);
+Config *
+ConfigParse(HashMap *);
 
-extern void
- ConfigFree(Config *);
+void
+ConfigFree(Config *);
+
+extern int
+ConfigExists(Db *);
+
+extern int
+ConfigCreateDefault(Db *);
+
+extern Config *
+ConfigLock(Db *);
+
+extern int
+ConfigUnlock(Config *);
 
 #endif                             /* TELODENDRIA_CONFIG_H */

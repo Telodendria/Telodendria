@@ -23,74 +23,70 @@
  */
 #include <Routes.h>
 
+#include <User.h>
+#include <Main.h>
+#include <Memory.h>
+
 #include <string.h>
 
-#include <Json.h>
-#include <HashMap.h>
-#include <Str.h>
-#include <Memory.h>
-#include <User.h>
-
-ROUTE_IMPL(RouteWhoami, path, argp)
+ROUTE_IMPL(RouteProcControl, path, argp)
 {
     RouteArgs *args = argp;
-    Db *db = args->matrixArgs->db;
-
-    HashMap *response = NULL;
-    HashMap *tokenJson = NULL;
-
-    DbRef *ref;
-
+    char *op = ArrayGet(path, 0);
+    HashMap *response;
     char *token;
-    char *userID;
-    char *deviceID;
+    User *user = NULL;
 
-    Config *config = ConfigLock(db);
-    if (!config)
-    {
-        Log(LOG_ERR, "Who am I endpoint failed to lock configuration.");
-        HttpResponseStatus(args->context, HTTP_INTERNAL_SERVER_ERROR);
-        return MatrixErrorCreate(M_UNKNOWN);
-    }
-
-    (void) path;
-
-    /* Get the request */
     response = MatrixGetAccessToken(args->context, &token);
     if (response)
     {
-        /* No token? */
         goto finish;
     }
 
-    /* Authenticate with our token */
-    if (!DbExists(db, 3, "tokens", "access", token))
+    user = UserAuthenticate(args->matrixArgs->db, token);
+    if (!user)
     {
-        HttpResponseStatus(args->context, HTTP_UNAUTHORIZED);
+        HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
         response = MatrixErrorCreate(M_UNKNOWN_TOKEN);
         goto finish;
     }
 
-    ref = DbLock(db, 3, "tokens", "access", token);
-    tokenJson = DbJson(ref);
+    if (!(UserGetPrivileges(user) & USER_PROC_CONTROL))
+    {
+        HttpResponseStatus(args->context, HTTP_FORBIDDEN);
+        response = MatrixErrorCreate(M_FORBIDDEN);
+        goto finish;
+    }
+
+    if (strcmp(op, "restart") == 0)
+    {
+        Restart();
+    }
+    else if (strcmp(op, "shutdown") == 0)
+    {
+        Shutdown();
+    }
+    else if (strcmp(op, "stats") == 0)
+    {
+        response = HashMapCreate();
+
+        HashMapSet(response, "version", JsonValueString(TELODENDRIA_VERSION));
+        HashMapSet(response, "memory_allocated", JsonValueInteger(MemoryAllocated()));
+        HashMapSet(response, "uptime", JsonValueInteger(Uptime()));
+
+        goto finish;
+    }
+    else
+    {
+        /* Should be impossible */
+        HttpResponseStatus(args->context, HTTP_INTERNAL_SERVER_ERROR);
+        response = MatrixErrorCreate(M_UNKNOWN);
+        goto finish;
+    }
 
     response = HashMapCreate();
 
-    userID = StrConcat(4, "@",
-                     JsonValueAsString(HashMapGet(tokenJson, "user")),
-                       ":", config->serverName);
-
-    deviceID = StrDuplicate(JsonValueAsString(HashMapGet(tokenJson, "device")));
-
-    DbUnlock(db, ref);
-
-    HashMapSet(response, "device_id", JsonValueString(deviceID));
-    HashMapSet(response, "user_id", JsonValueString(userID));
-
-    Free(userID);
-    Free(deviceID);
-
 finish:
-    ConfigUnlock(config);
+    UserUnlock(user);
     return response;
 }

@@ -65,45 +65,53 @@ ROUTE_IMPL(RouteChangePwd, path, argp)
     char *token;
     char *newPassword;
 
+    Config *config = ConfigLock(db);
+    if (!config)
+    {
+        Log(LOG_ERR, "Password endpoint failed to lock configuration.");
+        HttpResponseStatus(args->context, HTTP_INTERNAL_SERVER_ERROR);
+        return MatrixErrorCreate(M_UNKNOWN);
+    }
+
     (void) path;
 
     if (HttpRequestMethodGet(args->context) != HTTP_POST)
     {
         HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-        return MatrixErrorCreate(M_UNRECOGNIZED);
+        response = MatrixErrorCreate(M_UNRECOGNIZED);
+        goto finish;
     }
 
     response = MatrixGetAccessToken(args->context, &token);
     if (response)
     {
-        JsonFree(request);
-        return response;
+        goto finish;
     }
 
     request = JsonDecode(HttpServerStream(args->context));
     if (!request)
     {
         HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-        return MatrixErrorCreate(M_NOT_JSON);
+        response = MatrixErrorCreate(M_NOT_JSON);
+        goto finish;
     }
 
     uiaFlows = ArrayCreate();
     ArrayAdd(uiaFlows, PasswordFlow());
     uiaResult = UiaComplete(uiaFlows, args->context,
-                            args->matrixArgs->db, request, &response,
-                            args->matrixArgs->config);
+                            db, request, &response,
+                            config);
     UiaFlowsFree(uiaFlows);
 
     if (uiaResult < 0)
     {
-        JsonFree(request);
         HttpResponseStatus(args->context, HTTP_INTERNAL_SERVER_ERROR);
-        return MatrixErrorCreate(M_UNKNOWN);
+        response = MatrixErrorCreate(M_UNKNOWN);
+        goto finish;
     }
     else if (!uiaResult)
     {
-        JsonFree(request);
-        return response;
+        goto finish;
     }
 
     newPassword = JsonValueAsString(HashMapGet(request, "new_password"));
@@ -111,7 +119,8 @@ ROUTE_IMPL(RouteChangePwd, path, argp)
     {
         JsonFree(request);
         HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-        return MatrixErrorCreate(M_BAD_JSON);
+        response = MatrixErrorCreate(M_BAD_JSON);
+        goto finish;
     }
 
     val = HashMapGet(request, "logout_devices");
@@ -125,9 +134,9 @@ ROUTE_IMPL(RouteChangePwd, path, argp)
 
     if (!user)
     {
-        JsonFree(request);
         HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-        return MatrixErrorCreate(M_UNKNOWN_TOKEN);
+        response = MatrixErrorCreate(M_UNKNOWN_TOKEN);
+        goto finish;
     }
 
     UserSetPassword(user, newPassword);
@@ -139,8 +148,11 @@ ROUTE_IMPL(RouteChangePwd, path, argp)
         UserDeleteTokens(user, token);
     }
 
+    response = HashMapCreate();
+
+finish:
+    ConfigUnlock(config);
     UserUnlock(user);
     JsonFree(request);
-    response = HashMapCreate();
     return response;
 }

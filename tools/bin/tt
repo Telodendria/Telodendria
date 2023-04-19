@@ -44,6 +44,7 @@ RESPONSE=$(login_payload | http -X POST -d @- "$BASE/_matrix/client/v3/login")
 ACCESS_TOKEN=$(echo "$RESPONSE" | json -s "access_token->@decode")
 
 if [ -z "$ACCESS_TOKEN" ]; then
+    echo "Failed to log in."
     echo "$RESPONSE" | json
     exit 1
 fi

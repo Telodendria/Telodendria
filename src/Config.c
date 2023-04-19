@@ -25,31 +25,32 @@
 #include <Memory.h>
 #include <Json.h>
 #include <HashMap.h>
-#include <Log.h>
 #include <Array.h>
 #include <Str.h>
 #include <Db.h>
 #include <HttpServer.h>
+#include <Log.h>
 
 #include <stdlib.h>
 #include <ctype.h>
 #include <string.h>
+#include <limits.h>
 
 #define CONFIG_REQUIRE(key, type) \
     value = HashMapGet(config, key); \
     if (!value) \
     { \
-        Log(LOG_ERR, "Missing required " key " directive."); \
+        tConfig->err = "Missing required " key " directive."; \
         goto error; \
     } \
     if (JsonValueType(value) == JSON_NULL) \
     { \
-        Log(LOG_ERR, "Missing value for " key " directive."); \
+        tConfig->err = "Missing value for " key " directive."; \
         goto error; \
     } \
     if (JsonValueType(value) != type) \
     { \
-        Log(LOG_ERR, "Expected " key " to be of type " #type); \
+        tConfig->err = "Expected " key " to be of type " #type; \
         goto error; \
     }
 
@@ -62,14 +63,13 @@
     { \
         if (JsonValueType(value) != JSON_STRING) \
         { \
-            Log(LOG_ERR, "Expected " key " to be of type JSON_STRING"); \
+            tConfig->err = "Expected " key " to be of type JSON_STRING"; \
             goto error; \
         } \
         into = StrDuplicate(JsonValueAsString(value)); \
     } \
     else \
     { \
-        Log(LOG_INFO, "Using default value " #default " for " key "."); \
         into = default ? StrDuplicate(default) : NULL; \
     }
 
@@ -79,14 +79,13 @@
     { \
         if (JsonValueType(value) != JSON_INTEGER) \
         { \
-            Log(LOG_ERR, "Expected " key " to be of type JSON_INTEGER"); \
+            tConfig->err = "Expected " key " to be of type JSON_INTEGER"; \
             goto error; \
         } \
         into = JsonValueAsInteger(value); \
     } \
     else \
     { \
-        Log(LOG_INFO, "Using default value " #default " for " key "."); \
         into = default; \
     }
 
@@ -113,8 +112,7 @@ ConfigParseListen(Config * tConfig, Array * listen)
 
     if (!ArraySize(listen))
     {
-        Log(LOG_ERR, "Listen array cannot be empty; you must specify at least");
-        Log(LOG_ERR, "one listener.");
+        tConfig->err = "Listen array cannot be empty; you must specify at least one listener.";
         goto error;
     }
 
@@ -123,7 +121,7 @@ ConfigParseListen(Config * tConfig, Array * listen)
         tConfig->servers = ArrayCreate();
         if (!tConfig->servers)
         {
-            Log(LOG_ERR, "Unable to allocate memory for listener configurations.");
+            tConfig->err = "Unable to allocate memory for listener configurations.";
             goto error;
         }
     }
@@ -136,14 +134,13 @@ ConfigParseListen(Config * tConfig, Array * listen)
 
         if (!serverCfg)
         {
-            Log(LOG_ERR, "Unable to allocate memory for listener configuration.");
+            tConfig->err = "Unable to allocate memory for listener configuration.";
             goto error;
         }
 
         if (JsonValueType(val) != JSON_OBJECT)
         {
-            Log(LOG_ERR, "Invalid value in listener array.");
-            Log(LOG_ERR, "All listeners must be objects.");
+            tConfig->err = "Invalid value in listener array. All listeners must be objects.";
             goto error;
         }
 
@@ -155,22 +152,17 @@ ConfigParseListen(Config * tConfig, Array * listen)
 
         if (!serverCfg->port)
         {
-            Log(LOG_WARNING, "No or invalid port specified, listener will be ignored.");
             Free(serverCfg);
             continue;
         }
 
         if (!serverCfg->threads)
         {
-            Log(LOG_DEBUG, "No or invalid number of threads specified for listener.");
-            Log(LOG_DEBUG, "Using default, which may be subject to change.");
             serverCfg->threads = 4;
         }
 
         if (!serverCfg->maxConnections)
         {
-            Log(LOG_DEBUG, "No or invalid number of maximum connections specified.");
-            Log(LOG_DEBUG, "Using default, which may be subject to change.");
             serverCfg->maxConnections = 32;
         }
 
@@ -183,7 +175,7 @@ ConfigParseListen(Config * tConfig, Array * listen)
         }
         else if (JsonValueType(val) != JSON_OBJECT)
         {
-            Log(LOG_ERR, "Invalid value for listener.tls. It must be an object.");
+            tConfig->err = "Invalid value for listener.tls. It must be an object.";
             goto error;
         }
         else
@@ -196,7 +188,7 @@ ConfigParseListen(Config * tConfig, Array * listen)
 
             if (!serverCfg->tlsCert || !serverCfg->tlsKey)
             {
-                Log(LOG_ERR, "TLS cert and key must both be valid file names.");
+                tConfig->err = "TLS cert and key must both be valid file names.";
                 goto error;
             }
         }
@@ -231,7 +223,7 @@ ConfigParseLog(Config * tConfig, HashMap * config)
     }
     else
     {
-        Log(LOG_ERR, "Invalid value for log.output: '%s'.", str);
+        tConfig->err = "Invalid value for log.output";
         goto error;
     }
 
@@ -259,7 +251,7 @@ ConfigParseLog(Config * tConfig, HashMap * config)
     }
     else
     {
-        Log(LOG_ERR, "Invalid value for log.level: '%s'.", tConfig->logLevel);
+        tConfig->err = "Invalid value for log.level.";
         goto error;
     }
 
@@ -278,7 +270,7 @@ ConfigParseLog(Config * tConfig, HashMap * config)
     {
         if (JsonValueType(value) != JSON_BOOLEAN)
         {
-            Log(LOG_ERR, "Expected type JSON_BOOLEAN for log.color.");
+            tConfig->err = "Expected type JSON_BOOLEAN for log.color.";
             goto error;
         }
 
@@ -294,8 +286,44 @@ error:
     return 0;
 }
 
+void
+ConfigFree(Config * tConfig)
+{
+    if (!tConfig)
+    {
+        return;
+    }
+
+    Free(tConfig->serverName);
+    Free(tConfig->baseUrl);
+    Free(tConfig->identityServer);
+
+    Free(tConfig->uid);
+    Free(tConfig->gid);
+
+    Free(tConfig->logTimestamp);
+
+    if (tConfig->servers)
+    {
+        size_t i;
+
+        for (i = 0; i < ArraySize(tConfig->servers); i++)
+        {
+            HttpServerConfig *serverCfg = ArrayGet(tConfig->servers, i);
+
+            Free(serverCfg->tlsCert);
+            Free(serverCfg->tlsKey);
+            Free(serverCfg);
+        }
+
+        ArrayFree(tConfig->servers);
+    }
+
+    Free(tConfig);
+}
+
 Config *
-ConfigParse(HashMap * config)
+ConfigParse(HashMap *config)
 {
     Config *tConfig;
     JsonValue *value;
@@ -329,11 +357,10 @@ ConfigParse(HashMap * config)
     }
     else
     {
-        Log(LOG_WARNING, "Base URL not specified. Assuming it's 'https://%s'.", tConfig->serverName);
         tConfig->baseUrl = Malloc(strlen(tConfig->serverName) + 10);
         if (!tConfig->baseUrl)
         {
-            Log(LOG_ERR, "Error allocating memory for default config value 'baseUrl'.");
+            tConfig->err = "Error allocating memory for default config value 'baseUrl'.";
             goto error;
         }
 
@@ -354,14 +381,10 @@ ConfigParse(HashMap * config)
         }
         else
         {
-            Log(LOG_ERR, "Config directive 'runAs' should be a JSON object");
-            Log(LOG_ERR, "that contains a 'uid' and 'gid'.");
+            tConfig->err = "Config directive 'runAs' should be a JSON object that contains a 'uid' and 'gid'.";
             goto error;
         }
     }
-
-    CONFIG_REQUIRE("dataDir", JSON_STRING);
-    CONFIG_COPY_STRING(tConfig->dataDir);
 
     CONFIG_OPTIONAL_INTEGER(tConfig->maxCache, "maxCache", 0);
 
@@ -383,46 +406,100 @@ ConfigParse(HashMap * config)
         goto error;
     }
 
+    tConfig->ok = 1;
+    tConfig->err = NULL;
     return tConfig;
 
 error:
-    ConfigFree(tConfig);
-    return NULL;
+    tConfig->ok = 0;
+    return tConfig;
 }
 
-void
-ConfigFree(Config * tConfig)
+int
+ConfigExists(Db *db)
 {
-    if (!tConfig)
+    return DbExists(db, 1, "config");
+}
+
+int
+ConfigCreateDefault(Db *db)
+{
+    DbRef *ref;
+    HashMap *json;
+    Array *listeners;
+    HashMap *listen;
+
+    char hostname[HOST_NAME_MAX + 1];
+
+    if (!db)
     {
-        return;
+        return 0;
     }
 
-    Free(tConfig->serverName);
-    Free(tConfig->baseUrl);
-    Free(tConfig->identityServer);
-
-    Free(tConfig->uid);
-    Free(tConfig->gid);
-    Free(tConfig->dataDir);
-
-    Free(tConfig->logTimestamp);
-
-    if (tConfig->servers)
+    ref = DbCreate(db, 1, "config");
+    if (!ref)
     {
-        size_t i;
-
-        for (i = 0; i < ArraySize(tConfig->servers); i++)
-        {
-            HttpServerConfig *serverCfg = ArrayGet(tConfig->servers, i);
-
-            Free(serverCfg->tlsCert);
-            Free(serverCfg->tlsKey);
-            Free(serverCfg);
-        }
-
-        ArrayFree(tConfig->servers);
+        return 0;
     }
 
-    Free(tConfig);
+    json = DbJson(ref);
+
+    JsonSet(json, JsonValueString("file"), 2, "log", "output");
+
+    listeners = ArrayCreate();
+    listen = HashMapCreate();
+    HashMapSet(listen, "port", JsonValueInteger(8008));
+    HashMapSet(listen, "tls", JsonValueBoolean(0));
+    ArrayAdd(listeners, JsonValueObject(listen));
+    HashMapSet(json, "listen", JsonValueArray(listeners));
+
+    if (gethostname(hostname, HOST_NAME_MAX + 1) < 0)
+    {
+        strcpy(hostname, "localhost");
+    }
+    HashMapSet(json, "serverName", JsonValueString(hostname));
+
+    HashMapSet(json, "federation", JsonValueBoolean(1));
+    HashMapSet(json, "registration", JsonValueBoolean(0));
+
+    return DbUnlock(db, ref);
+}
+
+Config *
+ConfigLock(Db *db)
+{
+    Config *config;
+    DbRef *ref = DbLock(db, 1, "config");
+
+    if (!ref)
+    {
+        return NULL;
+    }
+
+    config = ConfigParse(DbJson(ref));
+    if (config)
+    {
+        config->db = db;
+        config->ref = ref;
+    }
+
+    return config;
+}
+
+int
+ConfigUnlock(Config *config)
+{
+    Db *db;
+    DbRef *dbRef;
+
+    if (!config)
+    {
+        return 0;
+    }
+
+    db = config->db;
+    dbRef = config->ref;
+
+    ConfigFree(config);
+    return DbUnlock(db, dbRef);
 }
