@@ -58,6 +58,7 @@ ROUTE_IMPL(RouteLogin, path, argp)
     char *fullUsername;
 
     Config *config = ConfigLock(db);
+
     if (!config)
     {
         Log(LOG_ERR, "Login endpoint failed to lock configuration.");
@@ -283,13 +284,13 @@ ROUTE_IMPL(RouteLogin, path, argp)
             }
 
             fullUsername = StrConcat(4, "@", UserGetName(user), ":",
-                                config->serverName);
+                                     config->serverName);
             HashMapSet(response, "user_id", JsonValueString(fullUsername));
             Free(fullUsername);
 
             HashMapSet(response, "well_known",
                        JsonValueObject(
-              MatrixClientWellKnown(config->baseUrl, config->identityServer)));
+                                       MatrixClientWellKnown(config->baseUrl, config->identityServer)));
 
             UserAccessTokenFree(loginInfo->accessToken);
             Free(loginInfo->refreshToken);

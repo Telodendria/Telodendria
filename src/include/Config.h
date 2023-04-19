@@ -65,21 +65,21 @@ typedef struct Config
 } Config;
 
 Config *
-ConfigParse(HashMap *);
+ ConfigParse(HashMap *);
 
 void
-ConfigFree(Config *);
+ ConfigFree(Config *);
 
 extern int
-ConfigExists(Db *);
+ ConfigExists(Db *);
 
 extern int
-ConfigCreateDefault(Db *);
+ ConfigCreateDefault(Db *);
 
 extern Config *
-ConfigLock(Db *);
+ ConfigLock(Db *);
 
 extern int
-ConfigUnlock(Config *);
+ ConfigUnlock(Config *);
 
 #endif                             /* TELODENDRIA_CONFIG_H */

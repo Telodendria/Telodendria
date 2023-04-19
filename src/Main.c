@@ -292,7 +292,8 @@ start:
         Log(LOG_ERR, "Please restore from a backup.");
         exit = EXIT_FAILURE;
         goto finish;
-    } else if (!tConfig->ok)
+    }
+    else if (!tConfig->ok)
     {
         Log(LOG_ERR, tConfig->err);
         exit = EXIT_FAILURE;

@@ -36,6 +36,7 @@ ROUTE_IMPL(RouteWellKnown, path, argp)
     HashMap *response;
 
     Config *config = ConfigLock(args->matrixArgs->db);
+
     if (!config)
     {
         Log(LOG_ERR, "Well-known endpoint failed to lock configuration.");

@@ -46,6 +46,7 @@ ROUTE_IMPL(RouteWhoami, path, argp)
     char *deviceID;
 
     Config *config = ConfigLock(db);
+
     if (!config)
     {
         Log(LOG_ERR, "Who am I endpoint failed to lock configuration.");

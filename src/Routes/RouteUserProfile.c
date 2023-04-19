@@ -49,6 +49,7 @@ ROUTE_IMPL(RouteUserProfile, path, argp)
     char *value = NULL;
 
     Config *config = ConfigLock(db);
+
     if (!config)
     {
         Log(LOG_ERR, "User profile endpoint failed to lock configuration.");

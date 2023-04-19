@@ -78,6 +78,7 @@ ROUTE_IMPL(RouteRegister, path, argp)
     DbRef *sessionRef;
 
     Config *config = ConfigLock(db);
+
     if (!config)
     {
         Log(LOG_ERR, "Registration endpoint failed to lock configuration.");
@@ -137,7 +138,7 @@ ROUTE_IMPL(RouteRegister, path, argp)
         }
 
         uiaResult = UiaComplete(uiaFlows, args->context,
-                             db, request, &response,
+                                db, request, &response,
                                 config);
 
         if (uiaResult < 0)

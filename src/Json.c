@@ -715,7 +715,7 @@ JsonFree(HashMap * object)
 }
 
 JsonValue *
-JsonValueDuplicate(JsonValue *val)
+JsonValueDuplicate(JsonValue * val)
 {
     JsonValue *new;
     size_t i;
@@ -733,7 +733,7 @@ JsonValueDuplicate(JsonValue *val)
 
     new->type = val->type;
 
-    switch(val->type)
+    switch (val->type)
     {
         case JSON_OBJECT:
             new->as.object = JsonDuplicate(val->as.object);

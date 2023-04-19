@@ -36,7 +36,7 @@ extern Db *
  DbOpen(char *, size_t);
 
 extern void
-DbMaxCacheSet(Db *, size_t);
+ DbMaxCacheSet(Db *, size_t);
 
 extern void
  DbClose(Db *);

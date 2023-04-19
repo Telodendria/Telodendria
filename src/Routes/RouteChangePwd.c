@@ -66,6 +66,7 @@ ROUTE_IMPL(RouteChangePwd, path, argp)
     char *newPassword;
 
     Config *config = ConfigLock(db);
+
     if (!config)
     {
         Log(LOG_ERR, "Password endpoint failed to lock configuration.");

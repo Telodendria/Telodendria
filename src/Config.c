@@ -323,7 +323,7 @@ ConfigFree(Config * tConfig)
 }
 
 Config *
-ConfigParse(HashMap *config)
+ConfigParse(HashMap * config)
 {
     Config *tConfig;
     JsonValue *value;
@@ -416,13 +416,13 @@ error:
 }
 
 int
-ConfigExists(Db *db)
+ConfigExists(Db * db)
 {
     return DbExists(db, 1, "config");
 }
 
 int
-ConfigCreateDefault(Db *db)
+ConfigCreateDefault(Db * db)
 {
     DbRef *ref;
     HashMap *json;
@@ -466,7 +466,7 @@ ConfigCreateDefault(Db *db)
 }
 
 Config *
-ConfigLock(Db *db)
+ConfigLock(Db * db)
 {
     Config *config;
     DbRef *ref = DbLock(db, 1, "config");
@@ -487,7 +487,7 @@ ConfigLock(Db *db)
 }
 
 int
-ConfigUnlock(Config *config)
+ConfigUnlock(Config * config)
 {
     Db *db;
     DbRef *dbRef;
