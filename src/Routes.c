@@ -69,6 +69,8 @@ RouterBuild(void)
 
     R("/_telodendria/admin/(restart|shutdown|stats)", RouteProcControl);
     R("/_telodendria/admin/config", RouteConfig);
+    R("/_telodendria/admin/privileges", RoutePrivileges);
+    R("/_telodendria/admin/privileges/(.*)", RoutePrivileges);
 
 #undef R
 

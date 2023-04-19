@@ -71,6 +71,7 @@ ROUTE(RouteStaticLogin);
 
 ROUTE(RouteProcControl);
 ROUTE(RouteConfig);
+ROUTE(RoutePrivileges);
 
 #undef ROUTE
 

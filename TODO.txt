@@ -77,7 +77,10 @@ Milestone: v0.3.0
     [ ] HashMap
     [ ] HttpRouter
     [ ] Str
-    [ ] Admin API
+    [ ] telodendria-admin
+    [ ] telodendria-setup
+    [ ] Refactor dev pages so function description and
+        return value are in the same location.
 
 [~] Client-Server API
     [x] 4: Token-based user registration

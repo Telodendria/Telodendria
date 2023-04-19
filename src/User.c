@@ -804,14 +804,14 @@ UserEncodePrivileges(int privileges)
         return NULL;
     }
 
-    if (privileges & USER_ALL)
+    if ((privileges & USER_ALL) == USER_ALL)
     {
         ArrayAdd(arr, JsonValueString("ALL"));
         goto finish;
     }
 
 #define A(priv, as) \
-    if (privileges & priv) \
+    if ((privileges & priv) == priv) \
     { \
         ArrayAdd(arr, JsonValueString(as)); \
     }

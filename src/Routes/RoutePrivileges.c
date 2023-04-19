@@ -29,13 +29,16 @@
 
 #include <string.h>
 
-ROUTE_IMPL(RouteProcControl, path, argp)
+ROUTE_IMPL(RoutePrivileges, path, argp)
 {
     RouteArgs *args = argp;
-    char *op = ArrayGet(path, 0);
     HashMap *response;
     char *token;
     User *user = NULL;
+
+    HashMap *request = NULL;
+    JsonValue *val;
+    int privileges;
 
     response = MatrixGetAccessToken(args->context, &token);
     if (response)
@@ -51,47 +54,80 @@ ROUTE_IMPL(RouteProcControl, path, argp)
         goto finish;
     }
 
-    if (!(UserGetPrivileges(user) & USER_PROC_CONTROL))
+    if (!(UserGetPrivileges(user) & USER_GRANT_PRIVILEGES))
     {
         HttpResponseStatus(args->context, HTTP_FORBIDDEN);
         response = MatrixErrorCreate(M_FORBIDDEN);
         goto finish;
     }
 
+    /* If a user was specified in the URL, switch to that user after
+     * verifying that the current user has privileges to do so
+     */
+    if (ArraySize(path) == 1)
+    {
+        UserUnlock(user);
+        user = UserLock(args->matrixArgs->db, ArrayGet(path, 0));
+        if (!user)
+        {
+            HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
+            response = MatrixErrorCreate(M_INVALID_PARAM);
+            goto finish;
+        }
+    }
+
     switch (HttpRequestMethodGet(args->context))
     {
         case HTTP_POST:
-            if (strcmp(op, "restart") == 0)
-            {
-                Restart();
-            }
-            else if (strcmp(op, "shutdown") == 0)
-            {
-                Shutdown();
-            }
-            else
+        case HTTP_PUT:
+        case HTTP_DELETE:
+            request = JsonDecode(HttpServerStream(args->context));
+            if (!request)
             {
                 HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-                response = MatrixErrorCreate(M_UNRECOGNIZED);
-                goto finish;
+                response = MatrixErrorCreate(M_NOT_JSON);
+                break;
             }
+
+            val = HashMapGet(request, "privileges");
+            if (!val || JsonValueType(val) != JSON_ARRAY)
+            {
+                HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
+                response = MatrixErrorCreate(M_BAD_JSON);
+                break;
+            }
+
+            switch (HttpRequestMethodGet(args->context))
+            {
+                case HTTP_POST:
+                    privileges = UserDecodePrivileges(val);
+                    break;
+                case HTTP_PUT:
+                    privileges = UserGetPrivileges(user);
+                    privileges |= UserDecodePrivileges(val);
+                    break;
+                case HTTP_DELETE:
+                    privileges = UserGetPrivileges(user);
+                    privileges &= ~UserDecodePrivileges(val);
+                    break;
+                default:
+                    /* Impossible */
+                    privileges = USER_NONE;
+                    break;
+            }
+
+            if (!UserSetPrivileges(user, privileges))
+            {
+                HttpResponseStatus(args->context, HTTP_INTERNAL_SERVER_ERROR);
+                response = MatrixErrorCreate(M_UNKNOWN);
+                break;
+            }
+
+            /* Fall through */
         case HTTP_GET:
-            if (strcmp(op, "stats") == 0)
-            {
-                response = HashMapCreate();
-
-                HashMapSet(response, "version", JsonValueString(TELODENDRIA_VERSION));
-                HashMapSet(response, "memory_allocated", JsonValueInteger(MemoryAllocated()));
-                HashMapSet(response, "uptime", JsonValueInteger(Uptime()));
-
-                goto finish;
-            }
-            else
-            {
-                HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-                response = MatrixErrorCreate(M_UNRECOGNIZED);
-                goto finish;
-            }
+            response = HashMapCreate();
+            HashMapSet(response, "privileges", UserEncodePrivileges(UserGetPrivileges(user)));
+            break;
         default:
             HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
             response = MatrixErrorCreate(M_UNRECOGNIZED);
@@ -99,9 +135,8 @@ ROUTE_IMPL(RouteProcControl, path, argp)
             break;
     }
 
-    response = HashMapCreate();
-
 finish:
     UserUnlock(user);
+    JsonFree(request);
     return response;
 }

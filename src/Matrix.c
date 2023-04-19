@@ -228,6 +228,10 @@ MatrixErrorCreate(MatrixError errorArg)
             errcode = "M_MISSING_PARAM";
             error = "A required parameter was missing from the request.";
             break;
+        case M_INVALID_PARAM:
+            errcode = "M_INVALID_PARAM";
+            error = "A required parameter was invalid in some way.";
+            break;
         case M_TOO_LARGE:
             errcode = "M_TOO_LARGE";
             error = "The request or entity was too large.";
