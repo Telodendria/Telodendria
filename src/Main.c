@@ -237,15 +237,6 @@ start:
         Log(LOG_DEBUG, "Opened database.");
     }
 
-    Log(LOG_NOTICE, "Building routing tree...");
-    matrixArgs.router = RouterBuild();
-    if (!matrixArgs.router)
-    {
-        Log(LOG_ERR, "Unable to build routing tree.");
-        exit = EXIT_FAILURE;
-        goto finish;
-    }
-
     if (!ConfigExists(matrixArgs.db))
     {
         char *token;
@@ -524,6 +515,15 @@ start:
 
     Log(LOG_NOTICE, "Starting job scheduler...");
     CronStart(cron);
+
+    Log(LOG_NOTICE, "Building routing tree...");
+    matrixArgs.router = RouterBuild();
+    if (!matrixArgs.router)
+    {
+        Log(LOG_ERR, "Unable to build routing tree.");
+        exit = EXIT_FAILURE;
+        goto finish;
+    }
 
     Log(LOG_NOTICE, "Starting server...");
 
