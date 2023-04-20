@@ -156,7 +156,7 @@ TlsInitServer(int fd, const char *crt, const char *key)
 
     if (SSL_CTX_use_certificate_file(cookie->ctx, crt, SSL_FILETYPE_PEM) <= 0)
     {
-        Log(LOG_ERR, "TlsInitServer(): Unable to set certificate file.");
+        Log(LOG_ERR, "TlsInitServer(): Unable to set certificate file: %s", crt);
         goto error;
     }
 

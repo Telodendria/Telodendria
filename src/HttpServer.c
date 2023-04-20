@@ -28,6 +28,7 @@
 #include <Util.h>
 #include <Tls.h>
 #include <Log.h>
+#include <Str.h>
 
 #include <pthread.h>
 #include <stdio.h>
@@ -316,6 +317,8 @@ HttpServerCreate(HttpServerConfig * config)
     memset(server, 0, sizeof(HttpServer));
 
     server->config = *config;
+    server->config.tlsCert = StrDuplicate(config->tlsCert);
+    server->config.tlsKey = StrDuplicate(config->tlsKey);
 
     server->threadPool = ArrayCreate();
     if (!server->threadPool)
@@ -427,6 +430,8 @@ HttpServerFree(HttpServer * server)
     QueueFree(server->connQueue);
     pthread_mutex_destroy(&server->connQueueMutex);
     ArrayFree(server->threadPool);
+    Free(server->config.tlsCert);
+    Free(server->config.tlsKey);
     Free(server);
 }
 

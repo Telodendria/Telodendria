@@ -460,14 +460,6 @@ start:
         }
     }
 
-    /* These config values are no longer needed; don't hold them in
-     * memory anymore */
-    Free(tConfig->uid);
-    Free(tConfig->gid);
-
-    tConfig->uid = NULL;
-    tConfig->gid = NULL;
-
     if (!tConfig->maxCache)
     {
         Log(LOG_WARNING, "Database caching is disabled.");
