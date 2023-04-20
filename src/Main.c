@@ -53,25 +53,6 @@
 
 static Array *httpServers;
 static volatile int restart;
-static unsigned long startTs;
-
-void
-Restart(void)
-{
-    raise(SIGUSR1);
-}
-
-void
-Shutdown(void)
-{
-    raise(SIGINT);
-}
-
-unsigned long
-Uptime(void)
-{
-    return UtilServerTs() - startTs;
-}
 
 static void
 SignalHandler(int signal)
@@ -155,8 +136,6 @@ start:
     userInfo = NULL;
     groupInfo = NULL;
     cron = NULL;
-
-    startTs = UtilServerTs();
 
     memset(&matrixArgs, 0, sizeof(matrixArgs));
 

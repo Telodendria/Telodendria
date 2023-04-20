@@ -24,10 +24,10 @@
 #include <Routes.h>
 
 #include <User.h>
-#include <Main.h>
 #include <Memory.h>
 
 #include <string.h>
+#include <signal.h>
 
 ROUTE_IMPL(RouteProcControl, path, argp)
 {
@@ -63,11 +63,11 @@ ROUTE_IMPL(RouteProcControl, path, argp)
         case HTTP_POST:
             if (strcmp(op, "restart") == 0)
             {
-                Restart();
+                raise(SIGUSR1);
             }
             else if (strcmp(op, "shutdown") == 0)
             {
-                Shutdown();
+                raise(SIGINT);
             }
             else
             {
@@ -83,7 +83,6 @@ ROUTE_IMPL(RouteProcControl, path, argp)
 
                 HashMapSet(response, "version", JsonValueString(TELODENDRIA_VERSION));
                 HashMapSet(response, "memory_allocated", JsonValueInteger(MemoryAllocated()));
-                HashMapSet(response, "uptime", JsonValueInteger(Uptime()));
 
                 goto finish;
             }
