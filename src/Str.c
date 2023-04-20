@@ -208,7 +208,7 @@ StrBlank(const char *str)
 
     while (str[i])
     {
-        blank &= isspace(str[i]);
+        blank &= isspace((unsigned char) str[i]);
         /* No need to continue if we don't have a blank */
         if (!blank)
         {
