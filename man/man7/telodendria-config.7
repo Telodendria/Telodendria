@@ -1,44 +1,61 @@
-.Dd $Mdocdate: February 15 2023 $
-.Dt TELODENDRIA.CONF 5
+.Dd $Mdocdate: April 20 2023 $
+.Dt TELODENDRIA-CONFIG 7
 .Os Telodendria Project
 .Sh NAME
-.Nm telodendria.conf
-.Nd Configuration file for Telodendria.
+.Nm telodendria-config
+.Nd Telodendria configuration.
 .Sh DESCRIPTION
-.Nm
-is the configuration file for the Telodendria homeserver,
-.Xr telodendria 8 .
-Telodendria is designed to be extremely configurable. As such,
-it has a fairly extensive configuration file. The configuration
-file can be passed to the Telodendria binary with the
-.Sy -f
-option, and is typically located at
-.Pa /etc/telodendria.conf
-.sp
-.Nm
-uses JSON for its configuration file syntax, which should be
-familiar. Very early versions of
-.Nm
-used a  custom OpenBSD-style configuration file, but this was
-not as versatile or familiar as JSON.
+.Pp
+Telodendria is designed to be configurable. It is configured using
+JSON, which is intended to be submitted via the administrator API.
+This page documents Telodendria's configuration JSON format, which
+is used both in the administrator API, and on the disk in the
+database. The configuration file on the disk in the database is
+.Pa config.json ,
+though that file should not be edited directly. Use the API described
+in
+.Xr telodendria-admin 7
+instead.
 .Sh DIRECTIVES
 Here are the top-level directives:
 .Bl -tag -width Ds
-.It Ic listen Ar port
-The port to listen on. Telodendria will bind to all interfaces, but it
-is recommended to configure your firewall so that it only listens on
-localhost, and then configure a reverse proxy such as
-.Xr relayd 8
-in front of it, because Telodendria does not implement TLS. Note that
-Telodendria doesn't provide multiple ports for the various services it
-offers. ALl APIs are made available over the same port, so care should
-be taken in
-.Xr relayd.conf 5
-to ensure that only the public Matrix API paths are made available over
-the internet.
+.It Ic listen Ar listenArr
+An array of listener description objects. Telodendria supports
+listening on multiple ports, and each port is configured
+independently of the others. A listener description object looks
+like this:
+.Bl -tag -width Ds
+.It Ic port Ar port
+The port to listen on. Telodendria will bind to all interfaces, so it
+is recommended to configure your firewall so you can control what is
+allowed to access the Telodendria ports. Note that
+Telodendria offers all APIs over each port; there is no way to
+control which APIs are available over which ports, although all
+APIs should be safe against attacks, so this should not be a
+major concern.
+.Pp
 .Ar port
-should be a decimal port number. This directive is entirely optional. If
-it is omitted, then Telodendria will listen on port 8008 by default.
+should be a decimal port number. This directive is required. Common
+port numbers are 8008 for non-TLS, and 8448 for TLS.
+.It Ic tls Ar tlsObj|null|false
+Telodendria can be compiled with TLS support. If it is, then a
+particular listener can be set to use TLS for connections. If
+.Ic tls
+is not
+.Ar null
+or
+.Ar false ,
+then it can be an object with the following directives:
+.Bl -tag -width Ds
+.It Ic cert Ar file
+A certificate file in the format native to the platform's TLS
+library. This can be an absolute path, otherwise it is relative
+to the data directory.
+.It Ic key Ar file
+A key file in the format native to the platform's TLS library.
+It follows the same rules as the certificate file.
+.El
+.El
 .It Ic serverName Ar name
 Configure the domain name of your homeserver. Note that Matrix servers
 cannot be migrated to other domains, so once this is set, it should never
@@ -91,15 +108,6 @@ specified, then the value of
 .Ic uid
 is copied.
 .El
-.It Ic dataDir Ar directory
-The data directory into which Telodendria will write all user and event
-information. Telodendria doesn't use a database like other Matrix homeserver
-implementations; it uses a flat-file directory structure, similar to how an
-SMTP server uses Maildirs to deliver email. This directive is required.
-.Pp
-Telodendria will
-.Xr chroot 2
-into this directory as soon as possible for security reasons. If the
 .Ic log
 directive is configured to write to a file, the log file will be written
 in the data directory.
@@ -122,7 +130,7 @@ everyone would run their own homeserver, so no public registration would ever
 be required. Unfortunately, not everyone has the means to run their own homeserver,
 especially because of the fact that public IPv4 addresses are becoming increasingly
 harder to come by. If you would like to provide a service to those that are unable
-to run their own homeserver, you can aset this to
+to run their own homeserver, you can set this to
 .Ar true ,
 which will allow anyone to create an account. Telodendria should be capable of handling
 a large amount of users without difficulty or security issues. This directive is
@@ -137,8 +145,7 @@ The lot output destination. If set to
 .Ar file ,
 Telodendria will log to
 .Pa telodendria.log
-inside the
-.Ic dataDir .
+inside the data directory.
 .It Ic level Ar error|warning|notice|message|debug
 The level of messages to log at. Each level shows all the levels above it. For
 example, setting the level to
@@ -178,7 +185,7 @@ machine running Telodendria, so you may just have to play around with different
 values here to see which gives the best performance.
 .It Ic maxConnections Ar count
 The maximum number of simultanious connections to allow to the daemon. This option
-prevents the daemon from allocating large amounts of memory in the even that it
+prevents the daemon from allocating large amounts of memory in the event that it
 undergoes a denial of service attack. It typically does not need to be adjusted.
 .It Ic maxCache Ar bytes
 The maximum size of the cache. Telodendria relies heavily on caching to speed
@@ -190,20 +197,22 @@ minimal memory available.
 .El
 .Sh FILES
 .Bl -tag -width Ds
-.It Pa /etc/telodendria.conf
-The default
-.Xr telodendria 8
-configuration file.
+.It Pa config.json
+The configuration file stored on the filesystem in the data
+directory. It is not recommended to edit this directly.
 .It Pa /var/telodendria
 The recommended data directory.
 .El
 .Sh EXAMPLES
-Please consult the default
-.Nm
-that ships with Telodendria for a complete example. If you installed Telodendria
-as a package, then the example should be located at the default location. If you
-are building from source, you can find the default config in the
+.Pp
+A number of example configuration files are shipped with
+Telodendria's source code. They can be found in the
 .Pa contrib/
-directory.
+directory if you are viewing the source code directly. Otherwise,
+if you installed Telodendria as a package, it is possible that the
+example configurations were placed in the default locations for
+such files on your operating system.
 .Sh SEE ALSO
+.Xr telodendria-setup 7 ,
+.Xr telodendria-admin 7
 .Xr telodendria 8
