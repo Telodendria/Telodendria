@@ -195,7 +195,7 @@ HttpRouterRoute(HttpRouter * router, char *path, void *args, void **ret)
     RouteNode *node;
     char *pathPart;
     char *tmp;
-    HttpRouteFunc *exec;
+    HttpRouteFunc *exec = NULL;
     Array *matches;
     size_t i;
     int retval;

@@ -627,7 +627,10 @@ finish:
          * Change back into starting directory so initial chdir()
          * call works.
          */
-        chdir(startDir);
+        if (chdir(startDir) != 0)
+        {
+            /* TODO: Seems problematic, what do we do? */
+        }
         goto start;
     }
 

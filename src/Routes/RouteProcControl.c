@@ -75,6 +75,7 @@ ROUTE_IMPL(RouteProcControl, path, argp)
                 response = MatrixErrorCreate(M_UNRECOGNIZED);
                 goto finish;
             }
+            break;
         case HTTP_GET:
             if (strcmp(op, "stats") == 0)
             {
