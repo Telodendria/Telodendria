@@ -37,6 +37,15 @@
 #define HtmlBeginStyle(stream) StreamPuts(stream, "<style>")
 #define HtmlEndStyle(stream) StreamPuts(stream, "</style>")
 
+#define HtmlBeginForm(stream, id) StreamPrintf(stream, \
+        "<div class=\"form\">" \
+        "<form id=\"%s\">", id);
+
+#define HtmlEndForm(stream) StreamPuts(stream, \
+        "</form>" \
+        "<p id=\"error-msg\"></p>" \
+        "</div>");
+
 extern void
  HtmlBegin(Stream *, char *);
 

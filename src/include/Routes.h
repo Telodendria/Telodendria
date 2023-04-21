@@ -68,6 +68,7 @@ ROUTE(RouteRequestToken);
 ROUTE(RouteUiaFallback);
 ROUTE(RouteStaticDefault);
 ROUTE(RouteStaticLogin);
+ROUTE(RouteStaticResources);
 
 ROUTE(RouteProcControl);
 ROUTE(RouteConfig);

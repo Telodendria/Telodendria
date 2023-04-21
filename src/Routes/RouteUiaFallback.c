@@ -50,17 +50,43 @@ ROUTE_IMPL(RouteUiaFallback, path, argp)
     HttpSendHeaders(args->context);
     HtmlBegin(stream, "Authentication");
 
-    if (strcmp(authType, "m.login.dummy") == 0)
+    if (strcmp(authType, "m.login.password") == 0)
     {
+        HtmlBeginForm(stream, "auth-form");
+        StreamPuts(stream,
+                   "<label for=\"user\">Username:</label>"
+                   "<input type=\"text\" id=\"user\">"
+                   "<label for=\"password\">Password:</label>"
+                   "<input type=\"password\" id=\"password\">"
+                   "<br>"
+                   "<input type=\"submit\" value=\"Authenticate\">");
+        HtmlEndForm(stream);
+        HtmlBeginJs(stream);
         /* TODO */
-    }
-    else if (strcmp(authType, "m.login.password") == 0)
-    {
-        /* TODO */
+        StreamPuts(stream,
+                   "function buildRequest() {"
+                   "  setFormError('Not implemented yet.');"
+                   "  return false;"
+                   "}");
+        HtmlEndJs(stream);
     }
     else if (strcmp(authType, "m.login.registration_token") == 0)
     {
+        HtmlBeginForm(stream, "auth-form");
+        StreamPuts(stream,
+                   "<label for=\"token\">Registration Token:</label>"
+                   "<input type=\"text\" id=\"token\">"
+                   "<br>"
+                   "<input type=\"submit\" value=\"Authenticate\">");
+        HtmlEndForm(stream);
+        HtmlBeginJs(stream);
         /* TODO */
+        StreamPuts(stream,
+                   "function buildRequest() {"
+                   "  setFormError('Not implemented yet.');"
+                   "  return false;"
+                   "}");
+        HtmlEndJs(stream);
     }
     /*
      * TODO: implement m.login.recaptcha, m.login.sso,
@@ -71,9 +97,36 @@ ROUTE_IMPL(RouteUiaFallback, path, argp)
         HttpResponseStatus(args->context, HTTP_NOT_FOUND);
         StreamPrintf(stream,
                "<p>Unknown auth type: <code>%s</code></p>", authType);
+        goto finish;
     }
 
-    HtmlEnd(stream);
+    HtmlBeginJs(stream);
+    StreamPuts(stream,
+               "function processResponse(xhr) {"
+               "  if (xhr.status == 200) {"
+               "    if (window.onAuthDone) {"
+               "      window.onAuthDone();"
+        "    } else if (window.opener && window.opener.postMessage) {"
+               "      window.opener.postMessage('authDone', '*');"
+               "    } else {"
+               "      setFormError('Client error.');"
+               "    }"
+               "  } else {"
+               "    let r = JSON.parse(xhr.responseText);"
+               "    setFormError(`${r.errcode}: ${r.error}`);"
+               "  }"
+               "}");
 
+    StreamPuts(stream,
+               "onFormSubmit('auth-form', (frm) => {"
+               "  let request = buildRequest();"
+               "  if (request) {"
+               "    jsonRequest('POST', window.location.pathname, request, processResponse);"
+               "  }"
+               "});");
+    HtmlEndJs(stream);
+
+finish:
+    HtmlEnd(stream);
     return NULL;
 }

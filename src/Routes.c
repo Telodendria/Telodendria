@@ -46,6 +46,7 @@ RouterBuild(void)
     R("/_matrix/client/versions", RouteVersions);
 
     R("/_matrix/static", RouteStaticDefault);
+    R("/_matrix/static/telodendria\\.(js|css)", RouteStaticResources);
     R("/_matrix/static/client/login", RouteStaticLogin);
     R("/_matrix/client/v3/auth/(.*)/fallback/web", RouteUiaFallback);
 
