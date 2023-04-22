@@ -23,6 +23,10 @@
  */
 #include <Routes.h>
 #include <Html.h>
+#include <Json.h>
+#include <Config.h>
+#include <Uia.h>
+#include <Str.h>
 
 ROUTE_IMPL(RouteUiaFallback, path, argp)
 {
@@ -37,6 +41,60 @@ ROUTE_IMPL(RouteUiaFallback, path, argp)
         /* This should never happen */
         HttpResponseStatus(args->context, HTTP_INTERNAL_SERVER_ERROR);
         return MatrixErrorCreate(M_UNKNOWN);
+    }
+
+    if (HttpRequestMethodGet(args->context) == HTTP_POST)
+    {
+        HashMap *request;
+        HashMap *response;
+        int uiaResult;
+        Config *config;
+        Array *flows;
+
+        config = ConfigLock(args->matrixArgs->db);
+        if (!config)
+        {
+            HttpResponseStatus(args->context, HTTP_INTERNAL_SERVER_ERROR);
+            return MatrixErrorCreate(M_UNKNOWN);
+        }
+
+        request = JsonDecode(HttpServerStream(args->context));
+        if (!request)
+        {
+            ConfigUnlock(config);
+            HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
+            return MatrixErrorCreate(M_NOT_JSON);
+        }
+
+        Log(LOG_DEBUG, "Building flows...");
+        flows = ArrayCreate();
+        ArrayAdd(flows, UiaStageBuild(authType, NULL));
+        Log(LOG_DEBUG, "about to UiaComplete()...");
+        uiaResult = UiaComplete(flows, args->context,
+            args->matrixArgs->db, request, &response, config);
+        Log(LOG_DEBUG, "Freeing flows...");
+        UiaFlowsFree(flows);
+
+        Log(LOG_DEBUG, "Completed UIA.");
+
+        if (uiaResult < 0)
+        {
+            HttpResponseStatus(args->context, HTTP_INTERNAL_SERVER_ERROR);
+            response = MatrixErrorCreate(M_UNKNOWN);
+        }
+        else if (uiaResult)
+        {
+            response = HashMapCreate();
+        }
+
+        JsonFree(request);
+        ConfigUnlock(config);
+        return response;
+    }
+    else if (HttpRequestMethodGet(args->context) != HTTP_GET)
+    {
+        HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
+        return MatrixErrorCreate(M_UNRECOGNIZED);
     }
 
     sessionId = HashMapGet(requestParams, "session");
@@ -75,17 +133,26 @@ ROUTE_IMPL(RouteUiaFallback, path, argp)
         HtmlBeginForm(stream, "auth-form");
         StreamPuts(stream,
                    "<label for=\"token\">Registration Token:</label>"
-                   "<input type=\"text\" id=\"token\">"
+                   "<input type=\"password\" id=\"token\">"
                    "<br>"
                    "<input type=\"submit\" value=\"Authenticate\">");
         HtmlEndForm(stream);
         HtmlBeginJs(stream);
-        /* TODO */
-        StreamPuts(stream,
+        StreamPrintf(stream,
                    "function buildRequest() {"
-                   "  setFormError('Not implemented yet.');"
-                   "  return false;"
-                   "}");
+                   "  let token = document.getElementById('token').value;"
+                   "  if (!token) { "
+                   "    setFormError('Please specify a registration token.');"
+                   "    return false;"
+                   "  }"
+                   "  return {"
+                   "    auth: {"
+                   "      type: '%s',"
+                   "      session: '%s',"
+                   "      token: token"
+                   "    }"
+                   "  };"
+                   "}", authType, sessionId);
         HtmlEndJs(stream);
     }
     /*
@@ -112,6 +179,7 @@ ROUTE_IMPL(RouteUiaFallback, path, argp)
                "      setFormError('Client error.');"
                "    }"
                "  } else {"
+               "    console.log(xhr.responseText);"
                "    let r = JSON.parse(xhr.responseText);"
                "    setFormError(`${r.errcode}: ${r.error}`);"
                "  }"
