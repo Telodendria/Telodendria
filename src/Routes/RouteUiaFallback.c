@@ -50,6 +50,7 @@ ROUTE_IMPL(RouteUiaFallback, path, argp)
         int uiaResult;
         Config *config;
         Array *flows;
+        Array *flow;
 
         config = ConfigLock(args->matrixArgs->db);
         if (!config)
@@ -67,8 +68,10 @@ ROUTE_IMPL(RouteUiaFallback, path, argp)
         }
 
         Log(LOG_DEBUG, "Building flows...");
+        flow = ArrayCreate();
         flows = ArrayCreate();
-        ArrayAdd(flows, UiaStageBuild(authType, NULL));
+        ArrayAdd(flow, UiaStageBuild(authType, NULL));
+        ArrayAdd(flows, flow);
         Log(LOG_DEBUG, "about to UiaComplete()...");
         uiaResult = UiaComplete(flows, args->context,
             args->matrixArgs->db, request, &response, config);
