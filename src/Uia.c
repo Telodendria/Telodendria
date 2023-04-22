@@ -493,6 +493,8 @@ UiaCleanup(MatrixHttpHandlerArgs * args)
 
         unsigned long lastAccess;
 
+        Log(LOG_DEBUG, "Looking at session %s", session);
+
         if (!ref)
         {
             Log(LOG_ERR, "Unable to lock uia %s for inspection.",
@@ -502,16 +504,15 @@ UiaCleanup(MatrixHttpHandlerArgs * args)
 
         lastAccess = JsonValueAsInteger(HashMapGet(DbJson(ref), "last_access"));
 
+        DbUnlock(args->db, ref);
+
         /* If last access was greater than 15 minutes ago, remove this
          * session */
         if (UtilServerTs() - lastAccess > 1000 * 60 * 15)
         {
-            DbUnlock(args->db, ref);
             DbDelete(args->db, 2, "user_interactive", session);
             Log(LOG_DEBUG, "Deleted session %s", session);
         }
-
-        DbUnlock(args->db, ref);
     }
 
     DbListFree(sessions);
