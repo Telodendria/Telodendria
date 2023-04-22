@@ -67,18 +67,13 @@ ROUTE_IMPL(RouteUiaFallback, path, argp)
             return MatrixErrorCreate(M_NOT_JSON);
         }
 
-        Log(LOG_DEBUG, "Building flows...");
         flow = ArrayCreate();
         flows = ArrayCreate();
         ArrayAdd(flow, UiaStageBuild(authType, NULL));
         ArrayAdd(flows, flow);
-        Log(LOG_DEBUG, "about to UiaComplete()...");
         uiaResult = UiaComplete(flows, args->context,
             args->matrixArgs->db, request, &response, config);
-        Log(LOG_DEBUG, "Freeing flows...");
         UiaFlowsFree(flows);
-
-        Log(LOG_DEBUG, "Completed UIA.");
 
         if (uiaResult < 0)
         {
@@ -123,12 +118,26 @@ ROUTE_IMPL(RouteUiaFallback, path, argp)
                    "<input type=\"submit\" value=\"Authenticate\">");
         HtmlEndForm(stream);
         HtmlBeginJs(stream);
-        /* TODO */
-        StreamPuts(stream,
+        StreamPrintf(stream,
                    "function buildRequest() {"
-                   "  setFormError('Not implemented yet.');"
-                   "  return false;"
-                   "}");
+                   "  let user = document.getElementById('user').value;"
+                   "  let pass = document.getElementById('password').value;"
+                   "  if (!user || !pass) {"
+                   "    setFormError('Please specify a username and password.');"
+                   "    return false;"
+                   "  }"
+                   "  return {"
+                   "    auth: {"
+                   "      type: '%s',"
+                   "      identifier: {"
+                   "        type: 'm.id.user',"
+                   "        user: user"
+                   "      },"
+                   "      password: pass,"
+                   "      session: '%s'"
+                   "    }"
+                   "  };"
+                   "}", authType, sessionId);
         HtmlEndJs(stream);
     }
     else if (strcmp(authType, "m.login.registration_token") == 0)
@@ -171,9 +180,11 @@ ROUTE_IMPL(RouteUiaFallback, path, argp)
     }
 
     HtmlBeginJs(stream);
-    StreamPuts(stream,
+    StreamPrintf(stream,
                "function processResponse(xhr) {"
-               "  if (xhr.status == 200) {"
+               "  let r = JSON.parse(xhr.responseText);"
+               "  console.log(r);"
+               "  if (xhr.status == 200 || r.completed.includes('%s')) {"
                "    if (window.onAuthDone) {"
                "      window.onAuthDone();"
         "    } else if (window.opener && window.opener.postMessage) {"
@@ -181,12 +192,12 @@ ROUTE_IMPL(RouteUiaFallback, path, argp)
                "    } else {"
                "      setFormError('Client error.');"
                "    }"
+               "  } else if (r.session != '%s') {"
+               "    setFormError('Invalid session.');"
                "  } else {"
-               "    console.log(xhr.responseText);"
-               "    let r = JSON.parse(xhr.responseText);"
-               "    setFormError(`${r.errcode}: ${r.error}`);"
+               "    setFormError('Invalid credentials.');"
                "  }"
-               "}");
+               "}", authType, sessionId);
 
     StreamPuts(stream,
                "onFormSubmit('auth-form', (frm) => {"

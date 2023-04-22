@@ -33,3 +33,4 @@ fi
 
 export PATH="$(pwd)/tools/bin:$(pwd)/build/tools:$PATH"
 export MANPATH="$(pwd)/man:$MANPATH"
+export MALLOC_OPTIONS="CFGJS"
