@@ -805,7 +805,7 @@ DbUnlock(Db * db, DbRef * ref)
     {
         pthread_mutex_unlock(&db->lock);
         Log(LOG_ERR, "Failed to truncate file on disk.");
-        Log(LOG_ERR, "Error: %s", strerror(errno));
+        Log(LOG_ERR, "Error on fd %d: %s", ref->fd, strerror(errno));
         return 0;
     }
 

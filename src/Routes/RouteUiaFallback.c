@@ -39,6 +39,7 @@ ROUTE_IMPL(RouteUiaFallback, path, argp)
     if (!authType)
     {
         /* This should never happen */
+        Log(LOG_ERR, "Programmer error in RouteUiaFallback()!");
         HttpResponseStatus(args->context, HTTP_INTERNAL_SERVER_ERROR);
         return MatrixErrorCreate(M_UNKNOWN);
     }
@@ -55,6 +56,7 @@ ROUTE_IMPL(RouteUiaFallback, path, argp)
         config = ConfigLock(args->matrixArgs->db);
         if (!config)
         {
+            Log(LOG_ERR, "UIA fallback failed to lock configuration.");
             HttpResponseStatus(args->context, HTTP_INTERNAL_SERVER_ERROR);
             return MatrixErrorCreate(M_UNKNOWN);
         }

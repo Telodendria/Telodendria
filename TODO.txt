@@ -82,7 +82,7 @@ Milestone: v0.3.0
     [ ] Refactor dev pages so function description and
         return value are in the same location.
 
-[ ] Debug memory leaks with caching
+[x] Debug memory leaks with caching
 [ ] Debug OpenSSL
 
 [~] Client-Server API

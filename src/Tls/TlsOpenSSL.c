@@ -226,7 +226,6 @@ TlsRead(void *cookie, void *buf, size_t nBytes)
 
     if (ret <= 0)
     {
-        ret = -1;
         switch (SSL_get_error(ssl->ssl, ret))
         {
             case SSL_ERROR_WANT_READ:
@@ -243,6 +242,7 @@ TlsRead(void *cookie, void *buf, size_t nBytes)
                 errno = EIO;
                 break;
         }
+        ret = -1;
     }
 
     return ret;
@@ -256,7 +256,6 @@ TlsWrite(void *cookie, void *buf, size_t nBytes)
 
     if (ret <= 0)
     {
-        ret = -1;
         switch (SSL_get_error(ssl->ssl, ret))
         {
             case SSL_ERROR_WANT_READ:
@@ -273,6 +272,7 @@ TlsWrite(void *cookie, void *buf, size_t nBytes)
                 errno = EIO;
                 break;
         }
+        ret = -1;
     }
 
     return ret;
