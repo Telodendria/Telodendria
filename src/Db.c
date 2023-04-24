@@ -75,7 +75,6 @@ struct Db
 struct DbRef
 {
     HashMap *json;
-    pthread_mutex_t lock;
 
     unsigned long ts;
     size_t size;
@@ -290,16 +289,7 @@ DbCacheEvict(Db * db)
     {
         char *hash;
 
-        if (pthread_mutex_trylock(&ref->lock) != 0)
-        {
-            /* This ref is locked by another thread, don't evict it. */
-            ref = ref->next;
-            continue;
-        }
-
         JsonFree(ref->json);
-        pthread_mutex_unlock(&ref->lock);
-        pthread_mutex_destroy(&ref->lock);
 
         hash = DbHashKey(ref->name);
         HashMapDelete(db->cache, hash);
@@ -338,6 +328,7 @@ Db *
 DbOpen(char *dir, size_t cache)
 {
     Db *db;
+    pthread_mutexattr_t attr;
 
     if (!dir)
     {
@@ -353,7 +344,10 @@ DbOpen(char *dir, size_t cache)
     db->dir = dir;
     db->maxCache = cache;
 
-    pthread_mutex_init(&db->lock, NULL);
+    pthread_mutexattr_init(&attr);
+    pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
+    pthread_mutex_init(&db->lock, &attr);
+    pthread_mutexattr_destroy(&attr);
 
     db->mostRecent = NULL;
     db->leastRecent = NULL;
@@ -383,6 +377,8 @@ DbMaxCacheSet(Db * db, size_t cache)
         return;
     }
 
+    pthread_mutex_lock(&db->lock);
+
     db->maxCache = cache;
     if (db->maxCache && !db->cache)
     {
@@ -391,6 +387,8 @@ DbMaxCacheSet(Db * db, size_t cache)
     }
 
     DbCacheEvict(db);
+
+    pthread_mutex_unlock(&db->lock);
 }
 
 void
@@ -401,10 +399,13 @@ DbClose(Db * db)
         return;
     }
 
+    pthread_mutex_lock(&db->lock);
+
     DbMaxCacheSet(db, 0);
     DbCacheEvict(db);
     HashMapFree(db->cache);
 
+    pthread_mutex_unlock(&db->lock);
     pthread_mutex_destroy(&db->lock);
 
     Free(db);
@@ -441,8 +442,6 @@ DbLockFromArr(Db * db, Array * args)
     {
         if (ref)
         {
-            pthread_mutex_lock(&ref->lock);
-
             HashMapDelete(db->cache, hash);
             JsonFree(ref->json);
             StringArrayFree(ref->name);
@@ -472,8 +471,6 @@ DbLockFromArr(Db * db, Array * args)
                 db->leastRecent = db->mostRecent;
             }
 
-            pthread_mutex_unlock(&ref->lock);
-            pthread_mutex_destroy(&ref->lock);
             Free(ref);
         }
         ref = NULL;
@@ -499,8 +496,6 @@ DbLockFromArr(Db * db, Array * args)
     {
         unsigned long diskTs = UtilLastModified(file);
 
-        pthread_mutex_lock(&ref->lock);
-
         ref->fd = fd;
         ref->stream = stream;
 
@@ -511,7 +506,6 @@ DbLockFromArr(Db * db, Array * args)
 
             if (!json)
             {
-                pthread_mutex_unlock(&ref->lock);
                 StreamClose(ref->stream);
                 ref = NULL;
                 goto finish;
@@ -585,9 +579,6 @@ DbLockFromArr(Db * db, Array * args)
         ref->fd = fd;
         ref->stream = stream;
 
-        pthread_mutex_init(&ref->lock, NULL);
-        pthread_mutex_lock(&ref->lock);
-
         name = ArrayCreate();
         for (i = 0; i < ArraySize(args); i++)
         {
@@ -622,7 +613,10 @@ DbLockFromArr(Db * db, Array * args)
     }
 
 finish:
-    pthread_mutex_unlock(&db->lock);
+    if (!ref)
+    {
+        pthread_mutex_unlock(&db->lock);
+    }
 
     Free(file);
     Free(hash);
@@ -654,12 +648,15 @@ DbCreate(Db * db, size_t nArgs,...)
         return NULL;
     }
 
+    pthread_mutex_lock(&db->lock);
+
     file = DbFileName(db, args);
 
     if (UtilLastModified(file))
     {
         Free(file);
         ArrayFree(args);
+        pthread_mutex_unlock(&db->lock);
         return NULL;
     }
 
@@ -669,6 +666,7 @@ DbCreate(Db * db, size_t nArgs,...)
         Free(file);
         ArrayFree(args);
         Free(dir);
+        pthread_mutex_unlock(&db->lock);
         return NULL;
     }
 
@@ -679,11 +677,15 @@ DbCreate(Db * db, size_t nArgs,...)
     if (!fp)
     {
         ArrayFree(args);
+        pthread_mutex_unlock(&db->lock);
         return NULL;
     }
 
     StreamPuts(fp, "{}");
     StreamClose(fp);
+
+    /* DbLockFromArr() will lock again for us */
+    pthread_mutex_unlock(&db->lock);
 
     ret = DbLockFromArr(db, args);
 
@@ -719,8 +721,6 @@ DbDelete(Db * db, size_t nArgs,...)
     ref = HashMapGet(db->cache, hash);
     if (ref)
     {
-        pthread_mutex_lock(&ref->lock);
-
         HashMapDelete(db->cache, hash);
         JsonFree(ref->json);
         StringArrayFree(ref->name);
@@ -750,8 +750,6 @@ DbDelete(Db * db, size_t nArgs,...)
             db->leastRecent = db->mostRecent;
         }
 
-        pthread_mutex_unlock(&ref->lock);
-        pthread_mutex_destroy(&ref->lock);
         Free(ref);
     }
 
@@ -802,8 +800,6 @@ DbUnlock(Db * db, DbRef * ref)
         return 0;
     }
 
-    pthread_mutex_lock(&db->lock);
-
     lseek(ref->fd, 0L, SEEK_SET);
     if (ftruncate(ref->fd, 0) < 0)
     {
@@ -841,14 +837,10 @@ DbUnlock(Db * db, DbRef * ref)
         destroy = 1;
     }
 
-    pthread_mutex_unlock(&ref->lock);
-
     if (destroy)
     {
         JsonFree(ref->json);
         StringArrayFree(ref->name);
-
-        pthread_mutex_destroy(&ref->lock);
 
         Free(ref);
     }
@@ -874,11 +866,6 @@ DbExists(Db * db, size_t nArgs,...)
         return 0;
     }
 
-    /*
-     * Though it's not explicitly required, we lock the
-     * database before checking that an object exists to
-     * prevent any potential race conditions.
-     */
     pthread_mutex_lock(&db->lock);
 
     file = DbFileName(db, args);
@@ -917,12 +904,15 @@ DbList(Db * db, size_t nArgs,...)
     path = ArrayFromVarArgs(nArgs, ap);
     dir = DbDirName(db, path, 0);
 
+    pthread_mutex_lock(&db->lock);
+
     files = opendir(dir);
     if (!files)
     {
         ArrayFree(path);
         ArrayFree(result);
         Free(dir);
+        pthread_mutex_unlock(&db->lock);
         return NULL;
     }
     while ((file = readdir(files)))
@@ -944,6 +934,7 @@ DbList(Db * db, size_t nArgs,...)
 
     ArrayFree(path);
     Free(dir);
+    pthread_mutex_unlock(&db->lock);
 
     return result;
 }
