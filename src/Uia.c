@@ -493,8 +493,6 @@ UiaCleanup(MatrixHttpHandlerArgs * args)
 
         unsigned long lastAccess;
 
-        Log(LOG_DEBUG, "Looking at session %s", session);
-
         if (!ref)
         {
             Log(LOG_ERR, "Unable to lock uia %s for inspection.",

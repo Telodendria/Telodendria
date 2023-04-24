@@ -66,6 +66,7 @@ SignalHandler(int signal)
         case SIGUSR1:
             restart = 1;
             /* Fall through */
+        case SIGTERM:
         case SIGINT:
             if (!httpServers)
             {
@@ -536,6 +537,7 @@ start:
     }
 
     SIGACTION(SIGINT, &sigAction, NULL);
+    SIGACTION(SIGTERM, &sigAction, NULL);
     SIGACTION(SIGPIPE, &sigAction, NULL);
     SIGACTION(SIGUSR1, &sigAction, NULL);
 
