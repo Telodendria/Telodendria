@@ -82,6 +82,9 @@ Milestone: v0.3.0
     [ ] Refactor dev pages so function description and
         return value are in the same location.
 
+[ ] Debug memory leaks with caching
+[ ] Debug OpenSSL
+
 [~] Client-Server API
     [x] 4: Token-based user registration
         [x] Implement user-interactive auth flow
@@ -90,9 +93,9 @@ Milestone: v0.3.0
             flow
             - Ensure that registration tokens can be used even if
               registration is disabled.
-        [~] User-Interactive fallback
-            [~] Password
-            [~] Registration token
+        [x] User-Interactive fallback
+            [x] Password
+            [x] Registration token
     [~] 4: Account management
         [~] Deactivate
             [x] Make sure UserLogin() fails if user is deactivated.

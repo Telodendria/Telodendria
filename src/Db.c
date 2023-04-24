@@ -28,6 +28,7 @@
 #include <Util.h>
 #include <Str.h>
 #include <Stream.h>
+#include <Log.h>
 
 #include <sys/types.h>
 #include <dirent.h>
@@ -287,7 +288,7 @@ DbCacheEvict(Db * db)
 
     while (ref && db->cacheSize > db->maxCache)
     {
-        char *hash = DbHashKey(ref->name);
+        char *hash;
 
         if (pthread_mutex_trylock(&ref->lock) != 0)
         {
@@ -308,14 +309,22 @@ DbCacheEvict(Db * db)
 
         db->cacheSize -= ref->size;
 
-        ref->next->prev = ref->prev;
-        if (!ref->prev)
+        if (ref->next)
         {
-            db->leastRecent = ref->next;
+            ref->next->prev = ref->prev;
         }
         else
         {
+            db->mostRecent = ref->prev;
+        }
+
+        if (ref->prev)
+        {
             ref->prev->next = ref->next;
+        }
+        else
+        {
+            db->leastRecent = ref->next;
         }
 
         tmp = ref->next;
@@ -348,6 +357,7 @@ DbOpen(char *dir, size_t cache)
 
     db->mostRecent = NULL;
     db->leastRecent = NULL;
+    db->cacheSize = 0;
 
     if (db->maxCache)
     {
@@ -374,30 +384,28 @@ DbMaxCacheSet(Db * db, size_t cache)
     }
 
     db->maxCache = cache;
+    if (db->maxCache && !db->cache)
+    {
+        db->cache = HashMapCreate();
+        db->cacheSize = 0;
+    }
+
     DbCacheEvict(db);
 }
 
 void
 DbClose(Db * db)
 {
-    char *key;
-    DbRef *val;
-
     if (!db)
     {
         return;
     }
 
-    pthread_mutex_destroy(&db->lock);
-
-    while (HashMapIterate(db->cache, &key, (void **) &val))
-    {
-        JsonFree(val->json);
-        StringArrayFree(val->name);
-        pthread_mutex_destroy(&val->lock);
-        Free(val);
-    }
+    DbMaxCacheSet(db, 0);
+    DbCacheEvict(db);
     HashMapFree(db->cache);
+
+    pthread_mutex_destroy(&db->lock);
 
     Free(db);
 }
@@ -459,6 +467,11 @@ DbLockFromArr(Db * db, Array * args)
                 db->leastRecent = ref->next;
             }
 
+            if (!db->leastRecent)
+            {
+                db->leastRecent = db->mostRecent;
+            }
+
             pthread_mutex_unlock(&ref->lock);
             pthread_mutex_destroy(&ref->lock);
             Free(ref);
@@ -487,6 +500,9 @@ DbLockFromArr(Db * db, Array * args)
         unsigned long diskTs = UtilLastModified(file);
 
         pthread_mutex_lock(&ref->lock);
+
+        ref->fd = fd;
+        ref->stream = stream;
 
         if (diskTs > ref->ts)
         {
@@ -523,7 +539,19 @@ DbLockFromArr(Db * db, Array * args)
 
             ref->prev = db->mostRecent;
             ref->next = NULL;
+            if (db->mostRecent)
+            {
+                db->mostRecent->next = ref;
+            }
             db->mostRecent = ref;
+        }
+
+        /* If there is no least recent, this is the only
+         * thing in the cache, so it is also least recent.
+         */
+        if (!db->leastRecent)
+        {
+            db->leastRecent = ref;
         }
 
         /* The file on disk may be larger than what we have in memory,
@@ -567,7 +595,7 @@ DbLockFromArr(Db * db, Array * args)
         }
         ref->name = name;
 
-        if (db->maxCache)
+        if (db->cache)
         {
             ref->ts = UtilServerTs();
             ref->size = DbComputeSize(ref->json);
@@ -576,7 +604,16 @@ DbLockFromArr(Db * db, Array * args)
 
             ref->next = NULL;
             ref->prev = db->mostRecent;
+            if (db->mostRecent)
+            {
+                db->mostRecent->next = ref;
+            }
             db->mostRecent = ref;
+
+            if (!db->leastRecent)
+            {
+                db->leastRecent = ref;
+            }
 
             /* Adding this item to the cache may case it to grow too
              * large, requiring some items to be evicted */
@@ -708,6 +745,11 @@ DbDelete(Db * db, size_t nArgs,...)
             db->leastRecent = ref->next;
         }
 
+        if (!db->leastRecent)
+        {
+            db->leastRecent = db->mostRecent;
+        }
+
         pthread_mutex_unlock(&ref->lock);
         pthread_mutex_destroy(&ref->lock);
         Free(ref);
@@ -753,6 +795,8 @@ DbLock(Db * db, size_t nArgs,...)
 int
 DbUnlock(Db * db, DbRef * ref)
 {
+    int destroy;
+
     if (!db || !ref)
     {
         return 0;
@@ -764,31 +808,46 @@ DbUnlock(Db * db, DbRef * ref)
     if (ftruncate(ref->fd, 0) < 0)
     {
         pthread_mutex_unlock(&db->lock);
+        Log(LOG_ERR, "Failed to truncate file on disk.");
+        Log(LOG_ERR, "Error: %s", strerror(errno));
         return 0;
     }
 
     JsonEncode(ref->json, ref->stream, JSON_DEFAULT);
-
     StreamClose(ref->stream);
 
-    if (db->maxCache)
+    if (db->cache)
     {
-        db->cacheSize -= ref->size;
-        ref->size = DbComputeSize(ref->json);
-        db->cacheSize += ref->size;
+        char *key = DbHashKey(ref->name);
 
-        /* If this ref has grown significantly since we last computed
-         * its size, it may have filled the cache and require some
-         * items to be evicted. */
-        DbCacheEvict(db);
-        pthread_mutex_unlock(&ref->lock);
+        if (HashMapGet(db->cache, key))
+        {
+            db->cacheSize -= ref->size;
+            ref->size = DbComputeSize(ref->json);
+            db->cacheSize += ref->size;
+
+            /* If this ref has grown significantly since we last computed
+            * its size, it may have filled the cache and require some
+            * items to be evicted. */
+            DbCacheEvict(db);
+
+            destroy = 0;
+        } else {
+            destroy = 1;
+        }
+
+        Free(key);
+    } else {
+        destroy = 1;
     }
-    else
+
+    pthread_mutex_unlock(&ref->lock);
+
+    if (destroy)
     {
         JsonFree(ref->json);
         StringArrayFree(ref->name);
 
-        pthread_mutex_unlock(&ref->lock);
         pthread_mutex_destroy(&ref->lock);
 
         Free(ref);
@@ -913,3 +972,4 @@ DbJsonSet(DbRef * ref, HashMap * json)
     ref->json = JsonDuplicate(json);
     return 1;
 }
+
