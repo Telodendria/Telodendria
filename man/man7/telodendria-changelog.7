@@ -1,4 +1,4 @@
-.Dd $Mdocdate: March 22 2023 $
+.Dd $Mdocdate: April 24 2023 $
 .Dt TELODENDRIA-CHANGELOG 7
 .Os Telodendria Project
 .Sh NAME
@@ -45,9 +45,21 @@ Added support for the
 .Pa /_matrix/client/v3/account/whoami
 endpoint.
 .It
+Added support for the
+.Pa /_matrix/client/v3/account/password
+endpoint.
+.It
+Added support for the
+.Pa /_matrix/client/v3/profile/*
+endpoints.
+.It
 Added support for token-based user registration. Note that there is
 as of yet no admin-facing way to create these registration tokens,
 but the APIs are in place.
+.It
+Added web fallback pages for the supported user-interactive
+authentication mechanisms at
+.Pa /_matrix/client/v3/auth/*/fallback/web .
 .El
 .Pp
 New Features:
@@ -115,8 +127,34 @@ in development.
 .It
 Added TLS support to both the HTTP client and server. Currently,
 .Nm
-only supports LibreSSL, but other TLS libraries should be
+supports LibreSSL and OpenSSL, but other TLS libraries should be
 extremely easy to add support for.
+.It
+Added support for spinning up multiple HTTP servers. This is useful
+for having a TLS and non-TLS port, for example.
+.It
+Moved all program configuration to the data directory and added an
+administrator API endpoint to manage it. It is now no longer
+recommended to manually update the configuration file. Consult
+.Xr telodendria-admin 7
+and
+.Xr telodendria-config 7 .
+.It
+Added an administrator API endpoint for process control.
+.Nm
+can now be restarted or shut down via API endpoint.
+.It
+Added an administrator API endpoint for getting statistics about
+the running
+.Nm
+process.
+.It
+Added support for user privileges, a way to have fine-grained control
+over what users are allowed to do with the administrator API.
+Administrator APIs for setting and getting privileges is now
+supported, and registration tokens have privileges associated with
+them, so that users created with a token will have the specified
+privileges.
 .El
 .Pp
 Fixes and general improvements:
@@ -172,8 +210,41 @@ Fixed the build script to supply
 after the object files when linking. Apparently the order in
 which libraries are passed matters to some compilers.
 .It
+Added the response status of a request to the log output. This means
+that requests are logged after they have completed, not before they
+are started.
+.It
+Memory allocations, reallocations, and frees are no longer logged
+when the log level is set to debug in the configuration file. To
+enable the logging of all memory operations, pass the
+.Ic -v
+flag.
+.It
+Implemented a proper HTTP request router with POSIX regular
+expression support. Previously, a series of nested if-statements
+were used to route requests, but this approach quickly became
+very messy. While the HTTP request router incurs a small memory
+and runtime penalty, the code is now much more maintainable and
+easier to follow.
+.It
+Fixed some memory bugs in
+.Xr Db 3
+that were related to caching data. Caching should now work as
+expected.
+.It
+Fixed a major design flaw in
+.Xr Db 3
+that could cause deadlock when multiple threads request access to
+the same object. Database locking is now on a per-thread basis,
+instead of a per-reference basis.
+.It
+.Nm
+now shuts down cleanly in response to SIGTERM.
+.It
 Did some general refactoring to make the source code more
 readable and easier to maintain.
+.It
+Fixed a number of memory-related issues.
 .El
 .Sh v0.2.1
 .Pp
