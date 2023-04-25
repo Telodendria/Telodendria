@@ -32,9 +32,11 @@
 
 ROUTE_IMPL(RouteCapabilities, path, argp)
 {
-    RouteArgs *args = argp;
     HashMap *response;
     HashMap *capabilities;
+
+    (void) path;
+    (void) argp;
 
     response = HashMapCreate();
     capabilities = HashMapCreate();

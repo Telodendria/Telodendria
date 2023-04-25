@@ -535,7 +535,7 @@ HttpServerWorkerThread(void *args)
 
         requestPathLen = i;
         requestPath = Malloc(((requestPathLen + 1) * sizeof(char)));
-        strcpy(requestPath, pathPtr);
+        strncpy(requestPath, pathPtr, requestPathLen + 1);
 
         requestProtocol = &pathPtr[i + 1];
         line[lineLen - 2] = '\0';  /* Get rid of \r and \n */

@@ -101,7 +101,7 @@ StrDuplicate(const char *inStr)
         return NULL;
     }
 
-    strcpy(outStr, inStr);
+    strncpy(outStr, inStr, len + 1);
 
     return outStr;
 }

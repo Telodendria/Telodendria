@@ -523,7 +523,7 @@ JsonDecodeString(Stream * in)
 
                         /* Move the output of StrUtf8Encode() into our
                          * local buffer */
-                        strcpy(a, utf8Ptr);
+                        strncpy(a, utf8Ptr, sizeof(a));
                         Free(utf8Ptr);
                         break;
                     default:
@@ -1080,7 +1080,7 @@ JsonDecodeValue(JsonParserState * state)
             {
                 return NULL;
             }
-            strcpy(strValue, state->token);
+            strncpy(strValue, state->token, state->tokenLen + 1);
             value = JsonValueString(strValue);
             Free(strValue);
             break;
@@ -1127,7 +1127,7 @@ JsonDecodeObject(JsonParserState * state)
             {
                 goto error;
             }
-            strcpy(key, state->token);
+            strncpy(key, state->token, state->tokenLen + 1);
 
             JsonTokenSeek(state);
             if (!JsonExpect(state, TOKEN_COLON))

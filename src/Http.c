@@ -567,6 +567,7 @@ HttpParseHeaders(Stream * fp)
         char *headerPtr;
 
         ssize_t i;
+        size_t len;
 
         if (strcmp(line, "\r\n") == 0 || strcmp(line, "\n") == 0)
         {
@@ -584,13 +585,14 @@ HttpParseHeaders(Stream * fp)
             line[i] = tolower((unsigned char) line[i]);
         }
 
-        headerKey = Malloc((i + 1) * sizeof(char));
+        len = i + 1;
+        headerKey = Malloc(len * sizeof(char));
         if (!headerKey)
         {
             goto error;
         }
 
-        strcpy(headerKey, line);
+        strncpy(headerKey, line, len);
 
         headerPtr = line + i + 1;
 
@@ -608,14 +610,15 @@ HttpParseHeaders(Stream * fp)
             line[i] = '\0';
         }
 
-        headerValue = Malloc(strlen(headerPtr) + 1);
+        len = strlen(headerPtr) + 1;
+        headerValue = Malloc(len * sizeof(char));
         if (!headerValue)
         {
             Free(headerKey);
             goto error;
         }
 
-        strcpy(headerValue, headerPtr);
+        strncpy(headerValue, headerPtr, len);
 
         HashMapSet(headers, headerKey, headerValue);
         Free(headerKey);
