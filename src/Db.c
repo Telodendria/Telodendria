@@ -540,9 +540,8 @@ DbLockFromArr(Db * db, Array * args)
             db->mostRecent = ref;
         }
 
-        /* If there is no least recent, this is the only
-         * thing in the cache, so it is also least recent.
-         */
+        /* If there is no least recent, this is the only thing in the
+         * cache, so it is also least recent. */
         if (!db->leastRecent)
         {
             db->leastRecent = ref;
@@ -822,18 +821,22 @@ DbUnlock(Db * db, DbRef * ref)
             ref->size = DbComputeSize(ref->json);
             db->cacheSize += ref->size;
 
-            /* If this ref has grown significantly since we last computed
-            * its size, it may have filled the cache and require some
-            * items to be evicted. */
+            /* If this ref has grown significantly since we last
+             * computed its size, it may have filled the cache and
+             * require some items to be evicted. */
             DbCacheEvict(db);
 
             destroy = 0;
-        } else {
+        }
+        else
+        {
             destroy = 1;
         }
 
         Free(key);
-    } else {
+    }
+    else
+    {
         destroy = 1;
     }
 
@@ -963,4 +966,3 @@ DbJsonSet(DbRef * ref, HashMap * json)
     ref->json = JsonDuplicate(json);
     return 1;
 }
-

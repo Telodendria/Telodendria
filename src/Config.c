@@ -358,6 +358,7 @@ ConfigParse(HashMap * config)
     else
     {
         size_t len = strlen(tConfig->serverName) + 10;
+
         tConfig->baseUrl = Malloc(len);
         if (!tConfig->baseUrl)
         {

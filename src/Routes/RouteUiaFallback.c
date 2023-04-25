@@ -74,7 +74,7 @@ ROUTE_IMPL(RouteUiaFallback, path, argp)
         ArrayAdd(flow, UiaStageBuild(authType, NULL));
         ArrayAdd(flows, flow);
         uiaResult = UiaComplete(flows, args->context,
-            args->matrixArgs->db, request, &response, config);
+                    args->matrixArgs->db, request, &response, config);
         UiaFlowsFree(flows);
 
         if (uiaResult < 0)
@@ -121,25 +121,25 @@ ROUTE_IMPL(RouteUiaFallback, path, argp)
         HtmlEndForm(stream);
         HtmlBeginJs(stream);
         StreamPrintf(stream,
-                   "function buildRequest() {"
-                   "  let user = document.getElementById('user').value;"
-                   "  let pass = document.getElementById('password').value;"
-                   "  if (!user || !pass) {"
-                   "    setFormError('Please specify a username and password.');"
-                   "    return false;"
-                   "  }"
-                   "  return {"
-                   "    auth: {"
-                   "      type: '%s',"
-                   "      identifier: {"
-                   "        type: 'm.id.user',"
-                   "        user: user"
-                   "      },"
-                   "      password: pass,"
-                   "      session: '%s'"
-                   "    }"
-                   "  };"
-                   "}", authType, sessionId);
+                     "function buildRequest() {"
+                 "  let user = document.getElementById('user').value;"
+             "  let pass = document.getElementById('password').value;"
+                     "  if (!user || !pass) {"
+        "    setFormError('Please specify a username and password.');"
+                     "    return false;"
+                     "  }"
+                     "  return {"
+                     "    auth: {"
+                     "      type: '%s',"
+                     "      identifier: {"
+                     "        type: 'm.id.user',"
+                     "        user: user"
+                     "      },"
+                     "      password: pass,"
+                     "      session: '%s'"
+                     "    }"
+                     "  };"
+                     "}", authType, sessionId);
         HtmlEndJs(stream);
     }
     else if (strcmp(authType, "m.login.registration_token") == 0)
@@ -153,20 +153,20 @@ ROUTE_IMPL(RouteUiaFallback, path, argp)
         HtmlEndForm(stream);
         HtmlBeginJs(stream);
         StreamPrintf(stream,
-                   "function buildRequest() {"
-                   "  let token = document.getElementById('token').value;"
-                   "  if (!token) { "
-                   "    setFormError('Please specify a registration token.');"
-                   "    return false;"
-                   "  }"
-                   "  return {"
-                   "    auth: {"
-                   "      type: '%s',"
-                   "      session: '%s',"
-                   "      token: token"
-                   "    }"
-                   "  };"
-                   "}", authType, sessionId);
+                     "function buildRequest() {"
+               "  let token = document.getElementById('token').value;"
+                     "  if (!token) { "
+           "    setFormError('Please specify a registration token.');"
+                     "    return false;"
+                     "  }"
+                     "  return {"
+                     "    auth: {"
+                     "      type: '%s',"
+                     "      session: '%s',"
+                     "      token: token"
+                     "    }"
+                     "  };"
+                     "}", authType, sessionId);
         HtmlEndJs(stream);
     }
     /*
@@ -183,23 +183,23 @@ ROUTE_IMPL(RouteUiaFallback, path, argp)
 
     HtmlBeginJs(stream);
     StreamPrintf(stream,
-               "function processResponse(xhr) {"
-               "  let r = JSON.parse(xhr.responseText);"
-               "  console.log(r);"
-               "  if (xhr.status == 200 || r.completed.includes('%s')) {"
-               "    if (window.onAuthDone) {"
-               "      window.onAuthDone();"
+                 "function processResponse(xhr) {"
+                 "  let r = JSON.parse(xhr.responseText);"
+                 "  console.log(r);"
+            "  if (xhr.status == 200 || r.completed.includes('%s')) {"
+                 "    if (window.onAuthDone) {"
+                 "      window.onAuthDone();"
         "    } else if (window.opener && window.opener.postMessage) {"
-               "      window.opener.postMessage('authDone', '*');"
-               "    } else {"
-               "      setFormError('Client error.');"
-               "    }"
-               "  } else if (r.session != '%s') {"
-               "    setFormError('Invalid session.');"
-               "  } else {"
-               "    setFormError('Invalid credentials.');"
-               "  }"
-               "}", authType, sessionId);
+                 "      window.opener.postMessage('authDone', '*');"
+                 "    } else {"
+                 "      setFormError('Client error.');"
+                 "    }"
+                 "  } else if (r.session != '%s') {"
+                 "    setFormError('Invalid session.');"
+                 "  } else {"
+                 "    setFormError('Invalid credentials.');"
+                 "  }"
+                 "}", authType, sessionId);
 
     StreamPuts(stream,
                "onFormSubmit('auth-form', (frm) => {"

@@ -45,7 +45,7 @@ typedef struct RandState
 } RandState;
 
 static void
-RandSeed(RandState *state, UInt32 seed)
+RandSeed(RandState * state, UInt32 seed)
 {
     state->mt[0] = seed & 0xFFFFFFFF;
 
@@ -56,9 +56,9 @@ RandSeed(RandState *state, UInt32 seed)
 }
 
 static UInt32
-RandGenerate(RandState *state)
+RandGenerate(RandState * state)
 {
-    static const UInt32 mag[2] = { 0x0, 0x9908B0DF };
+    static const UInt32 mag[2] = {0x0, 0x9908B0DF};
 
     UInt32 result;
 

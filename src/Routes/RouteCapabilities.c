@@ -48,7 +48,8 @@ ROUTE_IMPL(RouteCapabilities, path, argp)
     JsonSet(capabilities, JsonValueBoolean(1), 2, "m.set_avatar_url", "enabled");
     JsonSet(capabilities, JsonValueBoolean(0), 2, "m.3pid_changes", "enabled");
 
-    /* TODO: When more room versions are implemented, add them to roomVersions */
+    /* TODO: When more room versions are implemented, add them to
+     * roomVersions */
     HashMapSet(roomVersions, "1", JsonValueString("unstable"));
 
     JsonSet(capabilities, JsonValueString("1"), 2, "m.room_versions", "default");
