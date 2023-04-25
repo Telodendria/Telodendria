@@ -81,7 +81,7 @@ HttpRequest(HttpRequestMethod method, int flags, unsigned short port, char *host
     }
     else
     {
-        sprintf(serv, "%hu", port);
+        snprintf(serv, sizeof(serv), "%hu", port);
     }
 
 

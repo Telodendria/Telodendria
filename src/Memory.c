@@ -451,7 +451,7 @@ void
 
             printFunc(pI - MEMORY_HEXDUMP_WIDTH, hexBuf, asciiBuf, args);
 
-            sprintf(hexBuf, "%02x ", pc[pI]);
+            snprintf(hexBuf, 4, "%02x ", pc[pI]);
             hI = 3;
 
             asciiBuf[0] = isprint(pc[pI]) ? pc[pI] : '.';
@@ -463,7 +463,7 @@ void
             asciiBuf[aI] = isprint(pc[pI]) ? pc[pI] : '.';
             aI++;
 
-            sprintf(hexBuf + hI, "%02x ", pc[pI]);
+            snprintf(hexBuf + hI, 4, "%02x ", pc[pI]);
             hI += 3;
         }
     }

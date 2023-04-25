@@ -357,14 +357,15 @@ ConfigParse(HashMap * config)
     }
     else
     {
-        tConfig->baseUrl = Malloc(strlen(tConfig->serverName) + 10);
+        size_t len = strlen(tConfig->serverName) + 10;
+        tConfig->baseUrl = Malloc(len);
         if (!tConfig->baseUrl)
         {
             tConfig->err = "Error allocating memory for default config value 'baseUrl'.";
             goto error;
         }
 
-        sprintf(tConfig->baseUrl, "https://%s", tConfig->serverName);
+        snprintf(tConfig->baseUrl, len, "https://%s", tConfig->serverName);
     }
 
     CONFIG_OPTIONAL_STRING(tConfig->identityServer, "identityServer", NULL);

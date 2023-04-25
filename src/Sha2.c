@@ -231,7 +231,7 @@ Sha256(char *str)
     /* Convert to string */
     for (i = 0; i < 32; i++)
     {
-        sprintf(outStr + (2 * i), "%02x", out[i]);
+        snprintf(outStr + (2 * i), 3, "%02x", out[i]);
     }
 
     return outStr;
