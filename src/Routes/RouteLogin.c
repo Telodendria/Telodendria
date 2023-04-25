@@ -308,5 +308,6 @@ ROUTE_IMPL(RouteLogin, path, argp)
     UserIdFree(userId);
     JsonFree(request);
     ConfigUnlock(config);
+
     return response;
 }

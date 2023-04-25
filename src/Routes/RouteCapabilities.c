@@ -21,60 +21,29 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-#ifndef TELODENDRIA_ROUTES_H
-#define TELODENDRIA_ROUTES_H
+#include <Routes.h>
 
 #include <string.h>
 
+#include <Memory.h>
+#include <Json.h>
 #include <HashMap.h>
-#include <Array.h>
-#include <HttpServer.h>
-#include <HttpRouter.h>
-#include <Matrix.h>
+#include <Str.h>
 
-#define MATRIX_PATH_EQUALS(pathPart, str) \
-	((pathPart != NULL) && (strcmp(pathPart, str) == 0))
-
-typedef struct RouteArgs
+ROUTE_IMPL(RouteCapabilities, path, argp)
 {
-    MatrixHttpHandlerArgs *matrixArgs;
-    HttpServerContext *context;
-} RouteArgs;
+    RouteArgs *args = argp;
+    HashMap *response;
+    HashMap *capabilities;
 
-HttpRouter *
- RouterBuild(void);
+    response = HashMapCreate();
+    capabilities = HashMapCreate();
 
-#define ROUTE(name) \
-	extern void * \
-	name(Array *, void *)
+    JsonSet(capabilities, JsonValueBoolean(1), 2, "m.change_password", "enabled");
+    JsonSet(capabilities, JsonValueBoolean(1), 2, "m.set_displayname", "enabled");
+    JsonSet(capabilities, JsonValueBoolean(1), 2, "m.set_avatar_url", "enabled");
+    JsonSet(capabilities, JsonValueBoolean(0), 2, "m.3pid_changes", "enabled");
 
-#define ROUTE_IMPL(name, matchesName, argsName) \
-	void * \
-	name(Array * matchesName, void * argsName)
-
-ROUTE(RouteVersions);
-ROUTE(RouteWellKnown);
-
-ROUTE(RouteCapabilities);
-ROUTE(RouteLogin);
-ROUTE(RouteLogout);
-ROUTE(RouteRegister);
-ROUTE(RouteRefresh);
-ROUTE(RouteWhoami);
-ROUTE(RouteChangePwd);
-ROUTE(RouteTokenValid);
-ROUTE(RouteUserProfile);
-ROUTE(RouteRequestToken);
-
-ROUTE(RouteUiaFallback);
-ROUTE(RouteStaticDefault);
-ROUTE(RouteStaticLogin);
-ROUTE(RouteStaticResources);
-
-ROUTE(RouteProcControl);
-ROUTE(RouteConfig);
-ROUTE(RoutePrivileges);
-
-#undef ROUTE
-
-#endif
+    HashMapSet(response, "capabilities", JsonValueObject(capabilities));
+    return response;
+}

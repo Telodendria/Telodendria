@@ -47,6 +47,10 @@ MatrixHttpHandler(HttpServerContext * context, void *argp)
 
     requestPath = HttpRequestPath(context);
 
+    Log(LOG_DEBUG, "%s %s",
+        HttpRequestMethodToString(HttpRequestMethodGet(context)),
+        requestPath);
+
     HttpResponseStatus(context, HTTP_OK);
     HttpResponseHeader(context, "Server", "Telodendria/" TELODENDRIA_VERSION);
 
@@ -93,10 +97,8 @@ MatrixHttpHandler(HttpServerContext * context, void *argp)
         HttpSendHeaders(context);
 
         stream = HttpServerStream(context);
-
         JsonEncode(response, stream, JSON_DEFAULT);
         JsonFree(response);
-
         StreamPrintf(stream, "\n");
     }
 
@@ -342,7 +344,7 @@ MatrixClientWellKnown(char *base, char *identity)
         HashMap *identityServer = HashMapCreate();
 
         HashMapSet(identityServer, "base_url", JsonValueString(identity));
-        HashMapSet(response, "m.identity_server", identityServer);
+        HashMapSet(response, "m.identity_server", JsonValueObject(identityServer));
     }
 
     return response;

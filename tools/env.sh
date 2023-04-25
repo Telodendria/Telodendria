@@ -33,4 +33,9 @@ fi
 
 export PATH="$(pwd)/tools/bin:$(pwd)/build/tools:$PATH"
 export MANPATH="$(pwd)/man:$MANPATH"
-export MALLOC_OPTIONS="CFGJS"
+
+if [ "$(uname)" = "OpenBSD" ]; then
+    # Other platforms use different MALLOC_OPTIONS
+    # flags.
+    export MALLOC_OPTIONS="CFGJSU"
+fi
