@@ -11,45 +11,6 @@ Key:
 Milestone: v0.3.0
 -----------------
 
-[x] Stream API
-    [x] Implementation
-    [x] Convert all code that deals with I/O
-    [!] Multi-output (proof of concept)
-    [!] Memory streams (proof of concept)
-    [x] TLS
-    [!] SOCKS
-    [x] Move/convert UtilStreamCopy()
-[x] HTTP Client API
-    [x] Document HttpParseHeaders()
-    [x] Test on other platforms
-[x] Option to pretty-print Json
-    [x] Document JsonEncode() and JsonEncodeValue()
-[x] Document Telodendria and Main
-
-[x] Simple command line tool to make matrix requests
-    [x] Built on HTTP client API
-    [x] http man page
-[x] Simple command line tool for working with JSON
-    [x] Pretty-print Json
-    [x] Query fields for use in shell scripts.
-    [x] Encode user-provided JSON strings
-    [x] json man page
-
-[x] Global log object
-    - So we don't have to pass LogConfig around everywhere
-    - Also allows debug and error logging in other APIs
-[x] Make 'listen' directive in config an array of objects
-    - Each object has port, threads, maxConnections
-    - If tls is given, it can be null, false, or an object with cert and key
-[x] Pass TLS certs and keys into HttpServer
-[x] Debug OpenSSL
-[x] Replace all usages of curl with http
-[x] Proper HTTP request router
-    [x] Support regex matching
-    [x] Replace current routing system
-    [x] Add route for requestToken endpoints
-    [x] Move TelodendriaBuildRouter() to Routes
-
 [~] Move configuration to database
     [x] Token permissions
     [x] Initial configuration
@@ -86,16 +47,6 @@ Milestone: v0.3.0
 [ ] Debug OpenSSL
 
 [~] Client-Server API
-    [x] 4: Token-based user registration
-        [x] Implement user-interactive auth flow
-        [x] Token validity endpoint
-        [x] Add m.login.registration_token to registration endpoint
-            flow
-            - Ensure that registration tokens can be used even if
-              registration is disabled.
-        [x] User-Interactive fallback
-            [x] Password
-            [x] Registration token
     [~] 4: Account management
         [~] Deactivate
             [x] Make sure UserLogin() fails if user is deactivated.
