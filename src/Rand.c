@@ -23,11 +23,79 @@
  */
 #include <Rand.h>
 
+#include <Int.h>
 #include <Util.h>
 
 #include <stdlib.h>
 #include <pthread.h>
 #include <unistd.h>
+
+#define RAND_STATE_VECTOR_LENGTH 624
+#define RAND_STATE_VECTOR_M 397
+
+#define RAND_UPPER_MASK 0x80000000
+#define RAND_LOWER_MASK 0x7FFFFFFF
+#define RAND_TEMPER_B 0x9D2C5680
+#define RAND_TEMPER_C 0xEFC60000
+
+typedef struct RandState
+{
+    UInt32 mt[RAND_STATE_VECTOR_LENGTH];
+    int index;
+} RandState;
+
+static void
+RandSeed(RandState *state, UInt32 seed)
+{
+    state->mt[0] = seed & 0xFFFFFFFF;
+
+    for (state->index = 1; state->index < RAND_STATE_VECTOR_LENGTH; state->index++)
+    {
+        state->mt[state->index] = (6069 * state->mt[state->index - 1]) & 0xFFFFFFFF;
+    }
+}
+
+static UInt32
+RandGenerate(RandState *state)
+{
+    static const UInt32 mag[2] = { 0x0, 0x9908B0DF };
+
+    UInt32 result;
+
+    if (state->index >= RAND_STATE_VECTOR_LENGTH || state->index < 0)
+    {
+        int kk;
+
+        if (state->index >= RAND_STATE_VECTOR_LENGTH + 1 || state->index < 0)
+        {
+            RandSeed(state, 4357);
+        }
+
+        for (kk = 0; kk < RAND_STATE_VECTOR_LENGTH - RAND_STATE_VECTOR_M; kk++)
+        {
+            result = (state->mt[kk] & RAND_UPPER_MASK) | (state->mt[kk + 1] & RAND_LOWER_MASK);
+            state->mt[kk] = state->mt[kk + RAND_STATE_VECTOR_M] ^ (result >> 1) ^ mag[result & 0x1];
+        }
+
+        for (; kk < RAND_STATE_VECTOR_LENGTH - 1; kk++)
+        {
+            result = (state->mt[kk] & RAND_UPPER_MASK) | (state->mt[kk + 1] & RAND_LOWER_MASK);
+            state->mt[kk] = state->mt[kk + (RAND_STATE_VECTOR_M - RAND_STATE_VECTOR_LENGTH)] ^ (result >> 1) ^ mag[result & 0x1];
+        }
+
+        result = (state->mt[RAND_STATE_VECTOR_LENGTH - 1] & RAND_UPPER_MASK) | (state->mt[0] & RAND_LOWER_MASK);
+        state->mt[RAND_STATE_VECTOR_LENGTH - 1] = state->mt[RAND_STATE_VECTOR_M - 1] ^ (result >> 1) ^ mag[result & 0x1];
+        state->index = 0;
+    }
+
+    result = state->mt[state->index++];
+    result ^= (result >> 11);
+    result ^= (result << 7) & RAND_TEMPER_B;
+    result ^= (result << 15) & RAND_TEMPER_C;
+    result ^= (result >> 18);
+
+    return result;
+}
 
 /* Generate random numbers using rejection sampling. The basic idea is
  * to "reroll" if a number happens to be outside the range. However
@@ -44,20 +112,23 @@
 void
 RandIntN(int *buf, size_t size, unsigned int max)
 {
-    static pthread_mutex_t seedLock = PTHREAD_MUTEX_INITIALIZER;
-    static unsigned int seed = 0;
-    int tmp;
+    static pthread_mutex_t stateLock = PTHREAD_MUTEX_INITIALIZER;
+    static UInt32 seed = 0;
+    static RandState state;
 
     /* Limit the range to banish all previously biased results */
     const int allowed = RAND_MAX - RAND_MAX % max;
 
+    int tmp;
     size_t i;
 
-    pthread_mutex_lock(&seedLock);
+    pthread_mutex_lock(&stateLock);
+
     if (!seed)
     {
         /* Generate a seed from the system time, PID, and TID */
         seed = UtilServerTs() ^ getpid() ^ (unsigned long) pthread_self();
+        RandSeed(&state, seed);
     }
 
     /* Generate {size} random numbers. */
@@ -66,13 +137,13 @@ RandIntN(int *buf, size_t size, unsigned int max)
         /* Most of the time, this will take about 1 loop */
         do
         {
-            tmp = rand_r(&seed);
-        } while (tmp >= allowed);
-        /* Since a generated number here is never in the biased range,
-         * we can now safely use modulo. */
+            tmp = RandGenerate(&state);
+        } while (tmp > allowed);
+
         buf[i] = tmp % max;
     }
-    pthread_mutex_unlock(&seedLock);
+
+    pthread_mutex_unlock(&stateLock);
 }
 
 /* Generate just 1 random number */

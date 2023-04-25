@@ -154,6 +154,10 @@ recipe_build() {
             fi
         fi
     done
+
+    if ! intcheck; then
+        exit 1
+    fi
 }
 
 recipe_run() {

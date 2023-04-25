@@ -23,41 +23,18 @@
  */
 #include <Sha2.h>
 #include <Memory.h>
+#include <Int.h>
 
 #include <stdio.h>
 #include <string.h>
 
 #include <limits.h>
 
-/*
- * POSIX says that LONG_BIT and WORD_BIT are defined, but some notable
- * non-conforming systems and compilers don't don't define it, or only
- * define it in circumstances I'm unwilling to comply with (such as
- * defining _GNU_SOURCE.
- *
- * So, unfortunately, although LONG_BIT and WORD_BIT are the most
- * elegant solutions, we're forced to do this so we can check LONG_MAX
- * and INT_MAX.
- */
-#define BIT64_MAX 9223372036854775807
-#define BIT32_MAX 2147483647
-#define BIT16_MAX 32767
-
-#if (defined(LONG_BIT) && LONG_BIT == 32) || (defined(LONG_MAX) && LONG_MAX == BIT32_MAX)
-typedef unsigned long uint32_t;
-
-#elif (defined(WORD_BIT) && WORD_BIT == 32) || (defined(INT_MAX) && INT_MAX == BIT32_MAX)
-typedef unsigned int uint32_t;
-
-#else
-#error Unable to find suitable integer type for uint32_t
-#endif
-
 #define GET_UINT32(x) \
-    (((uint32_t)(x)[0] << 24) | \
-     ((uint32_t)(x)[1] << 16) | \
-     ((uint32_t)(x)[2] << 8) | \
-     ((uint32_t)(x)[3]))
+    (((UInt32)(x)[0] << 24) | \
+     ((UInt32)(x)[1] << 16) | \
+     ((UInt32)(x)[2] << 8) | \
+     ((UInt32)(x)[3]))
 
 #define PUT_UINT32(dst, x) { \
     (dst)[0] = (x) >> 24; \
@@ -79,8 +56,8 @@ typedef unsigned int uint32_t;
 #define WW(i) (w[i] = w[i - 16] + S0(w[i - 15]) + w[i - 7] + S1(w[i - 2]))
 
 #define ROUND(a, b, c, d, e, f, g, h, k, w) { \
-    uint32_t tmp0 = h + T0(e) + CH(e, f, g) + k + w; \
-    uint32_t tmp1 = T1(a) + MAJ(a, b, c); \
+    UInt32 tmp0 = h + T0(e) + CH(e, f, g) + k + w; \
+    UInt32 tmp1 = T1(a) + MAJ(a, b, c); \
     h = tmp0 + tmp1; \
     d += tmp0; \
 }
@@ -88,7 +65,7 @@ typedef unsigned int uint32_t;
 typedef struct Sha256Context
 {
     size_t length;
-    uint32_t state[8];
+    UInt32 state[8];
     size_t bufLen;
     unsigned char buffer[64];
 } Sha256Context;
@@ -96,7 +73,7 @@ typedef struct Sha256Context
 static void
 Sha256Chunk(Sha256Context * context, unsigned char chunk[64])
 {
-    const uint32_t rk[64] = {
+    const UInt32 rk[64] = {
         0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1,
         0x923f82a4, 0xab1c5ed5, 0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3,
         0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174, 0xe49b69c1, 0xefbe4786,
@@ -110,8 +87,8 @@ Sha256Chunk(Sha256Context * context, unsigned char chunk[64])
         0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2
     };
 
-    uint32_t w[64];
-    uint32_t a, b, c, d, e, f, g, h;
+    UInt32 w[64];
+    UInt32 a, b, c, d, e, f, g, h;
 
     int i;
 
@@ -202,10 +179,10 @@ Sha256(char *str)
     char *outStr;
 
     unsigned char fill[64];
-    uint32_t fillLen;
+    UInt32 fillLen;
     unsigned char buf[8];
-    uint32_t hiLen;
-    uint32_t loLen;
+    UInt32 hiLen;
+    UInt32 loLen;
 
     if (!str)
     {
@@ -237,8 +214,8 @@ Sha256(char *str)
     fill[0] = 0x80;
 
     fillLen = (context.bufLen < 56) ? 56 - context.bufLen : 120 - context.bufLen;
-    hiLen = (uint32_t) (context.length >> 29);
-    loLen = (uint32_t) (context.length << 3);
+    hiLen = (UInt32) (context.length >> 29);
+    loLen = (UInt32) (context.length << 3);
 
     PUT_UINT32(&buf[0], hiLen);
     PUT_UINT32(&buf[4], loLen);
