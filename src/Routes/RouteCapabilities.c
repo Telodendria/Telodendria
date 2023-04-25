@@ -34,17 +34,25 @@ ROUTE_IMPL(RouteCapabilities, path, argp)
 {
     HashMap *response;
     HashMap *capabilities;
+    HashMap *roomVersions;
 
     (void) path;
     (void) argp;
 
     response = HashMapCreate();
     capabilities = HashMapCreate();
+    roomVersions = HashMapCreate();
 
     JsonSet(capabilities, JsonValueBoolean(1), 2, "m.change_password", "enabled");
     JsonSet(capabilities, JsonValueBoolean(1), 2, "m.set_displayname", "enabled");
     JsonSet(capabilities, JsonValueBoolean(1), 2, "m.set_avatar_url", "enabled");
     JsonSet(capabilities, JsonValueBoolean(0), 2, "m.3pid_changes", "enabled");
+
+    /* TODO: When more room versions are implemented, add them to roomVersions */
+    HashMapSet(roomVersions, "1", JsonValueString("unstable"));
+
+    JsonSet(capabilities, JsonValueString("1"), 2, "m.room_versions", "default");
+    JsonSet(capabilities, JsonValueObject(roomVersions), 2, "m.room_versions", "available");
 
     HashMapSet(response, "capabilities", JsonValueObject(capabilities));
     return response;

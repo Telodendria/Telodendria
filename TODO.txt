@@ -55,7 +55,7 @@ Milestone: v0.3.0
             [ ] Attach device id to user object
             [ ] Use UserAuthenticate()
     [~] 9: User Data
-    [ ] 5: Capabilities negotiation
+    [x] 5: Capabilities negotiation
     [ ] 10: Security (Rate Limiting)
 
 Milestone: v0.4.0
