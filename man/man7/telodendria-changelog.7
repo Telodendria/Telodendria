@@ -1,4 +1,4 @@
-.Dd $Mdocdate: April 24 2023 $
+.Dd $Mdocdate: April 26 2023 $
 .Dt TELODENDRIA-CHANGELOG 7
 .Os Telodendria Project
 .Sh NAME
@@ -52,6 +52,10 @@ endpoint.
 Added support for the
 .Pa /_matrix/client/v3/profile/*
 endpoints.
+.It
+Added support for the
+.Pa /_matrix/client/v3/capabilities
+endpoint.
 .It
 Added support for token-based user registration. Note that there is
 as of yet no admin-facing way to create these registration tokens,
@@ -244,8 +248,12 @@ now shuts down cleanly in response to SIGTERM.
 Did some general refactoring to make the source code more
 readable and easier to maintain.
 .It
-Fixed a number of memory-related issues.
+Fixed a number of memory-related issues, including switching out
+some unsafe functions for safer versions, per the recommendations
+of the OpenBSD linker.
 .El
+.Pp
+\&... And many more!
 .Sh v0.2.1
 .Pp
 Monday, March 6, 2023

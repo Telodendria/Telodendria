@@ -25,9 +25,10 @@
 : "${DEFINES:=-D_DEFAULT_SOURCE -DTELODENDRIA_VERSION=\"${TELODENDRIA_VERSION}-$(uname)\"}"
 
 : "${CC:=cc}"
-: "${CFLAGS:=-Wall -Wextra -pedantic -ansi -O3 -pipe}"
+: "${CFLAGS:=-Wall -Wextra -pedantic -std=c89 -O3 -pipe}"
 : "${STATIC:=-static -Wl,-static}"
-: "${LDFLAGS:=-lm -pthread -flto -fdata-sections -ffunction-sections -s -Wl,-gc-sections}"
+: "${LD_EXTRA:=-flto -fdata-sections -ffunction-sections -s -Wl,-gc-sections}"
+: "${LDFLAGS:=-lm -pthread}"
 : "${PROG:=telodendria}"
 
 . "$(pwd)/tools/lib/common.sh"
@@ -59,8 +60,10 @@ MAIN="Main"
 
 if [ "$DEBUG" = "1" ]; then
     CFLAGS="$CFLAGS -O0 -g"
-    LDFLAGS="-lm -pthread ${TLS_LIBS}"
+    LDFLAGS="${LDFLAGS} ${TLS_LIBS}"
     PROG="$PROG-debug"
+else
+    LDFLAGS="${LDFLAGS} ${LD_EXTRA} ${TLS_LIBS}"
 fi
 
 # Check the modificiation time of a file. This is used to do
