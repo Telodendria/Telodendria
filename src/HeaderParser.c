@@ -566,11 +566,13 @@ HeaderParse(Stream * stream, HeaderExpr * expr)
                     }
                     else if (c == '[')
                     {
-                        /* Looks like we have an array. Slurp all the dimensions */
+                        /* Looks like we have an array. Slurp all the
+                         * dimensions */
                         int block = 1;
                         int i = wordLen;
 
                         expr->data.global.name[i] = '[';
+
                         i++;
 
                         while (1)
@@ -596,11 +598,13 @@ HeaderParse(Stream * stream, HeaderExpr * expr)
                             if (c == ';')
                             {
                                 expr->data.global.name[i] = '\0';
+
                                 break;
                             }
                             else
                             {
                                 expr->data.global.name[i] = c;
+
                                 i++;
                             }
                         }

@@ -300,8 +300,8 @@ main(int argc, char **argv)
                 if (!isDocumented)
                 {
                     StreamPrintf(StreamStderr(),
-                        "Error: Global %s is undocumented.\n",
-                        expr.data.global.name);
+                                 "Error: Global %s is undocumented.\n",
+                                 expr.data.global.name);
                     exit = EXIT_FAILURE;
                     goto finish;
                 }
@@ -309,6 +309,7 @@ main(int argc, char **argv)
                 {
                     global = Malloc(sizeof(DocGlobal));
                     global->global = expr.data.global;
+
                     strncpy(global->docs, comment, sizeof(global->docs));
                     ArrayAdd(globals, global);
                     isDocumented = 0;
