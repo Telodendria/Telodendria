@@ -32,6 +32,8 @@
 #include <stdlib.h>
 #include <time.h>
 
+#include <errno.h>
+
 typedef struct DocDecl
 {
     char docs[HEADER_EXPR_MAX];
@@ -106,11 +108,108 @@ main(int argc, char **argv)
     char comment[HEADER_EXPR_MAX];
     int isDocumented = 0;
 
+    Stream *in  = NULL;
+    Stream *out = NULL;
+
+    int opt;
+
+    while ((opt = getopt(argc, argv, "i:o:D:")) != -1)
+    {
+        switch (opt)
+        {
+            case 'i':
+                if (in)
+                {
+                    break;
+                }
+
+                if (strcmp(optarg, "-") == 0)
+                {
+                    in = StreamStdin();
+                }
+                else
+                {
+                    int len = strlen(optarg);
+
+                    in = StreamOpen(optarg, "r");
+                    if (!in)
+                    {
+                        StreamPrintf(StreamStderr(), "Error: %s:%s",
+                            optarg, strerror(errno));
+                        exit = EXIT_FAILURE;
+                        goto finish;
+                    }
+
+                    while (optarg[len - 1] != '.')
+                    {
+                        optarg[len - 1] = '\0';
+                        len--;
+                    }
+
+                    optarg[len - 1] = '\0';
+                    len--;
+
+                    HashMapSet(registers, "Nm", StrDuplicate(optarg));
+                }
+                break;
+            case 'o':
+                if (out)
+                {
+                    break;
+                }
+
+                if (strcmp(optarg, "-") == 0)
+                {
+                    out = StreamStdout();
+                }
+                else
+                {
+                    out = StreamOpen(optarg, "w");
+                    if (!out)
+                    {
+                        StreamPrintf(StreamStderr(), "Error: %s:%s",
+                            optarg, strerror(errno));
+                        exit = EXIT_FAILURE;
+                        goto finish;
+                    }
+                }
+                break;
+            case 'D':
+                val = optarg;
+                while (*val && *val != '=')
+                {
+                    val++;
+                }
+                if (!*val || *val != '=')
+                {
+                    StreamPrintf(StreamStderr(), "Bad register definition: %s",
+                        optarg);
+                    exit = EXIT_FAILURE;
+                    goto finish;
+                }
+
+                *val = '\0';
+                val++;
+                HashMapSet(registers, optarg, StrDuplicate(val));
+                break;
+        }
+    }
+
+    if (!in)
+    {
+        in = StreamStdin();
+    }
+
+    if (!out)
+    {
+        out = StreamStdout();
+    }
+
     memset(&expr, 0, sizeof(expr));
 
     while (1)
     {
-        HeaderParse(StreamStdin(), &expr);
+        HeaderParse(in, &expr);
 
         switch (expr.type)
         {
@@ -211,54 +310,54 @@ last:
 
         val = tsBuf;
     }
-    StreamPrintf(StreamStdout(), ".Dd $%s: %s $\n", "Mdocdate", val);
+    StreamPrintf(out, ".Dd $%s: %s $\n", "Mdocdate", val);
 
     val = HashMapGet(registers, "Os");
     if (val)
     {
-        StreamPrintf(StreamStdout(), ".Os %s\n", val);
+        StreamPrintf(out, ".Os %s\n", val);
     }
 
     val = HashMapGet(registers, "Nm");
-    StreamPrintf(StreamStdout(), ".Dt %s 3\n", val);
-    StreamPrintf(StreamStdout(), ".Sh NAME\n");
-    StreamPrintf(StreamStdout(), ".Nm %s\n", val);
+    StreamPrintf(out, ".Dt %s 3\n", val);
+    StreamPrintf(out, ".Sh NAME\n");
+    StreamPrintf(out, ".Nm %s\n", val);
 
     val = HashMapGet(registers, "Nd");
     if (!val)
     {
         val = "No Description.";
     }
-    StreamPrintf(StreamStdout(), ".Nd %s\n", val);
+    StreamPrintf(out, ".Nd %s\n", val);
 
-    StreamPrintf(StreamStdout(), ".Sh SYNOPSIS\n");
+    StreamPrintf(out, ".Sh SYNOPSIS\n");
     val = HashMapGet(registers, "Nm");
-    StreamPrintf(StreamStdout(), ".In %s.h\n", val);
+    StreamPrintf(out, ".In %s.h\n", val);
     for (i = 0; i < ArraySize(declarations); i++)
     {
         size_t j;
 
         decl = ArrayGet(declarations, i);
-        StreamPrintf(StreamStdout(), ".Ft %s\n", decl->decl.returnType);
-        StreamPrintf(StreamStdout(), ".Fn %s ", decl->decl.name);
+        StreamPrintf(out, ".Ft %s\n", decl->decl.returnType);
+        StreamPrintf(out, ".Fn %s ", decl->decl.name);
         for (j = 0; j < ArraySize(decl->decl.args); j++)
         {
-            StreamPrintf(StreamStdout(), "\"%s\" ", ArrayGet(decl->decl.args, j));
+            StreamPrintf(out, "\"%s\" ", ArrayGet(decl->decl.args, j));
         }
-        StreamPutc(StreamStdout(), '\n');
+        StreamPutc(out, '\n');
     }
 
     if (ArraySize(typedefs))
     {
-        StreamPrintf(StreamStdout(), ".Sh TYPE DECLARATIONS\n");
+        StreamPrintf(out, ".Sh TYPE DECLARATIONS\n");
         for (i = 0; i < ArraySize(typedefs); i++)
         {
             char *line;
 
             type = ArrayGet(typedefs, i);
-            StreamPrintf(StreamStdout(), ".Bd -literal -offset indent\n");
-            StreamPrintf(StreamStdout(), "%s\n", type->text);
-            StreamPrintf(StreamStdout(), ".Ed\n.Pp\n");
+            StreamPrintf(out, ".Bd -literal -offset indent\n");
+            StreamPrintf(out, "%s\n", type->text);
+            StreamPrintf(out, ".Ed\n.Pp\n");
 
             line = strtok(type->docs, "\n");
             while (line)
@@ -270,7 +369,7 @@ last:
 
                 if (*line)
                 {
-                    StreamPrintf(StreamStdout(), "%s\n", line);
+                    StreamPrintf(out, "%s\n", line);
                 }
 
                 line = strtok(NULL, "\n");
@@ -278,10 +377,10 @@ last:
         }
     }
 
-    StreamPrintf(StreamStdout(), ".Sh DESCRIPTION\n");
+    StreamPrintf(out, ".Sh DESCRIPTION\n");
     for (i = 0; i < ArraySize(descr); i++)
     {
-        StreamPrintf(StreamStdout(), "%s\n", ArrayGet(descr, i));
+        StreamPrintf(out, "%s\n", ArrayGet(descr, i));
     }
 
     for (i = 0; i < ArraySize(declarations); i++)
@@ -290,16 +389,16 @@ last:
         char *line;
 
         decl = ArrayGet(declarations, i);
-        StreamPrintf(StreamStdout(), ".Ss %s %s(",
+        StreamPrintf(out, ".Ss %s %s(",
                      decl->decl.returnType, decl->decl.name);
         for (j = 0; j < ArraySize(decl->decl.args); j++)
         {
-            StreamPrintf(StreamStdout(), "%s", ArrayGet(decl->decl.args, j));
+            StreamPrintf(out, "%s", ArrayGet(decl->decl.args, j));
             if (j < ArraySize(decl->decl.args) - 1)
             {
-                StreamPuts(StreamStdout(), ", ");
+                StreamPuts(out, ", ");
             }
-            StreamPuts(StreamStdout(), ")\n");
+            StreamPuts(out, ")\n");
         }
 
         line = strtok(decl->docs, "\n");
@@ -312,7 +411,7 @@ last:
 
             if (*line)
             {
-                StreamPrintf(StreamStdout(), "%s\n", line);
+                StreamPrintf(out, "%s\n", line);
             }
 
             line = strtok(NULL, "\n");
@@ -324,27 +423,27 @@ last:
     {
         char *xr = strtok(val, " ");
 
-        StreamPrintf(StreamStdout(), ".Sh SEE ALSO\n");
+        StreamPrintf(out, ".Sh SEE ALSO\n");
         while (xr)
         {
             if (*xr)
             {
-                StreamPrintf(StreamStdout(), ".Xr %s 3 ", xr);
+                StreamPrintf(out, ".Xr %s 3 ", xr);
             }
 
             xr = strtok(NULL, " ");
 
             if (xr)
             {
-                StreamPutc(StreamStdout(), ',');
+                StreamPutc(out, ',');
             }
-            StreamPutc(StreamStdout(), '\n');
+            StreamPutc(out, '\n');
         }
     }
 
 finish:
-    StreamClose(StreamStdin());
-    StreamClose(StreamStdout());
+    StreamClose(in);
+    StreamClose(out);
     StreamClose(StreamStderr());
 
     MemoryFreeAll();
