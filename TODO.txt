@@ -21,7 +21,7 @@ Milestone: v0.3.0
     [x] Refactor TelodendriaConfig to just Config
 
 [ ] Documentation
-    [ ] Array
+    [x] Array
     [ ] Io
     [ ] Stream
     [ ] Tls
@@ -34,7 +34,7 @@ Milestone: v0.3.0
     [ ] send-patch
     [ ] Log
     [ ] TelodendriaConfig -> Config
-    [ ] HashMap
+    [x] HashMap
     [ ] HttpRouter
     [ ] Str
     [ ] HeaderParser

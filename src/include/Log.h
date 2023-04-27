@@ -25,6 +25,19 @@
 #ifndef TELODENDRIA_LOG_H
 #define TELODENDRIA_LOG_H
 
+/***
+ * @Nm Log
+ * @Nd A simple logging framework for logging to multiple destinations.
+ * @Dd April 27 2023
+ * @Xr Stream
+ *
+ * .Nm
+ * is a simple C logging library that allows for colorful outputs,
+ * timestamps, and custom log levels. It also features the ability to
+ * have multiple logs open at one time, although Telodendria primarily
+ * utilizes the global log. All logs are thread safe.
+ */
+
 #include <stdio.h>
 #include <stddef.h>
 #include <syslog.h>
@@ -34,28 +47,67 @@
 #define LOG_FLAG_COLOR  (1 << 0)
 #define LOG_FLAG_SYSLOG (1 << 1)
 
+/**
+ * A log is defined as a configuration that describes the properties
+ * of the log. This opaque structure can be manipulated by the
+ * functions defined in this API.
+ */
 typedef struct LogConfig LogConfig;
 
-extern LogConfig *
- LogConfigCreate(void);
+/**
+ * Create a new log configuration with sane defaults that can be used
+ * immediately with the logging functions.
+ */
+extern LogConfig * LogConfigCreate(void);
 
-extern LogConfig *
- LogConfigGlobal(void);
+/**
+ * Get the global log configuration, creating a new one with
+ * .Fn LogConfigCreate
+ * if necessary.
+ */
+extern LogConfig * LogConfigGlobal(void);
 
-extern void
- LogConfigFree(LogConfig *);
+/**
+ * Free the given log configuration. Note that this does not close the
+ * underlying stream associated with the log, if there is one. Also
+ * note that to avoid memory leaks, the global log configuration must
+ * also be freed, but it cannot be used after it is freed.
+ */
+extern void LogConfigFree(LogConfig *);
 
-extern void
- LogConfigLevelSet(LogConfig *, int);
+/**
+ * Set the current log level on the specified log configuration.
+ * This indicates that only messages at or above this level should be
+ * logged; all others are silently discarded. The passed log level
+ * should be one of the log levels defined by
+ * .Xr syslog 3 .
+ * Refer to that page for a complete list of acceptable log levels,
+ * and note that passing an invalid log level will result in undefined
+ * behavior.
+ */
+extern void LogConfigLevelSet(LogConfig *, int);
 
-extern void
- LogConfigIndent(LogConfig *);
+/**
+ * Cause the log output to be indented two more spaces than it was
+ * previously. This can be helpful when generating stack traces or
+ * other hierarchical output. This is a simple convenience wrapper
+ * around
+ * .Fn LogConfigIndentSet .
+ */
+extern void LogConfigIndent(LogConfig *);
 
-extern void
- LogConfigUnindent(LogConfig *);
+/**
+ * Cause the log output to be indented two less spaces than it was
+ * previously. This is a simple convenience wrapper around
+ * .Fn LogConfigIndentSet .
+ */
+extern void LogConfigUnindent(LogConfig *);
 
-extern void
- LogConfigIndentSet(LogConfig *, size_t);
+/**
+ * Indent future log output using the specified config by some
+ * arbitrary amount.
+ */
+extern void LogConfigIndentSet(LogConfig *, size_t);
 
 extern void
  LogConfigOutputSet(LogConfig *, Stream *);

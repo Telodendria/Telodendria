@@ -24,6 +24,22 @@
 #ifndef TELODENDRIA_HTTP_H
 #define TELODENDRIA_HTTP_H
 
+/***
+ * @Nm Http
+ * @Nd Encode and decode various parts of the HTTP protocol.
+ * @Dd March 12 2023
+ * @Xr HttpClient HttpServer HashMap Queue Memory
+ *
+ * .Nm
+ * is a collection of utility functions and type definitions that are
+ * useful for dealing with HTTP. HTTP is not a complex protocol, but
+ * this API makes it a lot easier to work with.
+ * .Pp
+ * Note that this API doesn't target any particular HTTP version, but
+ * it is currently used with HTTP 1.0 clients and servers, and
+ * therefore may be lacking functionality added in later HTTP versions.
+ */
+
 #include <stdio.h>
 
 #include <HashMap.h>
@@ -32,6 +48,11 @@
 #define HTTP_FLAG_NONE 0
 #define HTTP_FLAG_TLS (1 << 0)
 
+/**
+ * The request methods defined by the HTTP standard. These numeric
+ * constants should be preferred to strings when building HTTP APIs
+ * because they are more efficient.
+ */
 typedef enum HttpRequestMethod
 {
     HTTP_METHOD_UNKNOWN,
@@ -46,6 +67,10 @@ typedef enum HttpRequestMethod
     HTTP_PATCH
 } HttpRequestMethod;
 
+/**
+ * An enumeration that corresponds to the actual integer values of the
+ * valid HTTP response codes.
+ */
 typedef enum HttpStatus
 {
     HTTP_STATUS_UNKNOWN = 0,
@@ -110,28 +135,77 @@ typedef enum HttpStatus
     HTTP_NETWORK_AUTH_REQUIRED = 511
 } HttpStatus;
 
-extern const char *
- HttpStatusToString(const HttpStatus);
+/**
+ * Convert an HTTP status enumeration value into a string description
+ * of the status, which is to be used in server response to a client,
+ * or a client response to a user. For example, calling
+ * .Fn HttpStatusToString "HTTP_GATEWAY_TIMEOUT"
+ * (or
+ * .Fn HttpStatusToString "504" )
+ * produces the string "Gateway Timeout". Note that the returned
+ * pointers point to static space, so their manipulation is forbidden.
+ */
+extern const char * HttpStatusToString(const HttpStatus);
 
-extern HttpRequestMethod
- HttpRequestMethodFromString(const char *);
+/**
+ * Convert a string into a numeric code that can be used throughout
+ * the code of a program in an efficient manner. See the definition
+ * of HttpRequestMethod. This function does case-sensitive matching,
+ * and does not trim or otherwise process the input string.
+ */
+extern HttpRequestMethod HttpRequestMethodFromString(const char *);
 
-extern const char *
- HttpRequestMethodToString(const HttpRequestMethod);
+/**
+ * Convert a numeric code as defined by HttpRequestMethod into a
+ * string that can be sent to a server. Note that the returned pointers
+ * point to static space, so their manipulation is forbidden.
+ */
+extern const char * HttpRequestMethodToString(const HttpRequestMethod);
 
-extern char *
- HttpUrlEncode(char *);
+/**
+ * Encode a C string such that it can safely appear in a URL by
+ * performing the necessary percent escaping. A new string on the
+ * heap is returned. It should be freed with
+ * .Fn Free ,
+ * defined in the
+ * .Xr Memory 3
+ * API.
+ */
+extern char * HttpUrlEncode(char *);
 
-extern char *
- HttpUrlDecode(char *);
+/**
+ * Decode a percent-encoded string into a C string, ignoring encoded
+ * null characters entirely, because those would do nothing but cause
+ * problems.
+ */
+extern char * HttpUrlDecode(char *);
 
-extern HashMap *
- HttpParamDecode(char *);
+/**
+ * Decode an encoded parameter string in the form of
+ * ``key=val&key2=val2'' into a hash map whose values are C strings.
+ * This function properly decodes keys and values using the functions
+ * defined above.
+ */
+extern HashMap * HttpParamDecode(char *);
 
-extern char *
- HttpParamEncode(HashMap *);
+/**
+ * Encode a hash map whose values are strings as an HTTP parameter
+ * string suitable for GET or POST requests.
+ */
+extern char * HttpParamEncode(HashMap *);
 
-extern HashMap *
- HttpParseHeaders(Stream *);
+/**
+ * Read HTTP headers from a stream and return a hash map whose values
+ * are strings. All keys are lowercased to make querying them
+ * consistent and not dependent on the case that was read from the
+ * stream. This is useful for both client and server code, since the
+ * headers are in the same format. This function should be used after
+ * parsing the HTTP status line, because it does not parse that line.
+ * It will stop when it encounters the first blank line, which
+ * indicates that the body is beginning. After this function completes,
+ * the body may be immediately read from the stream without any
+ * additional processing.
+ */
+extern HashMap * HttpParseHeaders(Stream *);
 
 #endif
