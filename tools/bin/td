@@ -182,20 +182,28 @@ recipe_clean() {
     rm -r build
 }
 
-# Format the source code by updating the copyright headers and
-# then running indent(1) on each source code file.
-recipe_format() {
-    find . -name '*.c' -or -name '*.h' | while IFS= read -r src; do
+# Update copyright comments in sources and header files.
+recipe_license() {
+    find . -name '*.[ch]' | while IFS= read -r src; do
         if [ -t 1 ]; then
-            printf "FMT %s%*c\r" $(basename "$src") "16" " "
+            printf "LICENSE %s%*c\r" $(basename "$src") "16" " "
         fi
-        # Update the headers
         srcHeader=$(grep -n -m 1 '^ \*/' "$src" | cut -d ':' -f 1)
         head "-n$srcHeader" "$src" |
             diff -u -p - LICENSE.txt |
             patch "$src" | grep -v "^Hmm"
+    done
+    if [ -t 1 ]; then
+        printf "%*c\n" "50" " "
+    fi
+}
 
-        # Format the source code
+# Format source code files by running indent(1) on them.
+recipe_format() {
+    find . -name '*.c' | while IFS= read -r src; do
+        if [ -t 1 ]; then
+            printf "FMT %s%*c\r" $(basename "$src") "16" " "
+        fi
         if indent "$src"; then
             rm $(basename "$src").BAK
         fi

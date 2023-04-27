@@ -108,7 +108,7 @@ main(int argc, char **argv)
     char comment[HEADER_EXPR_MAX];
     int isDocumented = 0;
 
-    Stream *in  = NULL;
+    Stream *in = NULL;
     Stream *out = NULL;
 
     int opt;
@@ -135,7 +135,7 @@ main(int argc, char **argv)
                     if (!in)
                     {
                         StreamPrintf(StreamStderr(), "Error: %s:%s",
-                            optarg, strerror(errno));
+                                     optarg, strerror(errno));
                         exit = EXIT_FAILURE;
                         goto finish;
                     }
@@ -168,7 +168,7 @@ main(int argc, char **argv)
                     if (!out)
                     {
                         StreamPrintf(StreamStderr(), "Error: %s:%s",
-                            optarg, strerror(errno));
+                                     optarg, strerror(errno));
                         exit = EXIT_FAILURE;
                         goto finish;
                     }
@@ -183,7 +183,7 @@ main(int argc, char **argv)
                 if (!*val || *val != '=')
                 {
                     StreamPrintf(StreamStderr(), "Bad register definition: %s",
-                        optarg);
+                                 optarg);
                     exit = EXIT_FAILURE;
                     goto finish;
                 }
