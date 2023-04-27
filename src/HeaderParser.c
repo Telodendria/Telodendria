@@ -171,6 +171,10 @@ HeaderConsumeArg(HeaderExpr * expr)
         {
             block--;
         }
+        else if (c == '\n')
+        {
+            expr->state.lineNo++;
+        }
     }
 
     if (i >= len)
@@ -283,6 +287,10 @@ HeaderParse(Stream * stream, HeaderExpr * expr)
                     i++;
                     expr->data.text[i] = c;
                     i++;
+                    if (c == '\n')
+                    {
+                        expr->state.lineNo++;
+                    }
                 }
             }
             else
@@ -367,6 +375,7 @@ HeaderParse(Stream * stream, HeaderExpr * expr)
                 if (c == '\n')
                 {
                     expr->data.text[i] = '\0';
+                    expr->state.lineNo++;
                     break;
                 }
                 else
@@ -438,6 +447,10 @@ HeaderParse(Stream * stream, HeaderExpr * expr)
                 else if (c == '}')
                 {
                     block--;
+                }
+                else if (c == '\n')
+                {
+                    expr->state.lineNo++;
                 }
 
                 if (block <= 0 && c == ';')
@@ -514,10 +527,11 @@ HeaderParse(Stream * stream, HeaderExpr * expr)
 
                     expr->data.declaration.args = ArrayCreate();
 
-                    do {
-                    word = HeaderConsumeArg(expr);
-                    ArrayAdd(expr->data.declaration.args, word);
-                    word = NULL;
+                    do
+                    {
+                        word = HeaderConsumeArg(expr);
+                        ArrayAdd(expr->data.declaration.args, word);
+                        word = NULL;
                     }
                     while ((!StreamEof(expr->state.stream)) && ((c = HeaderConsumeWhitespace(expr)) != ')'));
 
