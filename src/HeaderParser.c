@@ -482,6 +482,18 @@ HeaderParse(Stream * stream, HeaderExpr * expr)
                 expr->type = HP_DECLARATION;
                 strncpy(expr->data.declaration.returnType, word, wordLimit);
 
+                if (strcmp(word, "struct") == 0 ||
+                    strcmp(word, "enum") == 0 ||
+                    strcmp(word, "const") == 0)
+                {
+                    Free(word);
+                    word = HeaderConsumeWord(expr);
+                    wordLen = strlen(word);
+                    expr->data.declaration.returnType[i] = ' ';
+                    strncpy(expr->data.declaration.returnType + i + 1, word, wordLen + 1);
+                    i += wordLen + 1;
+                }
+
                 Free(word);
 
                 c = HeaderConsumeWhitespace(expr);
