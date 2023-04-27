@@ -25,7 +25,26 @@
 #ifndef TELODENDRIA_SHA2_H
 #define TELODENDRIA_SHA2_H
 
-extern char *
- Sha256(char *);
+/***
+ * @Nm Sha2
+ * @Nd A simple implementation of the SHA2 hashing functions.
+ * @Dd December 19 2022
+ * @Xr Memory Base64
+ *
+ * This API defines simple functions for computing SHA2 hashes.
+ * At the moment, it only defines
+ * .Fn Sha256 ,
+ * which computes the SHA-256 hash of the given C string. It is
+ * not trivial to implement SHA-512 in ANSI C due to the lack of
+ * a 64-bit integer type, so that hash function has been omitted.
+ */
+
+/**
+ * This function takes a pointer to a NULL-terminated C string, and
+ * returns a string allocated on the heap using the Memory API, or
+ * NULL if there was an error allocating memory. The returned string
+ * should be freed when it is no longer needed.
+ */
+extern char * Sha256(char *);
 
 #endif                             /* TELODENDRIA_SHA2_H */

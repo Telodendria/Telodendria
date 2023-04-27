@@ -398,8 +398,8 @@ last:
             {
                 StreamPuts(out, ", ");
             }
-            StreamPuts(out, ")\n");
         }
+        StreamPuts(out, ")\n");
 
         line = strtok(decl->docs, "\n");
         while (line)
