@@ -505,8 +505,8 @@ HeaderParse(Stream * stream, HeaderExpr * expr)
             {
                 int i = wordLen;
 
-                expr->type = HP_DECLARATION;
-                strncpy(expr->data.declaration.returnType, word, wordLimit);
+                expr->type = HP_GLOBAL;
+                strncpy(expr->data.global.type, word, wordLimit);
 
                 if (strcmp(word, "struct") == 0 ||
                     strcmp(word, "enum") == 0 ||
@@ -515,8 +515,9 @@ HeaderParse(Stream * stream, HeaderExpr * expr)
                     Free(word);
                     word = HeaderConsumeWord(expr);
                     wordLen = strlen(word);
-                    expr->data.declaration.returnType[i] = ' ';
-                    strncpy(expr->data.declaration.returnType + i + 1, word, wordLen + 1);
+                    expr->data.global.type[i] = ' ';
+
+                    strncpy(expr->data.global.type + i + 1, word, wordLen + 1);
                     i += wordLen + 1;
                 }
 
@@ -525,13 +526,16 @@ HeaderParse(Stream * stream, HeaderExpr * expr)
                 c = HeaderConsumeWhitespace(expr);
                 if (c == '*')
                 {
-                    expr->data.declaration.returnType[i] = ' ';
+                    expr->data.global.type[i] = ' ';
+
                     i++;
-                    expr->data.declaration.returnType[i] = '*';
+                    expr->data.global.type[i] = '*';
+
                     i++;
                     while ((c = HeaderConsumeWhitespace(expr)) == '*')
                     {
-                        expr->data.declaration.returnType[i] = c;
+                        expr->data.global.type[i] = c;
+
                         i++;
                     }
                 }
@@ -550,45 +554,94 @@ HeaderParse(Stream * stream, HeaderExpr * expr)
                 }
                 else
                 {
-                    strncpy(expr->data.declaration.name, word, wordLimit);
+                    strncpy(expr->data.global.name, word, wordLimit);
                     Free(word);
                     word = NULL;
 
                     c = HeaderConsumeWhitespace(expr);
-                    if (c != '(')
+
+                    if (c == ';')
+                    {
+                        /* That's the end of the global. */
+                    }
+                    else if (c == '[')
+                    {
+                        /* Looks like we have an array. Slurp all the dimensions */
+                        int block = 1;
+                        int i = wordLen;
+
+                        expr->data.global.name[i] = '[';
+                        i++;
+
+                        while (1)
+                        {
+                            if (i >= HEADER_EXPR_MAX - wordLen)
+                            {
+                                expr->type = HP_PARSE_ERROR;
+                                expr->data.error.msg = "Memory limit exceeded while parsing global array.";
+                                expr->data.error.lineNo = expr->state.lineNo;
+                                return;
+                            }
+
+                            c = StreamGetc(expr->state.stream);
+
+                            if (StreamEof(expr->state.stream) || StreamError(expr->state.stream))
+                            {
+                                expr->type = HP_SYNTAX_ERROR;
+                                expr->data.error.msg = "Unterminated global array.";
+                                expr->data.error.lineNo = expr->state.lineNo;
+                                return;
+                            }
+
+                            if (c == ';')
+                            {
+                                expr->data.global.name[i] = '\0';
+                                break;
+                            }
+                            else
+                            {
+                                expr->data.global.name[i] = c;
+                                i++;
+                            }
+                        }
+                    }
+                    else if (c == '(')
+                    {
+                        expr->type = HP_DECLARATION;
+                        expr->data.declaration.args = ArrayCreate();
+                        do
+                        {
+                            word = HeaderConsumeArg(expr);
+                            ArrayAdd(expr->data.declaration.args, word);
+                            word = NULL;
+                        }
+                        while ((!StreamEof(expr->state.stream)) && ((c = HeaderConsumeWhitespace(expr)) != ')'));
+
+                        if (StreamEof(expr->state.stream))
+                        {
+                            expr->type = HP_SYNTAX_ERROR;
+                            expr->data.error.msg = "End of file reached before ')'.";
+                            expr->data.error.lineNo = expr->state.lineNo;
+                            return;
+                        }
+
+                        c = HeaderConsumeWhitespace(expr);
+                        if (c != ';')
+                        {
+                            expr->type = HP_SYNTAX_ERROR;
+                            expr->data.error.msg = "Expected ';'.";
+                            expr->data.error.lineNo = expr->state.lineNo;
+                            return;
+                        }
+                    }
+                    else
                     {
                         expr->type = HP_SYNTAX_ERROR;
-                        expr->data.error.msg = "Expected '('";
+                        expr->data.error.msg = "Expected ';', '[', or '('";
                         expr->data.error.lineNo = expr->state.lineNo;
                         return;
                     }
 
-                    expr->data.declaration.args = ArrayCreate();
-
-                    do
-                    {
-                        word = HeaderConsumeArg(expr);
-                        ArrayAdd(expr->data.declaration.args, word);
-                        word = NULL;
-                    }
-                    while ((!StreamEof(expr->state.stream)) && ((c = HeaderConsumeWhitespace(expr)) != ')'));
-
-                    if (StreamEof(expr->state.stream))
-                    {
-                        expr->type = HP_SYNTAX_ERROR;
-                        expr->data.error.msg = "End of file reached before ')'.";
-                        expr->data.error.lineNo = expr->state.lineNo;
-                        return;
-                    }
-
-                    c = HeaderConsumeWhitespace(expr);
-                    if (c != ';')
-                    {
-                        expr->type = HP_SYNTAX_ERROR;
-                        expr->data.error.msg = "Expected ';'.";
-                        expr->data.error.lineNo = expr->state.lineNo;
-                        return;
-                    }
                 }
             }
         }

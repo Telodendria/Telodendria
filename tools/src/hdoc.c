@@ -46,6 +46,12 @@ typedef struct DocTypedef
     char text[HEADER_EXPR_MAX];
 } DocTypedef;
 
+typedef struct DocGlobal
+{
+    char docs[HEADER_EXPR_MAX];
+    HeaderGlobal global;
+} DocGlobal;
+
 static void
 ParseMainBlock(HashMap * registers, Array * descr, char *comment)
 {
@@ -104,6 +110,9 @@ main(int argc, char **argv)
 
     Array *typedefs = ArrayCreate();
     DocTypedef *type = NULL;
+
+    Array *globals = ArrayCreate();
+    DocGlobal *global = NULL;
 
     char comment[HEADER_EXPR_MAX];
     int isDocumented = 0;
@@ -287,6 +296,24 @@ main(int argc, char **argv)
                     isDocumented = 0;
                 }
                 break;
+            case HP_GLOBAL:
+                if (!isDocumented)
+                {
+                    StreamPrintf(StreamStderr(),
+                        "Error: Global %s is undocumented.\n",
+                        expr.data.global.name);
+                    exit = EXIT_FAILURE;
+                    goto finish;
+                }
+                else
+                {
+                    global = Malloc(sizeof(DocGlobal));
+                    global->global = expr.data.global;
+                    strncpy(global->docs, comment, sizeof(global->docs));
+                    ArrayAdd(globals, global);
+                    isDocumented = 0;
+                }
+                break;
             default:
                 StreamPrintf(StreamStderr(), "Unknown header type: %d\n", expr.type);
                 StreamPrintf(StreamStderr(), "This is a programming error.\n");
@@ -350,6 +377,34 @@ last:
             StreamPrintf(out, "\"%s\" ", ArrayGet(decl->decl.args, j));
         }
         StreamPutc(out, '\n');
+    }
+
+    if (ArraySize(globals))
+    {
+        StreamPrintf(out, ".Sh GLOBALS\n");
+        for (i = 0; i < ArraySize(globals); i++)
+        {
+            char *line;
+            global = ArrayGet(globals, i);
+
+            StreamPrintf(out, ".Ss %s %s\n", global->global.type, global->global.name);
+
+            line = strtok(global->docs, "\n");
+            while (line)
+            {
+                while (*line && (isspace(*line) || *line == '*'))
+                {
+                    line++;
+                }
+
+                if (*line)
+                {
+                    StreamPrintf(out, "%s\n", line);
+                }
+
+                line = strtok(NULL, "\n");
+            }
+        }
     }
 
     if (ArraySize(typedefs))

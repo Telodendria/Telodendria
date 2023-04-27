@@ -36,6 +36,7 @@ typedef enum HeaderExprType
     HP_PREPROCESSOR_DIRECTIVE,
     HP_TYPEDEF,
     HP_DECLARATION,
+    HP_GLOBAL,
     HP_SYNTAX_ERROR,
     HP_PARSE_ERROR,
     HP_EOF
@@ -48,6 +49,12 @@ typedef struct HeaderDeclaration
     Array *args;
 } HeaderDeclaration;
 
+typedef struct HeaderGlobal
+{
+    char type[64];
+    char name[HEADER_EXPR_MAX - 64];
+} HeaderGlobal;
+
 typedef struct HeaderExpr
 {
     HeaderExprType type;
@@ -55,6 +62,7 @@ typedef struct HeaderExpr
     {
         char text[HEADER_EXPR_MAX];
         HeaderDeclaration declaration;
+        HeaderGlobal global;
         struct
         {
             int lineNo;

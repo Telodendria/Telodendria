@@ -24,6 +24,20 @@
 #ifndef TELODENDRIA_H
 #define TELODENDRIA_H
 
+/***
+ * @Nm Telodendria
+ * @Nd Branding and callback functions specific to Telodendria.
+ * @Dd March 12 2023
+ * @Xr Memory Log
+ *
+ * This API provides the callbacks used to hook Telodendria into the
+ * various other APIs. It exists primarily to be called by
+ * .Fn main ,
+ * but these functions are not static so
+ * .Fn main
+ * can be in a separate compilation unit.
+ */
+
 #include <Memory.h>
 #include <Log.h>
 #include <HttpRouter.h>
@@ -31,22 +45,64 @@
 #define TELODENDRIA_LOGO_WIDTH 56
 #define TELODENDRIA_LOGO_HEIGHT 22
 
+/**
+ * This holds the Telodendria ASCII art logo.
+ * .Va TELODENDRIA_LOGO_HEIGHT
+ * and
+ * .Va TELODENDRIA_LOGO_WIDTH
+ * are the sizes of each dimension of the two-dimensional array.
+ * .Va TELODENDRIA_LOGO_HEIGHT
+ * is the number of lines the logo contains, and
+ * .Va TELODENDRIA_LOGO_WIDTH
+ * is the number of characters in each line.
+ * .Pp
+ * .Sy NOTE:
+ * the Telodendria logo belongs solely to the Telodendria project. If
+ * this code is modified and distributed as something other than a
+ * packaging of the official Telodendria source package, the logo
+ * must be replaced with a different one, or removed entirely. Consult
+ * the licensing section of
+ * .Xr telodendria 7
+ * for details.
+ */
 extern const char
- TelodendriaLogo[TELODENDRIA_LOGO_HEIGHT][TELODENDRIA_LOGO_WIDTH];
+TelodendriaLogo[TELODENDRIA_LOGO_HEIGHT][TELODENDRIA_LOGO_WIDTH];
 
 #define TELODENDRIA_HEADER_WIDTH 56
 #define TELODENDRIA_HEADER_HEIGHT 6
 
+/**
+ * This holds the Telodendria ASCII art header. It follows the same
+ * conventions as the logo, but is not under any particular
+ * restrictions other than those spelled out in the license.
+ */
 extern const char
- TelodendriaHeader[TELODENDRIA_HEADER_HEIGHT][TELODENDRIA_HEADER_WIDTH];
+TelodendriaHeader[TELODENDRIA_HEADER_HEIGHT][TELODENDRIA_HEADER_WIDTH];
 
-extern void
- TelodendriaMemoryHook(MemoryAction, MemoryInfo *, void *);
+/**
+ * This function follows the function prototype required by
+ * .Fn MemoryHook .
+ * It is executed every time an allocation, re-allocation, or free
+ * occurs, and is responsible for logging memory operations to the
+ * log.
+ */
+extern void TelodendriaMemoryHook(MemoryAction, MemoryInfo *, void *);
 
-extern void
- TelodendriaGenerateMemReport(void);
+/**
+ * Generate a memory report in the current working directory. This
+ * function is intended to be called after all memory has supposedly
+ * been freed. It allocates no new memory of its own (except what is
+ * required by FILE pointers) and simply dumps all of the allocated
+ * memory out to a file if there is any memory allocated.
+ * .Pp
+ * This function is used to detect and fix memory leaks.
+ */
+extern void TelodendriaGenerateMemReport(void);
 
-extern void
- TelodendriaPrintHeader(void);
+/**
+ * Print the logo and header, along with the copyright year and holder,
+ * and the version number, out to the global log.
+ */
+extern void TelodendriaPrintHeader(void);
 
 #endif

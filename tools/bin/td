@@ -118,6 +118,7 @@ recipe_docs() {
         if [ $(mod_time "$header") -ge $(mod_time "$man") ]; then
             echo "DOC $basename"
             if ! hdoc -D Os=Telodendria -i "$header" -o "$man"; then
+                rm "$man"
                 exit 1
             fi
         fi
