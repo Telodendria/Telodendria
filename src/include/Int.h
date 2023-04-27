@@ -24,6 +24,35 @@
 #ifndef TELODENDRIA_INT_H
 #define TELODENDRIA_INT_H
 
+/***
+ * @Nm Int
+ * @Nd Fixed-width integer types.
+ * @Dd April 27 2023
+ *
+ * This header provides cross-platform, fixed-width integer types.
+ * Specifically, it uses preprocessor magic to define the following
+ * types:
+ * .Bl -bullet -offset indent
+ * .It
+ * Int8 and UInt8
+ * .It
+ * Int16 and UInt16
+ * .It
+ * Int32 and UInt32
+ * .El
+ * .Pp
+ * Note that there is no 64-bit integer type, because the ANSI C
+ * standard makes no guarantee that such a type will exist, even
+ * though it does on most platforms.
+ * .Pp
+ * The reason Telodendria provides its own header for this is
+ * because ANSI C does not define fixed-width types, and while it
+ * should be safe to rely on C99 fixed-width types in most cases,
+ * there may be cases where even that is not possible.
+ *
+ * @ignore-typedefs
+ */
+
 #include <limits.h>
 
 #define BIT64_MAX 18446744073709551615

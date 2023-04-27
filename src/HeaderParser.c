@@ -370,6 +370,8 @@ HeaderParse(Stream * stream, HeaderExpr * expr)
                  strcmp(word, "elif") == 0 ||
                  strcmp(word, "error") == 0)
         {
+            int pC;
+
             Free(word);
             expr->data.text[i] = ' ';
             i++;
@@ -394,8 +396,7 @@ HeaderParse(Stream * stream, HeaderExpr * expr)
                     return;
                 }
 
-                /* TODO: Handle backslash escapes */
-                if (c == '\n')
+                if (c == '\n' && pC != '\\')
                 {
                     expr->data.text[i] = '\0';
                     expr->state.lineNo++;
@@ -406,6 +407,8 @@ HeaderParse(Stream * stream, HeaderExpr * expr)
                     expr->data.text[i] = c;
                     i++;
                 }
+
+                pC = c;
             }
         }
         else if (strcmp(word, "else") == 0 ||

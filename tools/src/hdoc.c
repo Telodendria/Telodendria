@@ -242,6 +242,11 @@ main(int argc, char **argv)
                 }
                 break;
             case HP_TYPEDEF:
+                if (HashMapGet(registers, "ignore-typedefs"))
+                {
+                    break;
+                }
+
                 if (!isDocumented)
                 {
                     StreamPrintf(StreamStderr(),

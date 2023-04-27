@@ -108,6 +108,22 @@ setsubst() {
     rm "$SED"
 }
 
+recipe_docs() {
+    mkdir -p build/man/man3
+
+    for header in $(find src -name '*.h'); do
+        basename=$(basename "$header")
+        man=$(echo "build/man/man3/$basename" | sed -e 's/\.h$/\.3/')
+
+        if [ $(mod_time "$header") -ge $(mod_time "$man") ]; then
+            echo "DOC $basename"
+            if ! hdoc -D Os=Telodendria -i "$header" -o "$man"; then
+                exit 1
+            fi
+        fi
+    done
+}
+
 # Build the source code, and generate  the 'build/telodendria'
 # binary.
 recipe_build() {
@@ -292,7 +308,6 @@ recipe_release() {
 # really picky about how patches look, but this is how we like them
 # best. Makes them easy to read.
 recipe_patch() {
-
     # If the user has not set their MXID, try to deduce one from
     # their system.
     if [ -z "$MXID" ]; then
