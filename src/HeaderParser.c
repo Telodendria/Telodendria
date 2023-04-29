@@ -396,17 +396,18 @@ HeaderParse(Stream * stream, HeaderExpr * expr)
                     return;
                 }
 
-                if (c == '\n' && pC != '\\')
+                if (c == '\n')
                 {
-                    expr->data.text[i] = '\0';
                     expr->state.lineNo++;
-                    break;
+                    if (pC != '\\')
+                    {
+                        expr->data.text[i] = '\0';
+                        break;
+                    }
                 }
-                else
-                {
-                    expr->data.text[i] = c;
-                    i++;
-                }
+
+                expr->data.text[i] = c;
+                i++;
 
                 pC = c;
             }
