@@ -120,14 +120,14 @@ typedef struct Config
  * set the ok flag to 0. The caller should always check the ok flag,
  * and if there is an error, it should display the error to the user.
  */
-Config * ConfigParse(HashMap *);
+extern Config * ConfigParse(HashMap *);
 
 /**
  * Free all the values inside of the given configuration structure,
  * as well as the structure itself, such that it is completely invalid
  * when this function returns.
  */
-void ConfigFree(Config *);
+extern void ConfigFree(Config *);
 
 /**
  * Check whether or not the configuration exists in the database,

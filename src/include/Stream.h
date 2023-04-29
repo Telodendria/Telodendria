@@ -24,76 +24,200 @@
 #ifndef TELODENDRIA_STREAM_H
 #define TELODENDRIA_STREAM_H
 
+/***
+ * @Nm Stream
+ * @Nd An abstraction over the Io API that implements standard C I/O.
+ * @Dd April 29 2023
+ * @Xr Io
+ *
+ * .Nm
+ * implements an abstraction layer over the Io API. This layer buffers
+ * I/O and makes it much easier to work with, mimicking the standard
+ * C library and offering some more convenience features.
+ */
+
 #include <Io.h>
 
 #include <stdarg.h>
 
+/**
+ * An opaque structure analogous to C's FILE pointers.
+ */
 typedef struct Stream Stream;
 
-extern Stream *
- StreamIo(Io * io);
+/**
+ * Create a new stream using the specified Io for underlying I/O
+ * operations.
+ */
+extern Stream * StreamIo(Io * io);
 
-extern Stream *
- StreamFd(int);
+/**
+ * Create a new stream using the specified POSIX file descriptor.
+ * This is a convenience function for calling
+ * .Fn IoFd
+ * and then passing the result into
+ * .Fn StreamIo .
+ */
+extern Stream * StreamFd(int);
 
-extern Stream *
- StreamFile(FILE *);
+/**
+ * Create a new stream using the specified C FILE pointer. This is a
+ * convenience function for calling
+ * .Fn IoFile
+ * and then passing the result into
+ * .Fn StreamIo .
+ */
+extern Stream * StreamFile(FILE *);
 
-extern Stream *
- StreamOpen(const char *, const char *);
+/**
+ * Create a new stream using the specified path and mode. This is a
+ * convenience function for calling
+ * .Xr fopen 3
+ * and then passing the result into
+ * .Fn StreamFile .
+ */
+extern Stream * StreamOpen(const char *, const char *);
 
-extern Stream *
- StreamStdout(void);
+/**
+ * Get a stream that writes to the standard output.
+ */
+extern Stream * StreamStdout(void);
 
-extern Stream *
- StreamStderr(void);
+/**
+ * Get a stream that writes to the standard error.
+ */
+extern Stream * StreamStderr(void);
 
-extern Stream *
- StreamStdin(void);
+/**
+ * Get a stream that reads from the standard input.
+ */
+extern Stream * StreamStdin(void);
 
-extern int
- StreamClose(Stream *);
+/**
+ * Close the stream. This flushes the buffers and closes the underlying
+ * Io. It is analogous to the standard
+ * .Xr fclose 3
+ * function.
+ */
+extern int StreamClose(Stream *);
 
-extern int
- StreamVprintf(Stream *, const char *, va_list);
+/**
+ * Print a formatted string. This function is analogous to the standard
+ * .Xr vfprintf 3
+ * function.
+ */
+extern int StreamVprintf(Stream *, const char *, va_list);
 
-extern int
- StreamPrintf(Stream *, const char *,...);
+/**
+ * Print a formatted string. This function is analogous to the
+ * standard
+ * .Xr fprintf 3
+ * function.
+ */
+extern int StreamPrintf(Stream *, const char *,...);
 
-extern int
- StreamGetc(Stream *);
+/**
+ * Get a single character from a stream. This function is analogous to
+ * the standard
+ * .Xr fgetc 3
+ * function.
+ */
+extern int StreamGetc(Stream *);
 
-extern int
- StreamUngetc(Stream *, int);
+/**
+ * Push a character back onto the input stream. This function is
+ * analogous to the standard
+ * .Xr ungetc 3
+ * function.
+ */
+extern int StreamUngetc(Stream *, int);
 
-extern int
- StreamPutc(Stream *, int);
+/**
+ * Write a single character to the stream. This function is analogous
+ * to the standard
+ * .Xr fputc 3
+ * function.
+ */
+extern int StreamPutc(Stream *, int);
 
-extern int
- StreamPuts(Stream *, char *);
+/**
+ * Write a null-terminated string to the stream. This function is
+ * analogous to the standard
+ * .Xr fputs 3
+ * function.
+ */
+extern int StreamPuts(Stream *, char *);
 
-extern char *
- StreamGets(Stream *, char *, int);
+/**
+ * Read at most the specified number of characters minus 1 from the
+ * specified stream and store them at the memory located at the
+ * specified pointer. This function is analogous to the standard
+ * .Xr fgets 3
+ * function.
+ */
+extern char * StreamGets(Stream *, char *, int);
 
-extern off_t
- StreamSeek(Stream *, off_t, int);
+/**
+ * Set the file position indicator for the specified stream. This
+ * function is analogous to the standard
+ * .Xr fseeko
+ * function.
+ */
+extern off_t StreamSeek(Stream *, off_t, int);
 
-extern int
- StreamEof(Stream *);
+/**
+ * Test the end-of-file indicator for the given stream, returning a
+ * boolean value indicating whether or not it is set. This is analogous
+ * to the standard
+ * .Xr feof 3
+ * function.
+ */
+extern int StreamEof(Stream *);
 
-extern int
- StreamError(Stream *);
+/**
+ * Test the stream for an error condition, returning a boolean value
+ * indicating whether or not one is present. This is analogous to the
+ * standard
+ * .Xr ferror 3
+ * function.
+ */
+extern int StreamError(Stream *);
 
-extern void
- StreamClearError(Stream *);
+/**
+ * Clear the error condition associated with the given stream, allowing
+ * future reads or writes to potentially be successful. This functio
+ * is analogous to the standard
+ * .Xr clearerr 3
+ * function.
+ */
+extern void StreamClearError(Stream *);
 
-extern int
- StreamFlush(Stream *);
+/**
+ * Flush all buffered data using the streams underlying write function.
+ * This function is analogous to the standard
+ * .Xr fflush 3
+ * function.
+ */
+extern int StreamFlush(Stream *);
 
-extern ssize_t
- StreamCopy(Stream *, Stream *);
+/**
+ * Read all the bytes from the first stream and write them to the
+ * second stream. This is analogous to
+ * .Fn IoCopy ,
+ * but it uses the internal buffers of the streams. It is probably
+ * less efficient than doing a
+ * .Fn IoCopy
+ * instead, but it is more convenient.
+ */
+extern ssize_t StreamCopy(Stream *, Stream *);
 
-extern int
- StreamFileno(Stream *);
+/**
+ * Get the file descriptor associated with the given stream, or -1 if
+ * the stream is not associated with any file descriptor. This function
+ * is analogous to the standard
+ * .Xr fileno 3
+ * function.
+ */
+extern int StreamFileno(Stream *);
 
 #endif                             /* TELODENDRIA_STREAM_H */

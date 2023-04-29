@@ -511,7 +511,8 @@ HeaderParse(Stream * stream, HeaderExpr * expr)
 
                 if (strcmp(word, "struct") == 0 ||
                     strcmp(word, "enum") == 0 ||
-                    strcmp(word, "const") == 0)
+                    strcmp(word, "const") == 0 ||
+                    strcmp(word, "unsigned") == 0)
                 {
                     Free(word);
                     word = HeaderConsumeWord(expr);

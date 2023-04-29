@@ -181,15 +181,20 @@ extern int UserCheckPassword(User *, char *);
  */
 extern int UserSetPassword(User *, char *);
 
-extern int
- UserDeactivate(User *);
-
 /**
  * Immediately deactivate the given user account such that it can no
  * longer be used to log in, but the username is still reserved. This
  * is to prevent future users from pretending to be a previous user
  * of a given localpart. The user is logged out; all access tokens are
  * invalidated.
+ */
+extern int UserDeactivate(User *);
+
+/**
+ * Return a boolean value indicating whether or not the user was
+ * deactivated using
+ * .Fn UserDeactivate .
+ * Note that once deactivated, users cannot be reactivated.
  */
 extern int UserDeactivated(User *);
 

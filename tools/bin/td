@@ -123,6 +123,10 @@ recipe_docs() {
             fi
         fi
     done
+
+    if which makewhatis 2>&1 > /dev/null; then
+        makewhatis "$(pwd)/man"
+    fi
 }
 
 # Build the source code, and generate  the 'build/telodendria'
@@ -178,6 +182,8 @@ recipe_build() {
     if ! intcheck; then
         exit 1
     fi
+
+    recipe_docs
 }
 
 recipe_run() {
@@ -239,6 +245,8 @@ recipe_site() {
         exit 1
     fi
 
+    recipe_docs
+
     # Set some variables that may be replaced in the files.
     DATE=$(date)
     USER_DOCS=$(man-table user)
@@ -256,15 +264,15 @@ recipe_site() {
     done
     cd - >/dev/null
 
-    find man/ -name '*.[1-9]' | while IFS= read -r man; do
-        dir=$(dirname "$man")
+    find man/ build/man/ -name '*.[1-9]' | while IFS= read -r man; do
+        section=$(basename "$man" | rev | cut -d '.' -f 1 | rev)
         html=$(basename "$man")
 
-        mkdir -p "$TELODENDRIA_PUB/$dir/"
+        mkdir -p "$TELODENDRIA_PUB/man/man$section/"
         mandoc -Thtml \
             -O style=/style.css,man=/man/man%S/%N.%S.html "$man" \
-            >"$TELODENDRIA_PUB/$dir/$html.html"
-        echo "$TELODENDRIA_PUB/$dir/$html.html"
+            >"$TELODENDRIA_PUB/man/man$section/$html.html"
+        echo "$TELODENDRIA_PUB/man/man$section/$html.html"
     done
 }
 

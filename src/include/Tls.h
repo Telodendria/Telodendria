@@ -24,34 +24,86 @@
 #ifndef TELODENDRIA_TLS_H
 #define TELODENDRIA_TLS_H
 
+/***
+ * @Nm Tls
+ * @Nd Interface to platform-dependent TLS libraries.
+ * @Dd April 29 2023
+ * @Xr Stream Io
+ *
+ * .Nm
+ * provides an interface to platform-dependent TLS libraries. It allows
+ * Telodendria to support any TLS library with no changes to existing
+ * code. Support for additional TLS libraries is added by creating a
+ * new compilation unit that implements all the functions here, with
+ * the exception of a few, which are noted.
+ * .Pp
+ * Currently, Telodendria has support for the following TLS libraries:
+ * .Bl -bullet -offset indent
+ * .It
+ * LibreSSL
+ * .It
+ * OpenSSL
+ * .El
+ */
+
 #include <Stream.h>
 
 #define TLS_LIBRESSL 2
 #define TLS_OPENSSL 3
 
-extern Stream *
- TlsClientStream(int, const char *);
-
-extern Stream *
- TlsServerStream(int, const char *, const char *);
-
-/*
- * These are provided by individual TLS implementations.
+/**
+ * Create a new TLS client stream using the given file descriptor and
+ * the given server hostname. The hostname should be used to verify
+ * that the server actually is who it says it is.
+ * .Pp
+ * This function does not need to be implemented by the individual
+ * TLS support stubs.
  */
+extern Stream * TlsClientStream(int, const char *);
 
-extern void *
- TlsInitClient(int, const char *);
+/**
+ * Create a new TLS server stream using the given certificate and key
+ * file, in the format natively supported by the TLS library.
+ * .Pp
+ * This function does not need to be implemented by the individual
+ * TLS support stubs.
+ */
+extern Stream * TlsServerStream(int, const char *, const char *);
 
-extern void *
- TlsInitServer(int, const char *, const char *);
+/**
+ * Initialize a cookie that stores information about the given client
+ * connection. This cookie will be passed into the other functions
+ * defined by this API.
+ */
+extern void * TlsInitClient(int, const char *);
 
-extern ssize_t
- TlsRead(void *, void *, size_t);
+/**
+ * Initialize a cookie that stores information about the given
+ * server connection. This cookie will be passed into the other
+ * functions defined by this API.
+ */
+extern void * TlsInitServer(int, const char *, const char *);
 
-extern ssize_t
- TlsWrite(void *, void *, size_t);
+/**
+ * Read from a TLS stream, decrypting it and storing the result in the
+ * specified buffer. This function takes the cookie, buffer, and
+ * number of decrypted bytes to read into it. See the documentation for
+ * .Fn IoRead .
+ */
+extern ssize_t TlsRead(void *, void *, size_t);
 
-extern int
- TlsClose(void *);
+/**
+ * Write to a TLS stream, encrypting the buffer. This function takes
+ * the cookie, buffer, and number of unencrypted bytes to write to
+ * the stream. See the documentation for
+ * .Fn IoWrite .
+ */
+extern ssize_t TlsWrite(void *, void *, size_t);
+
+/**
+ * Close the TLS stream, also freeing all memory associated with the
+ * cookie.
+ */
+extern int TlsClose(void *);
 
 #endif                             /* TELODENDRIA_TLS_H */

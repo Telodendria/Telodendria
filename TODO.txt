@@ -23,17 +23,17 @@ Milestone: v0.3.0
 [ ] Documentation
     [x] Array
     [x] Io
-    [ ] Stream
-    [ ] Tls
+    [x] Stream
+    [x] Tls
     [x] HttpClient
-    [ ] Uri
+    [x] Uri
     [ ] td
     [ ] tt
     [ ] http-debug-server
     [ ] tp
     [ ] send-patch
     [x] Log
-    [ ] TelodendriaConfig -> Config
+    [x] TelodendriaConfig -> Config
     [x] HashMap
     [x] HttpRouter
     [x] Html

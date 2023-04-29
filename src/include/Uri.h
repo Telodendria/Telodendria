@@ -24,10 +24,28 @@
 #ifndef TELODENDRIA_URI_H
 #define TELODENDRIA_URI_H
 
+/***
+ * @Nm Uri
+ * @Nd Parse a URI. Typically used to parse HTTP(s) URLs.
+ * @Dd April 29 2023
+ * @Xr Http
+ *
+ * .Nm
+ * provides a simple mechanism for parsing URIs. This is an extremely
+ * basic parser that (ab)uses
+ * .Xr sscanf 3
+ * to parse URIs, so it may not be the most reliable, but it should
+ * work in most cases and on reasonable URIs that aren't too long, as
+ * the _MAX definitions are modest.
+ */
+
 #define URI_PROTO_MAX 8
 #define URI_HOST_MAX 128
 #define URI_PATH_MAX 256
 
+/**
+ * The parsed URI is stored in this structure.
+ */
 typedef struct Uri
 {
     char proto[URI_PROTO_MAX];
@@ -36,10 +54,16 @@ typedef struct Uri
     unsigned short port;
 } Uri;
 
-extern Uri *
- UriParse(const char *);
+/**
+ * Parse a URI string into the Uri structure as described above, or
+ * return NULL if there was a parsing error.
+ */
+extern Uri * UriParse(const char *);
 
-extern void
- UriFree(Uri *);
+/**
+ * Free the memory associated with a Uri structure returned by
+ * .Fn UriParse .
+ */
+extern void UriFree(Uri *);
 
 #endif                             /* TELODENDRIA_URI_H */
