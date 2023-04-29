@@ -651,9 +651,9 @@ HeaderParse(Stream * stream, HeaderExpr * expr)
         }
         else
         {
-            expr->type = HP_SYNTAX_ERROR;
-            expr->data.error.msg = "Expected comment, typedef, or extern.";
-            expr->data.error.lineNo = expr->state.lineNo;
+            /* Cope with preprocessor macro expansions at the top level. */
+            expr->type = HP_UNKNOWN;
+            strncpy(expr->data.text, word, HEADER_EXPR_MAX);
         }
 
         Free(word);

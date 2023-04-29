@@ -315,6 +315,10 @@ main(int argc, char **argv)
                     isDocumented = 0;
                 }
                 break;
+            case HP_UNKNOWN:
+                StreamPrintf(StreamStderr(), "Warning: Unknown expression: %s\n",
+                    expr.data.text);
+                break;
             default:
                 StreamPrintf(StreamStderr(), "Unknown header type: %d\n", expr.type);
                 StreamPrintf(StreamStderr(), "This is a programming error.\n");

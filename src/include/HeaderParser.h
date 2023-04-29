@@ -57,6 +57,7 @@ typedef enum HeaderExprType
     HP_TYPEDEF,
     HP_DECLARATION,
     HP_GLOBAL,
+    HP_UNKNOWN,
     HP_SYNTAX_ERROR,
     HP_PARSE_ERROR,
     HP_EOF
