@@ -22,10 +22,10 @@ Milestone: v0.3.0
 
 [ ] Documentation
     [x] Array
-    [ ] Io
+    [x] Io
     [ ] Stream
     [ ] Tls
-    [ ] HttpClient
+    [x] HttpClient
     [ ] Uri
     [ ] td
     [ ] tt
@@ -35,15 +35,15 @@ Milestone: v0.3.0
     [x] Log
     [ ] TelodendriaConfig -> Config
     [x] HashMap
-    [ ] HttpRouter
+    [x] HttpRouter
     [x] Html
-    [ ] Str
-    [ ] HeaderParser
+    [x] Str
+    [x] HeaderParser
     [ ] hdoc
     [x] telodendria-admin
     [x] telodendria-setup
     [x] telodendria-config
-    [~] Refactor dev pages so function description and
+    [x] Refactor dev pages so function description and
         return value are in the same location.
 
 [x] Debug memory leaks with caching

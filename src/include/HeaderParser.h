@@ -24,12 +24,32 @@
 #ifndef TELODENDRIA_HEADERPARSER_H
 #define TELODENDRIA_HEADERPARSER_H
 
+/***
+ * @Nm HeaderParser
+ * @Nd Parse simple C header files.
+ * @Dd April 29 2023
+ * 
+ * .Nm
+ * is an extremely simple parser that lacks most of the functionality
+ * one would expect from a C code parser. It simply maps a stream
+ * of tokens into a few categories, parsing major ``milestones'' in
+ * a header, without actually understanding any of the details.
+ * .Pp
+ * This exists because it is used to generate man pages from headers.
+ * See
+ * .Xr hdoc 1 
+ * for example usage of this parser.
+ */
+
 #include <Stream.h>
 #include <Array.h>
 
-/* Here's a comment */
 #define HEADER_EXPR_MAX 4096
 
+/**
+ * Headers are parsed as expressions. These are the expressions that
+ * this parser recognizes.
+ */
 typedef enum HeaderExprType
 {
     HP_COMMENT,
@@ -42,6 +62,9 @@ typedef enum HeaderExprType
     HP_EOF
 } HeaderExprType;
 
+/**
+ * A representation of a function declaration.
+ */
 typedef struct HeaderDeclaration
 {
     char returnType[64];
@@ -49,12 +72,26 @@ typedef struct HeaderDeclaration
     Array *args;
 } HeaderDeclaration;
 
+/**
+ * A global variable declaration. The type must be of the same size
+ * as the function declaration's return type due to the way parsing
+ * them is implemented.
+ */
 typedef struct HeaderGlobal
 {
     char type[64];
     char name[HEADER_EXPR_MAX - 64];
 } HeaderGlobal;
 
+/**
+ * A representation of a single header expression. Note that that state
+ * structure is entirely internally managed, so it should not be
+ * accessed or manipulated by functions outside the functions defined
+ * here.
+ * .Pp
+ * The type field should be used to determine which field in the data
+ * union is valid.
+ */
 typedef struct HeaderExpr
 {
     HeaderExprType type;
@@ -77,7 +114,11 @@ typedef struct HeaderExpr
     } state;
 } HeaderExpr;
 
-extern void
-HeaderParse(Stream *, HeaderExpr *);
+/**
+ * Parse the next expression into the given header expression structure.
+ * To parse an entire C header, this function should be called in a 
+ * loop until the type of the expression is HP_EOF.
+ */
+extern void HeaderParse(Stream *, HeaderExpr *);
 
 #endif /* TELODENDRIA_HEADERPARSER_H */
