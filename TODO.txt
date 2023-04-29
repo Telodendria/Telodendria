@@ -27,11 +27,11 @@ Milestone: v0.3.0
     [x] Tls
     [x] HttpClient
     [x] Uri
-    [ ] td
-    [ ] tt
+    [x] td
+    [x] tt
     [ ] http-debug-server
     [ ] tp
-    [ ] send-patch
+    [x] send-patch
     [x] Log
     [x] TelodendriaConfig -> Config
     [x] HashMap

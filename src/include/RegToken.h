@@ -24,7 +24,7 @@
 #ifndef TELODENDRIA_REGTOKEN_H
 #define TELODENDRIA_REGTOKEN_H
 
-/**
+/***
  * @Nm RegToken
  * @Nd Manage Matrix client registration tokens.
  * @Dd April 29 2023

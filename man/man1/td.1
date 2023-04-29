@@ -1,4 +1,4 @@
-.Dd $Mdocdate: March 10 2023 $
+.Dd $Mdocdate: April 29 2023 $
 .Dt TD 1
 .Os Telodendria Project
 .Sh NAME
@@ -73,35 +73,43 @@ with a single invocation of
 but recipes are run unconditionally; that is, even if a recipe fails, all the
 following recipes are still executed.
 .Bl -tag
+.It docs
+Build the code documentation files. While a good portion of the documentation
+is written by hand and maintained in the
+.Pa man/
+directory, a substantial amount of documentation is stored in the C header
+files that define Telodendria's APIs.
+This recipe runs
+.Xr hdoc 1
+on each header to generate man pages for them. The man pages are place in
+a directory that's already in your man path.
 .It build
 Build the source code and generate the output binary. This is the default recipe,
 which means it runs if no other recipes are specified. This recipe is incremental;
 it only rebuilds sources that have been modifed since the last build, making
 subsequent builds faster.
 .It run
-Run the build binary with the development configuration in the
-.Pa contrib/
-directory. This recipe is used for quick testing during development. It is
+Run the built binary with the data directory of
+.Pa data/
+in the current directory.  This recipe is used for quick testing during
+development. It is
 .Sy not
 the recommended way to run Telodendria in a production environment; it should only
 be used for development.
 .It clean
 Remove the
 .Pa build/
-directory and any ephemeral files in the source tree, such as
-.Pa .orig
-files. The build recipe does not place anything outside of
+directory. The build recipe does not place anything outside of
 .Pa build/ ,
 so you can usually just delete that directory and get the same effect.
-.It install
-Install Telodendria to the system. This recipe assumes you're running a 
-Unix-like system.
-.It uninstall
-Uninstall Telodendria from the system if it was installed with the install
-recipe.
+.It license
+Update the copyright comments in every C source and header file using the
+contents of the
+.Pa LICENSE.txt
+file. This recipe will also add the license header to new headers and C
+sources that show up.
 .It format
-Make sure the source code copyright headers are up to date, and format the code
-using the system's
+Format the code using the system's
 .Xr indent 1 .
 This should be run before generating patch files, to ensure that the code follows
 the project conventions. Note that the provided
@@ -109,10 +117,6 @@ the project conventions. Note that the provided
 assumes an OpenBSD indent, which may cause the GNU implementation to choke. In
 that case, don't send patch files with totally different formatting; just submit
 the patch as-is and they will get formatted before committing.
-.It test
-Run all of the unit tests and report the results. It is highly recommended to
-ensure that all the tests pass before submitting a patch, because patches that
-break the tests are likely to be rejected.
 .It site
 Deploy the Telodendria website by generating HTML files for the documentation,
 and copying them along with the front page to the specified web root. This is
@@ -165,10 +169,22 @@ so with this environment variable.
 .It Ev LDFLAGS
 The compiler flags used to link the object files to create an output
 binary.
+.It Ev LD_EXTRA
+The common, well-known compilers support a number of extra flags that
+smaller, niche compilers probably will not. This variable holds those
+flags, so if you are compiling with a small, lesser known compiler, you
+can set this to an empty string to disable the extra flags.
+.Pp
 .Nm
 comes with reasonable defaults that shouldn't need to be changed in most
 scenarios, but if you need to change the linker flags, you do so with this
 environment variable.
+.It Ev TLS_IMPL
+Set the TLS implementation library to use for Telodendria's TLS
+support. Consult
+.Xr Tls 3
+for a list of supported implementations. Implementations should be
+specified by name in all uppercase.
 .It Ev PROG
 The name of the output binary. This defaults to
 .Pa build/telodendria.
