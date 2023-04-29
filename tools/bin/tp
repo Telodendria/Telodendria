@@ -13,8 +13,6 @@ fi
 
 TP_DIR="$TELODENDRIA_PUB/patches"
 
-CURL="curl -s"
-
 if [ ! -d "$TP_DIR" ]; then
     echo "$TP_DIR does not exist."
     exit 1
@@ -32,14 +30,14 @@ matrix_send() {
             printf ',"format":"org.matrix.custom.html",'
             printf '"msgtype":"m.text"'
             printf '}'
-        ) | $CURL -X PUT -d @- "$HOMESERVER/client/v3/rooms/$PATCHES_ROOM/send/m.room.message/$(date +%s)?access_token=$ACCESS_TOKEN"
+        ) | http -X PUT -d @- "$HOMESERVER/client/v3/rooms/$PATCHES_ROOM/send/m.room.message/$(date +%s)?access_token=$ACCESS_TOKEN"
     fi
 }
 
 case "$1" in
     "ingress")
         timeline="/tmp/timeline.json"
-        $CURL "$HOMESERVER/client/v3/sync?access_token=$ACCESS_TOKEN" |
+        http "$HOMESERVER/client/v3/sync?access_token=$ACCESS_TOKEN" |
             json -s "rooms->join->${PATCHES_ROOM}->timeline" >"$timeline"
 
         length=$(cat "$timeline" | json -s "events->@length")
@@ -74,7 +72,7 @@ case "$1" in
 
             server=$(echo "$url" | cut -d '/' -f 3)
 
-            if ! $CURL -o "$TP_DIR/ingress/$id.patch" "$HOMESERVER/media/v3/download/$server/$id"; then
+            if ! http "$HOMESERVER/media/v3/download/$server/$id" > "$TP_DIR/ingress/$id.patch"; then
                 rm "$TP_DIR/ingress/$id.patch"
                 echo "Failed to fetch mxc://$server/$id."
                 echo "Will try again next time."

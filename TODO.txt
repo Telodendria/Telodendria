@@ -30,7 +30,7 @@ Milestone: v0.3.0
     [x] td
     [x] tt
     [ ] http-debug-server
-    [ ] tp
+    [x] tp
     [x] send-patch
     [x] Log
     [x] TelodendriaConfig -> Config

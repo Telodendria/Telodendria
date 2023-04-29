@@ -1,0 +1,34 @@
+.Dd $Mdocdate: April 29 2023 $
+.Dt TT 1
+.Os Telodendria Project
+.Sh NAME
+.Nm tt
+.Nd Make authenticated Matrix requests.
+.Sh SYNPOSIS
+.Nm
+.Op request-path
+.Sh DESCRIPTION
+.Nm
+is an extremely simple wrapper over
+.Xr http 1
+and
+.Xr json 1
+that automatically registers a user and continues to log in as that
+user. It obtains an access token that it uses to authenticate the
+given request, and then logs out when the request has completed. It
+also doesn't require the whole URL to be typed; only the path name
+is needed.
+.Sh ENVIRONMENT
+.Bl -tag
+.It Ev METH
+The request method to use for the user-specified request.
+.It Ev DATA
+The data to pass to
+.Xr http 1 .
+This can either be a string, or a file. Consult the
+.Xr http 1
+page for details.
+.El
+.Sh SEE ALSO
+.Xr http 1 ,
+.Xr json 1
