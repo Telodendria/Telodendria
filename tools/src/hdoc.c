@@ -316,6 +316,10 @@ main(int argc, char **argv)
                 }
                 break;
             case HP_UNKNOWN:
+                if (HashMapGet(registers, "suppress-warnings"))
+                {
+                    break;
+                }
                 StreamPrintf(StreamStderr(), "Warning: Unknown expression: %s\n",
                     expr.data.text);
                 break;

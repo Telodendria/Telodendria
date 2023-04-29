@@ -36,6 +36,8 @@
  * specification for documentation on Matrix routes and the
  * .Xr telodendria-admin
  * page for admin API routes.
+ *
+ * @suppress-warnings
  */
 
 #include <HashMap.h>
