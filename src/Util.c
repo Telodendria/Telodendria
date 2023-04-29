@@ -168,56 +168,6 @@ UtilSleepMillis(long ms)
     return res;
 }
 
-size_t
-UtilParseBytes(char *str)
-{
-    size_t bytes = 0;
-
-    while (*str)
-    {
-        if (isdigit((unsigned char) *str))
-        {
-            bytes *= 10;
-            bytes += *str - '0';
-        }
-        else
-        {
-            switch (*str)
-            {
-                case 'K':
-                    bytes *= 1024;
-                    break;
-                case 'M':
-                    bytes *= pow(1024, 2);
-                    break;
-                case 'G':
-                    bytes *= pow(1024, 3);
-                    break;
-                case 'k':
-                    bytes *= 1000;
-                    break;
-                case 'm':
-                    bytes *= pow(1000, 2);
-                    break;
-                case 'g':
-                    bytes *= pow(1000, 3);
-                    break;
-                default:
-                    return 0;
-            }
-
-            if (*(str + 1))
-            {
-                return 0;
-            }
-        }
-
-        str++;
-    }
-
-    return bytes;
-}
-
 ssize_t
 UtilGetDelim(char **linePtr, size_t * n, int delim, Stream * stream)
 {

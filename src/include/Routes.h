@@ -24,7 +24,19 @@
 #ifndef TELODENDRIA_ROUTES_H
 #define TELODENDRIA_ROUTES_H
 
-#include <string.h>
+/***
+ * @Nm Routes
+ * @Nd Matrix API endpoint handler functions.
+ * @Dd April 28 2023
+ * @Xr Matrix HttpRouter
+ *
+ * .Nm
+ * provides all of the Matrix API route functions, which for the sake
+ * of brevity are not documented here---consult the official Matrix
+ * specification for documentation on Matrix routes and the
+ * .Xr telodendria-admin
+ * page for admin API routes.
+ */
 
 #include <HashMap.h>
 #include <Array.h>
@@ -32,25 +44,34 @@
 #include <HttpRouter.h>
 #include <Matrix.h>
 
+#include <string.h>
+
 #define MATRIX_PATH_EQUALS(pathPart, str) \
 	((pathPart != NULL) && (strcmp(pathPart, str) == 0))
 
+/**
+ * Every route function takes this structure, which contains the data
+ * it needs to successfully handle an API request.
+ */
 typedef struct RouteArgs
 {
     MatrixHttpHandlerArgs *matrixArgs;
     HttpServerContext *context;
 } RouteArgs;
 
-HttpRouter *
- RouterBuild(void);
+/**
+ * Build an HTTP router that sets up all the route functions to be
+ * executed at the correct HTTP paths.
+ */
+extern HttpRouter * RouterBuild(void);
 
 #define ROUTE(name) \
 	extern void * \
 	name(Array *, void *)
 
-#define ROUTE_IMPL(name, matchesName, argsName) \
+#define ROUTE_IMPL(name, path, args) \
 	void * \
-	name(Array * matchesName, void * argsName)
+	name(Array * path, void * args)
 
 ROUTE(RouteVersions);
 ROUTE(RouteWellKnown);

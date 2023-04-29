@@ -24,29 +24,82 @@
 #ifndef TELODENDRIA_QUEUE_H
 #define TELODENDRIA_QUEUE_H
 
+/***
+ * @Nm Queue
+ * @Nd A simple static queue data structure.
+ * @Dd November 25 2022
+ * @Xr Array HashMap
+ *
+ * .Nm
+ * implements a simple queue data structure that is statically sized.
+ * This implementation does not actually store the values of the items
+ * in it; it only stores pointers to the data. As such, you will have
+ * to manually maintain data and make sure it remains valid as long as
+ * it is in the queue. The advantage of this is that
+ * .Nm
+ * doesn't have to copy data, and thus doesn't care how big the data
+ * is. Furthermore, any arbitrary data can be stored in the queue.
+ * .Pp
+ * This queue implementation operates on the heap. It is a circular
+ * queue, and it does not grow as it is used. Once the size is set,
+ * the queue never gets any bigger.
+ */
+
 #include <stddef.h>
 
+/**
+ * These functions operate on a queue structure that is opaque to the
+ * caller.
+ */
 typedef struct Queue Queue;
 
-extern Queue *
- QueueCreate(size_t);
+/**
+ * Allocate a new queue that is able to store the specified number of
+ * items in it.
+ */
+extern Queue * QueueCreate(size_t);
 
-extern void
- QueueFree(Queue *);
+/**
+ * Free the memory associated with the specified queue structure. Note
+ * that this function does not free any of the values stored in the
+ * queue; it is the caller's job to manage memory for each item.
+ * Typically, the caller would dequeue all the items in the queue and
+ * deal with them before freeing the queue itself.
+ */
+extern void QueueFree(Queue *);
 
-extern int
- QueuePush(Queue *, void *);
+/**
+ * Push an element into the queue. This function returns a boolean
+ * value indicating whether or not the push succeeded. Pushing items
+ * into the queue will fail if the queue is full.
+ */
+extern int QueuePush(Queue *, void *);
 
-extern void *
- QueuePop(Queue *);
+/**
+ * Pop an element out of the queue. This function returns NULL if the
+ * queue is empty. Otherwise, it returns a pointer to the item that is
+ * next up in the queue.
+ */
+extern void * QueuePop(Queue *);
 
-extern void *
- QueuePeek(Queue *);
+/**
+ * Retrieve a pointer to the item that is next up in the queue without
+ * actually discarding it, such that the next call to
+ * .Fn QueuePeek
+ * or
+ * .Fn QueuePop
+ * will return the same pointer.
+ */
+extern void * QueuePeek(Queue *);
 
-extern int
- QueueFull(Queue *);
+/**
+ * Determine whether or not the queue is full.
+ */
+extern int QueueFull(Queue *);
 
-extern int
- QueueEmpty(Queue *);
+/**
+ * Determine whether or not the queue is empty.
+ */
+extern int QueueEmpty(Queue *);
 
 #endif

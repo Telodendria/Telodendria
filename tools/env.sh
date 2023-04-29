@@ -32,7 +32,7 @@ if which makewhatis 2>&1 > /dev/null; then
 fi
 
 export PATH="$(pwd)/tools/bin:$(pwd)/build/tools:$PATH"
-export MANPATH="$(pwd)/man:$MANPATH"
+export MANPATH="$(pwd)/man:$(pwd)/build/man:$MANPATH"
 
 if [ "$(uname)" = "OpenBSD" ]; then
     # Other platforms use different MALLOC_OPTIONS

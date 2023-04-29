@@ -24,6 +24,37 @@
 #ifndef TELODENDRIA_HTML_H
 #define TELODENDRIA_HTML_H
 
+/***
+ * @Nm Html
+ * @Nd Utility functions for generating static HTML pages.
+ * @Dd April 27 2023
+ * 
+ * .Nm
+ * provides some simple macros and functions for generating HTML
+ * pages. These are very specific to Telodendria, as they automatically
+ * apply the color scheme and make assumptions about the stylesheets
+ * and scripts included.
+ * .Pp
+ * The following macros are available:
+ * .Bl -tag -width Ds
+ * .It HtmlBeginJs(stream)
+ * Begin JavaScript output. This sets up the opening script tags, and
+ * licenses the following JavaScript under the MIT license.
+ * .It HtmlEndJs(stream)
+ * End JavaScript output.
+ * .It HtmlBeginStyle(stream)
+ * Begin CSS output. This sets up the opening syle tags.
+ * .It HtmlEndStyle(stream)
+ * End CSS output.
+ * .It HtmlBeginForm(stream, id)
+ * Begin a new form with the specified ID. This sets up the opening
+ * form tags, which includes placing the form in a div with class
+ * 'form'.
+ * .It HtmlEndForm(stream)
+ * End HTML form output.
+ * .El
+ */
+
 #include <Stream.h>
 
 #define HtmlBeginJs(stream) StreamPuts(stream, \
@@ -46,10 +77,18 @@
         "<p id=\"error-msg\"></p>" \
         "</div>");
 
-extern void
- HtmlBegin(Stream *, char *);
+/**
+ * Initialize an HTML page by writing the head and the beginning of the
+ * body. After this function is called, the page's main HTML can be
+ * written. This function takes the name of the page it is beginning.
+ * The name is placed in the title tags, and is used as the page
+ * header.
+ */
+extern void HtmlBegin(Stream *, char *);
 
-extern void
- HtmlEnd(Stream *);
+/**
+ * Finish an HTML page by writing any necessary closing tags.
+ */
+extern void HtmlEnd(Stream *);
 
 #endif                             /* TELODENDRIA_HTML_H */

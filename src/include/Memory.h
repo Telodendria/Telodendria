@@ -24,8 +24,63 @@
 #ifndef TELODENDRIA_MEMORY_H
 #define TELODENDRIA_MEMORY_H
 
+/***
+ * @Nm Memory
+ * @Nd Smart memory management.
+ * @Dd January 9 2023
+ *
+ * .Nm
+ * is an API that allows for smart memory management and profiling. It
+ * wraps the standard library functions
+ * .Xr malloc 3 ,
+ * .Xr realloc 3 ,
+ * and
+ * .Xr free 3 ,
+ * and offers identical semantics, while providing functionality that
+ * the standard library doesn't have, such as getting statistics on the
+ * total memory allocated on the heap, and getting the size of a block
+ * given a pointer. Additionally, thanks to preprocessor macros, the
+ * exact file and line number at which an allocation, re-allocation, or
+ * free occured can be obtained given a pointer. Finally, all the
+ * blocks allocated on the heap can be iterated and evaluated, and a
+ * callback function can be executed every time a memory operation
+ * occurs.
+ * .Pp
+ * In the future, this API could include a garbage collector that
+ * automatically frees memory it detects as being no longer in use.
+ * However, this feature does not yet exist.
+ * .Pp
+ * A number of macros are available, which make the
+ * .Nm
+ * API much easier to use. They are as follows:
+ * .Bl -bullet -offset indent
+ * .It
+ * .Fn Malloc "x"
+ * .It
+ * .Fn Realloc "x" "y"
+ * .It
+ * .Fn Free "x"
+ * .El
+ * .Pp
+ * These macros expand to
+ * .Fn MemoryAllocate ,
+ * .Fn MemoryReallocate ,
+ * and
+ * .Fn MemoryFree
+ * with the second and third parameters set to __FILE__ and __LINE__.
+ * This allows
+ * .Nm
+ * to be used exactly how the standard library functions would be
+ * used. In fact, the functions to which these macros expand are not
+ * intended to be used directly; for the best results, use these
+ * macros.
+ */
 #include <stddef.h>
 
+/**
+ * These values are passed into the memory hook function to indicate
+ * the action that just happened.
+ */
 typedef enum MemoryAction
 {
     MEMORY_ALLOCATE,
@@ -38,45 +93,133 @@ typedef enum MemoryAction
 #define Realloc(x, s) MemoryReallocate(x, s, __FILE__, __LINE__)
 #define Free(x) MemoryFree(x, __FILE__, __LINE__)
 
+/**
+ * The memory information is opaque, but can be accessed using the
+ * functions defined by this API.
+ */
 typedef struct MemoryInfo MemoryInfo;
 
-extern void *
- MemoryAllocate(size_t, const char *, int);
+/**
+ * Allocate the specified number of bytes on the heap. This function
+ * has the same semantics as
+ * .Xr malloc 3 ,
+ * except that it takes the file name and line number at which the
+ * allocation occurred.
+ */
+extern void * MemoryAllocate(size_t, const char *, int);
 
-extern void *
- MemoryReallocate(void *, size_t, const char *, int);
+/**
+ * Change the size of the object pointed to by the given pointer
+ * to the given number of bytes. This function has the same semantics
+ * as
+ * .Xr realloc 3 ,
+ * except that it takes the file name and line number at which the
+ * reallocation occurred.
+ */
+extern void * MemoryReallocate(void *, size_t, const char *, int);
 
+/**
+ * Free the memory at the given pointer. This function has the same
+ * semantics as
+ * .Xr free 3 ,
+ * except that it takes the file name and line number at which the
+ * free occurred.
+ */
+extern void MemoryFree(void *, const char *, int);
+
+/**
+ * Get the total number of bytes that the program has allocated on the
+ * heap. This operation iterates over all heap allocations made with
+ * .Fn MemoryAllocate
+ * and then returns a total count, in bytes.
+ */
+extern size_t MemoryAllocated(void);
+
+/**
+ * Iterate over all heap allocations made with
+ * .Fn MemoryAllocate
+ * and call
+ * .Fn MemoryFree
+ * on them. This function immediately invalidates all pointers to
+ * blocks on the heap, and any subsequent attempt to read or write to
+ * data on the heap will result in undefined behavior. This is
+ * typically called at the end of the program, just before exit.
+ */
+extern void MemoryFreeAll(void);
+
+/**
+ * Fetch information about an allocation. This function takes a raw
+ * pointer, and if
+ * . Nm
+ * knows about the pointer, it returns a structure that can be used
+ * to obtain information about the block of memory that the pointer
+ * points to.
+ */
+extern MemoryInfo * MemoryInfoGet(void *);
+
+/**
+ * Get the size in bytes of the block of memory represented by the
+ * specified memory info structure.
+ */
+extern size_t MemoryInfoGetSize(MemoryInfo *);
+
+/**
+ * Get the file name in which the block of memory represented by the
+ * specified memory info structure was allocated.
+ */
+extern const char * MemoryInfoGetFile(MemoryInfo *);
+
+/**
+ * Get the line number on which the block of memory represented by the
+ * specified memory info structure was allocated.
+ */
+extern int MemoryInfoGetLine(MemoryInfo *);
+
+/**
+ * Get a pointer to the block of memory represented by the specified
+ * memory info structure.
+ */
+extern void * MemoryInfoGetPointer(MemoryInfo *);
+
+/**
+ * This function takes a pointer to a function that takes the memory
+ * info structure, as well as a void pointer for caller-provided
+ * arguments. It iterates over all the heap memory currently allocated
+ * at the time of calling, executing the function on each allocation.
+ */
+extern void MemoryIterate(void (*) (MemoryInfo *, void *), void *);
+
+/**
+ * Specify a function to be executed whenever a memory operation
+ * occurs. The MemoryAction argument specifies the operation that
+ * occurred on the block of memory represented by the memory info
+ * structure. The function also takes a void pointer to caller-provided
+ * arguments.
+ */
+extern void MemoryHook(void (*) (MemoryAction, MemoryInfo *, void *), void *);
+
+/**
+ * Read over the block of memory represented by the given memory info
+ * structure and generate a hexadecimal and ASCII string for each
+ * chunk of the block. This function takes a callback function that
+ * takes the following parameters in order:
+ * .Bl -bullet -offset indent
+ * .It
+ * The current offset from the beginning of the block of memory in
+ * bytes.
+ * .It
+ * A null-terminated string containing the next 16 bytes of the block
+ * encoded as space-separated hex values.
+ * .It
+ * A null-terminated string containing the ASCII representation of the
+ * same 16 bytes of memory. This ASCII representation is safe to print
+ * to a terminal or other text device, because non-printable characters
+ * are encoded as a . (period).
+ * .It
+ * Caller-passed pointer.
+ * .El
+ */
 extern void
- MemoryFree(void *, const char *, int);
-
-extern size_t
- MemoryAllocated(void);
-
-extern void
- MemoryFreeAll(void);
-
-extern MemoryInfo *
- MemoryInfoGet(void *);
-
-extern size_t
- MemoryInfoGetSize(MemoryInfo *);
-
-extern const char *
- MemoryInfoGetFile(MemoryInfo *);
-
-extern int
- MemoryInfoGetLine(MemoryInfo *);
-
-extern void *
- MemoryInfoGetPointer(MemoryInfo *);
-
-extern void
- MemoryIterate(void (*) (MemoryInfo *, void *), void *);
-
-extern void
- MemoryHook(void (*) (MemoryAction, MemoryInfo *, void *), void *);
-
-extern void
- MemoryHexDump(MemoryInfo *, void (*) (size_t, char *, char *, void *), void *);
+MemoryHexDump(MemoryInfo *, void (*) (size_t, char *, char *, void *), void *);
 
 #endif

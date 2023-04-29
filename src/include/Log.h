@@ -109,25 +109,88 @@ extern void LogConfigUnindent(LogConfig *);
  */
 extern void LogConfigIndentSet(LogConfig *, size_t);
 
-extern void
- LogConfigOutputSet(LogConfig *, Stream *);
+/**
+ * Set the file stream that logging output should be written to. This
+ * defaults to standard output, but it can be set to standard error,
+ * or any other arbitrary stream. Passing a NULL value for the stream
+ * pointer sets the log output to the standard output. Note that the
+ * output stream is only used if
+ * .Va LOG_FLAG_SYSLOG
+ * is not set.
+ */
+extern void LogConfigOutputSet(LogConfig *, Stream *);
 
-extern void
- LogConfigFlagSet(LogConfig *, int);
+/**
+ * Set a number of boolean options on a log configuration. This
+ * function uses bitwise operators, so multiple options can be set with
+ * a single function call using bitwise OR operators. The flags are
+ * defined as preprocessor macros, and are as follows:
+ * .Bl -tag -width Ds
+ * .It LOG_FLAG_COLOR
+ * When set, enable color-coded output on TTYs. Note that colors are
+ * implemented as ANSI escape sequences, and are not written to file
+ * streams that are not actually connected to a TTY, to prevent those
+ * sequences from being written to a file.
+ * .Xr isatty 3
+ * is checked before writing any terminal sequences.
+ * .It LOG_FLAG_SYSLOG
+ * When set, log output to the syslog using
+ * .Xr syslog 3 ,
+ * instead of logging to the file set by
+ * .Fn LogConfigOutputSet .
+ * This flag always overrides the stream set by that function,
+ * regardless of when it was set, even if it was set after this flag
+ * was set.
+ * .El
+ */
+extern void LogConfigFlagSet(LogConfig *, int);
 
-extern void
- LogConfigFlagClear(LogConfig *, int);
+/**
+ * Clear a boolean flag from the specified log format. See above for
+ * the list of flags.
+ */
+extern void LogConfigFlagClear(LogConfig *, int);
 
-extern void
- LogConfigTimeStampFormatSet(LogConfig *, char *);
+/**
+ * Set a custom timestamp to be prepended to each message if the
+ * output is not going to the system log. Consult your system's
+ * documentation for
+ * .Xr strftime 3 .
+ * A value of NULL disables the timestamp output before messages.
+ */
+extern void LogConfigTimeStampFormatSet(LogConfig *, char *);
 
-extern void
- Logv(LogConfig *, int, const char *, va_list);
+/**
+ * This function does the actual logging of messages using a
+ * specified configuration. It takes the configuration, the log
+ * level, a format string, and then a list of arguments, all in that
+ * order. This function only logs messages if their level is above
+ * or equal to the currently configured log level, making it easy to
+ * turn some messages on or off.
+ * .Pp
+ * This function has the same usage as
+ * .Xr vprintf 3 .
+ * Consult that page for the list of format specifiers and their
+ * arguments. This function is typically not used directly, see the
+ * other log functions for the most common use cases.
+ */
+extern void Logv(LogConfig *, int, const char *, va_list);
 
-extern void
- LogTo(LogConfig *, int, const char *,...);
+/**
+ * Log a message using
+ * .Fn Logv .
+ * with the specified configuration. This function has the same usage
+ * as
+ * .Xr printf 3 .
+ */
+extern void LogTo(LogConfig *, int, const char *, ...);
 
-extern void
- Log(int, const char *,...);
+/**
+ * Log a message to the global log using
+ * .Fn Logv .
+ * This function has the same usage as
+ * .Xr printf 3 .
+ */
+extern void Log(int, const char *, ...);
 
 #endif

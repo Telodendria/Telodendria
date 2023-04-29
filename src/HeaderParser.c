@@ -568,7 +568,6 @@ HeaderParse(Stream * stream, HeaderExpr * expr)
                     {
                         /* Looks like we have an array. Slurp all the
                          * dimensions */
-                        int block = 1;
                         int i = wordLen;
 
                         expr->data.global.name[i] = '[';

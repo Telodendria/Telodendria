@@ -24,6 +24,18 @@
 #ifndef TELODENDRIA_MATRIX_H
 #define TELODENDRIA_MATRIX_H
 
+/***
+ * @Nm Matrix
+ * @Nd Functions for writing Matrix API Endpoints.
+ * @Dd March 6 2023
+ * @Xr HttpServer Log Config Db
+ *
+ * .Nm
+ * provides some helper functions that bind to the HttpServer API and
+ * add basic Matrix functionality, turning an HTTP server into a
+ * Matrix homeserver.
+ */
+
 #include <HttpServer.h>
 #include <HttpRouter.h>
 #include <Log.h>
@@ -32,6 +44,12 @@
 #include <Config.h>
 #include <Db.h>
 
+/**
+ * The valid errors that can be used with
+ * .Fn MatrixErrorCreate .
+ * These values exactly follow the errors defined in the Matrix
+ * specification.
+ */
 typedef enum MatrixError
 {
     M_FORBIDDEN,
@@ -68,25 +86,70 @@ typedef enum MatrixError
     M_CANNOT_LEAVE_SERVER_NOTICE_ROOM
 } MatrixError;
 
+/**
+ * The arguments that should be passed through the void pointer to the
+ * .Fn MatrixHttpHandler
+ * function. This structure should be populated once, and then never
+ * modified again for the duration of the HTTP server.
+ */
 typedef struct MatrixHttpHandlerArgs
 {
     Db *db;
     HttpRouter *router;
 } MatrixHttpHandlerArgs;
 
-extern void
- MatrixHttpHandler(HttpServerContext *, void *);
+/**
+ * The HTTP handler function that handles all Matrix homeserver
+ * functionality. It should be passed into
+ * .Fn HttpServerCreate ,
+ * and it expects that a pointer to a MatrixHttpHandlerArgs
+ * will be provided, because that is what the void pointer is
+ * cast to.
+ */
+extern void MatrixHttpHandler(HttpServerContext *, void *);
 
-extern HashMap *
- MatrixErrorCreate(MatrixError);
+/**
+ * A convenience function that constructs an error payload, including
+ * the error code and message, given just a MatrixError.
+ */
+extern HashMap * MatrixErrorCreate(MatrixError);
 
-extern HashMap *
- MatrixGetAccessToken(HttpServerContext *, char **);
+/**
+ * Read the request headers and parameters, and attempt to obtain an
+ * access token from them. The Matrix specification says that an access
+ * token can either be provided via the Authorization header, or in a
+ * .Sy GET
+ * parameter. This function checks both, and stores the access token it
+ * finds in the passed character pointer.
+ * .Pp
+ * The specification does not say whether the header or parameter
+ * should be preferred if both are provided. This function prefers the
+ * header.
+ * .Pp
+ * If this function returns a non-NULL value, then the return value
+ * should be immediately passed along to the client and no further
+ * logic should be performed.
+ */
+extern HashMap * MatrixGetAccessToken(HttpServerContext *, char **);
 
-extern HashMap *
- MatrixRateLimit(HttpServerContext *, Db *);
+/**
+ * Determine whether or not the request should be rate limited. It is
+ * expected that this function will be called before most, if not all
+ * of the caller's logic.
+ * .Pp
+ * If this function returns a non-NULL value, then the return value
+ * should be immediately passed along to the client and no further
+ * logic should be performed.
+ */
+extern HashMap * MatrixRateLimit(HttpServerContext *, Db *);
 
-extern HashMap *
- MatrixClientWellKnown(char *, char *);
+/**
+ * Build a ``well-known'' JSON object, which contains information
+ * about the homeserver base URL and identity server, both of which
+ * should be provided by the caller in that order. This object can be
+ * sent to a client as-is, or it can be added as a value nested inside
+ * of a more complex response. Both occur in the Matrix specification.
+ */
+extern HashMap * MatrixClientWellKnown(char *, char *);
 
 #endif

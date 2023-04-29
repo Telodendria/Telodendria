@@ -32,10 +32,11 @@ Milestone: v0.3.0
     [ ] http-debug-server
     [ ] tp
     [ ] send-patch
-    [ ] Log
+    [x] Log
     [ ] TelodendriaConfig -> Config
     [x] HashMap
     [ ] HttpRouter
+    [x] Html
     [ ] Str
     [ ] HeaderParser
     [ ] hdoc
