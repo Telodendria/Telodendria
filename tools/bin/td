@@ -11,6 +11,10 @@
 # handle building the code, it also handles formatting it, as well
 # as generating patch files.
 
+if [ -z "$TELODENDRIA_ENV" ]; then
+    . tools/env.sh
+fi
+
 #
 # Set variables
 #

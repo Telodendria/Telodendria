@@ -39,3 +39,6 @@ if [ "$(uname)" = "OpenBSD" ]; then
     # flags.
     export MALLOC_OPTIONS="CFGJSU"
 fi
+
+export TELODENDRIA_ENV=1
+
