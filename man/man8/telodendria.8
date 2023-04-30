@@ -1,4 +1,4 @@
-.Dd $Mdocdate: February 15 2023 $
+.Dd $Mdocdate: April 30 2023 $
 .Dt TELODENDRIA 8
 .Os Telodendria Project
 .Sh NAME
@@ -15,27 +15,42 @@ It is designed to be lightweight and simple, yet functional.
 .sp
 The options are as follows:
 .Bl -tag -width Ds
-.It Fl f Ar file
-Specify an alternate configuration file. The default is
-.Pa /etc/telodendria.conf .
-.It Fl n
-Configtest mode. Only check the configuration file for validity.
+.It Fl d Ar dir
+Specify the data directory to use. All persistant storage that
+Telodendria requires is saved and loaded here.
 .It Fl V
-Only print the version information header.
+Only print the version information header and then quit.
 .It Fl v
 Verbose mode. This overrides the configuration file and sets the
 log level to
-.Em LOG_DEBUG
+.Em LOG_DEBUG .
+It also enables extra logging of memory operations, which can
+be useful for debugging.
 .El
 .Sh ENVIRONMENT
 .Nm
 does not read any environment variables. All configuration should
 be done via the configuration file.
 .Sh FILES
-Just the configuration file and the data directory; see
-.Xr telodendria.conf 5
-for more details.
+Just the data directory. Telodendria does not read any files outside
+of its data directory, with the exception of TLS files if configured.
+.Sh SIGNALS
+Telodendria recognizes a number of signals that it handles:
+.Bl -tag -width Ds
+.It PIPE
+This signal is ignored, because all I/O errors should be handled
+properly.
+.It USR1
+Perform a soft restart by shutting down the HTTP servers and resetting
+all program state. However, the daemon process does not exit.
+.It TERM
+Perform a clean shutdown after all existing connections are closed.
+.It INT
+Perform a clean shutdown after all existing connections are closed.
 .El
+.Pp
+Any other signals are not explicitly handled, so they have the
+default behavior defined by the operating system.
 .Sh EXIT STATUS
 .Nm
 exits with a non-0 exit code if the configuration file is invalid, or
@@ -54,4 +69,5 @@ the bootstrap process completed successfully, and by all accounts,
 it ran normally and exitted normally.
 .Sh SEE ALSO
 .Xr telodendria 7 ,
-.Xr telodendria.conf 5
+.Xr telodendria-setup 7 ,
+.Xr telodendria-admin 7
