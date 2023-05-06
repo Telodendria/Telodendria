@@ -535,7 +535,7 @@ JsonDecodeString(Stream * in)
 
                         /* Move the output of StrUtf8Encode() into our
                          * local buffer */
-                        strncpy(a, utf8Ptr, sizeof(a));
+                        strncpy(a, utf8Ptr, sizeof(a) - 1);
                         Free(utf8Ptr);
                         break;
                     default:

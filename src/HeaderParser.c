@@ -371,7 +371,7 @@ HeaderParse(Stream * stream, HeaderExpr * expr)
                  StrEquals(word, "elif") ||
                  StrEquals(word, "error"))
         {
-            int pC;
+            int pC = 0;
 
             Free(word);
             expr->data.text[i] = ' ';
