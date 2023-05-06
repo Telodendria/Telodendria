@@ -79,7 +79,7 @@ typedef void (HttpHandler) (HttpServerContext *, void *);
 /**
  * The number of arguments to
  * .Fn HttpServerCreate
- * has grown so large that arguments are not stuffed into a
+ * has grown so large that arguments are now stuffed into a
  * configuration structure, which is in turn passed to
  * .Fn HttpServerCreate .
  * This configuration is copied by value into the internal

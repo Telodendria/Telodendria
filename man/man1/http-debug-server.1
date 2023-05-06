@@ -1,0 +1,18 @@
+.Dd $Mdocdate: May 6 2023 $
+.Dt HTTP-DEBUG-SERVER 1
+.Os Telodendria Project
+.Sh NAME
+.Nm http-debug-server
+.Nd A simple HTTP server that logs requests to the standard output.
+.Sh DESCRIPTION
+.Pp
+.Nm
+spins up an HTTP server, listening on port 8008, in the exact same
+manner as Telodendria itself. Any request it receives is written to
+the standard output, and an empty JSON object is returned to the
+client.
+.Pp
+This command exists just to test the HTTP server API during
+development. It probably serves no other practical purpose.
+.Sh SEE ALSO
+.Xr HttpServer 3

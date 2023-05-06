@@ -29,7 +29,7 @@ Milestone: v0.3.0
     [x] Uri
     [x] td
     [x] tt
-    [ ] http-debug-server
+    [x] http-debug-server
     [x] tp
     [x] send-patch
     [x] Log
@@ -39,7 +39,7 @@ Milestone: v0.3.0
     [x] Html
     [x] Str
     [x] HeaderParser
-    [ ] hdoc
+    [ ] hdoc(1) and hdoc(5)
     [x] telodendria-admin
     [x] telodendria-setup
     [x] telodendria-config
@@ -64,6 +64,7 @@ Milestone: v0.3.0
 Milestone: v0.4.0
 -----------------
 
+[ ] Move general-purpose code to separate library
 [ ] HTTP/1.1 support
 
 [ ] Client-Server API
