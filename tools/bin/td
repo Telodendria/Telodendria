@@ -29,6 +29,7 @@ fi
 : "${DEFINES:=-D_DEFAULT_SOURCE -DTELODENDRIA_VERSION=\"${TELODENDRIA_VERSION}-$(uname)\"}"
 
 : "${CC:=cc}"
+: "${AR:=ar}"
 : "${CFLAGS:=-Wall -Wextra -pedantic -std=c89 -O3 -pipe}"
 : "${STATIC:=-static -Wl,-static}"
 : "${LD_EXTRA:=-flto -fdata-sections -ffunction-sections -s -Wl,-gc-sections}"
@@ -157,7 +158,7 @@ recipe_build() {
             echo "CC $(basename $obj)"
             obj_dir=$(dirname "../$obj")
             mkdir -p "$obj_dir"
-            if ! $CC $CFLAGS -Iinclude -c -o "../$obj" "$src"; then
+            if ! $CC $CFLAGS -fPIC -Iinclude -c -o "../$obj" "$src"; then
                 exit 1
             fi
             do_rebuild=1
@@ -170,6 +171,16 @@ recipe_build() {
         $CC -o "build/$PROG" $objs ${LDFLAGS} "build/$MAIN.o"
     fi
 
+    if [ $do_rebuild -eq 1 ] || [ ! -f "build/lib${PROG}.a" ]; then
+        echo "AR lib${PROG}.a"
+        $AR rcs "build/lib${PROG}.a" $objs
+    fi
+
+    if [ $do_rebuild -eq 1 ] || [ ! -f "build/lib${PROG}.so" ]; then
+        echo "LD lib${PROG}.so"
+        $CC -shared -o "build/lib${PROG}.so" $objs
+    fi
+
     for src in $(find tools/src -name '*.c'); do
         out=$(basename "$src" .c)
         out="build/tools/$out"
@@ -177,7 +188,7 @@ recipe_build() {
         if [ $(mod_time "$src") -ge $(mod_time "$out") ] || [ $do_rebuild -eq 1 ]; then
             echo "CC $(basename $out)"
             mkdir -p "$(dirname $out)"
-            if ! $CC $CFLAGS -Isrc/include -o "$out" $objs ${LDFLAGS} "$src"; then
+            if ! $CC $CFLAGS -Isrc/include -Lbuild -ltelodendria -o "$out" ${LDFLAGS} "$src"; then
                 exit 1
             fi
         fi
