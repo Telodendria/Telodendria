@@ -85,6 +85,7 @@ ROUTE(RouteRegister);
 ROUTE(RouteRefresh);
 ROUTE(RouteWhoami);
 ROUTE(RouteChangePwd);
+ROUTE(RouteDeactivate);
 ROUTE(RouteTokenValid);
 ROUTE(RouteUserProfile);
 ROUTE(RouteRequestToken);
