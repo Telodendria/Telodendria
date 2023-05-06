@@ -575,7 +575,7 @@ UserDeleteToken(User * user, char *token)
     username = JsonValueAsString(HashMapGet(tokenJson, "user"));
     deviceId = JsonValueAsString(HashMapGet(tokenJson, "device"));
 
-    if (strcmp(username, UserGetName(user)) != 0)
+    if (!StrEquals(username, UserGetName(user)))
     {
         /* Token does not match user, do not delete it */
         DbUnlock(db, tokenRef);
