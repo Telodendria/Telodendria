@@ -209,15 +209,15 @@ ConfigParseLog(Config * tConfig, HashMap * config)
     CONFIG_REQUIRE("output", JSON_STRING);
     str = JsonValueAsString(value);
 
-    if (strcmp(str, "stdout") == 0)
+    if (StrEquals(str, "stdout"))
     {
         tConfig->flags |= CONFIG_LOG_STDOUT;
     }
-    else if (strcmp(str, "file") == 0)
+    else if (StrEquals(str, "file"))
     {
         tConfig->flags |= CONFIG_LOG_FILE;
     }
-    else if (strcmp(str, "syslog") == 0)
+    else if (StrEquals(str, "syslog"))
     {
         tConfig->flags |= CONFIG_LOG_SYSLOG;
     }
@@ -229,23 +229,23 @@ ConfigParseLog(Config * tConfig, HashMap * config)
 
     CONFIG_OPTIONAL_STRING(str, "level", "message");
 
-    if (strcmp(str, "message") == 0)
+    if (StrEquals(str, "message"))
     {
         tConfig->logLevel = LOG_INFO;
     }
-    else if (strcmp(str, "debug") == 0)
+    else if (StrEquals(str, "debug"))
     {
         tConfig->logLevel = LOG_DEBUG;
     }
-    else if (strcmp(str, "notice") == 0)
+    else if (StrEquals(str, "notice"))
     {
         tConfig->logLevel = LOG_NOTICE;
     }
-    else if (strcmp(str, "warning") == 0)
+    else if (StrEquals(str, "warning"))
     {
         tConfig->logLevel = LOG_WARNING;
     }
-    else if (strcmp(str, "error") == 0)
+    else if (StrEquals(str, "error"))
     {
         tConfig->logLevel = LOG_ERR;
     }
@@ -259,7 +259,7 @@ ConfigParseLog(Config * tConfig, HashMap * config)
 
     CONFIG_OPTIONAL_STRING(tConfig->logTimestamp, "timestampFormat", "default");
 
-    if (strcmp(tConfig->logTimestamp, "none") == 0)
+    if (StrEquals(tConfig->logTimestamp, "none"))
     {
         Free(tConfig->logTimestamp);
         tConfig->logTimestamp = NULL;

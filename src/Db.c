@@ -926,7 +926,7 @@ DbList(Db * db, size_t nArgs,...)
         {
             int nameOffset = namlen - 5;
 
-            if (strcmp(file->d_name + nameOffset, ".json") == 0)
+            if (StrEquals(file->d_name + nameOffset, ".json"))
             {
                 file->d_name[nameOffset] = '\0';
                 ArrayAdd(result, StrDuplicate(file->d_name));

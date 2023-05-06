@@ -31,6 +31,7 @@
 #include <Memory.h>
 #include <HashMap.h>
 #include <Util.h>
+#include <Str.h>
 
 #ifndef TELODENDRIA_STRING_CHUNK
 #define TELODENDRIA_STRING_CHUNK 64
@@ -67,47 +68,47 @@ HttpRequestMethodToString(const HttpRequestMethod method)
 HttpRequestMethod
 HttpRequestMethodFromString(const char *str)
 {
-    if (strcmp(str, "GET") == 0)
+    if (StrEquals(str, "GET"))
     {
         return HTTP_GET;
     }
 
-    if (strcmp(str, "HEAD") == 0)
+    if (StrEquals(str, "HEAD"))
     {
         return HTTP_HEAD;
     }
 
-    if (strcmp(str, "POST") == 0)
+    if (StrEquals(str, "POST"))
     {
         return HTTP_POST;
     }
 
-    if (strcmp(str, "PUT") == 0)
+    if (StrEquals(str, "PUT"))
     {
         return HTTP_PUT;
     }
 
-    if (strcmp(str, "DELETE") == 0)
+    if (StrEquals(str, "DELETE"))
     {
         return HTTP_DELETE;
     }
 
-    if (strcmp(str, "CONNECT") == 0)
+    if (StrEquals(str, "CONNECT"))
     {
         return HTTP_CONNECT;
     }
 
-    if (strcmp(str, "OPTIONS") == 0)
+    if (StrEquals(str, "OPTIONS"))
     {
         return HTTP_OPTIONS;
     }
 
-    if (strcmp(str, "TRACE") == 0)
+    if (StrEquals(str, "TRACE"))
     {
         return HTTP_TRACE;
     }
 
-    if (strcmp(str, "PATCH") == 0)
+    if (StrEquals(str, "PATCH"))
     {
         return HTTP_PATCH;
     }
@@ -569,7 +570,7 @@ HttpParseHeaders(Stream * fp)
         ssize_t i;
         size_t len;
 
-        if (strcmp(line, "\r\n") == 0 || strcmp(line, "\n") == 0)
+        if (StrEquals(line, "\r\n") || StrEquals(line, "\n"))
         {
             break;
         }

@@ -25,6 +25,7 @@
 
 #include <User.h>
 #include <Memory.h>
+#include <Str.h>
 
 #include <string.h>
 #include <signal.h>
@@ -61,11 +62,11 @@ ROUTE_IMPL(RouteProcControl, path, argp)
     switch (HttpRequestMethodGet(args->context))
     {
         case HTTP_POST:
-            if (strcmp(op, "restart") == 0)
+            if (StrEquals(op, "restart"))
             {
                 raise(SIGUSR1);
             }
-            else if (strcmp(op, "shutdown") == 0)
+            else if (StrEquals(op, "shutdown"))
             {
                 raise(SIGINT);
             }
@@ -77,7 +78,7 @@ ROUTE_IMPL(RouteProcControl, path, argp)
             }
             break;
         case HTTP_GET:
-            if (strcmp(op, "stats") == 0)
+            if (StrEquals(op, "stats"))
             {
                 response = HashMapCreate();
 

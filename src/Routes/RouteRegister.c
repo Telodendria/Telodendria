@@ -156,7 +156,7 @@ ROUTE_IMPL(RouteRegister, path, argp)
         kind = HashMapGet(HttpRequestParams(args->context), "kind");
 
         /* We don't support guest accounts yet */
-        if (kind && strcmp(kind, "user") != 0)
+        if (kind && !StrEquals(kind, "user"))
         {
             HttpResponseStatus(args->context, HTTP_FORBIDDEN);
             response = MatrixErrorCreate(M_INVALID_PARAM);
@@ -303,7 +303,7 @@ finish:
     else
     {
         if (HttpRequestMethodGet(args->context) == HTTP_GET &&
-            MATRIX_PATH_EQUALS(ArrayGet(path, 0), "available"))
+            StrEquals(ArrayGet(path, 0), "available"))
         {
             username = HashMapGet(
                         HttpRequestParams(args->context), "username");

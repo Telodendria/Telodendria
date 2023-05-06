@@ -1020,7 +1020,7 @@ JsonTokenSeek(JsonParserState * state)
                             return;
                         }
 
-                        if (!strcmp("true", state->token))
+                        if (StrEquals("true", state->token))
                         {
                             state->tokenType = TOKEN_BOOLEAN;
                             state->tokenLen = 5;
@@ -1041,7 +1041,7 @@ JsonTokenSeek(JsonParserState * state)
                             return;
                         }
 
-                        if (!strcmp("false", state->token))
+                        if (StrEquals("false", state->token))
                         {
                             state->tokenType = TOKEN_BOOLEAN;
                             state->tokenLen = 6;
@@ -1062,7 +1062,7 @@ JsonTokenSeek(JsonParserState * state)
                             return;
                         }
 
-                        if (!strcmp("null", state->token))
+                        if (StrEquals("null", state->token))
                         {
                             state->tokenType = TOKEN_NULL;
                         }

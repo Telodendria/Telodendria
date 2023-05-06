@@ -96,4 +96,18 @@ extern char * StrRandom(size_t);
  */
 extern char * StrInt(long);
 
+/**
+ * Compare two strings and determine whether or not they are equal.
+ * This is the most common use case of strcmp() in Telodendria, but
+ * strcmp() doesn't like NULL pointers, so these have to be checked
+ * explicitly and can cause problems if they aren't. This function,
+ * on the other hand, makes NULL pointers special cases. If both
+ * arguments are NULL, then they are considered equal. If only one
+ * argument is NULL, they are considered not equal. Otherwise, if
+ * no arguments are NULL, a regular strcmp() takes place and this
+ * function returns a boolean value indicating whether or not
+ * strcmp() returned 0.
+ */
+extern int StrEquals(const char *, const char *);
+
 #endif                             /* TELODENDRIA_STR_H */

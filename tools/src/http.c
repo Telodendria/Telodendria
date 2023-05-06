@@ -118,11 +118,11 @@ main(int argc, char **argv)
 
     if (!uri->port)
     {
-        if (strcmp(uri->proto, "https") == 0)
+        if (StrEquals(uri->proto, "https"))
         {
             uri->port = 443;
         }
-        else if (strcmp(uri->proto, "http") == 0)
+        else if (StrEquals(uri->proto, "http"))
         {
             uri->port = 80;
         }
@@ -135,7 +135,7 @@ main(int argc, char **argv)
         return 1;
     }
 
-    if (strcmp(uri->proto, "https") == 0)
+    if (StrEquals(uri->proto, "https"))
     {
         requestFlags |= HTTP_FLAG_TLS;
     }
@@ -166,7 +166,7 @@ main(int argc, char **argv)
 
             data++;
 
-            if (strcmp(data, "-") == 0)
+            if (StrEquals(data, "-"))
             {
                 in = StreamStdin();
             }

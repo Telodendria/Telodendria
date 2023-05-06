@@ -271,7 +271,7 @@ start:
         goto finish;
     }
 
-    if (!tConfig->logTimestamp || strcmp(tConfig->logTimestamp, "default") != 0)
+    if (!tConfig->logTimestamp || !StrEquals(tConfig->logTimestamp, "default"))
     {
         LogConfigTimeStampFormatSet(LogConfigGlobal(), tConfig->logTimestamp);
     }

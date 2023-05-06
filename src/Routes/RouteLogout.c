@@ -63,7 +63,7 @@ ROUTE_IMPL(RouteLogout, path, argp)
 
     if (ArraySize(path) == 1)
     {
-        if (!MATRIX_PATH_EQUALS(ArrayGet(path, 0), "all"))
+        if (!StrEquals(ArrayGet(path, 0), "all"))
         {
             HttpResponseStatus(args->context, HTTP_NOT_FOUND);
             response = MatrixErrorCreate(M_NOT_FOUND);

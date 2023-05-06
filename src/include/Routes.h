@@ -48,9 +48,6 @@
 
 #include <string.h>
 
-#define MATRIX_PATH_EQUALS(pathPart, str) \
-	((pathPart != NULL) && (strcmp(pathPart, str) == 0))
-
 /**
  * Every route function takes this structure, which contains the data
  * it needs to successfully handle an API request.

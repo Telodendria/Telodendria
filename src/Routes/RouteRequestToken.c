@@ -96,7 +96,7 @@ ROUTE_IMPL(RouteRequestToken, path, argp)
         goto finish;
     }
 
-    if (strcmp(type, "email") == 0)
+    if (StrEquals(type, "email"))
     {
         val = HashMapGet(request, "email");
         if (val && JsonValueType(val) != JSON_STRING)
@@ -106,7 +106,7 @@ ROUTE_IMPL(RouteRequestToken, path, argp)
             goto finish;
         }
     }
-    else if (strcmp(type, "msisdn") == 0)
+    else if (StrEquals(type, "msisdn"))
     {
         val = HashMapGet(request, "country");
         if (val && JsonValueType(val) != JSON_STRING)

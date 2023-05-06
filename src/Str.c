@@ -276,3 +276,22 @@ StrInt(long i)
 
     return str;
 }
+
+int
+StrEquals(const char *str1, const char *str2)
+{
+    /* Both strings are NULL, they're equal */
+    if (!str1 && !str2)
+    {
+        return 1;
+    }
+
+    /* One or the other is NULL, they're not equal */
+    if (!str1 || !str2)
+    {
+        return 0;
+    }
+
+    /* Neither are NULL, do a regular string comparison */
+    return strcmp(str1, str2) == 0;
+}

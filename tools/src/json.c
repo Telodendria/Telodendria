@@ -27,6 +27,7 @@
 
 #include <Array.h>
 #include <HashMap.h>
+#include <Str.h>
 #include <Memory.h>
 #include <Json.h>
 
@@ -58,7 +59,7 @@ query(char *select, HashMap * json)
 
         if (keyName[0] == '@')
         {
-            if (strcmp(keyName + 1, "length") == 0)
+            if (StrEquals(keyName + 1, "length"))
             {
                 switch (JsonValueType(val))
                 {
@@ -73,7 +74,7 @@ query(char *select, HashMap * json)
                         break;
                 }
             }
-            else if (JsonValueType(val) == JSON_OBJECT && strcmp(keyName + 1, "keys") == 0)
+            else if (JsonValueType(val) == JSON_OBJECT && StrEquals(keyName + 1, "keys"))
             {
                 HashMap *obj = JsonValueAsObject(val);
                 Array *arr = ArrayCreate();
@@ -87,7 +88,7 @@ query(char *select, HashMap * json)
 
                 val = JsonValueArray(arr);
             }
-            else if (JsonValueType(val) == JSON_STRING && strcmp(keyName + 1, "decode") == 0)
+            else if (JsonValueType(val) == JSON_STRING && StrEquals(keyName + 1, "decode"))
             {
                 StreamPrintf(StreamStdout(), "%s\n", JsonValueAsString(val));
                 val = NULL;

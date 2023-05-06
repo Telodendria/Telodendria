@@ -79,6 +79,7 @@ ROUTE_IMPL(RouteDeactivate, path, argp)
     {
         /* No access token provided, require password */
         Array *passwordFlow = ArrayCreate();
+
         ArrayAdd(passwordFlow, UiaStageBuild("m.login.password", NULL));
         ArrayAdd(uiaFlows, passwordFlow);
     }
@@ -110,7 +111,7 @@ ROUTE_IMPL(RouteDeactivate, path, argp)
     else
     {
         /* No access token, we have to get the user off UIA */
-        char * session = JsonValueAsString(JsonGet(request, 2, "auth", "session"));
+        char *session = JsonValueAsString(JsonGet(request, 2, "auth", "session"));
         DbRef *sessionRef = DbLock(db, 2, "user_interactive", session);
         char *userId = JsonValueAsString(HashMapGet(DbJson(sessionRef), "user"));
 

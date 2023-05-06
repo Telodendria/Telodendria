@@ -44,7 +44,7 @@ ROUTE_IMPL(RouteWellKnown, path, argp)
         return MatrixErrorCreate(M_UNKNOWN);
     }
 
-    if (MATRIX_PATH_EQUALS(ArrayGet(path, 0), "client"))
+    if (StrEquals(ArrayGet(path, 0), "client"))
     {
         response = MatrixClientWellKnown(config->baseUrl, config->identityServer);
     }

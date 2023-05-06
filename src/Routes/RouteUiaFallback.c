@@ -108,7 +108,7 @@ ROUTE_IMPL(RouteUiaFallback, path, argp)
     HttpSendHeaders(args->context);
     HtmlBegin(stream, "Authentication");
 
-    if (strcmp(authType, "m.login.password") == 0)
+    if (StrEquals(authType, "m.login.password"))
     {
         HtmlBeginForm(stream, "auth-form");
         StreamPuts(stream,
@@ -142,7 +142,7 @@ ROUTE_IMPL(RouteUiaFallback, path, argp)
                      "}", authType, sessionId);
         HtmlEndJs(stream);
     }
-    else if (strcmp(authType, "m.login.registration_token") == 0)
+    else if (StrEquals(authType, "m.login.registration_token"))
     {
         HtmlBeginForm(stream, "auth-form");
         StreamPuts(stream,

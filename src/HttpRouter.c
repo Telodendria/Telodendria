@@ -154,7 +154,7 @@ HttpRouterAdd(HttpRouter * router, char *regPath, HttpRouteFunc * exec)
         return 0;
     }
 
-    if (strcmp(regPath, "/") == 0)
+    if (StrEquals(regPath, "/"))
     {
         router->root->exec = exec;
         return 1;
@@ -213,7 +213,7 @@ HttpRouterRoute(HttpRouter * router, char *path, void *args, void **ret)
 
     node = router->root;
 
-    if (strcmp(path, "/") == 0)
+    if (StrEquals(path, "/"))
     {
         exec = node->exec;
     }

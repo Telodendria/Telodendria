@@ -24,6 +24,7 @@
 #include <HeaderParser.h>
 
 #include <Memory.h>
+#include <Str.h>
 
 #include <string.h>
 #include <ctype.h>
@@ -342,10 +343,10 @@ HeaderParse(Stream * stream, HeaderExpr * expr)
         strncpy(expr->data.text + i, word, HEADER_EXPR_MAX - i - 1);
         i += strlen(word);
 
-        if (strcmp(word, "include") == 0 ||
-            strcmp(word, "undef") == 0 ||
-            strcmp(word, "ifdef") == 0 ||
-            strcmp(word, "ifndef") == 0)
+        if (StrEquals(word, "include") ||
+            StrEquals(word, "undef") ||
+            StrEquals(word, "ifdef") ||
+            StrEquals(word, "ifndef"))
         {
             /* Read one more word */
             Free(word);
@@ -365,10 +366,10 @@ HeaderParse(Stream * stream, HeaderExpr * expr)
 
             Free(word);
         }
-        else if (strcmp(word, "define") == 0 ||
-                 strcmp(word, "if") == 0 ||
-                 strcmp(word, "elif") == 0 ||
-                 strcmp(word, "error") == 0)
+        else if (StrEquals(word, "define") ||
+                 StrEquals(word, "if") ||
+                 StrEquals(word, "elif") ||
+                 StrEquals(word, "error"))
         {
             int pC;
 
@@ -412,8 +413,8 @@ HeaderParse(Stream * stream, HeaderExpr * expr)
                 pC = c;
             }
         }
-        else if (strcmp(word, "else") == 0 ||
-                 strcmp(word, "endif") == 0)
+        else if (StrEquals(word, "else") ||
+                 StrEquals(word, "endif"))
         {
             /* Read no more words, that's the whole directive */
         }
@@ -433,7 +434,7 @@ HeaderParse(Stream * stream, HeaderExpr * expr)
         StreamUngetc(expr->state.stream, c);
         word = HeaderConsumeWord(expr);
 
-        if (strcmp(word, "typedef") == 0)
+        if (StrEquals(word, "typedef"))
         {
             int block = 0;
             int i = 0;
@@ -487,7 +488,7 @@ HeaderParse(Stream * stream, HeaderExpr * expr)
                 }
             }
         }
-        else if (strcmp(word, "extern") == 0)
+        else if (StrEquals(word, "extern"))
         {
             int wordLimit = sizeof(expr->data.declaration.returnType) - 8;
             int wordLen;
@@ -509,10 +510,10 @@ HeaderParse(Stream * stream, HeaderExpr * expr)
                 expr->type = HP_GLOBAL;
                 strncpy(expr->data.global.type, word, wordLimit);
 
-                if (strcmp(word, "struct") == 0 ||
-                    strcmp(word, "enum") == 0 ||
-                    strcmp(word, "const") == 0 ||
-                    strcmp(word, "unsigned") == 0)
+                if (StrEquals(word, "struct") ||
+                    StrEquals(word, "enum") ||
+                    StrEquals(word, "const") ||
+                    StrEquals(word, "unsigned"))
                 {
                     Free(word);
                     word = HeaderConsumeWord(expr);

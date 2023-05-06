@@ -134,8 +134,8 @@ ROUTE_IMPL(RouteUserProfile, path, argp)
                     goto finish;
                 }
                 entry = ArrayGet(path, 1);
-                if (strcmp(entry, "displayname") == 0 ||
-                    strcmp(entry, "avatar_url") == 0)
+                if (StrEquals(entry, "displayname") ||
+                    StrEquals(entry, "avatar_url"))
                 {
                     /* Check if user has privilege to do that action. */
                     if (strcmp(userId->localpart, UserGetName(user)) == 0)

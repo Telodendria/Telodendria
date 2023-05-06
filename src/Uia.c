@@ -292,7 +292,7 @@ UiaComplete(Array * flows, HttpServerContext * context, Db * db,
                 char *flowStage = stage->type;
                 char *completedStage = JsonValueAsString(ArrayGet(completed, j));
 
-                if (strcmp(flowStage, completedStage) != 0)
+                if (!StrEquals(flowStage, completedStage))
                 {
                     break;
                 }
@@ -323,7 +323,7 @@ UiaComplete(Array * flows, HttpServerContext * context, Db * db,
     {
         char *possible = ArrayGet(possibleNext, i);
 
-        if (strcmp(authType, possible) == 0)
+        if (StrEquals(authType, possible))
         {
             break;
         }
@@ -336,11 +336,11 @@ UiaComplete(Array * flows, HttpServerContext * context, Db * db,
         goto finish;
     }
 
-    if (strcmp(authType, "m.login.dummy") == 0)
+    if (StrEquals(authType, "m.login.dummy"))
     {
         /* Do nothing */
     }
-    else if (strcmp(authType, "m.login.password") == 0)
+    else if (StrEquals(authType, "m.login.password"))
     {
         char *password = JsonValueAsString(HashMapGet(auth, "password"));
         HashMap *identifier = JsonValueAsObject(HashMapGet(auth, "identifier"));
@@ -359,8 +359,8 @@ UiaComplete(Array * flows, HttpServerContext * context, Db * db,
         userId = UserIdParse(JsonValueAsString(HashMapGet(identifier, "user")),
                              config->serverName);
 
-        if (!type || strcmp(type, "m.id.user") != 0
-        || !userId || strcmp(userId->server, config->serverName) != 0)
+        if (!type || !StrEquals(type, "m.id.user")
+         || !userId || !StrEquals(userId->server, config->serverName))
         {
             HttpResponseStatus(context, HTTP_UNAUTHORIZED);
             ret = BuildResponse(flows, db, response, session, dbRef);
@@ -389,7 +389,7 @@ UiaComplete(Array * flows, HttpServerContext * context, Db * db,
         UserIdFree(userId);
         UserUnlock(user);
     }
-    else if (strcmp(authType, "m.login.registration_token") == 0)
+    else if (StrEquals(authType, "m.login.registration_token"))
     {
         RegTokenInfo *tokenInfo;
 

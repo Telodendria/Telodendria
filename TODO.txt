@@ -23,7 +23,7 @@ Milestone: v0.3.0
 
 [~] Client-Server API
     [~] 4: Account management
-        [~] Deactivate
+        [x] Deactivate
             [x] Make sure UserLogin() fails if user is deactivated.
         [~] Whoami
             [ ] Attach device id to user object

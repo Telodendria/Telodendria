@@ -132,7 +132,7 @@ main(int argc, char **argv)
                     break;
                 }
 
-                if (strcmp(optarg, "-") == 0)
+                if (StrEquals(optarg, "-"))
                 {
                     in = StreamStdin();
                 }
@@ -167,7 +167,7 @@ main(int argc, char **argv)
                     break;
                 }
 
-                if (strcmp(optarg, "-") == 0)
+                if (StrEquals(optarg, "-"))
                 {
                     out = StreamStdout();
                 }

@@ -540,7 +540,7 @@ HttpServerWorkerThread(void *args)
         requestProtocol = &pathPtr[i + 1];
         line[lineLen - 2] = '\0';  /* Get rid of \r and \n */
 
-        if (strcmp(requestProtocol, "HTTP/1.1") != 0 && strcmp(requestProtocol, "HTTP/1.0") != 0)
+        if (!StrEquals(requestProtocol, "HTTP/1.1") && !StrEquals(requestProtocol, "HTTP/1.0"))
         {
             Free(requestPath);
             goto bad_request;

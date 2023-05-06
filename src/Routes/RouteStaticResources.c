@@ -23,6 +23,8 @@
  */
 #include <Routes.h>
 
+#include <Str.h>
+
 ROUTE_IMPL(RouteStaticResources, path, argp)
 {
     RouteArgs *args = argp;
@@ -36,7 +38,7 @@ ROUTE_IMPL(RouteStaticResources, path, argp)
         return MatrixErrorCreate(M_UNKNOWN);
     }
 
-    if (strcmp(res, "js") == 0)
+    if (StrEquals(res, "js"))
     {
         HttpResponseHeader(args->context, "Content-Type", "text/javascript");
         HttpSendHeaders(args->context);
@@ -86,7 +88,7 @@ ROUTE_IMPL(RouteStaticResources, path, argp)
                 );
 
     }
-    else if (strcmp(res, "css") == 0)
+    else if (StrEquals(res, "css"))
     {
         HttpResponseHeader(args->context, "Content-Type", "text/css");
         HttpSendHeaders(args->context);

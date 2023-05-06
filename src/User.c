@@ -374,7 +374,7 @@ UserCheckPassword(User * user, char *password)
     hashedPwd = Sha256(tmp);
     Free(tmp);
 
-    result = strcmp(hashedPwd, storedHash) == 0;
+    result = StrEquals(hashedPwd, storedHash);
 
     Free(hashedPwd);
 
@@ -667,7 +667,7 @@ UserDeleteTokens(User * user, char *exempt)
         char *accessToken = JsonValueAsString(HashMapGet(device, "accessToken"));
         char *refreshToken = JsonValueAsString(HashMapGet(device, "refreshToken"));
 
-        if (exempt && (strcmp(accessToken, exempt) == 0))
+        if (exempt && (StrEquals(accessToken, exempt)))
         {
             continue;
         }
@@ -764,27 +764,27 @@ UserDecodePrivilege(const char *p)
     {
         return USER_NONE;
     }
-    else if (strcmp(p, "ALL") == 0)
+    else if (StrEquals(p, "ALL"))
     {
         return USER_ALL;
     }
-    else if (strcmp(p, "DEACTIVATE") == 0)
+    else if (StrEquals(p, "DEACTIVATE"))
     {
         return USER_DEACTIVATE;
     }
-    else if (strcmp(p, "ISSUE_TOKENS") == 0)
+    else if (StrEquals(p, "ISSUE_TOKENS"))
     {
         return USER_ISSUE_TOKENS;
     }
-    else if (strcmp(p, "CONFIG") == 0)
+    else if (StrEquals(p, "CONFIG"))
     {
         return USER_CONFIG;
     }
-    else if (strcmp(p, "GRANT_PRIVILEGES") == 0)
+    else if (StrEquals(p, "GRANT_PRIVILEGES"))
     {
         return USER_GRANT_PRIVILEGES;
     }
-    else if (strcmp(p, "PROC_CONTROL") == 0)
+    else if (StrEquals(p, "PROC_CONTROL"))
     {
         return USER_PROC_CONTROL;
     }

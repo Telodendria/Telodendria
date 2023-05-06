@@ -104,7 +104,7 @@ ROUTE_IMPL(RouteLogin, path, argp)
             }
 
             type = JsonValueAsString(val);
-            if (strcmp(type, "m.login.password") != 0)
+            if (!StrEquals(type, "m.login.password"))
             {
                 HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
                 response = MatrixErrorCreate(M_UNRECOGNIZED);
@@ -144,7 +144,7 @@ ROUTE_IMPL(RouteLogin, path, argp)
             }
 
             type = JsonValueAsString(val);
-            if (strcmp(type, "m.id.user") != 0)
+            if (!StrEquals(type, "m.id.user"))
             {
                 HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
                 response = MatrixErrorCreate(M_UNRECOGNIZED);
@@ -174,7 +174,7 @@ ROUTE_IMPL(RouteLogin, path, argp)
                 break;
             }
 
-            if (strcmp(userId->server, config->serverName) != 0
+            if (!StrEquals(userId->server, config->serverName)
                 || !UserExists(db, userId->localpart))
             {
                 HttpResponseStatus(args->context, HTTP_FORBIDDEN);
