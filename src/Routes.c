@@ -60,6 +60,7 @@ RouterBuild(void)
 
     R("/_matrix/client/v3/account/whoami", RouteWhoami);
     R("/_matrix/client/v3/account/password", RouteChangePwd);
+    R("/_matrix/client/v3/account/deactivate", RouteDeactivate);
 
     R("/_matrix/client/v1/register/m.login.registration_token/validity", RouteTokenValid);
 
