@@ -93,8 +93,13 @@ MatrixHttpHandler(HttpServerContext * context, void *argp)
      */
     if (response)
     {
+        char *contentLen = StrInt(JsonEncode(response, NULL, JSON_DEFAULT));
+
         HttpResponseHeader(context, "Content-Type", "application/json");
+        HttpResponseHeader(context, "Content-Length", contentLen);
         HttpSendHeaders(context);
+
+        Free(contentLen);
 
         stream = HttpServerStream(context);
         JsonEncode(response, stream, JSON_DEFAULT);

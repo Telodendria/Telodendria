@@ -247,8 +247,12 @@ extern void JsonFree(HashMap *);
  * CanonicalJson encoder. This will typically be used for encoding
  * object keys; to encode values, just use
  * .Fn JsonEncodeValue .
+ * .Pp
+ * This function returns the number of bytes written to the stream,
+ * or if the stream is NULL, the number of bytes that would have
+ * been written.
  */
-extern void JsonEncodeString(const char *, Stream *);
+extern int JsonEncodeString(const char *, Stream *);
 
 /**
  * Serialize a JSON value as it would appear in JSON output. This is
@@ -267,14 +271,22 @@ extern void JsonEncodeString(const char *, Stream *);
  * .Va JSON_PRETTY .
  * To get minified output, set it to
  * .Va JSON_DEFAULT .
+ * .Pp
+ * This function returns the number of bytes written to the stream,
+ * or if the stream is NULL, the number of bytes that would have
+ * been written.
  */
-extern void JsonEncodeValue(JsonValue *, Stream *, int);
+extern int JsonEncodeValue(JsonValue *, Stream *, int);
 
 /**
  * Encode a JSON object as it would appear in JSON output, writing it
  * to the given output stream. This function is recursive; it will
  * serialize everything accessible from the passed object. The third
  * parameter has the same behavior as described above.
+ * .Pp
+ * This function returns the number of bytes written to the stream,
+ * or if the stream is NULL, the number of bytes that would have
+ * been written.
  */
 extern int JsonEncode(HashMap *, Stream *, int);
 

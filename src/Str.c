@@ -258,3 +258,21 @@ StrRandom(size_t len)
     str[len] = '\0';
     return str;
 }
+
+char *
+StrInt(long i)
+{
+    char *str;
+    int len;
+
+    len = snprintf(NULL, 0, "%ld", i);
+    str = Malloc(len + 1);
+    if (!str)
+    {
+        return NULL;
+    }
+
+    snprintf(str, len + 1, "%ld", i);
+
+    return str;
+}

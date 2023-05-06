@@ -11,40 +11,12 @@ Key:
 Milestone: v0.3.0
 -----------------
 
-[~] Move configuration to database
-    [x] Token permissions
-    [x] Initial configuration
-        [x] If no config, create one-time use registration token that
-            grants user admin privileges.
-    [~] /_telodendria/admin/config endpoint
-    [x] JsonDuplicate()
-    [x] Refactor TelodendriaConfig to just Config
+[~] /_telodendria/admin/config endpoint
+    [x] Replace entire config
+    [ ] Update only certain values
 
 [ ] Documentation
-    [x] Array
-    [x] Io
-    [x] Stream
-    [x] Tls
-    [x] HttpClient
-    [x] Uri
-    [x] td
-    [x] tt
-    [x] http-debug-server
-    [x] tp
-    [x] send-patch
-    [x] Log
-    [x] TelodendriaConfig -> Config
-    [x] HashMap
-    [x] HttpRouter
-    [x] Html
-    [x] Str
-    [x] HeaderParser
     [ ] hdoc(1) and hdoc(5)
-    [x] telodendria-admin
-    [x] telodendria-setup
-    [x] telodendria-config
-    [x] Refactor dev pages so function description and
-        return value are in the same location.
 
 [x] Debug memory leaks with caching
 [ ] Debug OpenSSL
@@ -53,12 +25,10 @@ Milestone: v0.3.0
     [~] 4: Account management
         [~] Deactivate
             [x] Make sure UserLogin() fails if user is deactivated.
-        [x] Change password
         [~] Whoami
             [ ] Attach device id to user object
             [ ] Use UserAuthenticate()
     [~] 9: User Data
-    [x] 5: Capabilities negotiation
     [ ] 10: Security (Rate Limiting)
 
 Milestone: v0.4.0

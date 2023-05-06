@@ -250,7 +250,7 @@ StreamVprintf(Stream * stream, const char *fmt, va_list ap)
 
     int ret;
 
-    if (!stream || !fmt)
+    if (!fmt)
     {
         return -1;
     }
@@ -264,9 +264,12 @@ StreamVprintf(Stream * stream, const char *fmt, va_list ap)
     ret = vfprintf(fp, fmt, ap);
     fclose(fp);
 
-    if (ret >= 0)
+    if (ret >= 0 && stream)
     {
-        ret = StreamPuts(stream, buf);
+        if (StreamPuts(stream, buf) < 0)
+        {
+            ret = -1;
+        };
     }
 
     free(buf);                     /* Allocated by stdlib, not Memory

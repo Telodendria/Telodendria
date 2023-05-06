@@ -333,13 +333,15 @@ JsonValueFree(JsonValue * value)
     Free(value);
 }
 
-void
+int
 JsonEncodeString(const char *str, Stream * out)
 {
     size_t i;
     char c;
+    int length = 0;
 
     StreamPutc(out, '"');
+    length++;
 
     i = 0;
     while ((c = str[i]) != '\0')
@@ -351,21 +353,27 @@ JsonEncodeString(const char *str, Stream * out)
             case '/':
                 StreamPutc(out, '\\');
                 StreamPutc(out, c);
+                length += 2;
                 break;
             case '\b':
                 StreamPuts(out, "\\b");
+                length += 2;
                 break;
             case '\t':
                 StreamPuts(out, "\\t");
+                length += 2;
                 break;
             case '\n':
                 StreamPuts(out, "\\n");
+                length += 2;
                 break;
             case '\f':
                 StreamPuts(out, "\\f");
+                length += 2;
                 break;
             case '\r':
                 StreamPuts(out, "\\r");
+                length += 2;
                 break;
             default:              /* Assume UTF-8 input */
                 /*
@@ -381,11 +389,12 @@ JsonEncodeString(const char *str, Stream * out)
                  */
                 if (c <= 0x001F)
                 {
-                    StreamPrintf(out, "\\u%04x", c);
+                    length += StreamPrintf(out, "\\u%04x", c);
                 }
                 else
                 {
                     StreamPutc(out, c);
+                    length++;
                 }
                 break;
         }
@@ -393,6 +402,9 @@ JsonEncodeString(const char *str, Stream * out)
     }
 
     StreamPutc(out, '"');
+    length++;
+
+    return length;
 }
 
 static char *
@@ -567,67 +579,76 @@ JsonDecodeString(Stream * in)
     return NULL;
 }
 
-void
+int
 JsonEncodeValue(JsonValue * value, Stream * out, int level)
 {
     size_t i;
     size_t len;
     Array *arr;
+    int length = 0;
 
     switch (value->type)
     {
         case JSON_OBJECT:
-            JsonEncode(value->as.object, out, level >= 0 ? level : level);
+            length += JsonEncode(value->as.object, out, level >= 0 ? level : level);
             break;
         case JSON_ARRAY:
             arr = value->as.array;
             len = ArraySize(arr);
 
             StreamPutc(out, '[');
+            length++;
             for (i = 0; i < len; i++)
             {
                 if (level >= 0)
                 {
-                    StreamPrintf(out, "\n%*s", level + 2, "");
+                    length += StreamPrintf(out, "\n%*s", level + 2, "");
                 }
-                JsonEncodeValue(ArrayGet(arr, i), out, level >= 0 ? level + 2 : level);
+                length += JsonEncodeValue(ArrayGet(arr, i), out, level >= 0 ? level + 2 : level);
                 if (i < len - 1)
                 {
                     StreamPutc(out, ',');
+                    length++;
                 }
             }
 
             if (level >= 0)
             {
-                StreamPrintf(out, "\n%*s", level, "");
+                length += StreamPrintf(out, "\n%*s", level, "");
             }
             StreamPutc(out, ']');
+            length++;
             break;
         case JSON_STRING:
-            JsonEncodeString(value->as.string, out);
+            length += JsonEncodeString(value->as.string, out);
             break;
         case JSON_INTEGER:
-            StreamPrintf(out, "%ld", value->as.integer);
+            length += StreamPrintf(out, "%ld", value->as.integer);
             break;
         case JSON_FLOAT:
-            StreamPrintf(out, "%f", value->as.floating);
+            length += StreamPrintf(out, "%f", value->as.floating);
             break;
         case JSON_BOOLEAN:
             if (value->as.boolean)
             {
                 StreamPuts(out, "true");
+                length += 4;
             }
             else
             {
                 StreamPuts(out, "false");
+                length += 5;
             }
             break;
         case JSON_NULL:
             StreamPuts(out, "null");
+            length += 4;
             break;
         default:
-            return;
+            return -1;
     }
+
+    return length;
 }
 
 int
@@ -637,10 +658,11 @@ JsonEncode(HashMap * object, Stream * out, int level)
     size_t count;
     char *key;
     JsonValue *value;
+    int length;
 
-    if (!object || !out)
+    if (!object)
     {
-        return 0;
+        return -1;
     }
 
     count = 0;
@@ -649,10 +671,16 @@ JsonEncode(HashMap * object, Stream * out, int level)
         count++;
     }
 
+    /* The total number of bytes written */
+    length = 0;
+
     StreamPutc(out, '{');
+    length++;
+
     if (level >= 0)
     {
         StreamPutc(out, '\n');
+        length++;
     }
 
     index = 0;
@@ -661,26 +689,31 @@ JsonEncode(HashMap * object, Stream * out, int level)
         if (level >= 0)
         {
             StreamPrintf(out, "%*s", level + 2, "");
+            length += level + 2;
         }
 
-        JsonEncodeString(key, out);
+        length += JsonEncodeString(key, out);
 
         StreamPutc(out, ':');
+        length++;
         if (level >= 0)
         {
             StreamPutc(out, ' ');
+            length++;
         }
 
-        JsonEncodeValue(value, out, level >= 0 ? level + 2 : level);
+        length += JsonEncodeValue(value, out, level >= 0 ? level + 2 : level);
 
         if (index < count - 1)
         {
             StreamPutc(out, ',');
+            length++;
         }
 
         if (level >= 0)
         {
             StreamPutc(out, '\n');
+            length++;
         }
 
         index++;
@@ -689,10 +722,12 @@ JsonEncode(HashMap * object, Stream * out, int level)
     if (level >= 0)
     {
         StreamPrintf(out, "%*s", level, "");
+        length += level;
     }
     StreamPutc(out, '}');
+    length++;
 
-    return 1;
+    return length;
 }
 
 void

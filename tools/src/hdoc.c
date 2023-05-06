@@ -321,7 +321,7 @@ main(int argc, char **argv)
                     break;
                 }
                 StreamPrintf(StreamStderr(), "Warning: Unknown expression: %s\n",
-                    expr.data.text);
+                             expr.data.text);
                 break;
             default:
                 StreamPrintf(StreamStderr(), "Unknown header type: %d\n", expr.type);

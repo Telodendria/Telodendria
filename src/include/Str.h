@@ -88,4 +88,12 @@ extern int StrBlank(const char *str);
  */
 extern char * StrRandom(size_t);
 
+/**
+ * Convert the specified integer into a string, returning the string
+ * on the heap, or NULL if there was a memory allocation error. The
+ * returned string should be freed by the caller after it is no longer
+ * needed.
+ */
+extern char * StrInt(long);
+
 #endif                             /* TELODENDRIA_STR_H */
