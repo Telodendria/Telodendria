@@ -148,12 +148,6 @@ UtilMkdir(const char *dir, const mode_t mode)
     return 0;
 }
 
-
-
-
-
-
-
 int
 UtilSleepMillis(long ms)
 {
