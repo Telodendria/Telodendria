@@ -1,4 +1,4 @@
-.Dd $Mdocdate: April 26 2023 $
+.Dd $Mdocdate: May 7 2023 $
 .Dt TELODENDRIA-CHANGELOG 7
 .Os Telodendria Project
 .Sh NAME
@@ -64,6 +64,10 @@ but the APIs are in place.
 Added web fallback pages for the supported user-interactive
 authentication mechanisms at
 .Pa /_matrix/client/v3/auth/*/fallback/web .
+.It
+Added support for the
+.Pa /_matrix/client/v3/account/deactivate
+endpoint.
 .El
 .Pp
 New Features:
@@ -121,6 +125,14 @@ with the new
 .Xr json 1
 tool.
 .Xr jq 1
+is no longer a development dependency.
+.It
+Replaced all usage of
+.Xr curl 1
+with the new
+.Xr http 1
+tool.
+.Xr curl 1
 is no longer a development dependency.
 .It
 Added a new
@@ -251,6 +263,40 @@ readable and easier to maintain.
 Fixed a number of memory-related issues, including switching out
 some unsafe functions for safer versions, per the recommendations
 of the OpenBSD linker.
+.It
+Moved all code documentation into the C header files to make it
+more likely that it will get updated. A simple header file parser
+and documentation generator have been added to the code base.
+See
+.Xr hdoc 1
+for the utility documentation, and
+.Xr hdoc 5
+for the documentation format.
+.It
+Updated the build script to provide static and shared libraries
+containing the code for
+.Nm
+to make it easier to statically and dynamically link to other programs.
+The idea is that these libraries should be shipped with
+.Nm ,
+or as a separate package, and can be used to provide a high-level
+programming environment.
+.It
+Updated the
+.Xr Json 3
+API to calculate the length of a JSON object. This is used to set the
+Content-Length header in HTTP requests and responses.
+.It
+Added some string functions, including
+.Fn StrEquals ,
+which replaced almost all usages of
+.Fn strcmp ,
+since
+.Fn strcmp
+is used almost exclusively for equality checking.
+.Fn StrEquals
+provides a standard way to do so, because previously, multiple
+different conventions could be found throughout the code base.
 .El
 .Pp
 \&... And many more!
