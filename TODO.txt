@@ -36,6 +36,9 @@ Milestone: v0.4.0
 
 [ ] Move general-purpose code to separate library
 [ ] HTTP/1.1 support
+    [ ] Content-Length
+    [ ] Keep connections open
+    [ ] Chunked encoding
 
 [ ] Client-Server API
     [ ] 6: Filtering

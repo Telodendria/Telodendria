@@ -59,16 +59,14 @@ if [ -n "$TLS_IMPL" ]; then
 fi
 
 CFLAGS="${CFLAGS} ${DEFINES} ${INCLUDES}"
-LDFLAGS="${LDFLAGS} ${STATIC}"
 
 MAIN="Main"
 
 if [ "$DEBUG" = "1" ]; then
     CFLAGS="$CFLAGS -O0 -g"
-    LDFLAGS="${LDFLAGS} ${TLS_LIBS}"
     PROG="$PROG-debug"
 else
-    LDFLAGS="${LDFLAGS} ${LD_EXTRA} ${TLS_LIBS}"
+    LDFLAGS="${LDFLAGS} ${LD_EXTRA}"
 fi
 
 # Check the modificiation time of a file. This is used to do
@@ -142,7 +140,7 @@ recipe_build() {
 
     echo "CC = ${CC}"
     echo "CFLAGS = ${CFLAGS}"
-    echo "LDFLAGS = ${LDFLAGS}"
+    echo "LDFLAGS = ${LDFLAGS} ${STATIC}"
     echo
 
     do_rebuild=0
@@ -166,20 +164,28 @@ recipe_build() {
     done
 
     cd ..
-    if [ $do_rebuild -eq 1 ] || [ ! -f "build/$PROG" ]; then
-        echo "LD $PROG"
-        $CC -o "build/$PROG" $objs ${LDFLAGS} "build/$MAIN.o"
-    fi
 
     if [ $do_rebuild -eq 1 ] || [ ! -f "build/lib${PROG}.a" ]; then
         echo "AR lib${PROG}.a"
-        $AR rcs "build/lib${PROG}.a" $objs
+        if ! $AR rcs "build/lib${PROG}.a" $objs; then
+            exit 1
+        fi
     fi
 
     if [ $do_rebuild -eq 1 ] || [ ! -f "build/lib${PROG}.so" ]; then
         echo "LD lib${PROG}.so"
-        $CC -shared -o "build/lib${PROG}.so" $objs
+        if ! $CC -shared -o "build/lib${PROG}.so" $objs ${LDFLAGS}; then
+            exit 1
+        fi
     fi
+
+    if [ $do_rebuild -eq 1 ] || [ ! -f "build/$PROG" ]; then
+        echo "LD $PROG"
+        if ! $CC -o "build/$PROG" "build/$MAIN.o" -Lbuild -ltelodendria ${LDFLAGS} ${STATIC}; then
+            exit 1
+        fi
+    fi
+
 
     for src in $(find tools/src -name '*.c'); do
         out=$(basename "$src" .c)
@@ -188,7 +194,7 @@ recipe_build() {
         if [ $(mod_time "$src") -ge $(mod_time "$out") ] || [ $do_rebuild -eq 1 ]; then
             echo "CC $(basename $out)"
             mkdir -p "$(dirname $out)"
-            if ! $CC $CFLAGS -Isrc/include -Lbuild -ltelodendria -o "$out" ${LDFLAGS} "$src"; then
+            if ! $CC $CFLAGS -Isrc/include -o "$out" "$src" -Lbuild -ltelodendria ${LDFLAGS} ${STATIC}; then
                 exit 1
             fi
         fi
