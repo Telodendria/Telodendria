@@ -25,6 +25,7 @@
 
 #include <Int.h>
 #include <Util.h>
+#include <Memory.h>
 
 #include <stdlib.h>
 #include <pthread.h>
@@ -97,6 +98,12 @@ RandGenerate(RandState * state)
     return result;
 }
 
+static void
+RandDestructor(void *p)
+{
+    Free(p);
+}
+
 /* Generate random numbers using rejection sampling. The basic idea is
  * to "reroll" if a number happens to be outside the range. However
  * this could be extremely inefficient.
@@ -112,23 +119,33 @@ RandGenerate(RandState * state)
 void
 RandIntN(int *buf, size_t size, unsigned int max)
 {
-    static pthread_mutex_t stateLock = PTHREAD_MUTEX_INITIALIZER;
-    static UInt32 seed = 0;
-    static RandState state;
+    static pthread_key_t stateKey;
+    static int createdKey = 0;
 
     /* Limit the range to banish all previously biased results */
     const int allowed = RAND_MAX - RAND_MAX % max;
 
+    RandState *state;
     int tmp;
     size_t i;
 
-    pthread_mutex_lock(&stateLock);
+    if (!createdKey)
+    {
+        pthread_key_create(&stateKey, RandDestructor);
+        createdKey = 1;
+    }
 
-    if (!seed)
+    state = pthread_getspecific(stateKey);
+
+    if (!state)
     {
         /* Generate a seed from the system time, PID, and TID */
-        seed = UtilServerTs() ^ getpid() ^ (unsigned long) pthread_self();
-        RandSeed(&state, seed);
+        UInt32 seed = UtilServerTs() ^ getpid() ^ (unsigned long) pthread_self();
+
+        state = Malloc(sizeof(RandState));
+        RandSeed(state, seed);
+
+        pthread_setspecific(stateKey, state);
     }
 
     /* Generate {size} random numbers. */
@@ -137,13 +154,11 @@ RandIntN(int *buf, size_t size, unsigned int max)
         /* Most of the time, this will take about 1 loop */
         do
         {
-            tmp = RandGenerate(&state);
+            tmp = RandGenerate(state);
         } while (tmp > allowed);
 
         buf[i] = tmp % max;
     }
-
-    pthread_mutex_unlock(&stateLock);
 }
 
 /* Generate just 1 random number */
