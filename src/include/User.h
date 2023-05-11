@@ -169,6 +169,17 @@ extern UserLoginInfo * UserLogin(User *, char *, char *, char *, int);
 extern char * UserGetName(User *);
 
 /**
+ * Get the device ID attached to a user object, or NULL if the user
+ * reference was not obtained using
+ * .Fn UserAuthenticate .
+ * If
+ * .Fn UserLogin
+ * is used, the return value will have the device ID in it, but the
+ * device ID is not set on the user reference.
+ */
+extern char * UserGetDeviceId(User *);
+
+/**
  * Take a password and verify it against a user object. Telodendria
  * does not store passwords in plain text, so this function hashes the
  * password and checks it against what is stored in the database.

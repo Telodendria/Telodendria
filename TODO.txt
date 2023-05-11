@@ -22,12 +22,12 @@ Milestone: v0.3.0
 [ ] Debug OpenSSL
 
 [~] Client-Server API
-    [~] 4: Account management
+    [x] 4: Account management
         [x] Deactivate
             [x] Make sure UserLogin() fails if user is deactivated.
-        [~] Whoami
-            [ ] Attach device id to user object
-            [ ] Use UserAuthenticate()
+        [x] Whoami
+            [x] Attach device id to user object
+            [x] Use UserAuthenticate()
     [~] 9: User Data
     [ ] 10: Security (Rate Limiting)
 

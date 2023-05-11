@@ -37,9 +37,7 @@ ROUTE_IMPL(RouteWhoami, path, argp)
     Db *db = args->matrixArgs->db;
 
     HashMap *response = NULL;
-    HashMap *tokenJson = NULL;
-
-    DbRef *ref;
+    User *user = NULL;
 
     char *token;
     char *userID;
@@ -65,25 +63,20 @@ ROUTE_IMPL(RouteWhoami, path, argp)
     }
 
     /* Authenticate with our token */
-    if (!DbExists(db, 3, "tokens", "access", token))
+    user = UserAuthenticate(db, token);
+    if (!user)
     {
         HttpResponseStatus(args->context, HTTP_UNAUTHORIZED);
         response = MatrixErrorCreate(M_UNKNOWN_TOKEN);
         goto finish;
     }
 
-    ref = DbLock(db, 3, "tokens", "access", token);
-    tokenJson = DbJson(ref);
-
     response = HashMapCreate();
 
-    userID = StrConcat(4, "@",
-                     JsonValueAsString(HashMapGet(tokenJson, "user")),
-                       ":", config->serverName);
+    userID = StrConcat(4, "@", UserGetName(user), ":", config->serverName);
+    deviceID = StrDuplicate(UserGetDeviceId(user));
 
-    deviceID = StrDuplicate(JsonValueAsString(HashMapGet(tokenJson, "device")));
-
-    DbUnlock(db, ref);
+    UserUnlock(user);
 
     HashMapSet(response, "device_id", JsonValueString(deviceID));
     HashMapSet(response, "user_id", JsonValueString(userID));

@@ -36,6 +36,7 @@ struct User
     DbRef *ref;
 
     char *name;
+    char *deviceId;
 };
 
 int
@@ -114,6 +115,7 @@ UserLock(Db * db, char *name)
     user->db = db;
     user->ref = ref;
     user->name = StrDuplicate(name);
+    user->deviceId = NULL;
 
     return user;
 }
@@ -157,8 +159,7 @@ UserAuthenticate(Db * db, char *accessToken)
         return NULL;
     }
 
-    /* TODO: Attach deviceId to User */
-    (void) deviceId;
+    user->deviceId = StrDuplicate(deviceId);
 
     DbUnlock(db, atRef);
     return user;
@@ -175,6 +176,7 @@ UserUnlock(User * user)
     }
 
     Free(user->name);
+    Free(user->deviceId);
 
     ret = DbUnlock(user->db, user->ref);
     Free(user);
@@ -340,6 +342,12 @@ char *
 UserGetName(User * user)
 {
     return user ? user->name : NULL;
+}
+
+char *
+UserGetDeviceId(User * user)
+{
+    return user ? user->deviceId : NULL;
 }
 
 int
