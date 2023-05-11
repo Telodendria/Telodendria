@@ -12,23 +12,17 @@ Milestone: v0.3.0
 -----------------
 
 [~] /_telodendria/admin/config endpoint
-    [x] Replace entire config
     [ ] Update only certain values
 
 [ ] Documentation
     [ ] hdoc(1) and hdoc(5)
 
-[x] Debug memory leaks with caching
 [ ] Debug OpenSSL
 
 [~] Client-Server API
-    [x] 4: Account management
-        [x] Deactivate
-            [x] Make sure UserLogin() fails if user is deactivated.
-        [x] Whoami
-            [x] Attach device id to user object
-            [x] Use UserAuthenticate()
     [~] 9: User Data
+        [x] Profiles
+        [ ] Directory
     [ ] 10: Security (Rate Limiting)
 
 Milestone: v0.4.0
