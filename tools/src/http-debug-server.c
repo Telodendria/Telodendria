@@ -70,7 +70,7 @@ HttpHandle(HttpServerContext * cx, void *args)
 }
 
 int
-main(void)
+Main(void)
 {
     struct sigaction sa;
     HttpServerConfig cfg;

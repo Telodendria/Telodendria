@@ -33,7 +33,7 @@
 #include <grp.h>
 #include <pwd.h>
 
-#include <Telodendria.h>
+#include <Args.h>
 #include <Memory.h>
 #include <Config.h>
 #include <Log.h>
@@ -46,6 +46,7 @@
 #include <Util.h>
 #include <Str.h>
 
+#include <Telodendria.h>
 #include <Matrix.h>
 #include <User.h>
 #include <RegToken.h>
@@ -90,11 +91,12 @@ typedef enum ArgFlag
 } ArgFlag;
 
 int
-main(int argc, char **argv)
+Main(Array *args)
 {
     int exit;
 
     /* Arg parsing */
+    ArgParseState arg;
     int opt;
     int flags;
     char *dbPath;
@@ -148,12 +150,13 @@ start:
 
     TelodendriaPrintHeader();
 
-    while ((opt = getopt(argc, argv, "d:Vv")) != -1)
+    ArgParseStateInit(&arg);
+    while ((opt = ArgParse(&arg, args, "d:Vv")) != -1)
     {
         switch (opt)
         {
             case 'd':
-                dbPath = optarg;
+                dbPath = arg.optArg;
                 break;
             case 'V':
                 flags |= ARG_VERSION;
@@ -591,7 +594,6 @@ finish:
      */
     MemoryHook(NULL, NULL);
 
-    LogConfigFree(LogConfigGlobal());
     StreamClose(logFile);
 
     if (restart)
@@ -606,20 +608,6 @@ finish:
         }
         goto start;
     }
-
-    StreamClose(StreamStdout());
-
-    /* Standard error should never have been opened, but just in case
-     * it was, this doesn't hurt anything. */
-    StreamClose(StreamStderr());
-
-    /* Generate a memory report if any leaks occurred. At this point no
-     * memory should be allocated. */
-    TelodendriaGenerateMemReport();
-
-    /* Free any leaked memory now, just in case the operating system
-     * we're running on won't do it for us. */
-    MemoryFreeAll();
 
     return exit;
 }

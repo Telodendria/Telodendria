@@ -25,6 +25,7 @@
 #include <string.h>
 #include <getopt.h>
 
+#include <Args.h>
 #include <Array.h>
 #include <HashMap.h>
 #include <Str.h>
@@ -177,27 +178,29 @@ encode(char *str)
 }
 
 int
-main(int argc, char **argv)
+Main(Array *args)
 {
     HashMap *json;
     int flag = 0;
     int ch;
     char *input = NULL;
+    ArgParseState arg;
 
-    while ((ch = getopt(argc, argv, "s:e:")) != -1)
+    ArgParseStateInit(&arg);
+    while ((ch = ArgParse(&arg, args, "s:e:")) != -1)
     {
         switch (ch)
         {
             case 's':
                 flag = FLAG_SELECT;
-                input = optarg;
+                input = arg.optArg;
                 break;
             case 'e':
                 flag = FLAG_ENCODE;
-                input = optarg;
+                input = arg.optArg;
                 break;
             default:
-                usage(argv[0]);
+                usage(ArrayGet(args, 0));
                 return 1;
         }
     }
@@ -227,10 +230,5 @@ main(int argc, char **argv)
             break;
     }
 
-    StreamClose(StreamStdout());
-    StreamClose(StreamStderr());
-    StreamClose(StreamStdin());
-
-    MemoryFreeAll();
     return 0;
 }

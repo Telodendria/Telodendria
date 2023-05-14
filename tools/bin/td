@@ -127,7 +127,7 @@ recipe_cytoplasm() {
     cd Cytoplasm
     export TLS_IMPL
     sh make.sh
-    CYTOPLASM_FLAGS="-LCytoplasm/out/lib -lcytoplasm $(sh make.sh libs)"
+    CYTOPLASM_FLAGS="Cytoplasm/out/lib/cytoplasm.o -LCytoplasm/out/lib -lcytoplasm $(sh make.sh libs)"
     cd - > /dev/null
 }
 
@@ -193,9 +193,9 @@ recipe_run() {
     if [ -f "build/$PROG" ]; then
         "build/$PROG" -d data
 
-        if [ -f "data/Memory.txt" ]; then
-            echo "WARNING: Memory.txt exists in the data directory; this means"
-            echo "Telodendria is leaking memory. Please fix memory leaks."
+        if [ -f "data/telodendria-leaked.txt" ]; then
+            echo "WARNING: Telodendria is leaking memory."
+            echo "Please fix memory leaks."
         fi
     else
         echo "build/$PROG does not exist; build it first."

@@ -28,6 +28,7 @@
 #include <unistd.h>
 #include <errno.h>
 
+#include <Args.h>
 #include <Memory.h>
 #include <Str.h>
 #include <HashMap.h>
@@ -43,7 +44,7 @@ usage(char *prog)
 }
 
 int
-main(int argc, char **argv)
+Main(Array *args)
 {
     HttpClientContext *cx;
     HttpStatus res;
@@ -55,12 +56,14 @@ main(int argc, char **argv)
     char *key;
     char *val;
 
+    ArgParseState arg;
     int flags = 0;
     int requestFlags = HTTP_FLAG_NONE;
 
     int ch;
 
-    while ((ch = getopt(argc, argv, "iH:X:d:")) != -1)
+    ArgParseStateInit(&arg);
+    while ((ch = ArgParse(&arg, args, "iH:X:d:")) != -1)
     {
         switch (ch)
         {
@@ -68,16 +71,16 @@ main(int argc, char **argv)
                 flags |= FLAG_HEADERS;
                 break;
             case 'X':
-                method = HttpRequestMethodFromString(optarg);
+                method = HttpRequestMethodFromString(arg.optArg);
                 if (!method)
                 {
-                    StreamPrintf(StreamStderr(), "Unknown request method: %s\n", optarg);
+                    StreamPrintf(StreamStderr(), "Unknown request method: %s\n", arg.optArg);
                     return 1;
                 }
                 break;
             case 'H':
-                key = optarg;
-                val = optarg;
+                key = arg.optArg;
+                val = arg.optArg;
 
                 while (*val && *val != ':')
                 {
@@ -95,24 +98,24 @@ main(int argc, char **argv)
                 HashMapSet(requestHeaders, key, StrDuplicate(val));
                 break;
             case 'd':
-                data = optarg;
+                data = arg.optArg;
                 break;
             default:
-                usage(argv[0]);
+                usage(ArrayGet(args, 0));
                 return 1;
         }
     }
 
-    if (argc - optind < 1)
+    if (ArraySize(args) - arg.optInd < 1)
     {
-        usage(argv[0]);
+        usage(ArrayGet(args, 0));
         return 1;
     }
 
-    uri = UriParse(argv[optind]);
+    uri = UriParse(ArrayGet(args, arg.optInd));
     if (!uri)
     {
-        StreamPrintf(StreamStderr(), "Failed to parse URI: %s\n", argv[optind]);
+        StreamPrintf(StreamStderr(), "Failed to parse URI: %s\n", ArrayGet(args, arg.optInd));
         return 1;
     }
 
@@ -249,9 +252,6 @@ main(int argc, char **argv)
 
     HttpClientContextFree(cx);
     UriFree(uri);
-
-    StreamClose(StreamStdout());
-    StreamClose(StreamStderr());
 
     return !(res == HTTP_OK);
 }
