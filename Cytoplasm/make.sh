@@ -122,6 +122,10 @@ recipe_docs() {
     fi
 }
 
+recipe_libs() {
+	echo "-lm -pthread ${TLS_LIBS}"
+}
+
 recipe_build() {
     mkdir -p "${BUILD}" ${OUT}/{bin,lib}
     cd "${SRC}"

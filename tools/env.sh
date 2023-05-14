@@ -31,8 +31,9 @@ if which makewhatis 2>&1 > /dev/null; then
     makewhatis "$(pwd)/man"
 fi
 
-export PATH="$(pwd)/tools/bin:$(pwd)/build/tools:$PATH"
-export MANPATH="$(pwd)/man:$(pwd)/build/man:$MANPATH"
+export LD_LIBRARY_PATH="$(pwd)/Cytoplasm/out/lib"
+export PATH="$(pwd)/tools/bin:$(pwd)/build/tools:$(pwd)/Cytoplasm/out/bin:$PATH"
+export MANPATH="$(pwd)/man:$(pwd)/build/man:$(pwd)/Cytoplasm/out/man:$MANPATH"
 
 if [ "$(uname)" = "OpenBSD" ]; then
     # Other platforms use different MALLOC_OPTIONS

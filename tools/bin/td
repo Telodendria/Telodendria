@@ -11,6 +11,17 @@
 # handle building the code, it also handles formatting it, as well
 # as generating patch files.
 
+addprefix() {
+    prefix="$1"
+    shift
+    for thing in "$@"; do
+        echo "${prefix}${thing}"
+    done
+
+    unset prefix
+    unset thing
+}
+
 if [ -z "$TELODENDRIA_ENV" ]; then
     . tools/env.sh
 fi
@@ -27,38 +38,18 @@ fi
 : "${CVS_TAG:=Telodendria-$(echo $TELODENDRIA_VERSION | sed 's/\./_/g')}"
 
 : "${DEFINES:=-D_DEFAULT_SOURCE -DTELODENDRIA_VERSION=\"${TELODENDRIA_VERSION}-$(uname)\"}"
+: "${INCLUDES:=src/include Cytoplasm/src/include}"
 
 : "${CC:=cc}"
 : "${AR:=ar}"
 : "${CFLAGS:=-Wall -Wextra -pedantic -std=c89 -O3 -pipe}"
 : "${STATIC:=-static -Wl,-static}"
 : "${LD_EXTRA:=-flto -fdata-sections -ffunction-sections -s -Wl,-gc-sections}"
-: "${LDFLAGS:=-lm -pthread}"
 : "${PROG:=telodendria}"
 
 . "$(pwd)/tools/lib/common.sh"
 
-if [ -n "$TLS_IMPL" ]; then
-    case "$TLS_IMPL" in
-        "LIBRESSL")
-            TLS_LIBS="-ltls -lcrypto -lssl"
-            ;;
-        "OPENSSL")
-            TLS_LIBS="-lcrypto -lssl"
-            ;;
-        *)
-            echo "Unrecognized TLS implementation: ${TLS_IMPL}"
-            echo "Consult src/include/Tls.h for supported implementations."
-            echo "Note that the TLS_ prefix is omitted in TLS_IMPL."
-            exit 1
-            ;;
-    esac
-
-    DEFINES="${DEFINES} -DTLS_IMPL=TLS_${TLS_IMPL}"
-    LDFLAGS="${LDFLAGS} ${TLS_LIBS}"
-fi
-
-CFLAGS="${CFLAGS} ${DEFINES} ${INCLUDES}"
+CFLAGS="${CFLAGS} ${DEFINES} $(addprefix -I$(pwd)/ ${INCLUDES})"
 
 MAIN="Main"
 
@@ -132,15 +123,25 @@ recipe_docs() {
     fi
 }
 
+recipe_cytoplasm() {
+    cd Cytoplasm
+    export TLS_IMPL
+    sh make.sh
+    CYTOPLASM_FLAGS="-LCytoplasm/out/lib -lcytoplasm $(sh make.sh libs)"
+    cd - > /dev/null
+}
+
 # Build the source code, and generate  the 'build/telodendria'
 # binary.
 recipe_build() {
+    recipe_cytoplasm
+
     cd src
     mkdir -p ../build
 
     echo "CC = ${CC}"
     echo "CFLAGS = ${CFLAGS}"
-    echo "LDFLAGS = ${LDFLAGS} ${STATIC}"
+    echo "LDFLAGS = ${CYTOPLASM_FLAGS} ${LDFLAGS} ${STATIC}"
     echo
 
     do_rebuild=0
@@ -156,7 +157,7 @@ recipe_build() {
             echo "CC $(basename $obj)"
             obj_dir=$(dirname "../$obj")
             mkdir -p "$obj_dir"
-            if ! $CC $CFLAGS -fPIC -Iinclude -c -o "../$obj" "$src"; then
+            if ! $CC $CFLAGS -fPIC -c -o "../$obj" "$src"; then
                 exit 1
             fi
             do_rebuild=1
@@ -165,27 +166,12 @@ recipe_build() {
 
     cd ..
 
-    if [ $do_rebuild -eq 1 ] || [ ! -f "build/lib${PROG}.a" ]; then
-        echo "AR lib${PROG}.a"
-        if ! $AR rcs "build/lib${PROG}.a" $objs; then
-            exit 1
-        fi
-    fi
-
-    if [ $do_rebuild -eq 1 ] || [ ! -f "build/lib${PROG}.so" ]; then
-        echo "LD lib${PROG}.so"
-        if ! $CC -shared -o "build/lib${PROG}.so" $objs ${LDFLAGS}; then
-            exit 1
-        fi
-    fi
-
     if [ $do_rebuild -eq 1 ] || [ ! -f "build/$PROG" ]; then
         echo "LD $PROG"
-        if ! $CC -o "build/$PROG" "build/$MAIN.o" -Lbuild -ltelodendria ${LDFLAGS} ${STATIC}; then
+        if ! $CC -o "build/$PROG" $objs "build/$MAIN.o" ${CYTOPLASM_FLAGS} ${LDFLAGS} ${STATIC}; then
             exit 1
         fi
     fi
-
 
     for src in $(find tools/src -name '*.c'); do
         out=$(basename "$src" .c)
@@ -194,15 +180,11 @@ recipe_build() {
         if [ $(mod_time "$src") -ge $(mod_time "$out") ] || [ $do_rebuild -eq 1 ]; then
             echo "CC $(basename $out)"
             mkdir -p "$(dirname $out)"
-            if ! $CC $CFLAGS -Isrc/include -o "$out" "$src" -Lbuild -ltelodendria ${LDFLAGS} ${STATIC}; then
+            if ! $CC $CFLAGS -o "$out" "$src" ${CYTOPLASM_FLAGS} ${LDFLAGS} ${STATIC}; then
                 exit 1
             fi
         fi
     done
-
-    if ! intcheck; then
-        exit 1
-    fi
 
     recipe_docs
 }
