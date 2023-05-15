@@ -41,13 +41,13 @@
 
 /**
  * Write a memory report to a file in the current directory, using
- * the provided string as the name of the program currently being
+ * the provided program arguments, including the program name that
  * executed. This function is to be called after all memory is
  * supposed to have been freed. It iterates over all remaining
  * memory and generates a text file containing all of the
  * recorded information about each block, including a hex dump of
  * the data stored in them.
  */
-extern void GenerateMemoryReport(const char *);
+extern void GenerateMemoryReport(int argc, char **argv);
 
 #endif /* CYTOPLASM_RUNTIME_H */

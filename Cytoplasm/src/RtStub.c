@@ -98,7 +98,7 @@ main(int argc, char **argv)
     envp = environ;
     while (*envp)
     {
-		size_t valInd;
+        size_t valInd;
 
         /* It is unclear whether or not envp strings are writable, so
          * we make our own copy to manipulate it */
@@ -109,7 +109,7 @@ main(int argc, char **argv)
         val = key + valInd + 1;
         HashMapSet(args.env, key, StrDuplicate(val));
         Free(key);
-		envp++;
+        envp++;
     }
 
     if (pthread_create(&mainThread, NULL, MainThread, &args) != 0)
@@ -146,7 +146,7 @@ finish:
         HashMapFree(args.env);
     }
 
-	Log(LOG_DEBUG, "Exitting with code: %d", ret);
+    Log(LOG_DEBUG, "Exitting with code: %d", ret);
 
     LogConfigFree(LogConfigGlobal());
 
@@ -154,7 +154,7 @@ finish:
     StreamClose(StreamStdin());
     StreamClose(StreamStderr());
 
-    GenerateMemoryReport(argv[0]);
+    GenerateMemoryReport(argc, argv);
 
     MemoryFreeAll();
 

@@ -126,7 +126,9 @@ recipe_docs() {
 recipe_cytoplasm() {
     cd Cytoplasm
     export TLS_IMPL
-    sh make.sh
+    if ! sh make.sh; then
+        exit 1
+    fi
     CYTOPLASM_FLAGS="Cytoplasm/out/lib/cytoplasm.o -LCytoplasm/out/lib -lcytoplasm $(sh make.sh libs)"
     cd - > /dev/null
 }

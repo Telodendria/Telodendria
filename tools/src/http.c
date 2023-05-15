@@ -44,7 +44,7 @@ usage(char *prog)
 }
 
 int
-Main(Array *args)
+Main(Array * args)
 {
     HttpClientContext *cx;
     HttpStatus res;

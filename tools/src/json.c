@@ -178,7 +178,7 @@ encode(char *str)
 }
 
 int
-Main(Array *args)
+Main(Array * args)
 {
     HashMap *json;
     int flag = 0;

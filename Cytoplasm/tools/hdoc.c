@@ -527,23 +527,35 @@ finish:
 
     for (i = 0; i < ArraySize(declarations); i++)
     {
-        Free(ArrayGet(declarations, i));
+        size_t j;
+
+        decl = ArrayGet(declarations, i);
+        for (j = 0; j < ArraySize(decl->decl.args); j++)
+        {
+            Free(ArrayGet(decl->decl.args, j));
+        }
+        ArrayFree(decl->decl.args);
+        Free(decl);
     }
+    ArrayFree(declarations);
 
     for (i = 0; i < ArraySize(typedefs); i++)
     {
         Free(ArrayGet(typedefs, i));
     }
+    ArrayFree(typedefs);
 
     for (i = 0; i < ArraySize(globals); i++)
     {
         Free(ArrayGet(globals, i));
     }
+    ArrayFree(globals);
 
     for (i = 0; i < ArraySize(descr); i++)
     {
         Free(ArrayGet(descr, i));
     }
+    ArrayFree(descr);
 
     while (HashMapIterate(registers, &key, (void **) &val))
     {

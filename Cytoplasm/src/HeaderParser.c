@@ -417,6 +417,7 @@ HeaderParse(Stream * stream, HeaderExpr * expr)
                  StrEquals(word, "endif"))
         {
             /* Read no more words, that's the whole directive */
+            Free(word);
         }
         else
         {

@@ -62,7 +62,7 @@ MemoryIterator(MemoryInfo * i, void *args)
 }
 
 void
-GenerateMemoryReport(const char *prog)
+GenerateMemoryReport(int argc, char **argv)
 {
     char reportName[128];
     char *namePtr;
@@ -77,6 +77,7 @@ GenerateMemoryReport(const char *prog)
     time_t currentTime;
     struct tm *timeInfo;
     char tsBuffer[1024];
+    size_t i;
 
     if (!MemoryAllocated())
     {
@@ -86,7 +87,7 @@ GenerateMemoryReport(const char *prog)
         return;
     }
 
-    snprintf(reportName, sizeof(reportName), "%s-leaked.txt", prog);
+    snprintf(reportName, sizeof(reportName), "%s-leaked.txt", argv[0]);
     /* Make sure the report goes in the current working directory. */
     namePtr = basename(reportName);
     report = fopen(namePtr, "a");
@@ -100,8 +101,12 @@ GenerateMemoryReport(const char *prog)
     strftime(tsBuffer, sizeof(tsBuffer), "%c", timeInfo);
 
     fprintf(report, "---------- Memory Report ----------\n");
-    fprintf(report, "Program: %s\n", prog);
-    fprintf(report, "Date: %s\n", tsBuffer);
+    fprintf(report, "Program:");
+    for (i = 0; i < argc; i++)
+    {
+        fprintf(report, " '%s'", argv[i]);
+    }
+    fprintf(report, "\nDate: %s\n", tsBuffer);
     fprintf(report, "Total Bytes: %lu\n", MemoryAllocated());
     fprintf(report, "\n");
 

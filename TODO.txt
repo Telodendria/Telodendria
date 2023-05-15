@@ -24,7 +24,7 @@ Milestone: v0.3.0
     [ ] Debug OpenSSL
     [ ] Documentation
         [ ] hdoc(1) and hdoc(5)
-    [ ] Fix memory leaks in hdoc
+    [x] Fix memory leaks in hdoc
 
 Milestone: v0.4.0
 -----------------

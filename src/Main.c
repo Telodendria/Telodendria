@@ -91,7 +91,7 @@ typedef enum ArgFlag
 } ArgFlag;
 
 int
-Main(Array *args)
+Main(Array * args)
 {
     int exit;
 
