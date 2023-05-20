@@ -127,7 +127,7 @@ recipe_libs() {
 }
 
 recipe_build() {
-    mkdir -p "${BUILD}" ${OUT}/{bin,lib}
+    mkdir -p "${BUILD}" "${OUT}/bin" "${OUT}/lib"
     cd "${SRC}"
 
     echo "CC = ${CC}"
