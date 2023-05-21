@@ -24,9 +24,12 @@
 #include <Memory.h>
 
 #include <stdio.h>
+#include <string.h>
 #include <stdlib.h>
 #include <ctype.h>
 #include <pthread.h>
+
+#include <Int.h>
 
 #ifndef MEMORY_TABLE_CHUNK
 #define MEMORY_TABLE_CHUNK 256
@@ -43,6 +46,13 @@ struct MemoryInfo
     int line;
     void *pointer;
 };
+
+#define MEM_BOUND_TYPE UInt16
+#define MEM_BOUND 0xADDE
+
+#define MEM_BOUND_LOWER(p) *((MEM_BOUND_TYPE *) p)
+#define MEM_BOUND_UPPER(p, x) *(((MEM_BOUND_TYPE *) (((UInt8 *) p) + x)) + 1)
+#define MEM_SIZE_ACTUAL(x) (((x) * sizeof(UInt8)) + (2 * sizeof(MEM_BOUND_TYPE)))
 
 static pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
 static void (*hook) (MemoryAction, MemoryInfo *, void *) = NULL;
@@ -143,6 +153,21 @@ MemoryDelete(MemoryInfo * a)
     }
 }
 
+static int
+MemoryCheck(MemoryInfo *a)
+{
+    if (MEM_BOUND_LOWER(a->pointer) != MEM_BOUND ||
+        MEM_BOUND_UPPER(a->pointer, a->size - (2 * sizeof(MEM_BOUND_TYPE))) != MEM_BOUND)
+    {
+        if (hook)
+        {
+            hook(MEMORY_CORRUPTED, a, hookArgs);
+        }
+        return 0;
+    }
+    return 1;
+}
+
 void *
 MemoryAllocate(size_t size, const char *file, int line)
 {
@@ -151,22 +176,26 @@ MemoryAllocate(size_t size, const char *file, int line)
 
     pthread_mutex_lock(&lock);
 
-    p = malloc(size);
-    if (!p)
-    {
-        pthread_mutex_unlock(&lock);
-        return NULL;
-    }
-
     a = malloc(sizeof(MemoryInfo));
     if (!a)
     {
-        free(p);
         pthread_mutex_unlock(&lock);
         return NULL;
     }
 
-    a->size = size;
+    p = malloc(MEM_SIZE_ACTUAL(size));
+    if (!p)
+    {
+        free(a);
+        pthread_mutex_unlock(&lock);
+        return NULL;
+    }
+
+    memset(p, 0, MEM_SIZE_ACTUAL(size));
+    MEM_BOUND_LOWER(p) = MEM_BOUND;
+    MEM_BOUND_UPPER(p, size) = MEM_BOUND;
+
+    a->size = MEM_SIZE_ACTUAL(size);
     a->file = file;
     a->line = line;
     a->pointer = p;
@@ -185,7 +214,7 @@ MemoryAllocate(size_t size, const char *file, int line)
     }
 
     pthread_mutex_unlock(&lock);
-    return p;
+    return ((MEM_BOUND_TYPE *) p) + 1;
 }
 
 void *
@@ -203,16 +232,19 @@ MemoryReallocate(void *p, size_t size, const char *file, int line)
     if (a)
     {
         pthread_mutex_lock(&lock);
-        new = realloc(a->pointer, size);
+        new = realloc(a->pointer, MEM_SIZE_ACTUAL(size));
         if (new)
         {
             MemoryDelete(a);
-            a->size = size;
+            a->size = MEM_SIZE_ACTUAL(size);
             a->file = file;
             a->line = line;
 
             a->pointer = new;
             MemoryInsert(a);
+
+            MEM_BOUND_LOWER(a->pointer) = MEM_BOUND;
+            MEM_BOUND_UPPER(a->pointer, size) = MEM_BOUND;
 
             if (hook)
             {
@@ -236,8 +268,7 @@ MemoryReallocate(void *p, size_t size, const char *file, int line)
         }
     }
 
-
-    return new;
+    return ((MEM_BOUND_TYPE *) new) + 1;
 }
 
 void
@@ -333,6 +364,7 @@ MemoryInfoGet(void *p)
 
     pthread_mutex_lock(&lock);
 
+    p = ((MEM_BOUND_TYPE *) p) - 1;
     hash = MemoryHash(p);
 
     count = 0;
@@ -345,6 +377,7 @@ MemoryInfoGet(void *p)
         }
         else
         {
+            MemoryCheck(allocations[hash]);
             pthread_mutex_unlock(&lock);
             return allocations[hash];
         }
@@ -362,7 +395,7 @@ MemoryInfoGetSize(MemoryInfo * a)
         return 0;
     }
 
-    return a->size;
+    return MEM_SIZE_ACTUAL(a->size);
 }
 
 const char *
@@ -395,7 +428,7 @@ MemoryInfoGetPointer(MemoryInfo * a)
         return NULL;
     }
 
-    return a->pointer;
+    return ((MEM_BOUND_TYPE *) a->pointer) + 1;
 }
 
 void
@@ -441,7 +474,6 @@ void
     }
 
     pc = MemoryInfoGetPointer(info);
-
     for (pI = 0; pI < MemoryInfoGetSize(info); pI++)
     {
         if (pI > 0 && pI % MEMORY_HEXDUMP_WIDTH == 0)

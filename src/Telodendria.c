@@ -30,6 +30,7 @@
 #include <Routes.h>
 
 #include <time.h>
+#include <signal.h>
 
 const char
  TelodendriaLogo[TELODENDRIA_LOGO_HEIGHT][TELODENDRIA_LOGO_WIDTH] = {
@@ -71,8 +72,12 @@ void
 TelodendriaMemoryHook(MemoryAction a, MemoryInfo * i, void *args)
 {
     char *action;
+    int warn = 0;
 
-    (void) args;
+    if (!args && ((a == MEMORY_ALLOCATE) || (a == MEMORY_REALLOCATE) || (a == MEMORY_FREE)))
+    {
+        return;
+    }
 
     switch (a)
     {
@@ -86,18 +91,28 @@ TelodendriaMemoryHook(MemoryAction a, MemoryInfo * i, void *args)
             action = "Freed";
             break;
         case MEMORY_BAD_POINTER:
+            warn = 1;
             action = "Bad pointer to";
+            break;
+        case MEMORY_CORRUPTED:
+            warn = 1;
+            action = "Corrupted block of";
             break;
         default:
             action = "Unknown operation on";
             break;
     }
 
-    Log(a == MEMORY_BAD_POINTER ? LOG_WARNING : LOG_DEBUG,
+    Log(warn ? LOG_WARNING : LOG_DEBUG,
         "%s:%d: %s %lu bytes of memory at %p.",
         MemoryInfoGetFile(i), MemoryInfoGetLine(i),
         action, MemoryInfoGetSize(i),
         MemoryInfoGetPointer(i));
+
+    if (a == MEMORY_CORRUPTED)
+    {
+        raise(SIGSEGV);
+    }
 }
 
 static void

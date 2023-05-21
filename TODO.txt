@@ -24,6 +24,7 @@ Milestone: v0.3.0
     [x] Documentation
         [x] hdoc(1) and hdoc(5)
     [x] Fix memory leaks in hdoc
+    [x] Detect memory write out of bounds
 
 Milestone: v0.4.0
 -----------------

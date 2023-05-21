@@ -175,6 +175,10 @@ start:
     if (flags & ARG_VERBOSE)
     {
         LogConfigLevelSet(LogConfigGlobal(), LOG_DEBUG);
+        MemoryHook(TelodendriaMemoryHook, (void *) ARG_VERBOSE);
+    }
+    else
+    {
         MemoryHook(TelodendriaMemoryHook, NULL);
     }
 

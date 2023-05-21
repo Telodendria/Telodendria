@@ -86,7 +86,8 @@ typedef enum MemoryAction
     MEMORY_ALLOCATE,
     MEMORY_REALLOCATE,
     MEMORY_FREE,
-    MEMORY_BAD_POINTER
+    MEMORY_BAD_POINTER,
+    MEMORY_CORRUPTED
 } MemoryAction;
 
 #define Malloc(x) MemoryAllocate(x, __FILE__, __LINE__)

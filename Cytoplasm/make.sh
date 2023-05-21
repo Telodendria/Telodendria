@@ -35,6 +35,11 @@ addprefix() {
 : "${LD_EXTRA:=-flto -fdata-sections -ffunction-sections -s -Wl,-gc-sections}"
 : "${LDFLAGS:=-lm -pthread}"
 
+if [ "${DEBUG}" = "1" ]; then
+    CFLAGS="${CFLAGS} -o0 -g"
+    LD_EXTRA=""
+fi
+
 if [ -n "${TLS_IMPL}" ]; then
     case "${TLS_IMPL}" in
         "LIBRESSL")
@@ -130,6 +135,7 @@ recipe_build() {
     mkdir -p "${BUILD}" "${OUT}/bin" "${OUT}/lib"
     cd "${SRC}"
 
+
     echo "CC = ${CC}"
     echo "CFLAGS = ${CFLAGS}"
     echo "LDFLAGS = ${LDFLAGS}"
@@ -171,7 +177,7 @@ recipe_build() {
         fi
     fi
 
-	cp "${BUILD}/${STUB}.o" "${OUT}/lib/${LIB_NAME}.o"
+    cp "${BUILD}/${STUB}.o" "${OUT}/lib/${LIB_NAME}.o"
 
     for src in $(find "${TOOLS}" -name '*.c'); do
         out=$(basename "$src" .c)
