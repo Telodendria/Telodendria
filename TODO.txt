@@ -19,12 +19,17 @@ Milestone: v0.3.0
         [x] Profiles
         [ ] Directory
 
+[ ] Fix leaks in http, json
+[ ] Remove TelodendriaGenerateMemReport()
+
 [ ] Cytoplasm
     [ ] Debug OpenSSL
     [x] Documentation
         [x] hdoc(1) and hdoc(5)
     [x] Fix memory leaks in hdoc
     [x] Detect memory write out of bounds
+    [ ] Memory check before reallocate, free
+    [ ] Add a sane default memory hook
 
 Milestone: v0.4.0
 -----------------
