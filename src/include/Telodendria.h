@@ -89,17 +89,6 @@ TelodendriaHeader[TELODENDRIA_HEADER_HEIGHT][TELODENDRIA_HEADER_WIDTH];
 extern void TelodendriaMemoryHook(MemoryAction, MemoryInfo *, void *);
 
 /**
- * Generate a memory report in the current working directory. This
- * function is intended to be called after all memory has supposedly
- * been freed. It allocates no new memory of its own (except what is
- * required by FILE pointers) and simply dumps all of the allocated
- * memory out to a file if there is any memory allocated.
- * .Pp
- * This function is used to detect and fix memory leaks.
- */
-extern void TelodendriaGenerateMemReport(void);
-
-/**
  * Print the logo and header, along with the copyright year and holder,
  * and the version number, out to the global log.
  */

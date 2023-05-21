@@ -186,7 +186,7 @@ HttpRequestSendHeaders(HttpClientContext * context)
 HttpStatus
 HttpRequestSend(HttpClientContext * context)
 {
-    HttpStatus status;
+    HttpStatus status = HTTP_STATUS_UNKNOWN;
 
     char *line = NULL;
     ssize_t lineLen;
@@ -195,7 +195,7 @@ HttpRequestSend(HttpClientContext * context)
 
     if (!context)
     {
-        return 0;
+        goto finish;
     }
 
     StreamFlush(context->stream);
@@ -210,19 +210,19 @@ HttpRequestSend(HttpClientContext * context)
 
     if (lineLen == -1)
     {
-        return 0;
+        goto finish;
     }
 
     /* Line must contain at least "HTTP/x.x xxx" */
     if (lineLen < 12)
     {
-        return 0;
+        goto finish;
     }
 
     if (!(strncmp(line, "HTTP/1.0", 8) == 0 ||
           strncmp(line, "HTTP/1.1", 8) == 0))
     {
-        return 0;
+        goto finish;
     }
 
     tmp = line + 9;
@@ -234,22 +234,26 @@ HttpRequestSend(HttpClientContext * context)
 
     if (!*tmp)
     {
-        return 0;
+        goto finish;
     }
 
     status = atoi(tmp);
 
     if (!status)
     {
-        return 0;
+        status = HTTP_STATUS_UNKNOWN;
+        goto finish;
     }
 
     context->responseHeaders = HttpParseHeaders(context->stream);
     if (!context->responseHeaders)
     {
-        return 0;
+        status = HTTP_STATUS_UNKNOWN;
+        goto finish;
     }
 
+finish:
+    Free(line);
     return status;
 }
 
