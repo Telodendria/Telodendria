@@ -77,7 +77,7 @@ GenerateMemoryReport(int argc, char **argv)
     time_t currentTime;
     struct tm *timeInfo;
     char tsBuffer[1024];
-    size_t i;
+    int i;
 
     if (!MemoryAllocated())
     {
