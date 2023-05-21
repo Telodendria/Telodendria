@@ -1,0 +1,51 @@
+.Dd $Mdocdate: May 21 2023 $
+.Dt HDOC 1
+.Os Cytoplasm
+.Sh NAME
+.Nm hdoc
+.Nd Generate documentation from a C header file.
+.Sh SYNOPSIS
+.Nm
+.Op Fl i Ar file
+.Op Fl o Ar file
+.Op Fl D Ar key=value
+.Sh DESCRIPTION
+.Nm
+is an extremely simple documentation generator that generates
+a BSD man page from a specially-formatted C header file.
+See
+.Xr hdoc 5
+for details on the format of this header file.
+.Pp
+The options are as follows:
+.Bl -tag -width Ds
+.It Fl i Ar file
+The input C header file to read from. If this option is omitted,
+then the standard input is read.
+.It Fl o Ar file
+The output BSD man page file to write. If this option is omitted,
+then the standard output is written.
+.It Fl D Ar key=value
+Set the register
+.Ar key
+to
+.Ar value .
+.Nm
+registers are used in various places, and can be set in either
+the header file, or on the command line. Setting registers that
+should be the same in all headers is best done from the command
+line for maintainability purposes, but header-specific values
+should be set in the header file itself.
+.Pp
+Registers are explained in more detail in
+.Xr hdoc 5 .
+.El
+.Sh RETURN VALUE
+.Pp
+.Nm
+returns a success value if the header is well-formed and the
+man page is successfully generated. It returns an error code in
+all other scenarios.
+.Sh SEE ALSO
+.Xr hdoc 5 ,
+.Xr HeaderParser 3

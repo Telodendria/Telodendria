@@ -18,12 +18,11 @@ Milestone: v0.3.0
     [~] 9: User Data
         [x] Profiles
         [ ] Directory
-    [ ] 10: Security (Rate Limiting)
 
 [ ] Cytoplasm
     [ ] Debug OpenSSL
-    [ ] Documentation
-        [ ] hdoc(1) and hdoc(5)
+    [x] Documentation
+        [x] hdoc(1) and hdoc(5)
     [x] Fix memory leaks in hdoc
 
 Milestone: v0.4.0
@@ -56,6 +55,7 @@ Milestone: v0.6.0
         [ ] Receipts
         [ ] Fully Read Markers
         [ ] Send-To-Device Messaging
+    [ ] 10: Security (Rate Limiting)
 
 Milestone: v0.7.0
 -----------------

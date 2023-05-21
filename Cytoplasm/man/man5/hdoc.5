@@ -1,0 +1,195 @@
+.Dd $Mdocdate: May 21 2023 $
+.Dt HDOC 5
+.Os Cytoplasm
+.Sh NAME
+.Nm hdoc
+.Nd C header file format accepted by the documentation generator.
+.Sh DESCRIPTION
+.Pp
+.Nm
+uses an extremely primitive parser to generate documentation from
+C header files. As such, the format accepted by
+.Nm
+is rather strict and may not be suitable for other projects beyond
+of Cytoplasm. This document describes what
+.Nm
+considers to be a valid C header file, and how that header file can
+be annotated to produce a nicely-formatted man page.
+.Pp
+At the very top level, a C header is a sequences of tokens that
+represent the following:
+.Bl -bullet -offset indent
+.It
+An ANSI C89 comment.
+.It
+A preprocessor directive.
+.It
+A typedef declaration.
+.It
+A constant or other global variable declaration.
+.It
+A function declaration.
+.El
+.Pp
+Note that global variables and functions
+.Em must
+be marked with
+.Ar extern ,
+otherwise the parser will fail to recognize them. This is by
+design; a header should make everything extern by default,
+because it does not actually implement or declare anything.
+.Pp
+Preprocessor directives are completely ignored. Regular C
+comments are also ignored.
+.Nm
+is primarily concerned with type declarations, global
+variables, and functions. It also inspects specially-formatted
+C comments, which are used to annotate these elements of the
+header. The format of these comments is described here.
+.Pp
+There are two types of special comments recognized, the first
+of which is called the ``main'' comment block, as it documents
+the header itself, not the declarations contained in it. Main
+comment blocks also control the behavior of the parser and the
+resulting man page by setting registers. The format of the
+main comment block, which typically appears only once at the
+top of the header, although this is not a requirement, is as
+follows:
+.Bl -bullet -offset indent
+.It
+The comment should start with a ``triple star,'' like this:
+.Bd -literal -offset indent
+/***
+ *
+ */
+.Ed
+.It
+Any lines that start with a ``@'' are parser directives that
+set registers. The name of the register to set follows
+immediately after the ``@'' sigil, and continues until the first
+whitespace. The rest of the line is the value of the register.
+A list of registers recognized by
+.Nm
+is as follows. These registers control the man page output,
+and the last value set is the one that is used:
+.Bl -tag -width Ds
+.It \&Nm
+The name register. The name of the man page will be set to the
+contents of this register. It defaults to ``Unnmamed.''
+.It \&Dd
+The date register. The date of the man page will be set to the
+contents of this register. If left unset, it defaults to the
+current date.
+.It \&Os
+The operating system register. The Os value, which appears in
+the bottom left and right corners of the man page, will be set
+to the contents of this register. If left unset, it is not
+output.
+.It \&Nd
+The description register. The description of the man page will
+be set to the contents of this register. It defaults to
+``No description.''
+.It \&Xr
+The cross reference register. The SEE ALSO section of the man
+page will list the specified cross references, which are to be
+separated by a single space. The section shall be omitted,
+because it is set automatically to the same section that the
+current man page will belong to. This limitation may be removed
+in the future.
+.El
+.Pp
+These registers control the parser itself, modifying its
+behavior as soon as the appear in the file:
+.Bl -tag -width Ds
+.It ignore-typedefs
+Don't throw an error for an undocumented type declaration.
+The value doesn't matter; as soon as this register shows
+up, it's set. In most cases, it should not be used, however,
+it may be helpful in a few scenarios, such as when there are
+multiple typedefs that do the same thing, but are controlled
+by preprocessor macros.
+.It suppress-warnings
+Don't issue a warning for invalid or unrecognized top-level
+tokens. They will instead be ignored until the next
+recognized top-level token is found. The value doesn't 
+matter; as soon as this register shows up, it is set. In most
+cases, it should not be used, however it may be helpful in a
+few scenarios, such as when function declarations are generated
+by preprocessor directives and thus don't follow the standard
+form.
+.El
+.It
+Any other lines in the main block are output to the DESCRIPTION
+section of the main page. This description may contain mdoc
+directives in it, as the lines are copied verbatim. If multiple
+main comment blocks appear in a single header, their description
+lines are appended in the order they appear.
+.El
+.Pp
+Declaration documentation comments are created as follows:
+.Bl -bullet -offset indent
+.It
+The comment should start with a ``double star,'' like this:
+.Bd -literal -offset indent
+/**
+ *
+ */
+.Ed
+.It
+The contents of the comment are copied verbatim into the output,
+so the comment may contain mdoc directives.
+.It
+The comment must appear before a declaration. If multiple
+documentation comments appear before a declaration, the last
+one before the declaration is used.
+.El
+.Pp
+The generated man page includes the name and description of the
+header, a synopsis section that lists all of the functions in
+the header, a description section that contains all the non-register
+lines of the main comment blocks, and then all of the documentation
+for each function, with the function prototype displayed as a
+subsection header, and the documentation displayed under it.
+.Sh EXAMPLES
+.Pp
+Consider the following simple C header:
+.Bd -literal -offset indent
+#include <stdio.h>
+
+extern void SayHello(FILE *);
+.Ed
+.Pp
+To annotate this header in the manner
+.Nm
+expects, do something like this:
+.Bd -literal -offset indent
+/***
+ * @Nm Hello
+ * @Nd Say hello.
+ * @Dd May 17 2023
+ *
+ * .Nm
+ * provides functionality to write hello world messages
+ * into standard C file descriptors.
+ *
+ * @Xr fputs fprintf
+ */
+#include <stdio.h>
+
+/**
+ * This function writes "hello world" to the given file
+ * descriptor.
+ * .Pp
+ * There really isn't much more to be said about it.
+ */
+extern void SayHello(FILE *);
+.Ed
+.Pp
+This example shows how mdoc directives can be placed in
+documentation comments. Note that the triple-star comment
+documents the header itself, and the double-star comment
+documents the type declaration or function definition
+below it.
+.Sh SEE ALSO
+.Xr hdoc 5 ,
+.Xr HeaderParser 3
