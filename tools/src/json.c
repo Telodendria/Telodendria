@@ -45,7 +45,8 @@ static void
 query(char *select, HashMap * json)
 {
     char *key;
-    JsonValue *val = JsonValueObject(json);
+    JsonValue *rootVal = JsonValueObject(json);
+    JsonValue *val = rootVal;
 
     key = strtok(select, "->");
 
@@ -165,6 +166,8 @@ query(char *select, HashMap * json)
         JsonEncodeValue(val, StreamStdout(), JSON_PRETTY);
         StreamPutc(StreamStdout(), '\n');
     }
+
+    JsonValueFree(rootVal);
 }
 
 static void
@@ -175,6 +178,7 @@ encode(char *str)
     JsonEncodeValue(val, StreamStdout(), JSON_DEFAULT);
     JsonValueFree(val);
     StreamPutc(StreamStdout(), '\n');
+    JsonValueFree(val);
 }
 
 int
@@ -230,6 +234,5 @@ Main(Array * args)
             break;
     }
 
-    JsonFree(json);
     return 0;
 }

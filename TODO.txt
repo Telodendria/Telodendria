@@ -19,7 +19,7 @@ Milestone: v0.3.0
         [x] Profiles
         [ ] Directory
 
-[ ] Fix leaks in http, json
+[x] Fix leaks in http, json
 [x] Remove TelodendriaGenerateMemReport()
 
 [ ] Cytoplasm
