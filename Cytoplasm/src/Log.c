@@ -24,6 +24,7 @@
 #include <Log.h>
 
 #include <Memory.h>
+#include <Str.h>
 
 #include <string.h>
 #include <time.h>
@@ -60,6 +61,7 @@ LogConfigCreate(void)
     }
 
     memset(config, 0, sizeof(LogConfig));
+    pthread_mutex_init(&config->lock, NULL);
 
     LogConfigLevelSet(config, LOG_INFO);
     LogConfigIndentSet(config, 0);
@@ -122,6 +124,8 @@ LogConfigFree(LogConfig * config)
         return;
     }
 
+    pthread_mutex_destroy(&config->lock);
+    Free(config->tsFmt);
     Free(config);
 
     if (config == globalConfig)
@@ -205,7 +209,7 @@ LogConfigTimeStampFormatSet(LogConfig * config, char *tsFmt)
 {
     if (config)
     {
-        config->tsFmt = tsFmt;
+        config->tsFmt = StrDuplicate(tsFmt);
     }
 }
 
