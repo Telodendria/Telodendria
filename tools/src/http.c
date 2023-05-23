@@ -46,10 +46,10 @@ usage(char *prog)
 int
 Main(Array * args)
 {
-    HttpClientContext *cx;
+    HttpClientContext *cx = NULL;
     HttpStatus res;
     HttpRequestMethod method = HTTP_GET;
-    Uri *uri;
+    Uri *uri = NULL;
     char *data = NULL;
 
     HashMap *requestHeaders = HashMapCreate();
@@ -61,6 +61,7 @@ Main(Array * args)
     int requestFlags = HTTP_FLAG_NONE;
 
     int ch;
+    int ret = 1;
 
     ArgParseStateInit(&arg);
     while ((ch = ArgParse(&arg, args, "iH:X:d:")) != -1)
@@ -102,21 +103,21 @@ Main(Array * args)
                 break;
             default:
                 usage(ArrayGet(args, 0));
-                return 1;
+                goto finish;
         }
     }
 
     if (ArraySize(args) - arg.optInd < 1)
     {
         usage(ArrayGet(args, 0));
-        return 1;
+        goto finish;
     }
 
     uri = UriParse(ArrayGet(args, arg.optInd));
     if (!uri)
     {
         StreamPrintf(StreamStderr(), "Failed to parse URI: %s\n", ArrayGet(args, arg.optInd));
-        return 1;
+        goto finish;
     }
 
     if (!uri->port)
@@ -134,8 +135,7 @@ Main(Array * args)
     if (!uri->port)
     {
         StreamPrintf(StreamStderr(), "Unknown protocol: %s\n", uri->proto);
-        UriFree(uri);
-        return 1;
+        goto finish;
     }
 
     if (StrEquals(uri->proto, "https"))
@@ -148,8 +148,7 @@ Main(Array * args)
     if (!cx)
     {
         StreamPuts(StreamStderr(), "Failed to connect.\n");
-        UriFree(uri);
-        return 1;
+        goto finish;
     }
 
     while (HashMapIterate(requestHeaders, &key, (void **) &val))
@@ -157,8 +156,6 @@ Main(Array * args)
         HttpRequestHeader(cx, key, val);
         Free(val);
     }
-
-    HashMapFree(requestHeaders);
 
     if (data)
     {
@@ -181,7 +178,7 @@ Main(Array * args)
             if (!in)
             {
                 StreamPrintf(StreamStderr(), "%s: %s\n", data, strerror(errno));
-                return 1;
+                goto finish;
             }
 
             len = StreamSeek(in, 0, SEEK_END);
@@ -229,9 +226,7 @@ Main(Array * args)
     if (!res)
     {
         StreamPuts(StreamStderr(), "Failed to send request.\n");
-        HttpClientContextFree(cx);
-        UriFree(uri);
-        return 1;
+        goto finish;
     }
 
     if (flags & FLAG_HEADERS)
@@ -250,8 +245,13 @@ Main(Array * args)
 
     StreamCopy(HttpClientStream(cx), StreamStdout());
 
+    ret = !(res == HTTP_OK);
+
+finish:
+    HashMapFree(requestHeaders);
+
     HttpClientContextFree(cx);
     UriFree(uri);
 
-    return !(res == HTTP_OK);
+    return ret;
 }
