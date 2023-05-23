@@ -180,7 +180,7 @@ encode(char *str)
 int
 Main(Array * args)
 {
-    HashMap *json;
+    HashMap *json = NULL;
     int flag = 0;
     int ch;
     char *input = NULL;
@@ -230,5 +230,6 @@ Main(Array * args)
             break;
     }
 
+    JsonFree(json);
     return 0;
 }

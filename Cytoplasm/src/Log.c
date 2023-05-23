@@ -24,7 +24,6 @@
 #include <Log.h>
 
 #include <Memory.h>
-#include <Str.h>
 
 #include <string.h>
 #include <time.h>
@@ -209,7 +208,7 @@ LogConfigTimeStampFormatSet(LogConfig * config, char *tsFmt)
 {
     if (config)
     {
-        config->tsFmt = StrDuplicate(tsFmt);
+        config->tsFmt = tsFmt;
     }
 }
 
