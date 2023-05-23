@@ -70,6 +70,8 @@ main(int argc, char **argv)
 
     MainArgs args;
 
+    MemoryHook(MemoryDefaultHook, NULL);
+
     args.args = NULL;
     args.env = NULL;
 

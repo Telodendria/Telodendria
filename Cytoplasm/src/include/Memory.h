@@ -200,6 +200,15 @@ extern void MemoryIterate(void (*) (MemoryInfo *, void *), void *);
 extern void MemoryHook(void (*) (MemoryAction, MemoryInfo *, void *), void *);
 
 /**
+ * The default memory hook, which has sane behavior and is installed
+ * at runtime. This function does not use any memory on the heap,
+ * except for the MemoryInfo passed to it, which it assumes to be
+ * valid. Everything else happens on the stack only, to ensure that
+ * the hook doesn't make any memory problems worse.
+ */
+extern void MemoryDefaultHook(MemoryAction, MemoryInfo *, void *);
+
+/**
  * Read over the block of memory represented by the given memory info
  * structure and generate a hexadecimal and ASCII string for each
  * chunk of the block. This function takes a callback function that

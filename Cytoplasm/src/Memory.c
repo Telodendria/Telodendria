@@ -27,6 +27,9 @@
 #include <string.h>
 #include <stdlib.h>
 #include <ctype.h>
+#include <signal.h>
+
+#include <unistd.h>
 #include <pthread.h>
 
 #include <Int.h>
@@ -154,7 +157,7 @@ MemoryDelete(MemoryInfo * a)
 }
 
 static int
-MemoryCheck(MemoryInfo *a)
+MemoryCheck(MemoryInfo * a)
 {
     if (MEM_BOUND_LOWER(a->pointer) != MEM_BOUND ||
         MEM_BOUND_UPPER(a->pointer, a->size - (2 * sizeof(MEM_BOUND_TYPE))) != MEM_BOUND)
@@ -456,6 +459,64 @@ void
     hook = memHook;
     hookArgs = args;
     pthread_mutex_unlock(&lock);
+}
+
+static size_t
+HexPtr(unsigned long ptr, char *out, size_t len)
+{
+    size_t i = len - 1;
+    size_t j = 0;
+
+    do
+    {
+        out[i] = "0123456789abcdef"[ptr % 16];
+        i--;
+        ptr /= 16;
+    } while (ptr > 0);
+
+    while (++i < len)
+    {
+        out[j++] = out[i];
+    }
+
+    out[j] = '\0';
+
+    return j;
+}
+
+void
+MemoryDefaultHook(MemoryAction a, MemoryInfo * i, void *args)
+{
+    char buf[64];
+    unsigned long ptr = (unsigned long) MemoryInfoGetPointer(i);
+
+    size_t len = HexPtr(ptr, buf, sizeof(buf));
+
+    (void) args;
+
+    switch (a)
+    {
+        case MEMORY_BAD_POINTER:
+            write(STDERR_FILENO, "Bad pointer: 0x", 15);
+            break;
+        case MEMORY_CORRUPTED:
+            write(STDERR_FILENO, "Corrupted block: 0x", 19);
+            break;
+        default:
+            return;
+    }
+
+    write(STDERR_FILENO, buf, len);
+    write(STDERR_FILENO, " to 0x", 6);
+    len = HexPtr(MemoryInfoGetSize(i), buf, sizeof(buf));
+    write(STDERR_FILENO, buf, len);
+    write(STDERR_FILENO, " bytes at ", 10);
+    write(STDERR_FILENO, MemoryInfoGetFile(i), strlen(MemoryInfoGetFile(i)));
+    write(STDERR_FILENO, ":0x", 3);
+    len = HexPtr(MemoryInfoGetLine(i), buf, sizeof(buf));
+    write(STDERR_FILENO, buf, len);
+    write(STDERR_FILENO, "\n", 1);
+    raise(SIGSEGV);
 }
 
 void

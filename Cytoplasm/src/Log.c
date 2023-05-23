@@ -124,7 +124,6 @@ LogConfigFree(LogConfig * config)
     }
 
     pthread_mutex_destroy(&config->lock);
-    Free(config->tsFmt);
     Free(config);
 
     if (config == globalConfig)

@@ -223,7 +223,7 @@ Main(Array * args)
     switch (flag)
     {
         case FLAG_SELECT:
-            query(input, json);
+            query(input, json);    /* This will implicitly free json */
             break;
         case FLAG_ENCODE:
             encode(input);
@@ -231,6 +231,7 @@ Main(Array * args)
         default:
             JsonEncode(json, StreamStdout(), JSON_PRETTY);
             StreamPutc(StreamStdout(), '\n');
+            JsonFree(json);
             break;
     }
 
