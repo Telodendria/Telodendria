@@ -148,8 +148,6 @@ finish:
         HashMapFree(args.env);
     }
 
-    Log(LOG_DEBUG, "Exitting with code: %d", ret);
-
     LogConfigFree(LogConfigGlobal());
 
     StreamClose(StreamStdout());
