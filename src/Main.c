@@ -572,6 +572,8 @@ finish:
             Log(LOG_DEBUG, "Freed HTTP server %lu.", i);
         }
         ArrayFree(httpServers);
+        httpServers = NULL;
+
         Log(LOG_DEBUG, "Freed HTTP servers array.");
     }
 

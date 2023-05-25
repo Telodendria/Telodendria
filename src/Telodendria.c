@@ -72,7 +72,7 @@ void
 TelodendriaMemoryHook(MemoryAction a, MemoryInfo * i, void *args)
 {
     char *action;
-    int warn = 0;
+    int err = 0;
 
     if (!args && ((a == MEMORY_ALLOCATE) || (a == MEMORY_REALLOCATE) || (a == MEMORY_FREE)))
     {
@@ -91,11 +91,11 @@ TelodendriaMemoryHook(MemoryAction a, MemoryInfo * i, void *args)
             action = "Freed";
             break;
         case MEMORY_BAD_POINTER:
-            warn = 1;
+            err = 1;
             action = "Bad pointer to";
             break;
         case MEMORY_CORRUPTED:
-            warn = 1;
+            err = 1;
             action = "Corrupted block of";
             break;
         default:
@@ -103,13 +103,13 @@ TelodendriaMemoryHook(MemoryAction a, MemoryInfo * i, void *args)
             break;
     }
 
-    Log(warn ? LOG_WARNING : LOG_DEBUG,
+    Log(err ? LOG_ERR : LOG_DEBUG,
         "%s:%d: %s %lu bytes of memory at %p.",
         MemoryInfoGetFile(i), MemoryInfoGetLine(i),
         action, MemoryInfoGetSize(i),
         MemoryInfoGetPointer(i));
 
-    if (a == MEMORY_CORRUPTED)
+    if (err)
     {
         raise(SIGSEGV);
     }
