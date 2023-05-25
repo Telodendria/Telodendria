@@ -51,7 +51,7 @@ struct MemoryInfo
 };
 
 #define MEM_BOUND_TYPE UInt16
-#define MEM_BOUND 0xADDE
+#define MEM_BOUND 0xFFFF
 
 #define MEM_BOUND_LOWER(p) *((MEM_BOUND_TYPE *) p)
 #define MEM_BOUND_UPPER(p, x) *(((MEM_BOUND_TYPE *) (((UInt8 *) p) + x)) + 1)
@@ -327,7 +327,7 @@ MemoryAllocated(void)
     {
         if (allocations[i])
         {
-            total += allocations[i]->size;
+            total += MemoryInfoGetSize(allocations[i]);
         }
     }
 
@@ -398,7 +398,7 @@ MemoryInfoGetSize(MemoryInfo * a)
         return 0;
     }
 
-    return MEM_SIZE_ACTUAL(a->size);
+    return a->size - (2 * sizeof(MEM_BOUND_TYPE));
 }
 
 const char *
@@ -445,7 +445,11 @@ void
     {
         if (allocations[i])
         {
-            iterFunc(allocations[i], args);
+            MemoryCheck(allocations[i]);
+            if (iterFunc)
+            {
+                iterFunc(allocations[i], args);
+            }
         }
     }
 
@@ -497,26 +501,28 @@ MemoryDefaultHook(MemoryAction a, MemoryInfo * i, void *args)
     switch (a)
     {
         case MEMORY_BAD_POINTER:
-            write(STDERR_FILENO, "Bad pointer: 0x", 15);
+            write(STDOUT_FILENO, "Bad pointer: 0x", 15);
             break;
         case MEMORY_CORRUPTED:
-            write(STDERR_FILENO, "Corrupted block: 0x", 19);
+            write(STDOUT_FILENO, "Corrupted block: 0x", 19);
             break;
         default:
             return;
     }
 
-    write(STDERR_FILENO, buf, len);
-    write(STDERR_FILENO, " to 0x", 6);
+    write(STDOUT_FILENO, buf, len);
+    write(STDOUT_FILENO, " to 0x", 6);
     len = HexPtr(MemoryInfoGetSize(i), buf, sizeof(buf));
-    write(STDERR_FILENO, buf, len);
-    write(STDERR_FILENO, " bytes at ", 10);
-    write(STDERR_FILENO, MemoryInfoGetFile(i), strlen(MemoryInfoGetFile(i)));
-    write(STDERR_FILENO, ":0x", 3);
+    write(STDOUT_FILENO, buf, len);
+    write(STDOUT_FILENO, " bytes at ", 10);
+    write(STDOUT_FILENO, MemoryInfoGetFile(i), strlen(MemoryInfoGetFile(i)));
+    write(STDOUT_FILENO, ":0x", 3);
     len = HexPtr(MemoryInfoGetLine(i), buf, sizeof(buf));
-    write(STDERR_FILENO, buf, len);
-    write(STDERR_FILENO, "\n", 1);
+    write(STDOUT_FILENO, buf, len);
+    write(STDOUT_FILENO, "\n", 1);
+#if 0
     raise(SIGSEGV);
+#endif
 }
 
 void
