@@ -50,13 +50,6 @@ struct MemoryInfo
     void *pointer;
 };
 
-#define MEM_BOUND_TYPE UInt32
-#define MEM_BOUND 0xFFFFFFFF
-
-#define MEM_BOUND_LOWER(p) *((MEM_BOUND_TYPE *) p)
-#define MEM_BOUND_UPPER(p, x) *(((MEM_BOUND_TYPE *) (((UInt8 *) p) + x)) + 1)
-#define MEM_SIZE_ACTUAL(x) (((x) * sizeof(UInt8)) + (2 * sizeof(MEM_BOUND_TYPE)))
-
 static pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
 static void (*hook) (MemoryAction, MemoryInfo *, void *) = NULL;
 static void *hookArgs = NULL;
@@ -156,21 +149,6 @@ MemoryDelete(MemoryInfo * a)
     }
 }
 
-static int
-MemoryCheck(MemoryInfo * a)
-{
-    if (MEM_BOUND_LOWER(a->pointer) != MEM_BOUND ||
-        MEM_BOUND_UPPER(a->pointer, a->size - (2 * sizeof(MEM_BOUND_TYPE))) != MEM_BOUND)
-    {
-        if (hook)
-        {
-            hook(MEMORY_CORRUPTED, a, hookArgs);
-        }
-        return 0;
-    }
-    return 1;
-}
-
 void *
 MemoryAllocate(size_t size, const char *file, int line)
 {
@@ -186,7 +164,7 @@ MemoryAllocate(size_t size, const char *file, int line)
         return NULL;
     }
 
-    p = malloc(MEM_SIZE_ACTUAL(size));
+    p = malloc(size);
     if (!p)
     {
         free(a);
@@ -194,11 +172,9 @@ MemoryAllocate(size_t size, const char *file, int line)
         return NULL;
     }
 
-    memset(p, 0, MEM_SIZE_ACTUAL(size));
-    MEM_BOUND_LOWER(p) = MEM_BOUND;
-    MEM_BOUND_UPPER(p, size) = MEM_BOUND;
+    memset(p, 0, size);
 
-    a->size = MEM_SIZE_ACTUAL(size);
+    a->size = size;
     a->file = file;
     a->line = line;
     a->pointer = p;
@@ -217,7 +193,7 @@ MemoryAllocate(size_t size, const char *file, int line)
     }
 
     pthread_mutex_unlock(&lock);
-    return ((MEM_BOUND_TYPE *) p) + 1;
+    return p;
 }
 
 void *
@@ -235,19 +211,16 @@ MemoryReallocate(void *p, size_t size, const char *file, int line)
     if (a)
     {
         pthread_mutex_lock(&lock);
-        new = realloc(a->pointer, MEM_SIZE_ACTUAL(size));
+        new = realloc(a->pointer, size);
         if (new)
         {
             MemoryDelete(a);
-            a->size = MEM_SIZE_ACTUAL(size);
+            a->size = size;
             a->file = file;
             a->line = line;
 
             a->pointer = new;
             MemoryInsert(a);
-
-            MEM_BOUND_LOWER(a->pointer) = MEM_BOUND;
-            MEM_BOUND_UPPER(a->pointer, size) = MEM_BOUND;
 
             if (hook)
             {
@@ -271,7 +244,7 @@ MemoryReallocate(void *p, size_t size, const char *file, int line)
         }
     }
 
-    return ((MEM_BOUND_TYPE *) new) + 1;
+    return new;
 }
 
 void
@@ -367,7 +340,6 @@ MemoryInfoGet(void *p)
 
     pthread_mutex_lock(&lock);
 
-    p = ((MEM_BOUND_TYPE *) p) - 1;
     hash = MemoryHash(p);
 
     count = 0;
@@ -380,7 +352,6 @@ MemoryInfoGet(void *p)
         }
         else
         {
-            MemoryCheck(allocations[hash]);
             pthread_mutex_unlock(&lock);
             return allocations[hash];
         }
@@ -398,7 +369,7 @@ MemoryInfoGetSize(MemoryInfo * a)
         return 0;
     }
 
-    return a->size - (2 * sizeof(MEM_BOUND_TYPE));
+    return a->size;
 }
 
 const char *
@@ -431,7 +402,7 @@ MemoryInfoGetPointer(MemoryInfo * a)
         return NULL;
     }
 
-    return ((MEM_BOUND_TYPE *) a->pointer) + 1;
+    return a->pointer;
 }
 
 void
@@ -445,7 +416,6 @@ void
     {
         if (allocations[i])
         {
-            MemoryCheck(allocations[i]);
             if (iterFunc)
             {
                 iterFunc(allocations[i], args);
