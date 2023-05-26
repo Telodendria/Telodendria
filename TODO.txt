@@ -11,7 +11,8 @@ Key:
 Milestone: v0.3.0
 -----------------
 
-[ ] Fix leaks in json
+[x] Fix leaks in json
+[ ] Debug ARM64 Debian
 
 [ ] Cytoplasm
     [ ] Debug OpenSSL

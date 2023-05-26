@@ -47,6 +47,10 @@ query(char *select, HashMap * json)
     char *key;
     JsonValue *rootVal = JsonValueObject(json);
     JsonValue *val = rootVal;
+    Array *cleanUp = ArrayCreate();
+    size_t i;
+
+    ArrayAdd(cleanUp, rootVal);
 
     key = strtok(select, "->");
 
@@ -67,9 +71,11 @@ query(char *select, HashMap * json)
                 {
                     case JSON_ARRAY:
                         val = JsonValueInteger(ArraySize(JsonValueAsArray(val)));
+                        ArrayAdd(cleanUp, val);
                         break;
                     case JSON_STRING:
                         val = JsonValueInteger(strlen(JsonValueAsString(val)));
+                        ArrayAdd(cleanUp, val);
                         break;
                     default:
                         val = NULL;
@@ -89,6 +95,7 @@ query(char *select, HashMap * json)
                 }
 
                 val = JsonValueArray(arr);
+                ArrayAdd(cleanUp, val);
             }
             else if (JsonValueType(val) == JSON_STRING && StrEquals(keyName + 1, "decode"))
             {
@@ -167,7 +174,11 @@ query(char *select, HashMap * json)
         StreamPutc(StreamStdout(), '\n');
     }
 
-    JsonValueFree(rootVal);
+    for (i = 0; i < ArraySize(cleanUp); i++)
+    {
+        JsonValueFree(ArrayGet(cleanUp, i));
+    }
+    ArrayFree(cleanUp);
 }
 
 static void
