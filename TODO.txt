@@ -11,27 +11,16 @@ Key:
 Milestone: v0.3.0
 -----------------
 
-[~] /_telodendria/admin/config endpoint
-    [ ] Update only certain values
-
-[~] Client-Server API
-    [~] 9: User Data
-        [x] Profiles
-        [ ] Directory
-
-[x] Fix leaks in http, json
-[x] Remove TelodendriaGenerateMemReport()
+[ ] Fix leaks in json
 
 [ ] Cytoplasm
     [ ] Debug OpenSSL
-    [x] Documentation
-        [x] hdoc(1) and hdoc(5)
-    [x] Fix memory leaks in hdoc
-    [x] Detect memory write out of bounds
-    [x] Add a sane default memory hook
 
 Milestone: v0.4.0
 -----------------
+
+[~] /_telodendria/admin/config endpoint
+    [ ] Update only certain values
 
 [ ] HTTP/1.1 support
     [ ] Content-Length
@@ -42,6 +31,9 @@ Milestone: v0.4.0
     [ ] 6: Filtering
     [ ] 7: Events
     [ ] 8: Rooms
+    [~] 9: User Data
+        [x] Profiles
+        [ ] Directory
 
 Milestone: v0.5.0
 -----------------
