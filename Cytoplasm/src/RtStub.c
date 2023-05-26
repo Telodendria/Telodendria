@@ -43,18 +43,18 @@ typedef struct MainArgs
 {
     Array *args;
     HashMap *env;
+    int ret;
 } MainArgs;
 
 static void *
 MainThread(void *argp)
 {
-    long ret;
     MainArgs *args = argp;
 
     args = argp;
-    ret = Main(args->args, args->env);
+    args->ret = Main(args->args, args->env);
 
-    return (void *) ret;
+    return NULL;
 }
 
 int
@@ -62,7 +62,6 @@ main(int argc, char **argv)
 {
     pthread_t mainThread;
     size_t i;
-    int ret;
 
     char *key;
     char *val;
@@ -74,13 +73,14 @@ main(int argc, char **argv)
 
     args.args = NULL;
     args.env = NULL;
+    args.ret = EXIT_FAILURE;
 
     args.args = ArrayCreate();
 
     if (!args.args)
     {
         Log(LOG_ERR, "Bootstrap error: Unable to allocate memory for arguments.");
-        ret = EXIT_FAILURE;
+        args.ret = EXIT_FAILURE;
         goto finish;
     }
 
@@ -88,7 +88,7 @@ main(int argc, char **argv)
     if (!args.env)
     {
         Log(LOG_ERR, "Bootstrap error: Unable to allocate memory for environment.");
-        ret = EXIT_FAILURE;
+        args.ret = EXIT_FAILURE;
         goto finish;
     }
 
@@ -117,15 +117,15 @@ main(int argc, char **argv)
     if (pthread_create(&mainThread, NULL, MainThread, &args) != 0)
     {
         Log(LOG_ERR, "Bootstrap error: Unable to create main thread.");
-        ret = EXIT_FAILURE;
+        args.ret = EXIT_FAILURE;
         goto finish;
     }
 
-    if (pthread_join(mainThread, (void **) &ret) != 0)
+    if (pthread_join(mainThread, NULL) != 0)
     {
         /* Should never happen */
         Log(LOG_ERR, "Unable to join main thread.");
-        ret = EXIT_FAILURE;
+        args.ret = EXIT_FAILURE;
         goto finish;
     }
 
@@ -158,5 +158,5 @@ finish:
 
     MemoryFreeAll();
 
-    return ret;
+    return args.ret;
 }

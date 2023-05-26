@@ -36,7 +36,7 @@ addprefix() {
 : "${LDFLAGS:=-lm -pthread}"
 
 if [ "${DEBUG}" = "1" ]; then
-    CFLAGS="${CFLAGS} -o0 -g"
+    CFLAGS="${CFLAGS} -O0 -g"
     LD_EXTRA=""
 fi
 
