@@ -50,8 +50,8 @@ struct MemoryInfo
     void *pointer;
 };
 
-#define MEM_BOUND_TYPE UInt16
-#define MEM_BOUND 0xFFFF
+#define MEM_BOUND_TYPE UInt32
+#define MEM_BOUND 0xFFFFFFFF
 
 #define MEM_BOUND_LOWER(p) *((MEM_BOUND_TYPE *) p)
 #define MEM_BOUND_UPPER(p, x) *(((MEM_BOUND_TYPE *) (((UInt8 *) p) + x)) + 1)

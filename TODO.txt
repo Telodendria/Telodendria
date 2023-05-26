@@ -12,7 +12,7 @@ Milestone: v0.3.0
 -----------------
 
 [x] Fix leaks in json
-[ ] Debug ARM64 Debian
+[x] Debug ARM64 Debian
 
 [ ] Cytoplasm
     [ ] Debug OpenSSL
