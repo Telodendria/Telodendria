@@ -657,7 +657,7 @@ HeaderParse(Stream * stream, HeaderExpr * expr)
             /* Cope with preprocessor macro expansions at the top
              * level. */
             expr->type = HP_UNKNOWN;
-            strncpy(expr->data.text, word, HEADER_EXPR_MAX);
+            strncpy(expr->data.text, word, HEADER_EXPR_MAX - 1);
         }
 
         Free(word);
