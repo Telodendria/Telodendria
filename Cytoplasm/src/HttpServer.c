@@ -292,21 +292,21 @@ HttpServerCreate(HttpServerConfig * config)
 
     if (!config)
     {
-	errno = EINVAL;
+        errno = EINVAL;
         return NULL;
     }
 
     if (!config->handler)
     {
-	errno = EINVAL;
+        errno = EINVAL;
         return NULL;
     }
 
 #ifndef TLS_IMPL
     if (config->flags & HTTP_FLAG_TLS)
     {
-	Log(LOG_ERR, "TLS support is disabled.");
-	errno = EINVAL;
+        Log(LOG_ERR, "TLS support is disabled.");
+        errno = EINVAL;
         return NULL;
     }
 #endif

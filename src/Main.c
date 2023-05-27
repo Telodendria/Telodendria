@@ -579,6 +579,7 @@ finish:
 
     if (cron)
     {
+        Log(LOG_DEBUG, "Waiting on background jobs...");
         CronStop(cron);
         CronFree(cron);
         Log(LOG_DEBUG, "Stopped and freed job scheduler.");
