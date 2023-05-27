@@ -79,7 +79,6 @@ struct HttpServerContext
 typedef struct HttpServerWorkerThreadArgs
 {
     HttpServer *server;
-    int id;
     pthread_t thread;
 } HttpServerWorkerThreadArgs;
 
@@ -625,7 +624,6 @@ HttpServerEventThread(void *args)
         }
 
         workerThread->server = server;
-        workerThread->id = i;
 
         if (pthread_create(&workerThread->thread, NULL, HttpServerWorkerThread, workerThread) != 0)
         {
@@ -643,7 +641,6 @@ HttpServerEventThread(void *args)
         socklen_t addrLen = sizeof(addr);
         int connFd;
         int pollResult;
-
 
         pollResult = poll(pollFds, 1, 500);
 

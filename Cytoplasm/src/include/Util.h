@@ -102,4 +102,15 @@ extern ssize_t UtilGetDelim(char **, size_t *, int, Stream *);
  */
 extern ssize_t UtilGetLine(char **, size_t *, Stream *);
 
+/**
+ * Get a unique number associated with the current thread.
+ * Numbers are assigned in the order that threads call this
+ * function, but are guaranteed to be unique in identifying
+ * the thread in a more human-readable way than just casting
+ * the return value of
+ * .Fn pthread_self
+ * to a number.
+ */
+extern unsigned long UtilThreadNo(void);
+
 #endif                             /* CYTOPLASM_UTIL_H */

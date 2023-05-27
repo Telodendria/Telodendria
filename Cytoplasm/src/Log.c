@@ -24,6 +24,7 @@
 #include <Log.h>
 
 #include <Memory.h>
+#include <Util.h>
 
 #include <string.h>
 #include <time.h>
@@ -315,6 +316,8 @@ Logv(LogConfig * config, int level, const char *msg, va_list argp)
             }
         }
     }
+
+    StreamPrintf(config->out, "(%lu) ", UtilThreadNo());
 
     switch (level)
     {

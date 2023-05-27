@@ -244,3 +244,35 @@ UtilGetLine(char **linePtr, size_t * n, Stream * stream)
 {
     return UtilGetDelim(linePtr, n, '\n', stream);
 }
+
+static void
+ThreadNoDestructor(void *p)
+{
+    Free(p);
+}
+
+unsigned long
+UtilThreadNo(void)
+{
+    static pthread_key_t key;
+    static int createdKey = 0;
+    static unsigned long count = 0;
+
+    unsigned long *no;
+
+    if (!createdKey)
+    {
+        pthread_key_create(&key, ThreadNoDestructor);
+        createdKey = 1;
+    }
+
+    no = pthread_getspecific(key);
+    if (!no)
+    {
+        no = Malloc(sizeof(unsigned long));
+        *no = count++;
+        pthread_setspecific(key, no);
+    }
+
+    return *no;
+}
