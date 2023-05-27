@@ -292,17 +292,21 @@ HttpServerCreate(HttpServerConfig * config)
 
     if (!config)
     {
+	errno = EINVAL;
         return NULL;
     }
 
     if (!config->handler)
     {
+	errno = EINVAL;
         return NULL;
     }
 
 #ifndef TLS_IMPL
     if (config->flags & HTTP_FLAG_TLS)
     {
+	Log(LOG_ERR, "TLS support is disabled.");
+	errno = EINVAL;
         return NULL;
     }
 #endif
@@ -318,6 +322,7 @@ HttpServerCreate(HttpServerConfig * config)
     server->config = *config;
     server->config.tlsCert = StrDuplicate(config->tlsCert);
     server->config.tlsKey = StrDuplicate(config->tlsKey);
+    server->sd = -1;
 
     server->threadPool = ArrayCreate();
     if (!server->threadPool)
@@ -396,7 +401,7 @@ error:
             ArrayFree(server->threadPool);
         }
 
-        if (server->sd)
+        if (server->sd > -1)
         {
             close(server->sd);
         }
