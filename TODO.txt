@@ -14,8 +14,10 @@ Milestone: v0.3.0
 [x] Fix leaks in json
 [x] Debug ARM64 Debian
 
-[ ] Cytoplasm
-    [ ] Debug OpenSSL
+[~] Cytoplasm
+    [~] Debug OpenSSL
+        [x] Database corruption
+        [ ] File descriptor exhaustion
 
 Milestone: v0.4.0
 -----------------

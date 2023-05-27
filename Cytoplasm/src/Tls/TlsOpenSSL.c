@@ -162,7 +162,7 @@ TlsInitServer(int fd, const char *crt, const char *key)
 
     if (SSL_CTX_use_PrivateKey_file(cookie->ctx, key, SSL_FILETYPE_PEM) <= 0)
     {
-        Log(LOG_ERR, "TlsInitServer(): Unable to set key file.");
+        Log(LOG_ERR, "TlsInitServer(): Unable to set key file: %s", key);
         goto error;
     }
 
@@ -197,6 +197,10 @@ TlsInitServer(int fd, const char *crt, const char *key)
     return cookie;
 
 error:
+    if (SSL_get_error(cookie->ssl, acceptRet) == SSL_ERROR_SYSCALL)
+    {
+        Log(LOG_ERR, "TlsServerInit(): System error: %s", strerror(errno));
+    }
     Log(LOG_ERR, "TlsServerInit(): %s", SSLErrorString(SSL_get_error(cookie->ssl, acceptRet)));
     Log(LOG_ERR, "TlsServerInit(): %s", ERR_error_string(ERR_get_error(), errorStr));
 
@@ -222,7 +226,9 @@ ssize_t
 TlsRead(void *cookie, void *buf, size_t nBytes)
 {
     OpenSSLCookie *ssl = cookie;
-    int ret = SSL_read(ssl->ssl, buf, nBytes);
+    int ret;
+
+    ret = SSL_read(ssl->ssl, buf, nBytes);
 
     if (ret <= 0)
     {
@@ -252,7 +258,9 @@ ssize_t
 TlsWrite(void *cookie, void *buf, size_t nBytes)
 {
     OpenSSLCookie *ssl = cookie;
-    int ret = SSL_write(ssl->ssl, buf, nBytes);
+    int ret;
+
+    ret = SSL_write(ssl->ssl, buf, nBytes);
 
     if (ret <= 0)
     {
@@ -283,10 +291,13 @@ TlsClose(void *cookie)
 {
     OpenSSLCookie *ssl = cookie;
 
-    SSL_shutdown(ssl->ssl);
+    while (SSL_shutdown(ssl->ssl) == 0);
     SSL_free(ssl->ssl);
-    close(ssl->fd);
     SSL_CTX_free(ssl->ctx);
+
+#if 0
+    close(ssl->fd);
+#endif
 
     Free(ssl);
 
