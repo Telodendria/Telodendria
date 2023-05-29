@@ -457,7 +457,7 @@ ConfigCreateDefault(Db * db)
 
     if (gethostname(hostname, HOST_NAME_MAX + 1) < 0)
     {
-        strcpy(hostname, "localhost");
+        strncpy(hostname, "localhost", HOST_NAME_MAX);
     }
     HashMapSet(json, "serverName", JsonValueString(hostname));
 

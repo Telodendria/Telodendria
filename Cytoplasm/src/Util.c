@@ -248,7 +248,7 @@ UtilGetLine(char **linePtr, size_t * n, Stream * stream)
 static void
 ThreadNoDestructor(void *p)
 {
-    Free(p);
+    free(p);
 }
 
 unsigned long
@@ -269,7 +269,7 @@ UtilThreadNo(void)
     no = pthread_getspecific(key);
     if (!no)
     {
-        no = Malloc(sizeof(unsigned long));
+        no = malloc(sizeof(unsigned long));
         *no = count++;
         pthread_setspecific(key, no);
     }

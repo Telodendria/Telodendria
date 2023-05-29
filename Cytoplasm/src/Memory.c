@@ -50,6 +50,13 @@ struct MemoryInfo
     void *pointer;
 };
 
+#define MEM_BOUND_TYPE UInt32
+#define MEM_BOUND 0xDEADBEEF
+
+#define MEM_BOUND_LOWER(p) *((MEM_BOUND_TYPE *) p)
+#define MEM_BOUND_UPPER(p, x) *(((MEM_BOUND_TYPE *) (((UInt8 *) p) + x)) + 1)
+#define MEM_SIZE_ACTUAL(x) (((x) * sizeof(UInt8)) + (2 * sizeof(MEM_BOUND_TYPE)))
+
 static pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
 static void (*hook) (MemoryAction, MemoryInfo *, void *) = NULL;
 static void *hookArgs = NULL;
@@ -149,11 +156,28 @@ MemoryDelete(MemoryInfo * a)
     }
 }
 
+static int
+MemoryCheck(MemoryInfo * a)
+{
+    if (MEM_BOUND_LOWER(a->pointer) != MEM_BOUND ||
+        MEM_BOUND_UPPER(a->pointer, a->size - (2 * sizeof(MEM_BOUND_TYPE))) != MEM_BOUND)
+    {
+        if (hook)
+        {
+            hook(MEMORY_CORRUPTED, a, hookArgs);
+        }
+        return 0;
+    }
+    return 1;
+}
+
 void *
 MemoryAllocate(size_t size, const char *file, int line)
 {
     void *p;
     MemoryInfo *a;
+
+    MemoryIterate(NULL, NULL);
 
     pthread_mutex_lock(&lock);
 
@@ -164,7 +188,7 @@ MemoryAllocate(size_t size, const char *file, int line)
         return NULL;
     }
 
-    p = malloc(size);
+    p = malloc(MEM_SIZE_ACTUAL(size));
     if (!p)
     {
         free(a);
@@ -172,9 +196,11 @@ MemoryAllocate(size_t size, const char *file, int line)
         return NULL;
     }
 
-    memset(p, 0, size);
+    memset(p, 0, MEM_SIZE_ACTUAL(size));
+    MEM_BOUND_LOWER(p) = MEM_BOUND;
+    MEM_BOUND_UPPER(p, size) = MEM_BOUND;
 
-    a->size = size;
+    a->size = MEM_SIZE_ACTUAL(size);
     a->file = file;
     a->line = line;
     a->pointer = p;
@@ -193,7 +219,7 @@ MemoryAllocate(size_t size, const char *file, int line)
     }
 
     pthread_mutex_unlock(&lock);
-    return p;
+    return ((MEM_BOUND_TYPE *) p) + 1;
 }
 
 void *
@@ -201,6 +227,8 @@ MemoryReallocate(void *p, size_t size, const char *file, int line)
 {
     MemoryInfo *a;
     void *new = NULL;
+
+    MemoryIterate(NULL, NULL);
 
     if (!p)
     {
@@ -211,16 +239,19 @@ MemoryReallocate(void *p, size_t size, const char *file, int line)
     if (a)
     {
         pthread_mutex_lock(&lock);
-        new = realloc(a->pointer, size);
+        new = realloc(a->pointer, MEM_SIZE_ACTUAL(size));
         if (new)
         {
             MemoryDelete(a);
-            a->size = size;
+            a->size = MEM_SIZE_ACTUAL(size);
             a->file = file;
             a->line = line;
 
             a->pointer = new;
             MemoryInsert(a);
+
+            MEM_BOUND_LOWER(a->pointer) = MEM_BOUND;
+            MEM_BOUND_UPPER(a->pointer, size) = MEM_BOUND;
 
             if (hook)
             {
@@ -244,13 +275,15 @@ MemoryReallocate(void *p, size_t size, const char *file, int line)
         }
     }
 
-    return new;
+    return ((MEM_BOUND_TYPE *) new) + 1;
 }
 
 void
 MemoryFree(void *p, const char *file, int line)
 {
     MemoryInfo *a;
+
+    MemoryIterate(NULL, NULL);
 
     if (!p)
     {
@@ -340,6 +373,7 @@ MemoryInfoGet(void *p)
 
     pthread_mutex_lock(&lock);
 
+    p = ((MEM_BOUND_TYPE *) p) - 1;
     hash = MemoryHash(p);
 
     count = 0;
@@ -352,6 +386,7 @@ MemoryInfoGet(void *p)
         }
         else
         {
+            MemoryCheck(allocations[hash]);
             pthread_mutex_unlock(&lock);
             return allocations[hash];
         }
@@ -369,7 +404,7 @@ MemoryInfoGetSize(MemoryInfo * a)
         return 0;
     }
 
-    return a->size;
+    return a->size ? a->size - (2 * sizeof(MEM_BOUND_TYPE)) : 0;
 }
 
 const char *
@@ -402,7 +437,7 @@ MemoryInfoGetPointer(MemoryInfo * a)
         return NULL;
     }
 
-    return a->pointer;
+    return ((MEM_BOUND_TYPE *) a->pointer) + 1;
 }
 
 void
@@ -416,6 +451,7 @@ void
     {
         if (allocations[i])
         {
+            MemoryCheck(allocations[i]);
             if (iterFunc)
             {
                 iterFunc(allocations[i], args);
@@ -471,28 +507,27 @@ MemoryDefaultHook(MemoryAction a, MemoryInfo * i, void *args)
     switch (a)
     {
         case MEMORY_BAD_POINTER:
-            write(STDOUT_FILENO, "Bad pointer: 0x", 15);
+            write(STDERR_FILENO, "Bad pointer: 0x", 15);
             break;
         case MEMORY_CORRUPTED:
-            write(STDOUT_FILENO, "Corrupted block: 0x", 19);
+            write(STDERR_FILENO, "Corrupted block: 0x", 19);
             break;
         default:
             return;
     }
 
-    write(STDOUT_FILENO, buf, len);
-    write(STDOUT_FILENO, " to 0x", 6);
+    write(STDERR_FILENO, buf, len);
+    write(STDERR_FILENO, " to 0x", 6);
     len = HexPtr(MemoryInfoGetSize(i), buf, sizeof(buf));
-    write(STDOUT_FILENO, buf, len);
-    write(STDOUT_FILENO, " bytes at ", 10);
-    write(STDOUT_FILENO, MemoryInfoGetFile(i), strlen(MemoryInfoGetFile(i)));
-    write(STDOUT_FILENO, ":0x", 3);
+    write(STDERR_FILENO, buf, len);
+    write(STDERR_FILENO, " bytes at ", 10);
+    write(STDERR_FILENO, MemoryInfoGetFile(i), strlen(MemoryInfoGetFile(i)));
+    write(STDERR_FILENO, ":0x", 3);
     len = HexPtr(MemoryInfoGetLine(i), buf, sizeof(buf));
-    write(STDOUT_FILENO, buf, len);
-    write(STDOUT_FILENO, "\n", 1);
-#if 0
+    write(STDERR_FILENO, buf, len);
+    write(STDERR_FILENO, "\n", 1);
+
     raise(SIGSEGV);
-#endif
 }
 
 void
