@@ -189,7 +189,6 @@ encode(char *str)
     JsonEncodeValue(val, StreamStdout(), JSON_DEFAULT);
     JsonValueFree(val);
     StreamPutc(StreamStdout(), '\n');
-    JsonValueFree(val);
 }
 
 int

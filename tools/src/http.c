@@ -199,7 +199,10 @@ Main(Array * args)
 
             HttpRequestSendHeaders(cx);
             StreamCopy(in, HttpClientStream(cx));
-            StreamClose(in);
+            if (in != StreamStdin())
+            {
+                StreamClose(in);
+            }
         }
         else
         {

@@ -126,6 +126,7 @@ recipe_docs() {
 recipe_cytoplasm() {
     cd Cytoplasm
     export TLS_IMPL
+    export CFLAGS
     if ! sh make.sh; then
         exit 1
     fi
