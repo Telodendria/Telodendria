@@ -20,6 +20,7 @@ addprefix() {
 
 : "${SRC:=src}"
 : "${TOOLS:=tools}"
+: "${EXAMPLES:=examples}"
 : "${BUILD:=build}"
 : "${OUT:=out}"
 : "${STUB:=RtStub}"
@@ -193,6 +194,22 @@ recipe_build() {
     done
 
     recipe_docs
+}
+
+recipe_examples() {
+    for src in $(find "${EXAMPLES}" -name '*.c'); do
+        out=$(basename "$src" .c)
+        out="${OUT}/bin/$out"
+
+        if [ $(mod_time "$src") -ge $(mod_time "$out") ]; then
+            echo "CC $(basename $out)"
+            mkdir -p "$(dirname $out)"
+            if ! $CC $CFLAGS -o "$out" "$src" "${OUT}/lib/${LIB_NAME}.o" "-L${OUT}/lib" "-l${LIB_NAME}" ${LDFLAGS}; then
+                exit 1
+            fi
+        fi
+    done
+
 }
 
 recipe_clean() {
