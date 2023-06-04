@@ -57,13 +57,41 @@ struct MemoryInfo
 #define MEM_BOUND_UPPER(p, x) *(((MEM_BOUND_TYPE *) (((UInt8 *) p) + x)) + 1)
 #define MEM_SIZE_ACTUAL(x) (((x) * sizeof(UInt8)) + (2 * sizeof(MEM_BOUND_TYPE)))
 
-static pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
-static void (*hook) (MemoryAction, MemoryInfo *, void *) = NULL;
+static pthread_mutex_t lock;
+static void (*hook) (MemoryAction, MemoryInfo *, void *) = MemoryDefaultHook;
 static void *hookArgs = NULL;
 
 static MemoryInfo **allocations = NULL;
 static size_t allocationsSize = 0;
 static size_t allocationsLen = 0;
+
+int
+MemoryRuntimeInit(void)
+{
+    pthread_mutexattr_t attr;
+    int ret = 0;
+
+    if (pthread_mutexattr_init(&attr) != 0)
+    {
+        goto finish;
+    }
+
+    pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
+    ret = pthread_mutex_init(&lock, &attr);
+    pthread_mutexattr_destroy(&attr);
+
+    ret = (ret == 0);
+
+finish:
+    return ret;
+}
+
+int
+MemoryRuntimeDestroy(void)
+{
+    MemoryFreeAll();
+    return pthread_mutex_destroy(&lock) == 0;
+}
 
 static size_t
 MemoryHash(void *p)

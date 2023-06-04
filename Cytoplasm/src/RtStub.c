@@ -33,11 +33,17 @@
 #include <string.h>
 #include <pthread.h>
 
+#define ERR_BUF_SIZE 128
+
 /* Specified by POSIX to contain environment variables */
 extern char **environ;
 
 /* The linking program is expected to provide Main */
 extern int Main(Array *, HashMap *);
+
+/* Functions in the Memory API that are not exported via header */
+extern int MemoryRuntimeInit(void);
+extern int MemoryRuntimeDestroy(void);
 
 typedef struct MainArgs
 {
@@ -69,32 +75,46 @@ main(int argc, char **argv)
 
     MainArgs args;
 
-    MemoryHook(MemoryDefaultHook, NULL);
+    char errBuf[ERR_BUF_SIZE];
+    int errLen;
 
     args.args = NULL;
     args.env = NULL;
     args.ret = EXIT_FAILURE;
 
+    if (!MemoryRuntimeInit())
+    {
+	errLen = snprintf(errBuf, ERR_BUF_SIZE, "Fatal: Unable to initialize Memory runtime.\n");
+        write(STDERR_FILENO, errBuf, errLen);
+        goto finish;
+    }
+
     args.args = ArrayCreate();
 
     if (!args.args)
     {
-        Log(LOG_ERR, "Bootstrap error: Unable to allocate memory for arguments.");
-        args.ret = EXIT_FAILURE;
+        errLen = snprintf(errBuf, ERR_BUF_SIZE, "Fatal: Unable to allocate heap memory for program arguments.\n");
+        write(STDERR_FILENO, errBuf, errLen);
         goto finish;
     }
 
     args.env = HashMapCreate();
     if (!args.env)
     {
-        Log(LOG_ERR, "Bootstrap error: Unable to allocate memory for environment.");
-        args.ret = EXIT_FAILURE;
+        errLen = snprintf(errBuf, ERR_BUF_SIZE, "Fatal: Unable to allocate heap memory for program environment.\n");
+        write(STDERR_FILENO, errBuf, errLen);
         goto finish;
     }
 
     for (i = 0; i < (size_t) argc; i++)
     {
-        ArrayAdd(args.args, StrDuplicate(argv[i]));
+        char *arg = StrDuplicate(argv[i]);
+        if (!arg || !ArrayAdd(args.args, arg))
+        {
+            errLen = snprintf(errBuf, ERR_BUF_SIZE, "Fatal: Unable to allocate heap memory for program argument.\n");
+            write(STDERR_FILENO, errBuf, errLen);
+            goto finish;
+        }
     }
 
     envp = environ;
@@ -105,6 +125,14 @@ main(int argc, char **argv)
         /* It is unclear whether or not envp strings are writable, so
          * we make our own copy to manipulate it */
         key = StrDuplicate(*envp);
+
+        if (!key)
+        {
+            errLen = snprintf(errBuf, ERR_BUF_SIZE, "Fatal: Unable to allocate heap memory for program environment variable.\n");
+            write(STDERR_FILENO, errBuf, errLen);
+            goto finish;
+        }
+
         valInd = strcspn(key, "=");
 
         key[valInd] = '\0';
@@ -116,15 +144,15 @@ main(int argc, char **argv)
 
     if (pthread_create(&mainThread, NULL, MainThread, &args) != 0)
     {
-        Log(LOG_ERR, "Bootstrap error: Unable to create main thread.");
-        args.ret = EXIT_FAILURE;
+        errLen = snprintf(errBuf, ERR_BUF_SIZE, "Fatal: Unable to create main thread.\n");
+        write(STDERR_FILENO, errBuf, errLen);
         goto finish;
     }
 
     if (pthread_join(mainThread, NULL) != 0)
     {
-        /* Should never happen */
-        Log(LOG_ERR, "Unable to join main thread.");
+        errLen = snprintf(errBuf, ERR_BUF_SIZE, "Fatal: Unable to join main thread.\n");
+        write(STDERR_FILENO, errBuf, errLen);
         args.ret = EXIT_FAILURE;
         goto finish;
     }
@@ -156,7 +184,7 @@ finish:
 
     GenerateMemoryReport(argc, argv);
 
-    MemoryFreeAll();
+    MemoryRuntimeDestroy();
 
     return args.ret;
 }
