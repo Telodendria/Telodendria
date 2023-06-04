@@ -46,6 +46,7 @@ MatrixHttpHandler(HttpServerContext * context, void *argp)
     RouteArgs routeArgs;
 
     requestPath = HttpRequestPath(context);
+    stream = HttpServerStream(context);
 
     Log(LOG_DEBUG, "%s %s",
         HttpRequestMethodToString(HttpRequestMethodGet(context)),
@@ -101,7 +102,6 @@ MatrixHttpHandler(HttpServerContext * context, void *argp)
 
         Free(contentLen);
 
-        stream = HttpServerStream(context);
         JsonEncode(response, stream, JSON_DEFAULT);
         JsonFree(response);
         StreamPrintf(stream, "\n");
