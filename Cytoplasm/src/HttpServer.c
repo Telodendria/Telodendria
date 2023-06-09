@@ -683,8 +683,8 @@ HttpServerEventThread(void *args)
 
             if (!fp)
             {
-                pthread_mutex_unlock(&server->connQueueMutex);
                 close(connFd);
+                pthread_mutex_unlock(&server->connQueueMutex);
                 continue;
             }
 
