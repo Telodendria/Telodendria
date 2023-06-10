@@ -8,27 +8,11 @@ Key:
 [~] In Progress
 [!] Won't Do
 
-Milestone: v0.3.0
------------------
-
-[x] Fix leaks in json
-[x] Debug ARM64 Debian
-
-[~] Cytoplasm
-    [~] Debug OpenSSL
-        [x] Database corruption
-        [ ] File descriptor exhaustion
-
 Milestone: v0.4.0
 -----------------
 
 [~] /_telodendria/admin/config endpoint
     [ ] Update only certain values
-
-[ ] HTTP/1.1 support
-    [ ] Content-Length
-    [ ] Keep connections open
-    [ ] Chunked encoding
 
 [ ] Client-Server API
     [ ] 6: Filtering
@@ -38,12 +22,23 @@ Milestone: v0.4.0
         [x] Profiles
         [ ] Directory
 
+[~] Cytoplasm
+    [~] Debug OpenSSL
+        [x] Database corruption
+        [ ] File descriptor exhaustion
+[ ] Random memory corruption after many requests.
+
 Milestone: v0.5.0
 -----------------
 
 [~] Client-Server API
     [ ] Modules
         [ ] Content Repository
+
+[ ] HTTP/1.1 support
+    [ ] Content-Length
+    [ ] Keep connections open
+    [ ] Chunked encoding
 
 Milestone: v0.6.0
 -----------------
