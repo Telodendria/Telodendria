@@ -23,9 +23,79 @@
  */
 #include <stdio.h>
 #include <signal.h>
+#include <string.h>
 
+#include <Telodendria.h>
 #include <HttpServer.h>
 #include <Util.h>
+
+#include <Memory.h>
+#include <Log.h>
+#include <Db.h>
+#include <Json.h>
+
+static void
+HexDump(size_t off, char *hexBuf , char *asciiBuf, void *args)
+{
+    char *fmt;
+    if (hexBuf && asciiBuf)
+    {
+        fmt = "%04lx: | %s | %s |";
+    }
+    else
+    {
+        fmt = "%04lx";
+    }
+
+    Log(LOG_DEBUG, fmt, off, hexBuf, asciiBuf);
+}
+
+void
+TelodendriaMemoryHook(MemoryAction a, MemoryInfo * i, void *args)
+{
+    char *action;
+    int err = 0;
+
+    switch (a)
+    {
+        case MEMORY_ALLOCATE:
+            action = "Allocated";
+            break;
+        case MEMORY_REALLOCATE:
+            action = "Re-allocated";
+            break;
+        case MEMORY_FREE:
+            action = "Freed";
+            break;
+        case MEMORY_BAD_POINTER:
+            err = 1;
+            action = "Bad pointer to";
+            break;
+        case MEMORY_CORRUPTED:
+            err = 1;
+            action = "Corrupted block of";
+            break;
+        default:
+            action = "Unknown operation on";
+            break;
+    }
+
+    Log(err ? LOG_ERR : LOG_DEBUG,
+        "%s:%d: %s %lu bytes of memory at %p.",
+        MemoryInfoGetFile(i), MemoryInfoGetLine(i),
+        action, MemoryInfoGetSize(i),
+        MemoryInfoGetPointer(i));
+    
+    if (a != MEMORY_ALLOCATE && a != MEMORY_REALLOCATE)
+    {
+        MemoryHexDump(i, HexDump, NULL);
+    }
+
+    if (err)
+    {
+        raise(SIGINT);
+    }
+}
 
 static HttpServer *server = NULL;
 
@@ -35,38 +105,66 @@ SignalHandle(int signal)
     (void) signal;
     HttpServerStop(server);
 }
-
-static void
-HttpHandle(HttpServerContext * cx, void *args)
+struct Args
 {
+	Db *db;
+	HttpRouter *router;
+	HttpServerContext *cx;
+};
+
+static void *
+TestFunc(Array *path, void *argp)
+{
+	struct Args *args = argp;
+	HttpServerContext *cx = args->cx;
     HashMap *headers = HttpRequestHeaders(cx);
     HttpRequestMethod method = HttpRequestMethodGet(cx);
+    Db *db = args->db;
 
     char *key;
     char *val;
 
     size_t bytes;
 
+    DbRef *ref;
+
     (void) args;
 
-    StreamPrintf(StreamStdout(), "%s %s\n", HttpRequestMethodToString(method),
+    Log(LOG_INFO, "%s %s", HttpRequestMethodToString(method),
                  HttpRequestPath(cx));
 
     while (HashMapIterate(headers, &key, (void **) &val))
     {
-        StreamPrintf(StreamStdout(), "%s: %s\n", key, val);
+        Log(LOG_INFO, "%s: %s", key, val);
     }
 
-    StreamPutc(StreamStdout(), '\n');
+    Log(LOG_INFO, "");
 
     bytes = StreamCopy(HttpServerStream(cx), StreamStdout());
 
     StreamPutc(StreamStdout(), '\n');
-    StreamPrintf(StreamStdout(), "(%lu bytes)\n", bytes);
+
+    Log(LOG_DEBUG, "(%lu bytes)", bytes);
+
+    ref = DbLock(db, 1, "test");
+
 
     HttpSendHeaders(cx);
 
-    StreamPuts(HttpServerStream(cx), "{}\n");
+    JsonEncode(DbJson(ref), HttpServerStream(cx), JSON_DEFAULT);
+    DbUnlock(db, ref);
+
+	return NULL;
+}
+
+void
+HttpHandle(HttpServerContext *cx, void *argp)
+{
+	struct Args *args = argp;
+
+	args->cx = cx;
+
+	HttpRouterRoute(args->router, HttpRequestPath(cx), args, NULL);
 }
 
 int
@@ -75,22 +173,43 @@ Main(void)
     struct sigaction sa;
     HttpServerConfig cfg;
 
+	struct Args args;
+
+    LogConfigLevelSet(LogConfigGlobal(), LOG_DEBUG);
+
+    Log(LOG_INFO, "Setting memory hook...");
+
+    MemoryHook(TelodendriaMemoryHook, NULL);
+
+    memset(&cfg, 0, sizeof(HttpServerConfig));
+
     cfg.flags = HTTP_FLAG_NONE;
     cfg.port = 8008;
     cfg.threads = 1;
     cfg.maxConnections = 1;
     cfg.handler = HttpHandle;
-    cfg.handlerArgs = NULL;
+
+    cfg.handlerArgs = &args;
+
+	args.db = DbOpen("data", 0);
+	args.router = HttpRouterCreate();
+
+	HttpRouterAdd(args.router, "/test", TestFunc);
+
+    Log(LOG_DEBUG, "Creating server...");
 
     server = HttpServerCreate(&cfg);
+
+    Log(LOG_DEBUG, "Starting server...");
+
     if (!HttpServerStart(server))
     {
-        StreamPuts(StreamStderr(), "Unable to start HTTP server.\n");
+        Log(LOG_ERR, "Unable to start HTTP server.");
         HttpServerFree(server);
         return 1;
     }
 
-    StreamPuts(StreamStdout(), "Listening on port 8008.\n");
+    Log(LOG_INFO, "Listening on port 8008.");
 
     sa.sa_handler = SignalHandle;
     sigfillset(&sa.sa_mask);
@@ -98,7 +217,7 @@ Main(void)
 
     if (sigaction(SIGINT, &sa, NULL) < 0)
     {
-        StreamPuts(StreamStderr(), "Unable to install signal handler.\n");
+        Log(LOG_ERR, "Unable to install signal handler.");
         HttpServerStop(server);
         HttpServerJoin(server);
         HttpServerFree(server);
@@ -107,12 +226,8 @@ Main(void)
 
     HttpServerJoin(server);
 
-    StreamPuts(StreamStdout(), "Shutting down.\n");
+    Log(LOG_INFO, "Shutting down.");
     HttpServerStop(server);
-
-    StreamClose(StreamStdout());
-    StreamClose(StreamStderr());
-    StreamClose(StreamStdin());
 
     return 0;
 }
