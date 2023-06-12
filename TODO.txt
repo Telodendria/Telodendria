@@ -17,10 +17,11 @@ Milestone: v0.4.0
 [ ] Client-Server API
     [ ] 6: Filtering
     [ ] 7: Events
+        [ ] Compute size of JSON object in Canonical JSON
     [ ] 8: Rooms
     [~] 9: User Data
         [x] Profiles
-        [ ] Directory
+        [~] Directory
 
 [~] Cytoplasm
     [~] Debug OpenSSL
