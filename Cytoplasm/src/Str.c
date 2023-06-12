@@ -277,6 +277,32 @@ StrInt(long i)
     return str;
 }
 
+char *
+StrLower(char *str)
+{
+    char *ret;
+
+    size_t len;
+    size_t i;
+
+    if (!str)
+    {
+        return NULL;
+    }
+
+    len = strlen(str);
+    ret = Malloc(len + 1);
+
+    for (i = 0; i < len; i++)
+    {
+        ret[i] = tolower(str[i]);
+    }
+
+    ret[len] = '\0';
+
+    return ret;
+}
+
 int
 StrEquals(const char *str1, const char *str2)
 {

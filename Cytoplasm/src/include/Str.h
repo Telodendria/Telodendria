@@ -97,6 +97,15 @@ extern char * StrRandom(size_t);
 extern char * StrInt(long);
 
 /**
+ * Converts a string into a lowercase version of it using
+ * .Xr tolower 3 ,
+ * returning the lowercase version on the heap, or NULL if there was
+ * a memory allocation error. The returned string should be freed by
+ * the caller after it is no longer needed.
+ */
+extern char * StrLower(char *);
+
+/**
  * Compare two strings and determine whether or not they are equal.
  * This is the most common use case of strcmp() in Cytoplasm, but
  * strcmp() doesn't like NULL pointers, so these have to be checked
