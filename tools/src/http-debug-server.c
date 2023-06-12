@@ -38,6 +38,9 @@ static void
 HexDump(size_t off, char *hexBuf , char *asciiBuf, void *args)
 {
     char *fmt;
+
+    (void) args;
+
     if (hexBuf && asciiBuf)
     {
         fmt = "%04lx: | %s | %s |";
@@ -55,6 +58,8 @@ TelodendriaMemoryHook(MemoryAction a, MemoryInfo * i, void *args)
 {
     char *action;
     int err = 0;
+
+    (void) args;
 
     switch (a)
     {
@@ -129,6 +134,7 @@ TestFunc(Array *path, void *argp)
     DbRef *ref;
 
     (void) args;
+    (void) path;
 
     Log(LOG_INFO, "%s %s", HttpRequestMethodToString(method),
                  HttpRequestPath(cx));
