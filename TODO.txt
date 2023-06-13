@@ -18,6 +18,8 @@ Milestone: v0.4.0
     [ ] 6: Filtering
     [ ] 7: Events
         [ ] Compute size of JSON object in Canonical JSON
+        [ ] Rename Sha2.h to just Sha; add Sha1() function
+        [ ] Make Sha256() return raw bytes; add function to convert to string
     [ ] 8: Rooms
     [~] 9: User Data
         [x] Profiles
