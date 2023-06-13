@@ -40,6 +40,7 @@ Milestone: v0.5.0
     [ ] Content-Length
     [ ] Keep connections open
     [ ] Chunked encoding
+[ ] Refactor Memory API to use mmap().
 
 Milestone: v0.6.0
 -----------------
