@@ -13,7 +13,7 @@ addprefix() {
 
 : "${NAME:=Cytoplasm}"
 : "${LIB_NAME:=$(echo ${NAME} | tr '[A-Z]' '[a-z]')}"
-: "${VERSION:=0.3.0}"
+: "${VERSION:=0.4.0}"
 
 : "${CVS_TAG:=${NAME}-$(echo ${VERSION} | sed 's/\./_/g')}"
 
