@@ -41,6 +41,8 @@ RouterBuild(void)
         return NULL; \
     }
 
+    /* Matrix Specifification Routes */
+
     R("/.well-known/matrix/(client|server)", RouteWellKnown);
 
     R("/_matrix/client/versions", RouteVersions);
@@ -69,6 +71,11 @@ RouterBuild(void)
 
     R("/_matrix/client/v3/profile/(.*)", RouteUserProfile);
     R("/_matrix/client/v3/profile/(.*)/(avatar_url|displayname)", RouteUserProfile);
+
+    R("/_matrix/client/v3/user/(.*)/filter", RouteFilter);
+    R("/_matrix/client/v3/user/(.*)/filter/(.*)", RouteFilter);
+
+    /* Telodendria Admin API Routes */
 
     R("/_telodendria/admin/(restart|shutdown|stats)", RouteProcControl);
     R("/_telodendria/admin/config", RouteConfig);

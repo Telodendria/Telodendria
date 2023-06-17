@@ -92,6 +92,8 @@ ROUTE(RouteStaticDefault);
 ROUTE(RouteStaticLogin);
 ROUTE(RouteStaticResources);
 
+ROUTE(RouteFilter);
+
 ROUTE(RouteProcControl);
 ROUTE(RouteConfig);
 ROUTE(RoutePrivileges);

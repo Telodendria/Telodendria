@@ -14,8 +14,8 @@ Milestone: v0.4.0
 [~] /_telodendria/admin/config endpoint
     [ ] Update only certain values
 
-[ ] Client-Server API
-    [ ] 6: Filtering
+[~] Client-Server API
+    [~] 6: Filtering
     [~] 7: Events
         [ ] Compute size of JSON object in Canonical JSON
         [x] Rename Sha2.h to just Sha; add Sha1() function
@@ -31,6 +31,9 @@ Milestone: v0.4.0
         [x] Database corruption
         [ ] File descriptor exhaustion
 [ ] Random memory corruption after many requests.
+
+[ ] Refactor MatrixErrorCreate() to take a custom message.
+    This will make debugging a lot easier.
 
 Milestone: v0.5.0
 -----------------
