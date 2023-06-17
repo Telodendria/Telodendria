@@ -25,7 +25,7 @@
 #include <Util.h>
 #include <Memory.h>
 #include <Str.h>
-#include <Sha2.h>
+#include <Sha.h>
 #include <Json.h>
 
 #include <string.h>
@@ -358,6 +358,7 @@ UserCheckPassword(User * user, char *password)
     char *storedHash;
     char *salt;
 
+    unsigned char *hashBytes;
     char *hashedPwd;
     char *tmp;
 
@@ -379,8 +380,10 @@ UserCheckPassword(User * user, char *password)
     }
 
     tmp = StrConcat(2, password, salt);
-    hashedPwd = Sha256(tmp);
+    hashBytes = Sha256(tmp);
+    hashedPwd = ShaToHex(hashBytes);
     Free(tmp);
+    Free(hashBytes);
 
     result = StrEquals(hashedPwd, storedHash);
 
@@ -394,6 +397,7 @@ UserSetPassword(User * user, char *password)
 {
     HashMap *json;
 
+    unsigned char *hashBytes;
     char *hash = NULL;
     char *salt = NULL;
     char *tmpstr = NULL;
@@ -407,13 +411,15 @@ UserSetPassword(User * user, char *password)
 
     salt = StrRandom(16);
     tmpstr = StrConcat(2, password, salt);
-    hash = Sha256(tmpstr);
+    hashBytes = Sha256(tmpstr);
+    hash = ShaToHex(hashBytes);
 
     JsonValueFree(HashMapSet(json, "salt", JsonValueString(salt)));
     JsonValueFree(HashMapSet(json, "password", JsonValueString(hash)));
 
     Free(salt);
     Free(hash);
+    Free(hashBytes);
     Free(tmpstr);
 
     return 1;

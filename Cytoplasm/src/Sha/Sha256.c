@@ -21,7 +21,7 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-#include <Sha2.h>
+#include <Sha.h>
 #include <Memory.h>
 #include <Int.h>
 
@@ -170,13 +170,12 @@ Sha256Process(Sha256Context * context, unsigned char *data, size_t length)
     }
 }
 
-char *
+unsigned char *
 Sha256(char *str)
 {
     Sha256Context context;
     size_t i;
-    unsigned char out[32];
-    char *outStr;
+    unsigned char *out;
 
     unsigned char fill[64];
     UInt32 fillLen;
@@ -189,8 +188,8 @@ Sha256(char *str)
         return NULL;
     }
 
-    outStr = Malloc(65);
-    if (!outStr)
+    out = Malloc(33 * sizeof(unsigned char));
+    if (!out)
     {
         return NULL;
     }
@@ -228,11 +227,7 @@ Sha256(char *str)
         PUT_UINT32(&out[4 * i], context.state[i]);
     }
 
-    /* Convert to string */
-    for (i = 0; i < 32; i++)
-    {
-        snprintf(outStr + (2 * i), 3, "%02x", out[i]);
-    }
+	out[32] = '\0';
 
-    return outStr;
+    return out;
 }

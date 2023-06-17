@@ -21,30 +21,28 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
+#include <Sha.h>
+#include <Memory.h>
 
-#ifndef CYTOPLASM_SHA2_H
-#define CYTOPLASM_SHA2_H
+#include <stdio.h>
+#include <string.h>
 
-/***
- * @Nm Sha2
- * @Nd A simple implementation of the SHA2 hashing functions.
- * @Dd December 19 2022
- * @Xr Memory Base64
- *
- * This API defines simple functions for computing SHA2 hashes.
- * At the moment, it only defines
- * .Fn Sha256 ,
- * which computes the SHA-256 hash of the given C string. It is
- * not trivial to implement SHA-512 in ANSI C due to the lack of
- * a 64-bit integer type, so that hash function has been omitted.
- */
+char *
+ShaToHex(unsigned char *bytes)
+{
+	size_t i = 0;
+	char *str = Malloc(((strlen((char *) bytes) * 2) + 1) * sizeof(char));
 
-/**
- * This function takes a pointer to a NULL-terminated C string, and
- * returns a string allocated on the heap using the Memory API, or
- * NULL if there was an error allocating memory. The returned string
- * should be freed when it is no longer needed.
- */
-extern char * Sha256(char *);
+	if (!str)
+	{
+		return NULL;
+	}
 
-#endif                             /* CYTOPLASM_SHA2_H */
+	while (bytes[i] != '\0')
+	{
+		snprintf(str + (2 * i), 3, "%02x",  bytes[i]);
+		i++;
+	}
+
+	return str;
+}
