@@ -32,13 +32,13 @@
 #include <Str.h>
 
 static HashMap *
-ValidateRoomFilter(HashMap *json)
+ValidateRoomFilter(HashMap * json)
 {
     return NULL;
 }
 
 static HashMap *
-ValidateEventFields(Array *fields)
+ValidateEventFields(Array * fields)
 {
     return NULL;
 }
@@ -50,7 +50,7 @@ ValidateEventFormat(char *fmt)
 }
 
 static HashMap *
-ValidateEventFilter(HashMap *json)
+ValidateEventFilter(HashMap * json)
 {
     JsonValue *val;
 
@@ -60,6 +60,7 @@ ValidateEventFilter(HashMap *json)
         if (JsonValueType(val) == JSON_INTEGER)
         {
             long limit = JsonValueAsInteger(val);
+
             if (limit <= 0 || limit > 100)
             {
                 return MatrixErrorCreate(M_BAD_JSON);
@@ -75,7 +76,7 @@ ValidateEventFilter(HashMap *json)
 }
 
 HashMap *
-FilterValidate(HashMap *json)
+FilterValidate(HashMap * json)
 {
     JsonValue *val;
     HashMap *response = NULL;
@@ -109,4 +110,3 @@ FilterValidate(HashMap *json)
 finish:
     return response;
 }
-

@@ -35,7 +35,7 @@
 #include <Json.h>
 
 static void
-HexDump(size_t off, char *hexBuf , char *asciiBuf, void *args)
+HexDump(size_t off, char *hexBuf, char *asciiBuf, void *args)
 {
     char *fmt;
 
@@ -90,7 +90,7 @@ TelodendriaMemoryHook(MemoryAction a, MemoryInfo * i, void *args)
         MemoryInfoGetFile(i), MemoryInfoGetLine(i),
         action, MemoryInfoGetSize(i),
         MemoryInfoGetPointer(i));
-    
+
     if (a != MEMORY_ALLOCATE && a != MEMORY_REALLOCATE)
     {
         MemoryHexDump(i, HexDump, NULL);
@@ -112,16 +112,16 @@ SignalHandle(int signal)
 }
 struct Args
 {
-	Db *db;
-	HttpRouter *router;
-	HttpServerContext *cx;
+    Db *db;
+    HttpRouter *router;
+    HttpServerContext *cx;
 };
 
 static void *
-TestFunc(Array *path, void *argp)
+TestFunc(Array * path, void *argp)
 {
-	struct Args *args = argp;
-	HttpServerContext *cx = args->cx;
+    struct Args *args = argp;
+    HttpServerContext *cx = args->cx;
     HashMap *headers = HttpRequestHeaders(cx);
     HttpRequestMethod method = HttpRequestMethodGet(cx);
     Db *db = args->db;
@@ -137,7 +137,7 @@ TestFunc(Array *path, void *argp)
     (void) path;
 
     Log(LOG_INFO, "%s %s", HttpRequestMethodToString(method),
-                 HttpRequestPath(cx));
+        HttpRequestPath(cx));
 
     while (HashMapIterate(headers, &key, (void **) &val))
     {
@@ -160,17 +160,17 @@ TestFunc(Array *path, void *argp)
     JsonEncode(DbJson(ref), HttpServerStream(cx), JSON_DEFAULT);
     DbUnlock(db, ref);
 
-	return NULL;
+    return NULL;
 }
 
 void
-HttpHandle(HttpServerContext *cx, void *argp)
+HttpHandle(HttpServerContext * cx, void *argp)
 {
-	struct Args *args = argp;
+    struct Args *args = argp;
 
-	args->cx = cx;
+    args->cx = cx;
 
-	HttpRouterRoute(args->router, HttpRequestPath(cx), args, NULL);
+    HttpRouterRoute(args->router, HttpRequestPath(cx), args, NULL);
 }
 
 int
@@ -179,7 +179,7 @@ Main(void)
     struct sigaction sa;
     HttpServerConfig cfg;
 
-	struct Args args;
+    struct Args args;
 
     LogConfigLevelSet(LogConfigGlobal(), LOG_DEBUG);
 
@@ -197,10 +197,10 @@ Main(void)
 
     cfg.handlerArgs = &args;
 
-	args.db = DbOpen("data", 0);
-	args.router = HttpRouterCreate();
+    args.db = DbOpen("data", 0);
+    args.router = HttpRouterCreate();
 
-	HttpRouterAdd(args.router, "/test", TestFunc);
+    HttpRouterAdd(args.router, "/test", TestFunc);
 
     Log(LOG_DEBUG, "Creating server...");
 

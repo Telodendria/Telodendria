@@ -3,7 +3,7 @@
 
 #include <Log.h>
 
-int 
+int
 Main(Array * args, HashMap * env)
 {
     size_t i;

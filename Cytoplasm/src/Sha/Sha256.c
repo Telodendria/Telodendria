@@ -227,7 +227,7 @@ Sha256(char *str)
         PUT_UINT32(&out[4 * i], context.state[i]);
     }
 
-	out[32] = '\0';
+    out[32] = '\0';
 
     return out;
 }

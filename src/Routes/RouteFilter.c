@@ -35,7 +35,7 @@
 #include <string.h>
 
 static char *
-GetServerName(Db *db)
+GetServerName(Db * db)
 {
     char *name;
 

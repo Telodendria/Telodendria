@@ -30,19 +30,19 @@
 char *
 ShaToHex(unsigned char *bytes)
 {
-	size_t i = 0;
-	char *str = Malloc(((strlen((char *) bytes) * 2) + 1) * sizeof(char));
+    size_t i = 0;
+    char *str = Malloc(((strlen((char *) bytes) * 2) + 1) * sizeof(char));
 
-	if (!str)
-	{
-		return NULL;
-	}
+    if (!str)
+    {
+        return NULL;
+    }
 
-	while (bytes[i] != '\0')
-	{
-		snprintf(str + (2 * i), 3, "%02x",  bytes[i]);
-		i++;
-	}
+    while (bytes[i] != '\0')
+    {
+        snprintf(str + (2 * i), 3, "%02x", bytes[i]);
+        i++;
+    }
 
-	return str;
+    return str;
 }

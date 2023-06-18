@@ -84,7 +84,7 @@ main(int argc, char **argv)
 
     if (!MemoryRuntimeInit())
     {
-	errLen = snprintf(errBuf, ERR_BUF_SIZE, "Fatal: Unable to initialize Memory runtime.\n");
+        errLen = snprintf(errBuf, ERR_BUF_SIZE, "Fatal: Unable to initialize Memory runtime.\n");
         write(STDERR_FILENO, errBuf, errLen);
         goto finish;
     }
@@ -109,6 +109,7 @@ main(int argc, char **argv)
     for (i = 0; i < (size_t) argc; i++)
     {
         char *arg = StrDuplicate(argv[i]);
+
         if (!arg || !ArrayAdd(args.args, arg))
         {
             errLen = snprintf(errBuf, ERR_BUF_SIZE, "Fatal: Unable to allocate heap memory for program argument.\n");
