@@ -26,6 +26,9 @@ Milestone: v0.4.0
         [x] Profiles
         [~] Directory
 
+[ ] Admin API
+    [ ] Registration token endpoints
+
 [~] Cytoplasm
     [ ] HashMap/Json
         [ ] Strip all keys except subset
