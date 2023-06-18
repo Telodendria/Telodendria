@@ -1,4 +1,4 @@
-.Dd $Mdocdate: June 16 2023 $
+.Dd $Mdocdate: June 18 2023 $
 .Dt TELODENDRIA-CHANGELOG 7
 .Os Telodendria Project
 .Sh NAME
@@ -31,6 +31,18 @@ as well, so you can discuss your progress and ask questions.
 .Sh v0.4.0
 .Pp
 Not released yet.
+.Pp
+This release brings Filters, Rooms, and Events! The core of the
+Matrix protocol architecture is now in place.
+.Ss Matrix Specification
+.Pp
+The following new endpoints are now supported:
+.Bl -bullet -offset indent
+.It
+.Sy POST Pa /_matrix/client/v3/user/{userId}/filter
+.It
+.Sy GET Pa /_matrix/client/v3/user/{userId}/filter/{filterId}
+.El
 .Sh v0.3.0
 .Pp
 Saturday, June 10, 2023
