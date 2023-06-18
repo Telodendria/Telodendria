@@ -23,13 +23,16 @@
  */
 #include <Routes.h>
 
-#include <string.h>
 
 #include <HashMap.h>
 #include <Memory.h>
-#include <User.h>
 #include <Json.h>
 #include <Str.h>
+
+#include <User.h>
+#include <Filter.h>
+
+#include <string.h>
 
 static char *
 GetServerName(Db *db)
@@ -55,6 +58,7 @@ ROUTE_IMPL(RouteFilter, path, argp)
     RouteArgs *args = argp;
     Db *db = args->matrixArgs->db;
 
+    HashMap *request = NULL;
     HashMap *response = NULL;
 
     User *user = NULL;
@@ -101,18 +105,18 @@ ROUTE_IMPL(RouteFilter, path, argp)
         goto finish;
     }
 
-    if (!StrEquals(id->localpart, UserGetName(user)))
-    {
-        HttpResponseStatus(args->context, HTTP_UNAUTHORIZED);
-        response = MatrixErrorCreate(M_INVALID_PARAM);
-        goto finish;
-    }
-
     user = UserAuthenticate(db, token);
     if (!user)
     {
         HttpResponseStatus(args->context, HTTP_UNAUTHORIZED);
         response = MatrixErrorCreate(M_UNKNOWN_TOKEN);
+        goto finish;
+    }
+
+    if (!StrEquals(id->localpart, UserGetName(user)))
+    {
+        HttpResponseStatus(args->context, HTTP_UNAUTHORIZED);
+        response = MatrixErrorCreate(M_INVALID_PARAM);
         goto finish;
     }
 
@@ -132,8 +136,46 @@ ROUTE_IMPL(RouteFilter, path, argp)
     }
     else if (ArraySize(path) == 1 && HttpRequestMethodGet(args->context) == HTTP_POST)
     {
-        /* TODO */
-        response = MatrixErrorCreate(M_UNKNOWN);
+        DbRef *ref;
+        char *filterId;
+
+        request = JsonDecode(HttpServerStream(args->context));
+        if (!request)
+        {
+            HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
+            response = MatrixErrorCreate(M_NOT_JSON);
+            goto finish;
+        }
+
+        response = FilterValidate(request);
+        if (response)
+        {
+            goto finish;
+        }
+
+        filterId = StrRandom(12);
+        if (!filterId)
+        {
+            HttpResponseStatus(args->context, HTTP_INTERNAL_SERVER_ERROR);
+            response = MatrixErrorCreate(M_UNKNOWN);
+            goto finish;
+        }
+
+        ref = DbCreate(db, 3, "filters", UserGetName(user), filterId);
+        if (!ref)
+        {
+            Free(filterId);
+            HttpResponseStatus(args->context, HTTP_INTERNAL_SERVER_ERROR);
+            response = MatrixErrorCreate(M_UNKNOWN);
+            goto finish;
+        }
+
+        DbJsonSet(ref, request);
+        DbUnlock(db, ref);
+
+        response = HashMapCreate();
+        HashMapSet(response, "filter_id", JsonValueString(filterId));
+        Free(filterId);
     }
     else
     {
@@ -145,5 +187,6 @@ finish:
     Free(serverName);
     UserIdFree(id);
     UserUnlock(user);
+    JsonFree(request);
     return response;
 }
