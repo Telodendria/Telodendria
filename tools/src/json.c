@@ -30,7 +30,9 @@
 #include <HashMap.h>
 #include <Str.h>
 #include <Memory.h>
+
 #include <Json.h>
+#include <CanonicalJson.h>
 
 #define FLAG_ENCODE (1 << 0)
 #define FLAG_SELECT (1 << 1)
@@ -42,7 +44,7 @@ usage(char *prog)
 }
 
 static void
-query(char *select, HashMap * json)
+query(char *select, HashMap * json, int canonical)
 {
     char *key;
     JsonValue *rootVal = JsonValueObject(json);
@@ -170,7 +172,15 @@ query(char *select, HashMap * json)
 
     if (val)
     {
-        JsonEncodeValue(val, StreamStdout(), JSON_PRETTY);
+        if (canonical)
+        {
+            CanonicalJsonEncodeValue(val, StreamStdout());
+        }
+        else
+        {
+            JsonEncodeValue(val, StreamStdout(), JSON_PRETTY);
+        }
+
         StreamPutc(StreamStdout(), '\n');
     }
 
@@ -182,11 +192,19 @@ query(char *select, HashMap * json)
 }
 
 static void
-encode(char *str)
+encode(char *str, int canonical)
 {
     JsonValue *val = JsonValueString(str);
 
-    JsonEncodeValue(val, StreamStdout(), JSON_DEFAULT);
+    if (canonical)
+    {
+        CanonicalJsonEncodeValue(val, StreamStdout());
+    }
+    else
+    {
+        JsonEncodeValue(val, StreamStdout(), JSON_DEFAULT);
+    }
+
     JsonValueFree(val);
     StreamPutc(StreamStdout(), '\n');
 }
@@ -200,8 +218,10 @@ Main(Array * args)
     char *input = NULL;
     ArgParseState arg;
 
+    int canonical = 0;
+
     ArgParseStateInit(&arg);
-    while ((ch = ArgParse(&arg, args, "s:e:")) != -1)
+    while ((ch = ArgParse(&arg, args, "cs:e:")) != -1)
     {
         switch (ch)
         {
@@ -212,6 +232,9 @@ Main(Array * args)
             case 'e':
                 flag = FLAG_ENCODE;
                 input = arg.optArg;
+                break;
+            case 'c':
+                canonical = 1;
                 break;
             default:
                 usage(ArrayGet(args, 0));
@@ -233,13 +256,21 @@ Main(Array * args)
     switch (flag)
     {
         case FLAG_SELECT:
-            query(input, json);    /* This will implicitly free json */
+            query(input, json, canonical);    /* This will implicitly free json */
             break;
         case FLAG_ENCODE:
-            encode(input);
+            encode(input, canonical);
             break;
         default:
-            JsonEncode(json, StreamStdout(), JSON_PRETTY);
+            if (canonical)
+            {
+                CanonicalJsonEncode(json, StreamStdout());
+            }
+            else
+            {
+                JsonEncode(json, StreamStdout(), JSON_PRETTY);
+            }
+
             StreamPutc(StreamStdout(), '\n');
             JsonFree(json);
             break;

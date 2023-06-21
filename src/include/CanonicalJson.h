@@ -55,6 +55,7 @@
 
 #include <HashMap.h>
 #include <Stream.h>
+#include <Json.h>
 
 /**
  * Encode a JSON object following the rules of Canonical JSON. See the
@@ -71,25 +72,19 @@
  * .Fn JsonEncode ,
  * because it is much cheaper both in terms of memory and CPU time.
  * .Pp
- * This function returns a boolean value indicating whether or not the
- * operation was sucessful. This function will fail only if NULL was
- * given for any parameter. Otherwise, if an invalid pointer is given,
- * undefined behavior results.
+ * This function returns the number of bytes written to the
+ * stream, just like
+ * .Fn JsonEncode .
  */
 extern int CanonicalJsonEncode(HashMap *, Stream *);
 
 /**
- * This function encodes a JSON object to a string.
- * .Xr Json 3
- * doesn't have any way to send JSON to a string, because there's
- * absolutely no reason to handle JSON strings in most cases. However,
- * the sole reason Canonical JSON exists is so that JSON objects can
- * be signed in a consisten way. Thus, it is likely you need a string
- * to pass to the signing function.
- * .Pp
- * This function returns a C string containing the canonical JSON
- * representation of the given object, or NULL if the encoding failed.
+ * Encode a JSON value following the rules of Canonical JSON.
+ * See the documentation for
+ * .Fn JsonEncodeValue ,
+ * documented in
+ * .Xr Json 3 .
  */
-extern char * CanonicalJsonEncodeToString(HashMap *);
+extern int CanonicalJsonEncodeValue(JsonValue *, Stream *);
 
 #endif                             /* TELODENDRIA_CANONICALJSON_H */

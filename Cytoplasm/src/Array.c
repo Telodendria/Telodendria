@@ -259,7 +259,7 @@ ArrayQuickSort(Array * array, size_t low, size_t high, int (*compare) (void *, v
     {
         size_t pi = ArrayPartition(array, low, high, compare);
 
-        ArrayQuickSort(array, low, pi - 1, compare);
+        ArrayQuickSort(array, low, pi ? pi - 1 : 0, compare);
         ArrayQuickSort(array, pi + 1, high, compare);
     }
 }
@@ -271,7 +271,7 @@ ArraySort(Array * array, int (*compare) (void *, void *))
     {
         return;
     }
-    ArrayQuickSort(array, 0, array->size, compare);
+    ArrayQuickSort(array, 0, array->size - 1, compare);
 }
 
 /* Even though the following operations could be done using only the

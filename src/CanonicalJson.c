@@ -30,29 +30,32 @@
 #include <stdio.h>
 #include <string.h>
 
-int
+static int
 CanonicalJsonKeyCompare(void *k1, void *k2)
 {
     return strcmp((char *) k1, (char *) k2);
 }
 
-static void
+int
 CanonicalJsonEncodeValue(JsonValue * value, Stream * out)
 {
     Array *arr;
     size_t i, len;
 
+    int length = 0;
+
     /* Override object type to encode using the canonical functions */
     switch (JsonValueType(value))
     {
         case JSON_OBJECT:
-            CanonicalJsonEncode(JsonValueAsObject(value), out);
+            length += CanonicalJsonEncode(JsonValueAsObject(value), out);
             break;
         case JSON_ARRAY:
             arr = JsonValueAsArray(value);
             len = ArraySize(arr);
 
             StreamPutc(out, '[');
+            length++;
 
             for (i = 0; i < len; i++)
             {
@@ -64,19 +67,23 @@ CanonicalJsonEncodeValue(JsonValue * value, Stream * out)
                     continue;
                 }
 
-                CanonicalJsonEncodeValue(aVal, out);
+                length += CanonicalJsonEncodeValue(aVal, out);
                 if (i < len - 1)
                 {
                     StreamPutc(out, ',');
+                    length++;
                 }
             }
 
             StreamPutc(out, ']');
+            length++;
             break;
         default:
-            JsonEncodeValue(value, out, JSON_DEFAULT);
+            length += JsonEncodeValue(value, out, JSON_DEFAULT);
             break;
     }
+
+    return length;
 }
 
 int
@@ -87,16 +94,17 @@ CanonicalJsonEncode(HashMap * object, Stream * out)
     Array *keys;
     size_t i;
     size_t keyCount;
+    int length;
 
-    if (!object || !out)
+    if (!object)
     {
-        return 0;
+        return -1;
     }
 
     keys = ArrayCreate();
     if (!keys)
     {
-        return 0;
+        return -1;
     }
 
     while (HashMapIterate(object, &key, (void **) &value))
@@ -106,7 +114,11 @@ CanonicalJsonEncode(HashMap * object, Stream * out)
 
     ArraySort(keys, CanonicalJsonKeyCompare);
 
+    /* The total number of bytes written */
+    length = 0;
+
     StreamPutc(out, '{');
+    length++;
 
     keyCount = ArraySize(keys);
     for (i = 0; i < keyCount; i++)
@@ -128,18 +140,21 @@ CanonicalJsonEncode(HashMap * object, Stream * out)
             continue;
         }
 
-        JsonEncodeString(key, out);
+        length += JsonEncodeString(key, out);
         StreamPutc(out, ':');
-        CanonicalJsonEncodeValue(value, out);
+        length++;
+        length += CanonicalJsonEncodeValue(value, out);
 
         if (i < keyCount - 1)
         {
             StreamPutc(out, ',');
+            length++;
         }
     }
 
     StreamPutc(out, '}');
+    length++;
 
     ArrayFree(keys);
-    return 1;
+    return length;
 }

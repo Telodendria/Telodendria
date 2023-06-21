@@ -16,8 +16,9 @@ Milestone: v0.4.0
 
 [~] Client-Server API
     [~] 6: Filtering
+        [ ] Finish validating filters before saving them.
     [~] 7: Events
-        [ ] Compute size of JSON object in Canonical JSON
+        [x] Compute size of JSON object in Canonical JSON
         [x] Rename Sha2.h to just Sha; add Sha1() function
         [x] Make Sha256() return raw bytes; add function to
             convert to hex string.
@@ -44,6 +45,7 @@ Milestone: v0.4.0
     use the default. This will make debugging a lot easier.
 [ ] Make sure admin registration token is printed to log, not stdout.
     Unless they are the same, of course.
+[ ] Fix Json UTF-8 handling.
 
 Milestone: v0.5.0
 -----------------
