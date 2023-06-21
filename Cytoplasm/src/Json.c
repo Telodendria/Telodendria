@@ -376,26 +376,8 @@ JsonEncodeString(const char *str, Stream * out)
                 length += 2;
                 break;
             default:              /* Assume UTF-8 input */
-                /*
-                 * RFC 4627: "All Unicode characters may be placed
-                 * within the quotation marks except for the characters
-                 * that must be escaped: quotation mark, reverse solidus,
-                 * and the control characters (U+0000 through U+001F)."
-                 *
-                 * This technically covers the above cases for backspace,
-                 * tab, newline, feed, and carriage return characters,
-                 * but we can save bytes if we encode those as their
-                 * more human-readable representation.
-                 */
-                if (c <= 0x001F)
-                {
-                    length += StreamPrintf(out, "\\u%04x", c);
-                }
-                else
-                {
-                    StreamPutc(out, c);
-                    length++;
-                }
+                StreamPutc(out, c);
+                length++;
                 break;
         }
         i++;
