@@ -87,13 +87,13 @@ Milestone: v0.9.0
 
 [ ] Identity Service API
 
-Milestone: v1.0.0
+Milestone: v1.7.0
 -----------------
 
 [ ] Push Gateway API
 [ ] Room Versions
 
-Milestone v1.1.0
+Milestone v1.7.1
 ----------------
 
 [ ] Database upgrades/migration path
@@ -102,3 +102,4 @@ Milestone v1.1.0
 	[ ] Room management
 [ ] Migrate from Synapse or Dendrite, whichever is more mainstream by
     the time we get here.
+
