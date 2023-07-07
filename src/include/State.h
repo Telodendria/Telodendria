@@ -22,34 +22,25 @@
  * SOFTWARE.
  */
 
-#ifndef TELODENDRIA_EVENT_H
-#define TELODENDRIA_EVENT_H
+#ifndef TELODENDRIA_STATE_H
+#define TELODENDRIA_STATE_H
+
+/***
+ * @Nm State
+ * @Nd The Matrix state resolution algorithms.
+ * @Dd July 6 2023
+ *
+ * .Nm implements the state resolution algorithms required
+ * to maintain room state.
+ */
 
 #include <HashMap.h>
 
 #include <Room.h>
 
 /**
- * Compute the content hash of an event. This involves
- * converting it to a canonical JSON string and then
- * hashing it.
+ * Compute the room state before the specified event was sent.
  */
-extern char * EventContentHash(HashMap *);
+extern HashMap * StateResolve(Room *, HashMap *);
 
-/**
- * Get the full event ID, including the sigil, and, if
- * applicable, the server name. This function requires
- * the room handle that the event belongs to because
- * certain room versions have the event ID embedded in
- * the event itself, and others are calculated. Note
- * that if an event is being loaded from the database,
- * the ID is already known. Since this is a computationally
- * and memory intensive operation, it should not be
- * performed more than absolutely necessary, namely, when
- * an event comes in from the federation APIs or the
- * homeserver has finished generating a PDU for a client
- * event.
- */
-extern char * EventIdGet(Room *, HashMap *);
-
-#endif /* TELODENDRIA_EVENT_H */
+#endif /* TELODENDRIA_STATE_H */

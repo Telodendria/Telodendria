@@ -22,34 +22,64 @@
  * SOFTWARE.
  */
 
-#ifndef TELODENDRIA_EVENT_H
-#define TELODENDRIA_EVENT_H
+#include <State.h>
 
 #include <HashMap.h>
+#include <Array.h>
 
 #include <Room.h>
+#include <Event.h>
 
-/**
- * Compute the content hash of an event. This involves
- * converting it to a canonical JSON string and then
- * hashing it.
- */
-extern char * EventContentHash(HashMap *);
+static HashMap *
+StateResolveV1(Array *states)
+{
+    return NULL;
+}
 
-/**
- * Get the full event ID, including the sigil, and, if
- * applicable, the server name. This function requires
- * the room handle that the event belongs to because
- * certain room versions have the event ID embedded in
- * the event itself, and others are calculated. Note
- * that if an event is being loaded from the database,
- * the ID is already known. Since this is a computationally
- * and memory intensive operation, it should not be
- * performed more than absolutely necessary, namely, when
- * an event comes in from the federation APIs or the
- * homeserver has finished generating a PDU for a client
- * event.
- */
-extern char * EventIdGet(Room *, HashMap *);
+static HashMap *
+StateResolveV2(Array *states)
+{
+    return NULL;
+}
 
-#endif /* TELODENDRIA_EVENT_H */
+HashMap *
+StateResolve(Room *room, HashMap *event)
+{
+    Array *states;
+    size_t i;
+
+    Array *prevEvents;
+
+    if (!room || !event)
+    {
+        return NULL;
+    }
+
+    /* TODO: Return cached state if it exists */
+
+    states = ArrayCreate();
+    if (!states)
+    {
+        return NULL;
+    }
+
+    prevEvents = HashMapGet(event, "prev_events");
+
+    for (i = 0; i < ArraySize(prevEvents); i++)
+    {
+        HashMap *prevEvent = ArrayGet(prevEvents, i);
+        HashMap *state = StateResolve(room, prevEvent);
+
+        /* TODO: Apply prevEvent to state if it is a state event */
+
+        ArrayAdd(states, state);
+    }
+
+    switch (RoomVersionGet(room))
+    {
+        case 1:
+            return StateResolveV1(states);
+        default:
+            return StateResolveV2(states);
+    }
+}
