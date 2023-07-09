@@ -52,4 +52,10 @@ extern char * EventContentHash(HashMap *);
  */
 extern char * EventIdGet(Room *, HashMap *);
 
+/**
+ * Redact an event according to the rules for the given
+ * room. The event is modified in place.
+ */
+extern int EventRedact(Room *, HashMap *);
+
 #endif /* TELODENDRIA_EVENT_H */

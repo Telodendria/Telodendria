@@ -22,7 +22,7 @@ Milestone: v0.4.0
         [x] Rename Sha2.h to just Sha; add Sha1() function
         [x] Make Sha256() return raw bytes; add function to
             convert to hex string.
-    [ ] 8: Rooms
+    [~] 8: Rooms
     [~] 9: User Data
         [x] Profiles
         [~] Directory
