@@ -64,7 +64,7 @@ typedef struct Array Array;
  * used with the other functions in this API, or NULL if there was an
  * error allocating memory for the array.
  */
-extern Array * ArrayCreate(void);
+extern Array *ArrayCreate(void);
 
 /**
  * Deallocate an array. Note that this function does not free any of
@@ -88,7 +88,7 @@ extern size_t ArraySize(Array *);
  * or
  * .Fn ArraySet .
  */
-extern void * ArrayGet(Array *, size_t);
+extern void *ArrayGet(Array *, size_t);
 
 /**
  * Insert the specified element at the specified index in the specified
@@ -105,7 +105,7 @@ extern int ArrayInsert(Array *, size_t, void *);
  * specified value. This function will return the old value at that
  * index, if any.
  */
-extern void * ArraySet(Array *, size_t, void *);
+extern void *ArraySet(Array *, size_t, void *);
 
 /**
  * Append the specified element to the end of the specified array. This
@@ -121,7 +121,7 @@ extern int ArrayAdd(Array *, void *);
  * Remove the element at the specified index from the specified array.
  * This function returns the element removed, if any.
  */
-extern void * ArrayDelete(Array *, size_t);
+extern void *ArrayDelete(Array *, size_t);
 
 /**
  * Sort the specified array using the specified sort function. The
@@ -135,6 +135,21 @@ extern void * ArrayDelete(Array *, size_t);
  * second element should appear after the first in the array.
  */
 extern void ArraySort(Array *, int (*) (void *, void *));
+
+/**
+ * Remove all duplicates from an array by using the given comparison
+ * function to sort the array, then remove matching values. This
+ * function returns a new array with all duplicates removed. The
+ * original array is unaffected. Note that arrays only store pointers
+ * to values, usually values on the heap. Thus, it is possible to lose
+ * pointers to duplicate values and have them leak.
+ * .P
+ * This is a relatively expensive operation. The array must first be
+ * duplicated. Then it is sorted, then it is iterated from beginning
+ * to end to remove duplicate entires. Note that the comparison 
+ * function is executed on each element at least twice.
+ */
+extern Array *ArrayUnique(Array *, int (*) (void *, void *));
 
 /**
  * If possible, reduce the amount of memory allocated to this array
@@ -152,13 +167,13 @@ extern int ArrayTrim(Array *);
  * .Fn va_arg
  * and friends.
  */
-extern Array * ArrayFromVarArgs(size_t, va_list);
+extern Array *ArrayFromVarArgs(size_t, va_list);
 
 /**
  * Duplicate an existing array. Note that arrays only hold pointers to
  * their data, not the data itself, so the duplicated array will point
  * to the same places in memory as the original array.
  */
-extern Array * ArrayDuplicate(Array *);
+extern Array *ArrayDuplicate(Array *);
 
 #endif                             /* CYTOPLASM_ARRAY_H */

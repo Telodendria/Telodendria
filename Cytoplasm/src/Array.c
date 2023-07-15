@@ -274,6 +274,49 @@ ArraySort(Array * array, int (*compare) (void *, void *))
     ArrayQuickSort(array, 0, array->size - 1, compare);
 }
 
+Array *
+ArrayUnique(Array * array, int (*compare) (void *, void *))
+{
+    Array *ret;
+
+    size_t i;
+
+    if (!array)
+    {
+        return NULL;
+    }
+
+    ret = ArrayDuplicate(array);
+    if (!ret)
+    {
+        return NULL;
+    }
+
+    if (ArraySize(ret) == 1)
+    {
+        /* There can't be any duplicates when there's only 1 value */
+        return ret;
+    }
+
+    ArraySort(ret, compare);
+
+    for (i = 1; i < ArraySize(ret); i++)
+    {
+        void *cur = ret->entries[i];
+        void *prev = ret->entries[i - 1];
+
+        if (compare(cur, prev) == 0)
+        {
+            /* Remove the duplicate, and put i back where it was. */
+            ArrayDelete(ret, i--);
+        }
+    }
+
+    ArrayTrim(ret);
+
+    return ret;
+}
+
 /* Even though the following operations could be done using only the
  * public Array API defined above, I opted for low-level struct
  * manipulation because it allows much more efficient copying; we only
