@@ -26,6 +26,7 @@
 #include <Memory.h>
 #include <Util.h>
 #include <Rand.h>
+#include <Int.h>
 
 #include <stdlib.h>
 #include <string.h>
@@ -34,8 +35,28 @@
 #include <pthread.h>
 #include <unistd.h>
 
+UInt32
+StrUtf16Decode(UInt16 high, UInt16 low)
+{
+    if (high <= 0xD7FF)
+    {
+        return high;
+    }
+    else if (high <= 0xDBFF)
+    {
+        unsigned short hS = (high - 0xD800) * 0x400;
+        unsigned short lS = low - 0xDC00;
+
+        return (lS | hS) + 0x10000;
+    }
+    else
+    {
+        return 0;
+    }
+}
+
 char *
-StrUtf8Encode(unsigned long utf8)
+StrUtf8Encode(UInt32 codepoint)
 {
     char *str;
 
@@ -45,30 +66,30 @@ StrUtf8Encode(unsigned long utf8)
         return NULL;
     }
 
-    if (utf8 <= 0x7F)              /* Plain ASCII */
+    if (codepoint <= 0x7F && codepoint != 0)    /* Plain ASCII */
     {
-        str[0] = (char) utf8;
+        str[0] = (char) codepoint;
         str[1] = '\0';
     }
-    else if (utf8 <= 0x07FF)       /* 2-byte */
+    else if (codepoint <= 0x07FF)  /* 2-byte */
     {
-        str[0] = (char) (((utf8 >> 6) & 0x1F) | 0xC0);
-        str[1] = (char) (((utf8 >> 0) & 0x3F) | 0x80);
+        str[0] = (char) (((codepoint >> 6) & 0x1F) | 0xC0);
+        str[1] = (char) (((codepoint >> 0) & 0x3F) | 0x80);
         str[2] = '\0';
     }
-    else if (utf8 <= 0xFFFF)       /* 3-byte */
+    else if (codepoint <= 0xFFFF)  /* 3-byte */
     {
-        str[0] = (char) (((utf8 >> 12) & 0x0F) | 0xE0);
-        str[1] = (char) (((utf8 >> 6) & 0x3F) | 0x80);
-        str[2] = (char) (((utf8 >> 0) & 0x3F) | 0x80);
+        str[0] = (char) (((codepoint >> 12) & 0x0F) | 0xE0);
+        str[1] = (char) (((codepoint >> 6) & 0x3F) | 0x80);
+        str[2] = (char) (((codepoint >> 0) & 0x3F) | 0x80);
         str[3] = '\0';
     }
-    else if (utf8 <= 0x10FFFF)     /* 4-byte */
+    else if (codepoint <= 0x10FFFF)/* 4-byte */
     {
-        str[0] = (char) (((utf8 >> 18) & 0x07) | 0xF0);
-        str[1] = (char) (((utf8 >> 12) & 0x3F) | 0x80);
-        str[2] = (char) (((utf8 >> 6) & 0x3F) | 0x80);
-        str[3] = (char) (((utf8 >> 0) & 0x3F) | 0x80);
+        str[0] = (char) (((codepoint >> 18) & 0x07) | 0xF0);
+        str[1] = (char) (((codepoint >> 12) & 0x3F) | 0x80);
+        str[2] = (char) (((codepoint >> 6) & 0x3F) | 0x80);
+        str[3] = (char) (((codepoint >> 0) & 0x3F) | 0x80);
         str[4] = '\0';
     }
     else

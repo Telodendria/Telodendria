@@ -26,6 +26,7 @@
 #include <Io.h>
 #include <Memory.h>
 #include <Util.h>
+#include <Int.h>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -49,11 +50,11 @@ struct Stream
 {
     Io *io;
 
-    char *rBuf;
+    UInt8 *rBuf;
     size_t rLen;
     size_t rOff;
 
-    char *wBuf;
+    UInt8 *wBuf;
     size_t wLen;
 
     char *ugBuf;

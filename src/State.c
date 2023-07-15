@@ -31,19 +31,19 @@
 #include <Event.h>
 
 static HashMap *
-StateResolveV1(Array *states)
+StateResolveV1(Array * states)
 {
     return NULL;
 }
 
 static HashMap *
-StateResolveV2(Array *states)
+StateResolveV2(Array * states)
 {
     return NULL;
 }
 
 HashMap *
-StateResolve(Room *room, HashMap *event)
+StateResolve(Room * room, HashMap * event)
 {
     Array *states;
     size_t i;

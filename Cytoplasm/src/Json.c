@@ -26,6 +26,7 @@
 #include <Memory.h>
 #include <Str.h>
 #include <Util.h>
+#include <Int.h>
 
 #include <stdio.h>
 #include <stddef.h>
@@ -401,7 +402,10 @@ JsonDecodeString(Stream * in)
     int c;
     char a[5];
 
-    unsigned long utf8;
+    UInt32 codepoint;
+    UInt16 high;
+    UInt16 low;
+
     char *utf8Ptr;
 
     len = 0;
@@ -480,14 +484,46 @@ JsonDecodeString(Stream * in)
                             return NULL;
                         }
                         /* Interpret characters as a hex number */
-                        if (sscanf(a, "%04lx", &utf8) != 1)
+                        if (sscanf(a, "%04hx", &high) != 1)
                         {
                             /* Bad hex value */
                             Free(str);
                             return NULL;
                         }
 
-                        if (utf8 == 0)
+                        /* If this is a two-byte UTF-16 codepoint, grab
+                         * the second byte */
+                        if (high > 0xD7FF && high <= 0xDBFF)
+                        {
+                            if (StreamGetc(in) != '\\' || StreamGetc(in) != 'u')
+                            {
+                                Free(str);
+                                return NULL;
+                            }
+
+                            /* Read 4 characters into a */
+                            if (!StreamGets(in, a, sizeof(a)))
+                            {
+                                Free(str);
+                                return NULL;
+                            }
+
+                            /* Interpret characters as a hex number */
+                            if (sscanf(a, "%04hx", &low) != 1)
+                            {
+                                Free(str);
+                                return NULL;
+                            }
+
+                            codepoint = StrUtf16Decode(high, low);
+                        }
+                        else
+                        {
+                            codepoint = high;
+                        }
+
+
+                        if (codepoint == 0)
                         {
                             /*
                              * We read in a 0000, null. There is no
@@ -507,7 +543,7 @@ JsonDecodeString(Stream * in)
 
                         /* Encode the 4-byte UTF-8 buffer into a series
                          * of 1-byte characters */
-                        utf8Ptr = StrUtf8Encode(utf8);
+                        utf8Ptr = StrUtf8Encode(codepoint);
                         if (!utf8Ptr)
                         {
                             /* Mem error */

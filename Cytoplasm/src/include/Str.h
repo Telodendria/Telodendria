@@ -39,14 +39,21 @@
  * is a standard library header.
  */
 
+#include <Int.h>
+
 #include <stddef.h>
 
 /**
- * Take a UTF-8 codepoint and encode it into a string buffer containing
+ * Convert UTF-16 into a Unicode codepoint.
+ */
+extern UInt32 StrUtf16Decode(UInt16, UInt16);
+
+/**
+ * Take a Unicode codepoint and encode it into a string buffer containing
  * between 1 and 4 bytes. The string buffer is allocated on the heap,
  * so it should be freed when it is no longer needed.
  */
-extern char * StrUtf8Encode(unsigned long);
+extern char * StrUtf8Encode(UInt32);
 
 /**
  * Duplicate a null-terminated string, returning a new string on the

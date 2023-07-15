@@ -38,13 +38,13 @@ struct Room
 };
 
 Room *
-RoomCreate(Db *db, HashMap *json)
+RoomCreate(Db * db, HashMap * json)
 {
     return NULL;
 }
 
 Room *
-RoomLock(Db *db, char *id)
+RoomLock(Db * db, char *id)
 {
     DbRef *ref;
     Room *room;
@@ -76,7 +76,7 @@ RoomLock(Db *db, char *id)
 }
 
 int
-RoomUnlock(Room *room)
+RoomUnlock(Room * room)
 {
     Db *db;
     DbRef *ref;
@@ -96,19 +96,19 @@ RoomUnlock(Room *room)
 }
 
 char *
-RoomIdGet(Room *room)
+RoomIdGet(Room * room)
 {
     return room ? room->id : NULL;
 }
 
 int
-RoomVersionGet(Room *room)
+RoomVersionGet(Room * room)
 {
     return room ? room->version : 0;
 }
 
 HashMap *
-RoomStateGet(Room *room)
+RoomStateGet(Room * room)
 {
     if (!room)
     {

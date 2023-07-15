@@ -256,7 +256,8 @@ Main(Array * args)
     switch (flag)
     {
         case FLAG_SELECT:
-            query(input, json, canonical);    /* This will implicitly free json */
+            query(input, json, canonical);      /* This will implicitly
+                                                 * free json */
             break;
         case FLAG_ENCODE:
             encode(input, canonical);
