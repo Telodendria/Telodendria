@@ -25,6 +25,7 @@
 
 #include <Memory.h>
 #include <Str.h>
+#include <Array.h>
 
 #include <stddef.h>
 #include <string.h>
@@ -398,4 +399,58 @@ HashMapIterateFree(char *key, void *value)
     {
         Free(value);
     }
+}
+
+Array *
+HashMapKeys(HashMap * map)
+{
+    Array *arr;
+
+    char *key;
+    void *val;
+
+    if (!map)
+    {
+        return NULL;
+    }
+
+    arr = ArrayCreate();
+    if (!arr)
+    {
+        return NULL;
+    }
+
+    while (HashMapIterate(map, &key, &val))
+    {
+        ArrayAdd(arr, key);
+    }
+
+    return arr;
+}
+
+Array *
+HashMapValues(HashMap *map)
+{
+    Array *arr;
+
+    char *key;
+    void *val;
+
+    if (!map)
+    {
+        return NULL;
+    }
+
+    arr = ArrayCreate();
+    if (!arr)
+    {
+        return NULL;
+    }
+
+    while (HashMapIterate(map, &key, &val))
+    {
+        ArrayAdd(arr, val);
+    }
+
+    return arr;
 }

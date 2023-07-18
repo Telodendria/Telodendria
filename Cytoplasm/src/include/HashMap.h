@@ -46,6 +46,8 @@
 
 #include <stddef.h>
 
+#include <Array.h>
+
 /**
  * These functions operate on an opaque structure, which the caller
  * has no knowledge about.
@@ -163,5 +165,21 @@ extern int HashMapIterate(HashMap *, char **, void **);
  */
 extern int
 HashMapIterateReentrant(HashMap *, char **, void **, size_t *);
+
+/**
+ * Collect the string keys of a hash map and return them as an array.
+ * The returned array holds pointers to the strings stored in the
+ * hash map, so the strings should NOT be freed; it is sufficient to
+ * free the array itself. Likewise, once the hash map is freed, the
+ * array elements are invalid and the array should be freed.
+ */
+extern Array * HashMapKeys(HashMap *);
+
+/**
+ * Collect the values of a hash map and return them as an array. The
+ * returned array holds the same pointers to the values as the hash
+ * map.
+ */
+extern Array * HashMapValues(HashMap *);
 
 #endif                             /* CYTOPLASM_HASHMAP_H */
