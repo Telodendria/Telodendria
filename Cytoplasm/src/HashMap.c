@@ -429,7 +429,7 @@ HashMapKeys(HashMap * map)
 }
 
 Array *
-HashMapValues(HashMap *map)
+HashMapValues(HashMap * map)
 {
     Array *arr;
 
