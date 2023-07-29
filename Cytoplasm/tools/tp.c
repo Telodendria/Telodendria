@@ -24,6 +24,7 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <string.h>
+#include <time.h>
 
 #include <Args.h>
 #include <Memory.h>
@@ -47,6 +48,18 @@ static char runtime[] =
 "[def (); str; [(][str][)]]"
 "[def #;;]"
 "[def //;;]"
+"[def day;; [time %d]]"
+"[def month;; [time %m]]"
+"[def year;; [time %Y]]"
+"[def day-name;; [time %A]]"
+"[def month-name;; [time %B]]"
+"[def hour;; [time %I]]"
+"[def minute;; [time %M]]"
+"[def second;; [time %S]]"
+"[def am/pm;; [time %p]]"
+"[def timezone;; [time %Z]]"
+"[def date;; [day-name], [month-name] [day], [year]]"
+"[def timestamp;; [hour]:[minute]:[second] [am/pm] [timezone]]"
 ;
 
 static Stream *err;
@@ -293,6 +306,26 @@ EvalExpr(char *expr, Array * stack)
         }
 
         res = StrDuplicate(val);
+    }
+    else if (StrEquals(op, "time"))
+    {
+        char *fmt = Eval(&argv, stack);
+
+        time_t currentTime = time(NULL);
+        struct tm *timeInfo = localtime(&currentTime);
+        char *timestamp = Malloc(128 * sizeof(char));
+
+        if (strftime(timestamp, 128 * sizeof(char), fmt, timeInfo))
+        {
+            res = timestamp;
+        }
+        else
+        {
+            res = StrDuplicate("");
+            Free(timestamp);
+        }
+
+        Free(fmt);
     }
     else if (StrEquals(op, "eval"))
     {
@@ -626,9 +659,9 @@ Main(Array * args)
 
     char *rt;
 
-	Stream *in;
-	Stream *out;
-	Array *eval = ArrayCreate();
+    Stream *in;
+    Stream *out;
+    Array *eval = ArrayCreate();
 
     debug = 0;
     in = StreamStdin();
@@ -667,9 +700,9 @@ Main(Array * args)
                     goto finish;
                 }
                 break;
-			case 'e':
-				ArrayAdd(eval, StrDuplicate(arg.optArg));
-				break;
+            case 'e':
+                ArrayAdd(eval, StrDuplicate(arg.optArg));
+                break;
             case 'd':
                 debug = 1;
                 break;
@@ -689,19 +722,19 @@ Main(Array * args)
     rt = runtime;
     Free(Eval(&rt, stack));
 
-	/*
-	 * Evaluate any expressions specified on the command line,
-	 * interpolating them in the output if they produce anything
-	 * because that is the expected behavior.
-	 */
-	for (i = 0; i < ArraySize(eval); i++)
-	{
-		char *expr = ArrayGet(eval, i);
-		char *res = Eval(&expr, stack);
+    /*
+     * Evaluate any expressions specified on the command line,
+     * interpolating them in the output if they produce anything
+     * because that is the expected behavior.
+     */
+    for (i = 0; i < ArraySize(eval); i++)
+    {
+        char *expr = ArrayGet(eval, i);
+        char *res = Eval(&expr, stack);
 
-		StreamPuts(out, res);
-		Free(res);
-	}
+        StreamPuts(out, res);
+        Free(res);
+    }
 
     Process(in, out, stack);
 
@@ -734,11 +767,11 @@ Main(Array * args)
     ret = EXIT_SUCCESS;
 
 finish:
-	for (i = 0; i < ArraySize(eval); i++)
-	{
-		Free(ArrayGet(eval, i));
-	}
-	ArrayFree(eval);
+    for (i = 0; i < ArraySize(eval); i++)
+    {
+        Free(ArrayGet(eval, i));
+    }
+    ArrayFree(eval);
 
     if (in != StreamStdin())
     {
