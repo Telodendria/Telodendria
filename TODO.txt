@@ -40,6 +40,10 @@ Milestone: v0.4.0
         [x] Database corruption
         [ ] File descriptor exhaustion
 [ ] Random memory corruption after many requests.
+[ ] j2s
+    [ ] How to set default value of true on boolean?
+        - defaults probably need to be set at parser level, not
+          enough to set it after.
 
 [ ] Refactor MatrixErrorCreate() to take a custom message or NULL to
     use the default. This will make debugging a lot easier.
