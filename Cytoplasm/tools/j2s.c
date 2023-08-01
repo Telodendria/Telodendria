@@ -142,8 +142,6 @@ Main(Array * args)
         goto finish;
     }
 
-    Log(LOG_INFO, "j2s: Cytoplasm Json -> C Struct Converter");
-
     ArgParseStateInit(&arg);
     while ((opt = ArgParse(&arg, args, "s:h:c:")) != -1)
     {
@@ -202,12 +200,6 @@ Main(Array * args)
         goto finish;
     }
 
-    Log(LOG_INFO, "Schema File: %s", schema);
-    Log(LOG_INFO, "Output:");
-    Log(LOG_INFO, "  Header: %s", header);
-    Log(LOG_INFO, "  C Source: %s", impl);
-
-    Log(LOG_NOTICE, "Parsing type schema...");
     schemaJson = JsonDecode(schemaFile);
     if (!schemaJson)
     {
@@ -218,7 +210,6 @@ Main(Array * args)
     StreamClose(schemaFile);
     schemaFile = NULL;
 
-    Log(LOG_NOTICE, "Validating type schema...");
     val = HashMapGet(schemaJson, "guard");
 
     if (!val)
@@ -324,6 +315,7 @@ Main(Array * args)
             while (HashMapIterate(typeFields, &fieldName, (void **) &fieldVal))
             {
                 char *fieldType;
+                int isArrType = 0;
                 JsonValue *requiredVal;
 
                 if (JsonValueType(fieldVal) != JSON_OBJECT)
@@ -341,11 +333,11 @@ Main(Array * args)
                     goto finish;
                 }
 
-                fieldType = StrDuplicate(fieldType);
                 if (*fieldType == '[' && fieldType[strlen(fieldType) - 1] == ']')
                 {
                     fieldType++;
                     fieldType[strlen(fieldType) - 1] = '\0';
+                    isArrType = 1;
                 }
 
                 if (!StrEquals(fieldType, "object") &&
@@ -361,14 +353,15 @@ Main(Array * args)
                         node = Malloc(sizeof(Node));
                         *node = ArraySize(requiredTypes);
                         HashMapSet(typeToNode, fieldType, node);
-                        ArrayAdd(requiredTypes, fieldType);
+                        ArrayAdd(requiredTypes, StrDuplicate(fieldType));
                     }
 
                     GraphEdgeSet(dependencyGraph, *node, *typeNode, 1);
                 }
-                else
+
+                if (isArrType)
                 {
-                    Free(fieldType);
+                    fieldType[strlen(fieldType)] = ']';
                 }
 
                 requiredVal = HashMapGet(fieldObj, "required");
@@ -413,8 +406,6 @@ Main(Array * args)
          */
     }
 
-    Log(LOG_NOTICE, "Resolving referenced types...");
-
     sortedNodes = GraphTopologicalSort(dependencyGraph, &sortedNodesLen);
 
     GraphFree(dependencyGraph);
@@ -434,8 +425,6 @@ Main(Array * args)
             goto finish;
         }
     }
-
-    Log(LOG_NOTICE, "Writing header...");
 
     guard = JsonValueAsString(HashMapGet(schemaJson, "guard"));
 
@@ -578,8 +567,6 @@ Main(Array * args)
         Free(node);
     }
     HashMapFree(typeToNode);
-
-    Log(LOG_INFO, "Writing implementation code...");
 
     headerName = JsonValueAsString(HashMapGet(schemaJson, "header"));
 
@@ -961,9 +948,9 @@ Main(Array * args)
             StreamPrintf(implFile, "}\n\n");
             StreamPutc(headerFile, '\n');
 
-            ArrayFree(keys);
         }
 
+        ArrayFree(keys);
     }
 
     StreamPrintf(headerFile, "#endif /* %s */\n", guard);
