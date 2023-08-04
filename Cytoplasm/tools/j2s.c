@@ -630,6 +630,7 @@ Main(Array * args)
                     fieldType++;
                     fieldType[strlen(fieldType) - 1] = '\0';
                     isEnum = StrEquals(JsonValueAsString(JsonGet(types, 2, fieldType, "type")), "enum");
+                    jsonType = isEnum ? JSON_STRING : TypeToJsonType(fieldType);
 
                     StreamPrintf(implFile, "        out->%s = ArrayCreate();\n", key);
                     StreamPrintf(implFile, "        if (!out->%s)\n", key);
@@ -644,42 +645,108 @@ Main(Array * args)
                     StreamPrintf(implFile, "\n");
                     StreamPrintf(implFile, "            for (i = 0; i <ArraySize(arr); i++)\n");
                     StreamPrintf(implFile, "            {\n");
-                    if (isEnum)
-                    {
-                        StreamPrintf(implFile, "                int parseResult;\n");
-                    }
-                    StreamPrintf(implFile, "                %s *parsed;\n", fieldType);
                     StreamPrintf(implFile, "                JsonValue *v = ArrayGet(arr, i);\n");
-                    StreamPrintf(implFile, "                if (JsonValueType(v) != %s)\n", isEnum ? "JSON_STRING" : "JSON_OBJECT");
-                    StreamPrintf(implFile, "                {\n");
-                    StreamPrintf(implFile, "                    *errp = \"%s.%s[] contains an invalid value.\";\n", type, key);
-                    StreamPrintf(implFile, "                    return 0;\n");
-                    StreamPrintf(implFile, "                }\n");
-                    StreamPrintf(implFile, "                parsed = Malloc(sizeof(%s));\n", fieldType);
-                    StreamPrintf(implFile, "                if (!parsed)\n");
-                    StreamPrintf(implFile, "                {\n");
-                    StreamPrintf(implFile, "                    *errp = \"Unable to allocate memory for array value.\";\n");
-                    StreamPrintf(implFile, "                    return 0;\n");
-                    StreamPrintf(implFile, "                }\n");
-                    if (isEnum)
+
+                    if (StrEquals(fieldType, "integer") ||
+                        StrEquals(fieldType, "float") ||
+                        StrEquals(fieldType, "boolean"))
                     {
-                        StreamPrintf(implFile, "                parseResult = %sFromStr(JsonValueAsString(v));\n", fieldType);
-                        StreamPrintf(implFile, "                *parsed = parseResult;\n");
-                        StreamPrintf(implFile, "                if (parseResult == -1)\n");
+                        char *cType;
+
+                        if (StrEquals(fieldType, "integer"))
+                        {
+                            cType = "long";
+                        }
+                        else if (StrEquals(fieldType, "float"))
+                        {
+                            cType = "double";
+                        }
+                        else if (StrEquals(fieldType, "boolean"))
+                        {
+                            cType = "int";
+                        }
+                        else
+                        {
+                            /* Should never happen */
+                            cType = NULL;
+                        }
+
+                        *fieldType = toupper(*fieldType);
+
+                        StreamPrintf(implFile, "                %s *ref;\n", cType);
+                        StreamPrintf(implFile, "                if (JsonValueType(v) != %s)\n", JsonTypeToStr(jsonType));
+                        StreamPrintf(implFile, "                {\n");
+                        StreamPrintf(implFile, "                    *errp = \"%s.%s[] contains an invalid value.\";\n", type, key);
+                        StreamPrintf(implFile, "                    return 0;\n");
+                        StreamPrintf(implFile, "                }\n");
+                        StreamPrintf(implFile, "                ref = Malloc(sizeof(%s));\n", cType);
+                        StreamPrintf(implFile, "                if (!ref)\n");
+                        StreamPrintf(implFile, "                {\n");
+                        StreamPrintf(implFile, "                    *errp = \"Unable to allocate memory for array value.\";\n");
+                        StreamPrintf(implFile, "                    return 0;\n");
+                        StreamPrintf(implFile, "                }\n");
+                        StreamPrintf(implFile, "                *ref = JsonValueAs%s(v);\n", fieldType);
+                        StreamPrintf(implFile, "                ArrayAdd(out->%s, ref);\n", key);
+
+                        *fieldType = tolower(*fieldType);
+                    }
+                    else if (StrEquals(fieldType, "string"))
+                    {
+                        StreamPrintf(implFile, "                if (JsonValueType(v) != %s)\n", JsonTypeToStr(jsonType));
+                        StreamPrintf(implFile, "                {\n");
+                        StreamPrintf(implFile, "                    *errp = \"%s.%s[] contains an invalid value.\";\n", type, key);
+                        StreamPrintf(implFile, "                    return 0;\n");
+                        StreamPrintf(implFile, "                }\n");
+                        StreamPrintf(implFile, "                ArrayAdd(out->%s, StrDuplicate(JsonValueAsString(v)));\n", key);
+                    }
+                    else if (StrEquals(fieldType, "object"))
+                    {
+                        StreamPrintf(implFile, "                if (JsonValueType(v) != %s)\n", JsonTypeToStr(jsonType));
+                        StreamPrintf(implFile, "                {\n");
+                        StreamPrintf(implFile, "                    *errp = \"%s.%s[] contains an invalid value.\";\n", type, key);
+                        StreamPrintf(implFile, "                    return 0;\n");
+                        StreamPrintf(implFile, "                }\n");
+                        StreamPrintf(implFile, "                ArrayAdd(out->%s, JsonDuplicate(JsonValueAsObject(v)));\n", key);
                     }
                     else
                     {
-                        StreamPrintf(implFile, "                if (!%sFromJson(JsonValueAsObject(v), parsed, errp))\n", fieldType);
+                        if (isEnum)
+                        {
+                            StreamPrintf(implFile, "                int parseResult;\n");
+                        }
+                        StreamPrintf(implFile, "                %s *parsed;\n", fieldType);
+                        StreamPrintf(implFile, "                if (JsonValueType(v) != %s)\n", JsonTypeToStr(jsonType));
+                        StreamPrintf(implFile, "                {\n");
+                        StreamPrintf(implFile, "                    *errp = \"%s.%s[] contains an invalid value.\";\n", type, key);
+                        StreamPrintf(implFile, "                    return 0;\n");
+                        StreamPrintf(implFile, "                }\n");
+                        StreamPrintf(implFile, "                parsed = Malloc(sizeof(%s));\n", fieldType);
+                        StreamPrintf(implFile, "                if (!parsed)\n");
+                        StreamPrintf(implFile, "                {\n");
+                        StreamPrintf(implFile, "                    *errp = \"Unable to allocate memory for array value.\";\n");
+                        StreamPrintf(implFile, "                    return 0;\n");
+                        StreamPrintf(implFile, "                }\n");
+                        if (isEnum)
+                        {
+                            StreamPrintf(implFile, "                parseResult = %sFromStr(JsonValueAsString(v));\n", fieldType);
+                            StreamPrintf(implFile, "                *parsed = parseResult;\n");
+                            StreamPrintf(implFile, "                if (parseResult == -1)\n");
+                        }
+                        else
+                        {
+                            StreamPrintf(implFile, "                if (!%sFromJson(JsonValueAsObject(v), parsed, errp))\n", fieldType);
+                        }
+                        StreamPrintf(implFile, "                {\n");
+                        if (!isEnum)
+                        {
+                            StreamPrintf(implFile, "                    %sFree(parsed);\n", fieldType);
+                        }
+                        StreamPrintf(implFile, "                    Free(parsed);\n");
+                        StreamPrintf(implFile, "                    return 0;\n");
+                        StreamPrintf(implFile, "                }\n");
+                        StreamPrintf(implFile, "                ArrayAdd(out->%s, parsed);\n", key);
                     }
-                    StreamPrintf(implFile, "                {\n");
-                    if (!isEnum)
-                    {
-                        StreamPrintf(implFile, "                    %sFree(parsed);\n", fieldType);
-                    }
-                    StreamPrintf(implFile, "                    Free(parsed);\n");
-                    StreamPrintf(implFile, "                    return 0;\n");
-                    StreamPrintf(implFile, "                }\n");
-                    StreamPrintf(implFile, "                ArrayAdd(out->%s, parsed);\n", key);
+
                     StreamPrintf(implFile, "            }\n");
                     StreamPrintf(implFile, "        }\n");
 
@@ -795,9 +862,15 @@ Main(Array * args)
                 }
                 else if (*fieldType == '[' && fieldType[strlen(fieldType) - 1] == ']')
                 {
+                    int isPrimitive;
+
                     fieldType++;
                     fieldType[strlen(fieldType) - 1] = '\0';
                     isEnum = StrEquals(JsonValueAsString(JsonGet(types, 2, fieldType, "type")), "enum");
+                    isPrimitive = StrEquals(fieldType, "integer") ||
+                                  StrEquals(fieldType, "boolean") ||
+                                  StrEquals(fieldType, "float");
+
 
                     StreamPrintf(implFile, "    if (val->%s)\n", key);
                     StreamPrintf(implFile, "    {\n");
@@ -810,7 +883,42 @@ Main(Array * args)
                     StreamPrintf(implFile, "        }\n");
                     StreamPrintf(implFile, "        for (i = 0; i < ArraySize(val->%s); i++)\n", key);
                     StreamPrintf(implFile, "        {\n");
-                    StreamPrintf(implFile, "            ArrayAdd(jsonArr, JsonValueObject(%sToJson(ArrayGet(val->%s, i))));\n", fieldType, key);
+
+                    if (StrEquals(fieldType, "string"))
+                    {
+                        StreamPrintf(implFile, "            ArrayAdd(jsonArr, JsonValueString(ArrayGet(val->%s, i)));\n", key);
+                    }
+                    else if (!isPrimitive)
+                    {
+                        StreamPrintf(implFile, "            ArrayAdd(jsonArr, JsonValueObject(%sToJson(ArrayGet(val->%s, i))));\n", fieldType, key);
+                    }
+                    else
+                    {
+                        char *cType;
+
+                        if (StrEquals(fieldType, "integer"))
+                        {
+                            cType = "long";
+                        }
+                        else if (StrEquals(fieldType, "float"))
+                        {
+                            cType = "double";
+                        }
+                        else if (StrEquals(fieldType, "boolean"))
+                        {
+                            cType = "int";
+                        }
+                        else
+                        {
+                            /* Should never happen */
+                            cType = NULL;
+                        }
+
+                        *fieldType = toupper(*fieldType);
+                        StreamPrintf(implFile, "            ArrayAdd(jsonArr, (JsonValue%s(*((%s *) ArrayGet(val->%s, i)))));\n", fieldType, cType, key);
+                        *fieldType = tolower(*fieldType);
+                    }
+
                     StreamPrintf(implFile, "        }\n");
                     StreamPrintf(implFile, "        HashMapSet(json, \"%s\", JsonValueArray(jsonArr));\n", key);
                     StreamPrintf(implFile, "    }\n");
@@ -875,16 +983,22 @@ Main(Array * args)
                 }
                 else if (*fieldType == '[' && fieldType[strlen(fieldType) - 1] == ']')
                 {
+                    int isPrimitive;
+
                     fieldType++;
                     fieldType[strlen(fieldType) - 1] = '\0';
                     isEnum = StrEquals(JsonValueAsString(JsonGet(types, 2, fieldType, "type")), "enum");
+                    isPrimitive = StrEquals(fieldType, "boolean") ||
+                                  StrEquals(fieldType, "float") ||
+                                  StrEquals(fieldType, "integer") ||
+                                  StrEquals(fieldType, "string");
 
                     StreamPrintf(implFile, "    if (val->%s)\n", key);
                     StreamPrintf(implFile, "    {\n");
                     StreamPrintf(implFile, "        size_t i;\n");
                     StreamPrintf(implFile, "        for (i = 0; i < ArraySize(val->%s); i++)\n", key);
                     StreamPrintf(implFile, "        {\n");
-                    StreamPrintf(implFile, "            %sFree(ArrayGet(val->%s, i));\n", fieldType, key);
+                    StreamPrintf(implFile, "            %sFree(ArrayGet(val->%s, i));\n", (!isEnum && !isPrimitive) ? fieldType : "", key);
                     StreamPrintf(implFile, "        }\n");
                     StreamPrintf(implFile, "        ArrayFree(val->%s);\n", key);
                     StreamPrintf(implFile, "    }\n");
@@ -901,7 +1015,6 @@ Main(Array * args)
                 }
             }
             StreamPrintf(implFile, "}\n\n");
-
             StreamPutc(headerFile, '\n');
         }
         else if (StrEquals(typeType, "enum"))
