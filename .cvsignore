@@ -4,5 +4,3 @@ data
 *.patch
 *.log
 vgcore.*
-src/Schema
-src/include/Schema
