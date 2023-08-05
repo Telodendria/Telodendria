@@ -121,6 +121,8 @@ Main(Array * args)
 
     char startDir[PATH_MAX];
 
+    char *token;
+
 start:
     /* Global variables */
     httpServers = NULL;
@@ -139,6 +141,8 @@ start:
     userInfo = NULL;
     groupInfo = NULL;
     cron = NULL;
+
+    token = NULL;
 
     memset(&matrixArgs, 0, sizeof(matrixArgs));
 
@@ -226,7 +230,6 @@ start:
 
     if (!ConfigExists(matrixArgs.db))
     {
-        char *token;
         RegTokenInfo *info;
 
         Log(LOG_NOTICE, "No configuration exists in the opened database.");
@@ -253,11 +256,11 @@ start:
             goto finish;
         }
 
-        Log(LOG_NOTICE, "Admin Registration token: %s", token);
-
-        Free(token);
         RegTokenClose(info);
         RegTokenFree(info);
+
+        /* Don't free token, because we need to print it when logging is
+         * set up. */
     }
 
     Log(LOG_NOTICE, "Loading configuration...");
@@ -334,6 +337,13 @@ start:
         Log(LOG_ERR, "This is a programmer error; please report it.");
         exit = EXIT_FAILURE;
         goto finish;
+    }
+
+    /* If a token was created with a default config, print it to the log */
+    if (token)
+    {
+        Log(LOG_NOTICE, "Admin Registration token: %s", token);
+        Free(token);
     }
 
     Log(LOG_DEBUG, "Configuration:");

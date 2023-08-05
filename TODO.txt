@@ -40,10 +40,13 @@ Milestone: v0.4.0
     [ ] How to set default value of true on boolean?
         - defaults probably need to be set at parser level, not
           enough to set it after.
+        - Or booleans should default to -1 if not specified, let the
+          higher level logic set the default from there.
+    [ ] Write man page.
 
 [ ] Refactor MatrixErrorCreate() to take a custom message or NULL to
     use the default. This will make debugging a lot easier.
-[ ] Make sure admin registration token is printed to log, not stdout.
+[x] Make sure admin registration token is printed to log, not stdout.
     Unless they are the same, of course.
 [ ] Refactor Config to use j2s.
 
