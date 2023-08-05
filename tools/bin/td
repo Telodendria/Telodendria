@@ -105,7 +105,7 @@ setsubst() {
 recipe_docs() {
     mkdir -p build/man/man3
 
-    for header in $(find src -name '*.h'); do
+    for header in $(find src -name '*.h' -not -path '*Schema*'); do
         basename=$(basename "$header")
         man=$(echo "build/man/man3/$basename" | sed -e 's/\.h$/\.3/')
 
@@ -134,10 +134,28 @@ recipe_cytoplasm() {
     cd - > /dev/null
 }
 
+recipe_schema() {
+    recipe_cytoplasm
+
+    mkdir -p "src/Schema" "src/include/Schema"
+
+    find Schema -name '*.json' | while IFS= read -r schema; do
+        header="src/include/Schema/$(basename $schema .json).h"
+        impl="src/Schema/$(basename $schema .json).c"
+
+        mod=$(mod_time $schema)
+
+        if [ $mod -gt $(mod_time $header) ] || [ $mod -gt $(mod_time $impl) ]; then
+            echo "J2S $(basename $schema .json)"
+            j2s -s "$schema" -h "$header" -c "$impl"
+        fi
+    done
+}
+
 # Build the source code, and generate  the 'build/telodendria'
 # binary.
 recipe_build() {
-    recipe_cytoplasm
+    recipe_schema
 
     cd src
     mkdir -p ../build

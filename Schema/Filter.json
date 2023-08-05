@@ -1,0 +1,121 @@
+{
+  "header": "Schema\/Filter.h",
+  "types": {
+    "FilterRoom": {
+      "fields": {
+        "not_rooms": {
+          "type": "[string]"
+        },
+        "state": {
+          "type": "FilterRoomEvent"
+        },
+        "include_leave": {
+          "type": "boolean"
+        },
+        "timeline": {
+          "type": "FilterRoomEvent"
+        },
+        "account_data": {
+          "type": "FilterRoomEvent"
+        },
+        "rooms": {
+          "type": "[string]"
+        },
+        "ephemeral": {
+          "type": "FilterRoomEvent"
+        }
+      },
+      "type": "struct"
+    },
+    "FilterEventFormat": {
+      "fields": {
+        "federation": {
+          "name": "FILTER_FORMAT_FEDERATION"
+        },
+        "client": {
+          "name": "FILTER_FORMANT_CLIENT"
+        }
+      },
+      "type": "enum"
+    },
+    "FilterEvent": {
+      "fields": {
+        "not_senders": {
+          "type": "[string]"
+        },
+        "limit": {
+          "type": "integer"
+        },
+        "senders": {
+          "type": "[string]"
+        },
+        "types": {
+          "type": "[string]"
+        },
+        "not_types": {
+          "type": "[string]"
+        }
+      },
+      "type": "struct"
+    },
+    "Filter": {
+      "fields": {
+        "event_format": {
+          "type": "FilterEventFormat"
+        },
+        "presence": {
+          "type": "FilterEvent"
+        },
+        "account_data": {
+          "type": "FilterEvent"
+        },
+        "room": {
+          "type": "FilterRoom"
+        },
+        "event_fields": {
+          "type": "[string]"
+        }
+      },
+      "type": "struct"
+    },
+    "FilterRoomEvent": {
+      "fields": {
+        "not_rooms": {
+          "type": "[string]"
+        },
+        "not_senders": {
+          "type": "[string]"
+        },
+        "limit": {
+          "type": "integer"
+        },
+        "senders": {
+          "type": "[string]"
+        },
+        "include_redundant_members": {
+          "type": "boolean"
+        },
+        "types": {
+          "type": "[string]"
+        },
+        "rooms": {
+          "type": "[string]"
+        },
+        "lazy_load_members": {
+          "type": "boolean"
+        },
+        "not_types": {
+          "type": "[string]"
+        },
+        "contains_url": {
+          "type": "boolean"
+        },
+        "unread_thread_notifications": {
+          "type": "boolean"
+        }
+      },
+      "type": "struct"
+    }
+  },
+  "guard": "TELODENDRIA_SCHEMA_FILTER_H"
+}

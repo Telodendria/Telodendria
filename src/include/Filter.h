@@ -24,6 +24,8 @@
 #ifndef TELODENDRIA_FILTER_H
 #define TELODENDRIA_FILTER_H
 
+#include <Schema/Filter.h>
+
 /***
  * @Nm Filter
  * @Nd Validate JSON filters and apply them to events.
@@ -35,22 +37,11 @@
  */
 
 /**
- * Validate a JSON filter as provided by a client. This function
- * takes in a filter and returns a JSON response if a validation
- * error occurs. If an error occurs, the response should be returned
- * to the client. If no error occurs, then NULL will be returned and
- * the caller may proceed with the assumption that the filter is
- * valid.
- */
-extern HashMap *
-FilterValidate(HashMap *);
-
-/**
- * Apply the given JSON filter to the given event, returning a
+ * Apply the given filter to the given event, returning a
  * new event JSON with the filter applied, or NULL if the event
  * is excluded totally by the rules of the filter.
  */
 extern HashMap *
-FilterEvent(HashMap *, HashMap *);
+FilterApply(Filter *, HashMap *);
 
 #endif /* TELODENDRIA_FILTER_H */

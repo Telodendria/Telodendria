@@ -30,9 +30,9 @@
 #include <Str.h>
 
 #include <User.h>
-#include <Filter.h>
-
 #include <string.h>
+
+#include <Schema/Filter.h>
 
 static char *
 GetServerName(Db * db)
@@ -139,6 +139,10 @@ ROUTE_IMPL(RouteFilter, path, argp)
         DbRef *ref;
         char *filterId;
 
+        Filter filter = { 0 };
+        char *parseErr;
+        HashMap *filterJson;
+
         request = JsonDecode(HttpServerStream(args->context));
         if (!request)
         {
@@ -147,11 +151,13 @@ ROUTE_IMPL(RouteFilter, path, argp)
             goto finish;
         }
 
-        response = FilterValidate(request);
-        if (response)
+        if (!FilterFromJson(request, &filter, &parseErr))
         {
+            /* TODO: send parseErr to client */
+            response = MatrixErrorCreate(M_BAD_JSON);
             goto finish;
         }
+
 
         filterId = StrRandom(12);
         if (!filterId)
@@ -170,12 +176,17 @@ ROUTE_IMPL(RouteFilter, path, argp)
             goto finish;
         }
 
-        DbJsonSet(ref, request);
+        filterJson = FilterToJson(&filter);
+        DbJsonSet(ref, filterJson);
         DbUnlock(db, ref);
+
+        Free(filterJson);
 
         response = HashMapCreate();
         HashMapSet(response, "filter_id", JsonValueString(filterId));
         Free(filterId);
+
+        FilterFree(&filter);
     }
     else
     {

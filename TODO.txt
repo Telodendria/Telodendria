@@ -31,16 +31,12 @@ Milestone: v0.4.0
     [ ] Registration token endpoints
 
 [~] Cytoplasm
-    [ ] HashMap/Json
-        [ ] Strip all keys except subset
-        [ ] Strip only subset of keys
-        [ ] Object validation - contains only certain keys,
-            with certain types, no extraneous keys, etc.
     [~] Debug OpenSSL
         [x] Database corruption
         [ ] File descriptor exhaustion
 [ ] Random memory corruption after many requests.
-[ ] j2s
+[~] j2s
+    [x] Properly support arrays of primitives.
     [ ] How to set default value of true on boolean?
         - defaults probably need to be set at parser level, not
           enough to set it after.
@@ -49,8 +45,6 @@ Milestone: v0.4.0
     use the default. This will make debugging a lot easier.
 [ ] Make sure admin registration token is printed to log, not stdout.
     Unless they are the same, of course.
-[x] Fix Json UTF-8 handling.
-[ ] Update Makefile
 
 Milestone: v0.5.0
 -----------------

@@ -21,92 +21,12 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-#include <Routes.h>
+#include <Filter.h>
 
-#include <string.h>
-
-#include <HashMap.h>
-#include <Memory.h>
-#include <User.h>
-#include <Json.h>
-#include <Str.h>
-
-static HashMap *
-ValidateRoomFilter(HashMap * json)
-{
-    return NULL;
-}
-
-static HashMap *
-ValidateEventFields(Array * fields)
-{
-    return NULL;
-}
-
-static HashMap *
-ValidateEventFormat(char *fmt)
-{
-    return NULL;
-}
-
-static HashMap *
-ValidateEventFilter(HashMap * json)
-{
-    JsonValue *val;
-
-    val = HashMapGet(json, "limit");
-    if (val)
-    {
-        if (JsonValueType(val) == JSON_INTEGER)
-        {
-            long limit = JsonValueAsInteger(val);
-
-            if (limit <= 0 || limit > 100)
-            {
-                return MatrixErrorCreate(M_BAD_JSON);
-            }
-        }
-        else
-        {
-            return MatrixErrorCreate(M_BAD_JSON);
-        }
-    }
-
-    return NULL;
-}
+#include <Schema/Filter.h>
 
 HashMap *
-FilterValidate(HashMap * json)
+FilterApply(Filter *filter, HashMap *event)
 {
-    JsonValue *val;
-    HashMap *response = NULL;
-
-#define VALIDATE(key, type, func, param) \
-    val = HashMapGet(json, key); \
-    if (val) \
-    { \
-        if (JsonValueType(val) == type) \
-        { \
-            response = func(param); \
-            if (response) \
-            { \
-                goto finish; \
-            } \
-        } \
-        else \
-        { \
-            return MatrixErrorCreate(M_BAD_JSON); \
-        } \
-    }
-
-    VALIDATE("account_data", JSON_OBJECT, ValidateEventFilter, JsonValueAsObject(val));
-    VALIDATE("event_fields", JSON_ARRAY, ValidateEventFields, JsonValueAsArray(val));
-    VALIDATE("event_format", JSON_STRING, ValidateEventFormat, JsonValueAsString(val));
-    VALIDATE("presence", JSON_OBJECT, ValidateEventFilter, JsonValueAsObject(val));
-    VALIDATE("room", JSON_OBJECT, ValidateRoomFilter, JsonValueAsObject(val));
-
-#undef VALIDATE
-
-finish:
-    return response;
+    return NULL;
 }
