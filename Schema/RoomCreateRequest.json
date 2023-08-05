@@ -1,0 +1,120 @@
+{
+  "guard": "TELODENDRIA_SCHEMA_ROOMCREATE_H",
+  "header": "Schema/RoomCreateRequest.h",
+  "types": {
+    "RoomVisibility": {
+      "fields": {
+        "public": {
+          "name": "ROOM_PUBLIC"
+        },
+        "private": {
+            "name": "ROOM_PRIVATE"
+        }
+      },
+      "type": "enum"
+    },
+    "RoomCreateRequest": {
+      "fields": {
+        "invite": {
+          "type": "[string]"
+        },
+        "room_version": {
+          "type": "string"
+        },
+        "invite_3pid": {
+          "type": "[RoomInvite3Pid]"
+        },
+        "topic": {
+          "type": "string"
+        },
+        "visibility": {
+          "type": "RoomVisibility"
+        },
+        "creation_content": {
+          "type": "object"
+        },
+        "is_direct": {
+          "type": "boolean"
+        },
+        "name": {
+          "type": "string"
+        },
+        "initial_state": {
+          "type": "[RoomStateEvent]"
+        },
+        "power_level_content_override": {
+          "type": "object"
+        },
+        "room_alias_name": {
+          "type": "string"
+        },
+        "preset": {
+          "type": "RoomCreatePreset"
+        }
+      },
+      "type": "struct"
+    },
+    "RoomInvite3Pid": {
+      "fields": {
+        "id_access_token": {
+          "required": true,
+          "type": "string"
+        },
+        "address": {
+          "required": true,
+          "type": "string"
+        },
+        "medium": {
+          "required": true,
+          "type": "Room3PidMedium"
+        },
+        "id_server": {
+          "required": true,
+          "type": "string"
+        }
+      },
+      "type": "struct"
+    },
+    "Room3PidMedium": {
+      "fields": {
+        "msisdn": {
+          "name": "ROOM_3PID_MSISDN"
+        },
+        "email": {
+          "name": "ROOM_3PID_EMAIL"
+        }
+      },
+      "type": "enum"
+    },
+    "RoomCreatePreset": {
+      "fields": {
+        "public_chat": {
+          "name": "ROOM_CREATE_PUBLIC"
+        },
+        "trusted_private_chat": {
+          "name": "ROOM_CREATE_TRUSTED"
+        },
+        "private_chat": {
+          "name": "ROOM_CREATE_PRIVATE"
+        }
+      },
+      "type": "enum"
+    },
+    "RoomStateEvent": {
+      "fields": {
+        "content": {
+          "required": true,
+          "type": "object"
+        },
+        "state_key": {
+          "type": "string"
+        },
+        "type": {
+          "required": true,
+          "type": "string"
+        }
+      },
+      "type": "struct"
+    }
+  }
+}

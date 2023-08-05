@@ -15,8 +15,8 @@ Milestone: v0.4.0
     [ ] Update only certain values
 
 [~] Client-Server API
-    [~] 6: Filtering
-        [ ] Finish validating filters before saving them.
+    [x] 6: Filtering
+        [x] Finish validating filters before saving them.
     [~] 7: Events
         [x] Compute size of JSON object in Canonical JSON
         [x] Rename Sha2.h to just Sha; add Sha1() function
@@ -49,6 +49,7 @@ Milestone: v0.4.0
 [x] Make sure admin registration token is printed to log, not stdout.
     Unless they are the same, of course.
 [ ] Refactor Config to use j2s.
+[ ] Refactor other endpoints to use j2s for validating request bodies.
 
 Milestone: v0.5.0
 -----------------
