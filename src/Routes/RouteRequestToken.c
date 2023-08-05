@@ -38,21 +38,21 @@ ROUTE_IMPL(RouteRequestToken, path, argp)
     if (HttpRequestMethodGet(args->context) != HTTP_POST)
     {
         HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-        return MatrixErrorCreate(M_UNRECOGNIZED);
+        return MatrixErrorCreate(M_UNRECOGNIZED, NULL);
     }
 
     request = JsonDecode(HttpServerStream(args->context));
     if (!request)
     {
         HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-        return MatrixErrorCreate(M_NOT_JSON);
+        return MatrixErrorCreate(M_NOT_JSON, NULL);
     }
 
     val = HashMapGet(request, "client_secret");
     if (!val || JsonValueType(val) != JSON_STRING)
     {
         HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-        response = MatrixErrorCreate(M_BAD_JSON);
+        response = MatrixErrorCreate(M_BAD_JSON, NULL);
         goto finish;
     }
 
@@ -60,7 +60,7 @@ ROUTE_IMPL(RouteRequestToken, path, argp)
     if (strlen(str) > 255 || StrBlank(str))
     {
         HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-        response = MatrixErrorCreate(M_BAD_JSON);
+        response = MatrixErrorCreate(M_BAD_JSON, NULL);
         goto finish;
     }
 
@@ -68,7 +68,7 @@ ROUTE_IMPL(RouteRequestToken, path, argp)
     if (!val || JsonValueType(val) != JSON_INTEGER)
     {
         HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-        response = MatrixErrorCreate(M_BAD_JSON);
+        response = MatrixErrorCreate(M_BAD_JSON, NULL);
         goto finish;
     }
 
@@ -76,7 +76,7 @@ ROUTE_IMPL(RouteRequestToken, path, argp)
     if (val && JsonValueType(val) != JSON_STRING)
     {
         HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-        response = MatrixErrorCreate(M_BAD_JSON);
+        response = MatrixErrorCreate(M_BAD_JSON, NULL);
         goto finish;
     }
 
@@ -84,7 +84,7 @@ ROUTE_IMPL(RouteRequestToken, path, argp)
     if (val && JsonValueType(val) != JSON_STRING)
     {
         HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-        response = MatrixErrorCreate(M_BAD_JSON);
+        response = MatrixErrorCreate(M_BAD_JSON, NULL);
         goto finish;
     }
 
@@ -92,7 +92,7 @@ ROUTE_IMPL(RouteRequestToken, path, argp)
     if (val && JsonValueType(val) != JSON_STRING)
     {
         HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-        response = MatrixErrorCreate(M_BAD_JSON);
+        response = MatrixErrorCreate(M_BAD_JSON, NULL);
         goto finish;
     }
 
@@ -102,7 +102,7 @@ ROUTE_IMPL(RouteRequestToken, path, argp)
         if (val && JsonValueType(val) != JSON_STRING)
         {
             HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-            response = MatrixErrorCreate(M_BAD_JSON);
+            response = MatrixErrorCreate(M_BAD_JSON, NULL);
             goto finish;
         }
     }
@@ -112,7 +112,7 @@ ROUTE_IMPL(RouteRequestToken, path, argp)
         if (val && JsonValueType(val) != JSON_STRING)
         {
             HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-            response = MatrixErrorCreate(M_BAD_JSON);
+            response = MatrixErrorCreate(M_BAD_JSON, NULL);
             goto finish;
         }
 
@@ -120,7 +120,7 @@ ROUTE_IMPL(RouteRequestToken, path, argp)
         if (strlen(str) != 2)
         {
             HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-            response = MatrixErrorCreate(M_BAD_JSON);
+            response = MatrixErrorCreate(M_BAD_JSON, NULL);
             goto finish;
         }
 
@@ -128,7 +128,7 @@ ROUTE_IMPL(RouteRequestToken, path, argp)
         if (val && JsonValueType(val) != JSON_STRING)
         {
             HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-            response = MatrixErrorCreate(M_BAD_JSON);
+            response = MatrixErrorCreate(M_BAD_JSON, NULL);
             goto finish;
         }
     }
@@ -136,12 +136,12 @@ ROUTE_IMPL(RouteRequestToken, path, argp)
     {
         /* Should not be possible */
         HttpResponseStatus(args->context, HTTP_INTERNAL_SERVER_ERROR);
-        response = MatrixErrorCreate(M_UNKNOWN);
+        response = MatrixErrorCreate(M_UNKNOWN, NULL);
         goto finish;
     }
 
     HttpResponseStatus(args->context, HTTP_FORBIDDEN);
-    response = MatrixErrorCreate(M_THREEPID_DENIED);
+    response = MatrixErrorCreate(M_THREEPID_DENIED, NULL);
 
 finish:
     JsonFree(request);

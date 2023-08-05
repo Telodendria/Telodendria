@@ -110,9 +110,10 @@ extern void MatrixHttpHandler(HttpServerContext *, void *);
 
 /**
  * A convenience function that constructs an error payload, including
- * the error code and message, given just a MatrixError.
+ * the error code and message, given a MatrixError and an optional 
+ * message.
  */
-extern HashMap * MatrixErrorCreate(MatrixError);
+extern HashMap * MatrixErrorCreate(MatrixError, char *);
 
 /**
  * Read the request headers and parameters, and attempt to obtain an

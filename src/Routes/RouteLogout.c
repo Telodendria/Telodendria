@@ -45,7 +45,7 @@ ROUTE_IMPL(RouteLogout, path, argp)
     if (HttpRequestMethodGet(args->context) != HTTP_POST)
     {
         HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-        return MatrixErrorCreate(M_UNRECOGNIZED);
+        return MatrixErrorCreate(M_UNRECOGNIZED, NULL);
     }
 
     response = MatrixGetAccessToken(args->context, &tokenstr);
@@ -58,7 +58,7 @@ ROUTE_IMPL(RouteLogout, path, argp)
     if (!user)
     {
         HttpResponseStatus(args->context, HTTP_UNAUTHORIZED);
-        return MatrixErrorCreate(M_UNKNOWN_TOKEN);
+        return MatrixErrorCreate(M_UNKNOWN_TOKEN, NULL);
     }
 
     if (ArraySize(path) == 1)
@@ -66,7 +66,7 @@ ROUTE_IMPL(RouteLogout, path, argp)
         if (!StrEquals(ArrayGet(path, 0), "all"))
         {
             HttpResponseStatus(args->context, HTTP_NOT_FOUND);
-            response = MatrixErrorCreate(M_NOT_FOUND);
+            response = MatrixErrorCreate(M_NOT_FOUND, NULL);
             goto finish;
         }
 
@@ -75,7 +75,7 @@ ROUTE_IMPL(RouteLogout, path, argp)
             /* If we can't delete all of our tokens, then something is
              * wrong. */
             HttpResponseStatus(args->context, HTTP_INTERNAL_SERVER_ERROR);
-            response = MatrixErrorCreate(M_UNKNOWN);
+            response = MatrixErrorCreate(M_UNKNOWN, NULL);
             goto finish;
         }
         response = HashMapCreate();
@@ -85,7 +85,7 @@ ROUTE_IMPL(RouteLogout, path, argp)
         if (!UserDeleteToken(user, tokenstr))
         {
             HttpResponseStatus(args->context, HTTP_INTERNAL_SERVER_ERROR);
-            response = MatrixErrorCreate(M_UNKNOWN);
+            response = MatrixErrorCreate(M_UNKNOWN, NULL);
             goto finish;
         }
 

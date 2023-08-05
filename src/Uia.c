@@ -243,7 +243,7 @@ UiaComplete(Array * flows, HttpServerContext * context, Db * db,
     if (JsonValueType(val) != JSON_OBJECT)
     {
         HttpResponseStatus(context, HTTP_BAD_REQUEST);
-        *response = MatrixErrorCreate(M_BAD_JSON);
+        *response = MatrixErrorCreate(M_BAD_JSON, NULL);
         return 0;
     }
 
@@ -253,7 +253,7 @@ UiaComplete(Array * flows, HttpServerContext * context, Db * db,
     if (!val || JsonValueType(val) != JSON_STRING)
     {
         HttpResponseStatus(context, HTTP_BAD_REQUEST);
-        *response = MatrixErrorCreate(M_BAD_JSON);
+        *response = MatrixErrorCreate(M_BAD_JSON, NULL);
         return 0;
     }
 
@@ -312,7 +312,7 @@ UiaComplete(Array * flows, HttpServerContext * context, Db * db,
     if (!val || JsonValueType(val) != JSON_STRING)
     {
         HttpResponseStatus(context, HTTP_BAD_REQUEST);
-        *response = MatrixErrorCreate(M_BAD_JSON);
+        *response = MatrixErrorCreate(M_BAD_JSON, NULL);
         ret = 0;
         goto finish;
     }

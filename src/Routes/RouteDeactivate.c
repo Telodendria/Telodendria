@@ -53,14 +53,14 @@ ROUTE_IMPL(RouteDeactivate, path, argp)
     {
         Log(LOG_ERR, "Deactivate endpoint failed to lock configuration.");
         HttpResponseStatus(args->context, HTTP_INTERNAL_SERVER_ERROR);
-        response = MatrixErrorCreate(M_UNKNOWN);
+        response = MatrixErrorCreate(M_UNKNOWN, NULL);
         goto finish;
     }
 
     if (HttpRequestMethodGet(args->context) != HTTP_POST)
     {
         HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-        response = MatrixErrorCreate(M_UNRECOGNIZED);
+        response = MatrixErrorCreate(M_UNRECOGNIZED, NULL);
         goto finish;
     }
 
@@ -68,7 +68,7 @@ ROUTE_IMPL(RouteDeactivate, path, argp)
     if (!request)
     {
         HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-        response = MatrixErrorCreate(M_NOT_JSON);
+        response = MatrixErrorCreate(M_NOT_JSON, NULL);
         goto finish;
     }
 
@@ -96,7 +96,7 @@ ROUTE_IMPL(RouteDeactivate, path, argp)
     if (uiaResult < 0)
     {
         HttpResponseStatus(args->context, HTTP_INTERNAL_SERVER_ERROR);
-        response = MatrixErrorCreate(M_UNKNOWN);
+        response = MatrixErrorCreate(M_UNKNOWN, NULL);
         goto finish;
     }
     else if (!uiaResult)
@@ -122,14 +122,14 @@ ROUTE_IMPL(RouteDeactivate, path, argp)
     if (!user)
     {
         HttpResponseStatus(args->context, HTTP_UNAUTHORIZED);
-        response = MatrixErrorCreate(M_UNKNOWN_TOKEN);
+        response = MatrixErrorCreate(M_UNKNOWN_TOKEN, NULL);
         goto finish;
     }
 
     if (!UserDeleteTokens(user, NULL) || !UserDeactivate(user))
     {
         HttpResponseStatus(args->context, HTTP_INTERNAL_SERVER_ERROR);
-        response = MatrixErrorCreate(M_UNKNOWN);
+        response = MatrixErrorCreate(M_UNKNOWN, NULL);
         goto finish;
     }
 

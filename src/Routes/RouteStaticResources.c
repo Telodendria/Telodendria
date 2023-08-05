@@ -35,7 +35,7 @@ ROUTE_IMPL(RouteStaticResources, path, argp)
     {
         /* Should be impossible */
         HttpResponseStatus(args->context, HTTP_INTERNAL_SERVER_ERROR);
-        return MatrixErrorCreate(M_UNKNOWN);
+        return MatrixErrorCreate(M_UNKNOWN, NULL);
     }
 
     if (StrEquals(res, "js"))
@@ -148,7 +148,7 @@ ROUTE_IMPL(RouteStaticResources, path, argp)
     else
     {
         HttpResponseStatus(args->context, HTTP_NOT_FOUND);
-        return MatrixErrorCreate(M_NOT_FOUND);
+        return MatrixErrorCreate(M_NOT_FOUND, NULL);
     }
 
 

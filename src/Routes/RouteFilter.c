@@ -73,14 +73,14 @@ ROUTE_IMPL(RouteFilter, path, argp)
     {
         /* Should be impossible */
         HttpResponseStatus(args->context, HTTP_INTERNAL_SERVER_ERROR);
-        return MatrixErrorCreate(M_UNKNOWN);
+        return MatrixErrorCreate(M_UNKNOWN, NULL);
     }
 
     serverName = GetServerName(db);
     if (!serverName)
     {
         HttpResponseStatus(args->context, HTTP_INTERNAL_SERVER_ERROR);
-        response = MatrixErrorCreate(M_UNKNOWN);
+        response = MatrixErrorCreate(M_UNKNOWN, NULL);
         goto finish;
     }
 
@@ -88,14 +88,14 @@ ROUTE_IMPL(RouteFilter, path, argp)
     if (!id)
     {
         HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-        response = MatrixErrorCreate(M_INVALID_PARAM);
+        response = MatrixErrorCreate(M_INVALID_PARAM, NULL);
         goto finish;
     }
 
     if (!StrEquals(id->server, serverName))
     {
         HttpResponseStatus(args->context, HTTP_UNAUTHORIZED);
-        response = MatrixErrorCreate(M_UNAUTHORIZED);
+        response = MatrixErrorCreate(M_UNAUTHORIZED, NULL);
         goto finish;
     }
 
@@ -109,14 +109,14 @@ ROUTE_IMPL(RouteFilter, path, argp)
     if (!user)
     {
         HttpResponseStatus(args->context, HTTP_UNAUTHORIZED);
-        response = MatrixErrorCreate(M_UNKNOWN_TOKEN);
+        response = MatrixErrorCreate(M_UNKNOWN_TOKEN, NULL);
         goto finish;
     }
 
     if (!StrEquals(id->localpart, UserGetName(user)))
     {
         HttpResponseStatus(args->context, HTTP_UNAUTHORIZED);
-        response = MatrixErrorCreate(M_INVALID_PARAM);
+        response = MatrixErrorCreate(M_INVALID_PARAM, NULL);
         goto finish;
     }
 
@@ -127,7 +127,7 @@ ROUTE_IMPL(RouteFilter, path, argp)
         if (!ref)
         {
             HttpResponseStatus(args->context, HTTP_NOT_FOUND);
-            response = MatrixErrorCreate(M_NOT_FOUND);
+            response = MatrixErrorCreate(M_NOT_FOUND, NULL);
             goto finish;
         }
 
@@ -147,14 +147,13 @@ ROUTE_IMPL(RouteFilter, path, argp)
         if (!request)
         {
             HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-            response = MatrixErrorCreate(M_NOT_JSON);
+            response = MatrixErrorCreate(M_NOT_JSON, NULL);
             goto finish;
         }
 
         if (!FilterFromJson(request, &filter, &parseErr))
         {
-            /* TODO: send parseErr to client */
-            response = MatrixErrorCreate(M_BAD_JSON);
+            response = MatrixErrorCreate(M_BAD_JSON, parseErr);
             goto finish;
         }
 
@@ -163,7 +162,7 @@ ROUTE_IMPL(RouteFilter, path, argp)
         if (!filterId)
         {
             HttpResponseStatus(args->context, HTTP_INTERNAL_SERVER_ERROR);
-            response = MatrixErrorCreate(M_UNKNOWN);
+            response = MatrixErrorCreate(M_UNKNOWN, NULL);
             goto finish;
         }
 
@@ -172,7 +171,7 @@ ROUTE_IMPL(RouteFilter, path, argp)
         {
             Free(filterId);
             HttpResponseStatus(args->context, HTTP_INTERNAL_SERVER_ERROR);
-            response = MatrixErrorCreate(M_UNKNOWN);
+            response = MatrixErrorCreate(M_UNKNOWN, NULL);
             goto finish;
         }
 
@@ -191,7 +190,7 @@ ROUTE_IMPL(RouteFilter, path, argp)
     else
     {
         HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-        response = MatrixErrorCreate(M_UNRECOGNIZED);
+        response = MatrixErrorCreate(M_UNRECOGNIZED, NULL);
     }
 
 finish:

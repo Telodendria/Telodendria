@@ -56,21 +56,21 @@ ROUTE_IMPL(RouteRefresh, path, argp)
     if (HttpRequestMethodGet(args->context) != HTTP_POST)
     {
         HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-        return MatrixErrorCreate(M_UNRECOGNIZED);
+        return MatrixErrorCreate(M_UNRECOGNIZED, NULL);
     }
 
     request = JsonDecode(HttpServerStream(args->context));
     if (!request)
     {
         HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-        return MatrixErrorCreate(M_NOT_JSON);
+        return MatrixErrorCreate(M_NOT_JSON, NULL);
     }
 
     val = HashMapGet(request, "refresh_token");
     if (!val || JsonValueType(val) != JSON_STRING)
     {
         HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-        response = MatrixErrorCreate(M_BAD_JSON);
+        response = MatrixErrorCreate(M_BAD_JSON, NULL);
         goto finish;
     }
 
@@ -82,7 +82,7 @@ ROUTE_IMPL(RouteRefresh, path, argp)
     if (!rtRef)
     {
         HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-        response = MatrixErrorCreate(M_UNKNOWN_TOKEN);
+        response = MatrixErrorCreate(M_UNKNOWN_TOKEN, NULL);
         goto finish;
     }
 
@@ -96,7 +96,7 @@ ROUTE_IMPL(RouteRefresh, path, argp)
             refreshToken);
         Log(LOG_WARNING, "This refresh token will be deleted.");
         HttpResponseStatus(args->context, HTTP_INTERNAL_SERVER_ERROR);
-        response = MatrixErrorCreate(M_UNKNOWN);
+        response = MatrixErrorCreate(M_UNKNOWN, NULL);
 
         DbUnlock(db, rtRef);
         DbDelete(db, 3, "tokens", "refresh", refreshToken);
@@ -114,7 +114,7 @@ ROUTE_IMPL(RouteRefresh, path, argp)
             oldAccessToken);
         Log(LOG_WARNING, "This access token will be deleted.");
         HttpResponseStatus(args->context, HTTP_INTERNAL_SERVER_ERROR);
-        response = MatrixErrorCreate(M_UNKNOWN);
+        response = MatrixErrorCreate(M_UNKNOWN, NULL);
 
         DbUnlock(db, rtRef);
         DbDelete(db, 3, "tokens", "refresh", refreshToken);

@@ -47,14 +47,14 @@ ROUTE_IMPL(RouteTokenValid, path, argp)
     if (HttpRequestMethodGet(args->context) != HTTP_GET)
     {
         HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-        return MatrixErrorCreate(M_UNRECOGNIZED);
+        return MatrixErrorCreate(M_UNRECOGNIZED, NULL);
     }
 
     request = JsonDecode(HttpServerStream(args->context));
     if (!request)
     {
         HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-        return MatrixErrorCreate(M_NOT_JSON);
+        return MatrixErrorCreate(M_NOT_JSON, NULL);
     }
 
     tokenstr = JsonValueAsString(HashMapGet(request, "token"));

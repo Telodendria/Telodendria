@@ -49,14 +49,14 @@ ROUTE_IMPL(RoutePrivileges, path, argp)
     if (!user)
     {
         HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-        response = MatrixErrorCreate(M_UNKNOWN_TOKEN);
+        response = MatrixErrorCreate(M_UNKNOWN_TOKEN, NULL);
         goto finish;
     }
 
     if (!(UserGetPrivileges(user) & USER_GRANT_PRIVILEGES))
     {
         HttpResponseStatus(args->context, HTTP_FORBIDDEN);
-        response = MatrixErrorCreate(M_FORBIDDEN);
+        response = MatrixErrorCreate(M_FORBIDDEN, NULL);
         goto finish;
     }
 
@@ -69,7 +69,7 @@ ROUTE_IMPL(RoutePrivileges, path, argp)
         if (!user)
         {
             HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-            response = MatrixErrorCreate(M_INVALID_PARAM);
+            response = MatrixErrorCreate(M_INVALID_PARAM, NULL);
             goto finish;
         }
     }
@@ -83,7 +83,7 @@ ROUTE_IMPL(RoutePrivileges, path, argp)
             if (!request)
             {
                 HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-                response = MatrixErrorCreate(M_NOT_JSON);
+                response = MatrixErrorCreate(M_NOT_JSON, NULL);
                 break;
             }
 
@@ -91,7 +91,7 @@ ROUTE_IMPL(RoutePrivileges, path, argp)
             if (!val || JsonValueType(val) != JSON_ARRAY)
             {
                 HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-                response = MatrixErrorCreate(M_BAD_JSON);
+                response = MatrixErrorCreate(M_BAD_JSON, NULL);
                 break;
             }
 
@@ -117,7 +117,7 @@ ROUTE_IMPL(RoutePrivileges, path, argp)
             if (!UserSetPrivileges(user, privileges))
             {
                 HttpResponseStatus(args->context, HTTP_INTERNAL_SERVER_ERROR);
-                response = MatrixErrorCreate(M_UNKNOWN);
+                response = MatrixErrorCreate(M_UNKNOWN, NULL);
                 break;
             }
 
@@ -128,7 +128,7 @@ ROUTE_IMPL(RoutePrivileges, path, argp)
             break;
         default:
             HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-            response = MatrixErrorCreate(M_UNRECOGNIZED);
+            response = MatrixErrorCreate(M_UNRECOGNIZED, NULL);
             goto finish;
             break;
     }

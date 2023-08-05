@@ -63,7 +63,7 @@ ROUTE_IMPL(RouteLogin, path, argp)
     {
         Log(LOG_ERR, "Login endpoint failed to lock configuration.");
         HttpResponseStatus(args->context, HTTP_INTERNAL_SERVER_ERROR);
-        return MatrixErrorCreate(M_UNKNOWN);
+        return MatrixErrorCreate(M_UNKNOWN, NULL);
     }
 
     (void) path;
@@ -84,7 +84,7 @@ ROUTE_IMPL(RouteLogin, path, argp)
             if (!request)
             {
                 HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-                response = MatrixErrorCreate(M_NOT_JSON);
+                response = MatrixErrorCreate(M_NOT_JSON, NULL);
                 break;
             }
 
@@ -92,14 +92,14 @@ ROUTE_IMPL(RouteLogin, path, argp)
             if (!val)
             {
                 HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-                response = MatrixErrorCreate(M_MISSING_PARAM);
+                response = MatrixErrorCreate(M_MISSING_PARAM, NULL);
                 break;
             }
 
             if (JsonValueType(val) != JSON_STRING)
             {
                 HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-                response = MatrixErrorCreate(M_BAD_JSON);
+                response = MatrixErrorCreate(M_BAD_JSON, NULL);
                 break;
             }
 
@@ -107,7 +107,7 @@ ROUTE_IMPL(RouteLogin, path, argp)
             if (!StrEquals(type, "m.login.password"))
             {
                 HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-                response = MatrixErrorCreate(M_UNRECOGNIZED);
+                response = MatrixErrorCreate(M_UNRECOGNIZED, NULL);
                 break;
             }
 
@@ -115,14 +115,14 @@ ROUTE_IMPL(RouteLogin, path, argp)
             if (!val)
             {
                 HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-                response = MatrixErrorCreate(M_MISSING_PARAM);
+                response = MatrixErrorCreate(M_MISSING_PARAM, NULL);
                 break;
             }
 
             if (JsonValueType(val) != JSON_OBJECT)
             {
                 HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-                response = MatrixErrorCreate(M_BAD_JSON);
+                response = MatrixErrorCreate(M_BAD_JSON, NULL);
                 break;
             }
 
@@ -132,14 +132,14 @@ ROUTE_IMPL(RouteLogin, path, argp)
             if (!val)
             {
                 HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-                response = MatrixErrorCreate(M_MISSING_PARAM);
+                response = MatrixErrorCreate(M_MISSING_PARAM, NULL);
                 break;
             }
 
             if (JsonValueType(val) != JSON_STRING)
             {
                 HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-                response = MatrixErrorCreate(M_BAD_JSON);
+                response = MatrixErrorCreate(M_BAD_JSON, NULL);
                 break;
             }
 
@@ -147,7 +147,7 @@ ROUTE_IMPL(RouteLogin, path, argp)
             if (!StrEquals(type, "m.id.user"))
             {
                 HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-                response = MatrixErrorCreate(M_UNRECOGNIZED);
+                response = MatrixErrorCreate(M_UNRECOGNIZED, NULL);
                 break;
             }
 
@@ -155,14 +155,14 @@ ROUTE_IMPL(RouteLogin, path, argp)
             if (!val)
             {
                 HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-                response = MatrixErrorCreate(M_MISSING_PARAM);
+                response = MatrixErrorCreate(M_MISSING_PARAM, NULL);
                 break;
             }
 
             if (JsonValueType(val) != JSON_STRING)
             {
                 HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-                response = MatrixErrorCreate(M_BAD_JSON);
+                response = MatrixErrorCreate(M_BAD_JSON, NULL);
                 break;
             }
 
@@ -170,7 +170,7 @@ ROUTE_IMPL(RouteLogin, path, argp)
             if (!userId)
             {
                 HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-                response = MatrixErrorCreate(M_BAD_JSON);
+                response = MatrixErrorCreate(M_BAD_JSON, NULL);
                 break;
             }
 
@@ -178,7 +178,7 @@ ROUTE_IMPL(RouteLogin, path, argp)
                 || !UserExists(db, userId->localpart))
             {
                 HttpResponseStatus(args->context, HTTP_FORBIDDEN);
-                response = MatrixErrorCreate(M_FORBIDDEN);
+                response = MatrixErrorCreate(M_FORBIDDEN, NULL);
                 break;
             }
 
@@ -188,7 +188,7 @@ ROUTE_IMPL(RouteLogin, path, argp)
                 if (JsonValueType(val) != JSON_STRING)
                 {
                     HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-                    response = MatrixErrorCreate(M_BAD_JSON);
+                    response = MatrixErrorCreate(M_BAD_JSON, NULL);
                     break;
                 }
 
@@ -201,7 +201,7 @@ ROUTE_IMPL(RouteLogin, path, argp)
                 if (JsonValueType(val) != JSON_STRING)
                 {
                     HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-                    response = MatrixErrorCreate(M_BAD_JSON);
+                    response = MatrixErrorCreate(M_BAD_JSON, NULL);
                     break;
                 }
 
@@ -212,14 +212,14 @@ ROUTE_IMPL(RouteLogin, path, argp)
             if (!val)
             {
                 HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-                response = MatrixErrorCreate(M_MISSING_PARAM);
+                response = MatrixErrorCreate(M_MISSING_PARAM, NULL);
                 break;
             }
 
             if (JsonValueType(val) != JSON_STRING)
             {
                 HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-                response = MatrixErrorCreate(M_BAD_JSON);
+                response = MatrixErrorCreate(M_BAD_JSON, NULL);
                 break;
             }
 
@@ -231,7 +231,7 @@ ROUTE_IMPL(RouteLogin, path, argp)
                 if (JsonValueType(val) != JSON_BOOLEAN)
                 {
                     HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-                    response = MatrixErrorCreate(M_BAD_JSON);
+                    response = MatrixErrorCreate(M_BAD_JSON, NULL);
                     break;
                 }
 
@@ -243,7 +243,7 @@ ROUTE_IMPL(RouteLogin, path, argp)
             if (!user)
             {
                 HttpResponseStatus(args->context, HTTP_FORBIDDEN);
-                response = MatrixErrorCreate(M_FORBIDDEN);
+                response = MatrixErrorCreate(M_FORBIDDEN, NULL);
                 break;
             }
 
@@ -252,7 +252,7 @@ ROUTE_IMPL(RouteLogin, path, argp)
                 UserUnlock(user);
 
                 HttpResponseStatus(args->context, HTTP_FORBIDDEN);
-                response = MatrixErrorCreate(M_USER_DEACTIVATED);
+                response = MatrixErrorCreate(M_USER_DEACTIVATED, NULL);
                 break;
             }
 
@@ -264,7 +264,7 @@ ROUTE_IMPL(RouteLogin, path, argp)
                 UserUnlock(user);
 
                 HttpResponseStatus(args->context, HTTP_FORBIDDEN);
-                response = MatrixErrorCreate(M_FORBIDDEN);
+                response = MatrixErrorCreate(M_FORBIDDEN, NULL);
                 break;
             }
 
@@ -301,7 +301,7 @@ ROUTE_IMPL(RouteLogin, path, argp)
             break;
         default:
             HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-            response = MatrixErrorCreate(M_UNRECOGNIZED);
+            response = MatrixErrorCreate(M_UNRECOGNIZED, NULL);
             break;
     }
 

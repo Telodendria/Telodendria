@@ -52,14 +52,14 @@ ROUTE_IMPL(RouteConfig, path, argp)
     if (!user)
     {
         HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-        response = MatrixErrorCreate(M_UNKNOWN_TOKEN);
+        response = MatrixErrorCreate(M_UNKNOWN_TOKEN, NULL);
         goto finish;
     }
 
     if (!(UserGetPrivileges(user) & USER_CONFIG))
     {
         HttpResponseStatus(args->context, HTTP_FORBIDDEN);
-        response = MatrixErrorCreate(M_FORBIDDEN);
+        response = MatrixErrorCreate(M_FORBIDDEN, NULL);
         goto finish;
     }
 
@@ -68,7 +68,7 @@ ROUTE_IMPL(RouteConfig, path, argp)
     {
         Log(LOG_ERR, "Config endpoint failed to lock configuration.");
         HttpResponseStatus(args->context, HTTP_INTERNAL_SERVER_ERROR);
-        response = MatrixErrorCreate(M_UNKNOWN);
+        response = MatrixErrorCreate(M_UNKNOWN, NULL);
         goto finish;
     }
 
@@ -82,7 +82,7 @@ ROUTE_IMPL(RouteConfig, path, argp)
             if (!request)
             {
                 HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-                response = MatrixErrorCreate(M_NOT_JSON);
+                response = MatrixErrorCreate(M_NOT_JSON, NULL);
                 break;
             }
 
@@ -90,7 +90,7 @@ ROUTE_IMPL(RouteConfig, path, argp)
             if (!newConf)
             {
                 HttpResponseStatus(args->context, HTTP_INTERNAL_SERVER_ERROR);
-                response = MatrixErrorCreate(M_UNKNOWN);
+                response = MatrixErrorCreate(M_UNKNOWN, NULL);
                 break;
             }
 
@@ -108,14 +108,13 @@ ROUTE_IMPL(RouteConfig, path, argp)
                 else
                 {
                     HttpResponseStatus(args->context, HTTP_INTERNAL_SERVER_ERROR);
-                    response = MatrixErrorCreate(M_UNKNOWN);
+                    response = MatrixErrorCreate(M_UNKNOWN, NULL);
                 }
             }
             else
             {
                 HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-                /* TODO: Attach newConf->err as message */
-                response = MatrixErrorCreate(M_BAD_JSON);
+                response = MatrixErrorCreate(M_BAD_JSON, newConf->err);
             }
 
             ConfigFree(newConf);
@@ -125,7 +124,7 @@ ROUTE_IMPL(RouteConfig, path, argp)
             /* TODO: Support incremental changes to the config */
         default:
             HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-            response = MatrixErrorCreate(M_UNRECOGNIZED);
+            response = MatrixErrorCreate(M_UNRECOGNIZED, NULL);
             break;
     }
 

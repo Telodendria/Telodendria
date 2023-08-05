@@ -48,14 +48,14 @@ ROUTE_IMPL(RouteProcControl, path, argp)
     if (!user)
     {
         HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-        response = MatrixErrorCreate(M_UNKNOWN_TOKEN);
+        response = MatrixErrorCreate(M_UNKNOWN_TOKEN, NULL);
         goto finish;
     }
 
     if (!(UserGetPrivileges(user) & USER_PROC_CONTROL))
     {
         HttpResponseStatus(args->context, HTTP_FORBIDDEN);
-        response = MatrixErrorCreate(M_FORBIDDEN);
+        response = MatrixErrorCreate(M_FORBIDDEN, NULL);
         goto finish;
     }
 
@@ -73,7 +73,7 @@ ROUTE_IMPL(RouteProcControl, path, argp)
             else
             {
                 HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-                response = MatrixErrorCreate(M_UNRECOGNIZED);
+                response = MatrixErrorCreate(M_UNRECOGNIZED, NULL);
                 goto finish;
             }
             break;
@@ -90,12 +90,12 @@ ROUTE_IMPL(RouteProcControl, path, argp)
             else
             {
                 HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-                response = MatrixErrorCreate(M_UNRECOGNIZED);
+                response = MatrixErrorCreate(M_UNRECOGNIZED, NULL);
                 goto finish;
             }
         default:
             HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-            response = MatrixErrorCreate(M_UNRECOGNIZED);
+            response = MatrixErrorCreate(M_UNRECOGNIZED, NULL);
             goto finish;
             break;
     }

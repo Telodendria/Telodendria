@@ -54,7 +54,7 @@ ROUTE_IMPL(RouteUserProfile, path, argp)
     {
         Log(LOG_ERR, "User profile endpoint failed to lock configuration.");
         HttpResponseStatus(args->context, HTTP_INTERNAL_SERVER_ERROR);
-        return MatrixErrorCreate(M_UNKNOWN);
+        return MatrixErrorCreate(M_UNKNOWN, NULL);
     }
 
     serverName = config->serverName;
@@ -64,14 +64,14 @@ ROUTE_IMPL(RouteUserProfile, path, argp)
     if (!userId)
     {
         HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-        response = MatrixErrorCreate(M_INVALID_PARAM);
+        response = MatrixErrorCreate(M_INVALID_PARAM, NULL);
         goto finish;
     }
     if (strcmp(userId->server, serverName))
     {
         /* TODO: Implement lookup over federation. */
         HttpResponseStatus(args->context, HTTP_FORBIDDEN);
-        response = MatrixErrorCreate(M_FORBIDDEN);
+        response = MatrixErrorCreate(M_FORBIDDEN, NULL);
         goto finish;
     }
 
@@ -83,7 +83,7 @@ ROUTE_IMPL(RouteUserProfile, path, argp)
             if (!user)
             {
                 HttpResponseStatus(args->context, HTTP_NOT_FOUND);
-                response = MatrixErrorCreate(M_NOT_FOUND);
+                response = MatrixErrorCreate(M_NOT_FOUND, NULL);
                 goto finish;
             }
 
@@ -118,7 +118,7 @@ ROUTE_IMPL(RouteUserProfile, path, argp)
                 if (!request)
                 {
                     HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-                    response = MatrixErrorCreate(M_NOT_JSON);
+                    response = MatrixErrorCreate(M_NOT_JSON, NULL);
                     goto finish;
                 }
                 response = MatrixGetAccessToken(args->context, &token);
@@ -130,7 +130,7 @@ ROUTE_IMPL(RouteUserProfile, path, argp)
                 if (!user)
                 {
                     HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-                    response = MatrixErrorCreate(M_UNKNOWN_TOKEN);
+                    response = MatrixErrorCreate(M_UNKNOWN_TOKEN, NULL);
                     goto finish;
                 }
                 entry = ArrayGet(path, 1);
@@ -149,25 +149,25 @@ ROUTE_IMPL(RouteUserProfile, path, argp)
                     }
                     /* User is not allowed to carry-on the action */
                     HttpResponseStatus(args->context, HTTP_FORBIDDEN);
-                    response = MatrixErrorCreate(M_FORBIDDEN);
+                    response = MatrixErrorCreate(M_FORBIDDEN, NULL);
                     goto finish;
                 }
                 else
                 {
                     HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-                    response = MatrixErrorCreate(M_UNRECOGNIZED);
+                    response = MatrixErrorCreate(M_UNRECOGNIZED, NULL);
                     goto finish;
                 }
             }
             else
             {
                 HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-                response = MatrixErrorCreate(M_MISSING_PARAM);
+                response = MatrixErrorCreate(M_MISSING_PARAM, NULL);
                 goto finish;
             }
         default:
             HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-            response = MatrixErrorCreate(M_UNKNOWN);
+            response = MatrixErrorCreate(M_UNKNOWN, NULL);
             break;
     }
 finish:

@@ -83,7 +83,7 @@ ROUTE_IMPL(RouteRegister, path, argp)
     {
         Log(LOG_ERR, "Registration endpoint failed to lock configuration.");
         HttpResponseStatus(args->context, HTTP_INTERNAL_SERVER_ERROR);
-        return MatrixErrorCreate(M_UNKNOWN);
+        return MatrixErrorCreate(M_UNKNOWN, NULL);
     }
 
     if (ArraySize(path) == 0)
@@ -91,7 +91,7 @@ ROUTE_IMPL(RouteRegister, path, argp)
         if (HttpRequestMethodGet(args->context) != HTTP_POST)
         {
             HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-            response = MatrixErrorCreate(M_UNRECOGNIZED);
+            response = MatrixErrorCreate(M_UNRECOGNIZED, NULL);
             goto end;
         }
 
@@ -99,7 +99,7 @@ ROUTE_IMPL(RouteRegister, path, argp)
         if (!request)
         {
             HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-            response = MatrixErrorCreate(M_NOT_JSON);
+            response = MatrixErrorCreate(M_NOT_JSON, NULL);
             goto end;
         }
 
@@ -109,7 +109,7 @@ ROUTE_IMPL(RouteRegister, path, argp)
             if (JsonValueType(val) != JSON_STRING)
             {
                 HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-                response = MatrixErrorCreate(M_BAD_JSON);
+                response = MatrixErrorCreate(M_BAD_JSON, NULL);
                 goto finish;
             }
             username = StrDuplicate(JsonValueAsString(val));
@@ -117,14 +117,14 @@ ROUTE_IMPL(RouteRegister, path, argp)
             if (!UserValidate(username, config->serverName))
             {
                 HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-                response = MatrixErrorCreate(M_INVALID_USERNAME);
+                response = MatrixErrorCreate(M_INVALID_USERNAME, NULL);
                 goto finish;
             }
 
             if (UserExists(db, username))
             {
                 HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-                response = MatrixErrorCreate(M_USER_IN_USE);
+                response = MatrixErrorCreate(M_USER_IN_USE, NULL);
                 goto finish;
             }
         }
@@ -144,7 +144,7 @@ ROUTE_IMPL(RouteRegister, path, argp)
         if (uiaResult < 0)
         {
             HttpResponseStatus(args->context, HTTP_INTERNAL_SERVER_ERROR);
-            response = MatrixErrorCreate(M_UNKNOWN);
+            response = MatrixErrorCreate(M_UNKNOWN, NULL);
             goto finish;
         }
         else if (!uiaResult)
@@ -159,7 +159,7 @@ ROUTE_IMPL(RouteRegister, path, argp)
         if (kind && !StrEquals(kind, "user"))
         {
             HttpResponseStatus(args->context, HTTP_FORBIDDEN);
-            response = MatrixErrorCreate(M_INVALID_PARAM);
+            response = MatrixErrorCreate(M_INVALID_PARAM, NULL);
             goto finish;
         }
 
@@ -167,14 +167,14 @@ ROUTE_IMPL(RouteRegister, path, argp)
         if (!val)
         {
             HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-            response = MatrixErrorCreate(M_MISSING_PARAM);
+            response = MatrixErrorCreate(M_MISSING_PARAM, NULL);
             goto finish;
         }
 
         if (JsonValueType(val) != JSON_STRING)
         {
             HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-            response = MatrixErrorCreate(M_BAD_JSON);
+            response = MatrixErrorCreate(M_BAD_JSON, NULL);
             goto finish;
         }
 
@@ -186,7 +186,7 @@ ROUTE_IMPL(RouteRegister, path, argp)
             if (JsonValueType(val) != JSON_STRING)
             {
                 HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-                response = MatrixErrorCreate(M_BAD_JSON);
+                response = MatrixErrorCreate(M_BAD_JSON, NULL);
                 goto finish;
             }
 
@@ -199,7 +199,7 @@ ROUTE_IMPL(RouteRegister, path, argp)
             if (JsonValueType(val) != JSON_BOOLEAN)
             {
                 HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-                response = MatrixErrorCreate(M_BAD_JSON);
+                response = MatrixErrorCreate(M_BAD_JSON, NULL);
                 goto finish;
             }
 
@@ -212,7 +212,7 @@ ROUTE_IMPL(RouteRegister, path, argp)
             if (JsonValueType(val) != JSON_STRING)
             {
                 HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-                response = MatrixErrorCreate(M_BAD_JSON);
+                response = MatrixErrorCreate(M_BAD_JSON, NULL);
                 goto finish;
             }
 
@@ -225,7 +225,7 @@ ROUTE_IMPL(RouteRegister, path, argp)
             if (JsonValueType(val) != JSON_BOOLEAN)
             {
                 HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-                response = MatrixErrorCreate(M_BAD_JSON);
+                response = MatrixErrorCreate(M_BAD_JSON, NULL);
                 goto finish;
             }
 
@@ -311,12 +311,12 @@ finish:
             if (!username)
             {
                 HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-                response = MatrixErrorCreate(M_MISSING_PARAM);
+                response = MatrixErrorCreate(M_MISSING_PARAM, NULL);
             }
             else if (!UserValidate(username, config->serverName))
             {
                 HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-                response = MatrixErrorCreate(M_INVALID_USERNAME);
+                response = MatrixErrorCreate(M_INVALID_USERNAME, NULL);
             }
             else if (!UserExists(db, username))
             {
@@ -326,13 +326,13 @@ finish:
             else
             {
                 HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-                response = MatrixErrorCreate(M_USER_IN_USE);
+                response = MatrixErrorCreate(M_USER_IN_USE, NULL);
             }
         }
         else
         {
             HttpResponseStatus(args->context, HTTP_NOT_FOUND);
-            response = MatrixErrorCreate(M_UNRECOGNIZED);
+            response = MatrixErrorCreate(M_UNRECOGNIZED, NULL);
         }
     }
 

@@ -41,7 +41,7 @@ ROUTE_IMPL(RouteWellKnown, path, argp)
     {
         Log(LOG_ERR, "Well-known endpoint failed to lock configuration.");
         HttpResponseStatus(args->context, HTTP_INTERNAL_SERVER_ERROR);
-        return MatrixErrorCreate(M_UNKNOWN);
+        return MatrixErrorCreate(M_UNKNOWN, NULL);
     }
 
     if (StrEquals(ArrayGet(path, 0), "client"))
@@ -51,7 +51,7 @@ ROUTE_IMPL(RouteWellKnown, path, argp)
     else
     {
         HttpResponseStatus(args->context, HTTP_NOT_FOUND);
-        response = MatrixErrorCreate(M_NOT_FOUND);
+        response = MatrixErrorCreate(M_NOT_FOUND, NULL);
     }
 
     ConfigUnlock(config);

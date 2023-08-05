@@ -82,7 +82,7 @@ MatrixHttpHandler(HttpServerContext * context, void *argp)
     {
         HttpResponseHeader(context, "Content-Type", "application/json");
         HttpResponseStatus(context, HTTP_NOT_FOUND);
-        response = MatrixErrorCreate(M_NOT_FOUND);
+        response = MatrixErrorCreate(M_NOT_FOUND, NULL);
     }
 
     /*
@@ -115,7 +115,7 @@ MatrixHttpHandler(HttpServerContext * context, void *argp)
 }
 
 HashMap *
-MatrixErrorCreate(MatrixError errorArg)
+MatrixErrorCreate(MatrixError errorArg, char *msg)
 {
     HashMap *errorObj;
     char *errcode;
@@ -261,6 +261,11 @@ MatrixErrorCreate(MatrixError errorArg)
             return NULL;
     }
 
+    if (msg)
+    {
+        error = msg;
+    }
+
     errorObj = HashMapCreate();
     if (!errorObj)
     {
@@ -289,7 +294,7 @@ MatrixGetAccessToken(HttpServerContext * context, char **accessToken)
         if (strncmp(token, "Bearer ", 7) != 0)
         {
             HttpResponseStatus(context, HTTP_UNAUTHORIZED);
-            return MatrixErrorCreate(M_MISSING_TOKEN);
+            return MatrixErrorCreate(M_MISSING_TOKEN, NULL);
         }
 
         /* Seek past "Bearer" */
@@ -310,7 +315,7 @@ MatrixGetAccessToken(HttpServerContext * context, char **accessToken)
         if (!token)
         {
             HttpResponseStatus(context, HTTP_UNAUTHORIZED);
-            return MatrixErrorCreate(M_MISSING_TOKEN);
+            return MatrixErrorCreate(M_MISSING_TOKEN, NULL);
         }
     }
 

@@ -44,8 +44,10 @@ Milestone: v0.4.0
           higher level logic set the default from there.
     [ ] Write man page.
 
-[ ] Refactor MatrixErrorCreate() to take a custom message or NULL to
+[x] Refactor MatrixErrorCreate() to take a custom message or NULL to
     use the default. This will make debugging a lot easier.
+    [ ] Use detailed error messages for HTTP 500s at the minimum. Other
+        error messages might also be useful.
 [x] Make sure admin registration token is printed to log, not stdout.
     Unless they are the same, of course.
 [ ] Refactor Config to use j2s.

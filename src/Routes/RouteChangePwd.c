@@ -71,7 +71,7 @@ ROUTE_IMPL(RouteChangePwd, path, argp)
     {
         Log(LOG_ERR, "Password endpoint failed to lock configuration.");
         HttpResponseStatus(args->context, HTTP_INTERNAL_SERVER_ERROR);
-        return MatrixErrorCreate(M_UNKNOWN);
+        return MatrixErrorCreate(M_UNKNOWN, NULL);
     }
 
     (void) path;
@@ -79,7 +79,7 @@ ROUTE_IMPL(RouteChangePwd, path, argp)
     if (HttpRequestMethodGet(args->context) != HTTP_POST)
     {
         HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-        response = MatrixErrorCreate(M_UNRECOGNIZED);
+        response = MatrixErrorCreate(M_UNRECOGNIZED, NULL);
         goto finish;
     }
 
@@ -93,7 +93,7 @@ ROUTE_IMPL(RouteChangePwd, path, argp)
     if (!request)
     {
         HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-        response = MatrixErrorCreate(M_NOT_JSON);
+        response = MatrixErrorCreate(M_NOT_JSON, NULL);
         goto finish;
     }
 
@@ -107,7 +107,7 @@ ROUTE_IMPL(RouteChangePwd, path, argp)
     if (uiaResult < 0)
     {
         HttpResponseStatus(args->context, HTTP_INTERNAL_SERVER_ERROR);
-        response = MatrixErrorCreate(M_UNKNOWN);
+        response = MatrixErrorCreate(M_UNKNOWN, NULL);
         goto finish;
     }
     else if (!uiaResult)
@@ -120,7 +120,7 @@ ROUTE_IMPL(RouteChangePwd, path, argp)
     {
         JsonFree(request);
         HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-        response = MatrixErrorCreate(M_BAD_JSON);
+        response = MatrixErrorCreate(M_BAD_JSON, NULL);
         goto finish;
     }
 
@@ -136,7 +136,7 @@ ROUTE_IMPL(RouteChangePwd, path, argp)
     if (!user)
     {
         HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-        response = MatrixErrorCreate(M_UNKNOWN_TOKEN);
+        response = MatrixErrorCreate(M_UNKNOWN_TOKEN, NULL);
         goto finish;
     }
 

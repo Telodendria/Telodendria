@@ -49,7 +49,7 @@ ROUTE_IMPL(RouteWhoami, path, argp)
     {
         Log(LOG_ERR, "Who am I endpoint failed to lock configuration.");
         HttpResponseStatus(args->context, HTTP_INTERNAL_SERVER_ERROR);
-        return MatrixErrorCreate(M_UNKNOWN);
+        return MatrixErrorCreate(M_UNKNOWN, NULL);
     }
 
     (void) path;
@@ -67,7 +67,7 @@ ROUTE_IMPL(RouteWhoami, path, argp)
     if (!user)
     {
         HttpResponseStatus(args->context, HTTP_UNAUTHORIZED);
-        response = MatrixErrorCreate(M_UNKNOWN_TOKEN);
+        response = MatrixErrorCreate(M_UNKNOWN_TOKEN, NULL);
         goto finish;
     }
 

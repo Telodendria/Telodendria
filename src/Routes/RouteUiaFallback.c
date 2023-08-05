@@ -41,7 +41,7 @@ ROUTE_IMPL(RouteUiaFallback, path, argp)
         /* This should never happen */
         Log(LOG_ERR, "Programmer error in RouteUiaFallback()!");
         HttpResponseStatus(args->context, HTTP_INTERNAL_SERVER_ERROR);
-        return MatrixErrorCreate(M_UNKNOWN);
+        return MatrixErrorCreate(M_UNKNOWN, NULL);
     }
 
     if (HttpRequestMethodGet(args->context) == HTTP_POST)
@@ -58,7 +58,7 @@ ROUTE_IMPL(RouteUiaFallback, path, argp)
         {
             Log(LOG_ERR, "UIA fallback failed to lock configuration.");
             HttpResponseStatus(args->context, HTTP_INTERNAL_SERVER_ERROR);
-            return MatrixErrorCreate(M_UNKNOWN);
+            return MatrixErrorCreate(M_UNKNOWN, NULL);
         }
 
         request = JsonDecode(HttpServerStream(args->context));
@@ -66,7 +66,7 @@ ROUTE_IMPL(RouteUiaFallback, path, argp)
         {
             ConfigUnlock(config);
             HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-            return MatrixErrorCreate(M_NOT_JSON);
+            return MatrixErrorCreate(M_NOT_JSON, NULL);
         }
 
         flow = ArrayCreate();
@@ -80,7 +80,7 @@ ROUTE_IMPL(RouteUiaFallback, path, argp)
         if (uiaResult < 0)
         {
             HttpResponseStatus(args->context, HTTP_INTERNAL_SERVER_ERROR);
-            response = MatrixErrorCreate(M_UNKNOWN);
+            response = MatrixErrorCreate(M_UNKNOWN, NULL);
         }
         else if (uiaResult)
         {
@@ -94,14 +94,14 @@ ROUTE_IMPL(RouteUiaFallback, path, argp)
     else if (HttpRequestMethodGet(args->context) != HTTP_GET)
     {
         HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-        return MatrixErrorCreate(M_UNRECOGNIZED);
+        return MatrixErrorCreate(M_UNRECOGNIZED, NULL);
     }
 
     sessionId = HashMapGet(requestParams, "session");
     if (!sessionId)
     {
         HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-        return MatrixErrorCreate(M_MISSING_PARAM);
+        return MatrixErrorCreate(M_MISSING_PARAM, NULL);
     }
 
     HttpResponseHeader(args->context, "Content-Type", "text/html");
