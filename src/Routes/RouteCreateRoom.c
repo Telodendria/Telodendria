@@ -22,100 +22,52 @@
  * SOFTWARE.
  */
 
-#include <Room.h>
+#include <Routes.h>
 
-#include <Memory.h>
-#include <Str.h>
-#include <Db.h>
+#include <Json.h>
 
 #include <Schema/RoomCreateRequest.h>
 
-struct Room
+ROUTE_IMPL(RouteCreateRoom, path, argp)
 {
-    Db *db;
-    DbRef *ref;
+    RouteArgs *args = argp;
 
-    char *id;
-    int version;
-};
+    HashMap *request = NULL;
+    HashMap *response;
+    RoomCreateRequest parsed;
+    char *err;
 
-Room *
-RoomCreate(Db * db, RoomCreateRequest *req)
-{
-    return NULL;
-}
+    (void) path;
 
-Room *
-RoomLock(Db * db, char *id)
-{
-    DbRef *ref;
-    Room *room;
-
-    if (!db || !id)
+    if (HttpRequestMethodGet(args->context) != HTTP_POST)
     {
-        return NULL;
+        HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
+        response = MatrixErrorCreate(M_UNRECOGNIZED, "Unknown request method.");
+        goto finish;
     }
 
-    ref = DbLock(db, 3, "rooms", id, "state");
-
-    if (!ref)
+    request = JsonDecode(HttpServerStream(args->context));
+    if (!request)
     {
-        return NULL;
+        HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
+        response = MatrixErrorCreate(M_NOT_JSON, NULL);
+        goto finish;
     }
 
-    room = Malloc(sizeof(Room));
-    if (!room)
+    if (!RoomCreateRequestFromJson(request, &parsed, &err))
     {
-        DbUnlock(db, ref);
-        return NULL;
+        HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
+        response = MatrixErrorCreate(M_BAD_JSON, err);
+        goto finish;
     }
 
-    room->db = db;
-    room->ref = ref;
-    room->id = StrDuplicate(id);
+    /* No longer need this now that it is parsed */
+    JsonFree(request);
+    request = NULL;
 
-    return room;
-}
+    response = HashMapCreate();
 
-int
-RoomUnlock(Room * room)
-{
-    Db *db;
-    DbRef *ref;
-
-    if (!room)
-    {
-        return 0;
-    }
-
-    db = room->db;
-    ref = room->ref;
-
-    Free(room->id);
-    Free(room);
-
-    return DbUnlock(db, ref);
-}
-
-char *
-RoomIdGet(Room * room)
-{
-    return room ? room->id : NULL;
-}
-
-int
-RoomVersionGet(Room * room)
-{
-    return room ? room->version : 0;
-}
-
-HashMap *
-RoomStateGet(Room * room)
-{
-    if (!room)
-    {
-        return NULL;
-    }
-
-    return NULL;
+finish:
+    JsonFree(request);
+    return response;
 }

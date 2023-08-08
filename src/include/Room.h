@@ -39,6 +39,8 @@
 #include <HashMap.h>
 #include <Db.h>
 
+#include <Schema/RoomCreateRequest.h>
+
 /**
  * The functions in this API operate on an opaque structure.
  */
@@ -46,19 +48,9 @@ typedef struct Room Room;
 
 /**
  * Create a new room in the given database using the given
- * JSON body. The JSON body is the request body from the
- * room creation API, which is used to configure the room
- * as requested. A handle to the newly created room is
- * returned, or NULL if there was an error creating the
- * room.
- * .Pp
- * The JSON should be validated before being passed into
- * this function. Malformed JSON will cause this function
- * to fail, but since the only way it can indicate an
- * error is by returning NULL, it's impossible to tell
- * the client what the specific error is.
+ * RoomCreateRequest.
  */
-extern Room * RoomCreate(Db *, HashMap *);
+extern Room * RoomCreate(Db *, RoomCreateRequest *);
 
 /**
  * Lock the existing room in the specified database,

@@ -75,12 +75,15 @@ RouterBuild(void)
     R("/_matrix/client/v3/user/(.*)/filter", RouteFilter);
     R("/_matrix/client/v3/user/(.*)/filter/(.*)", RouteFilter);
 
+    R("/_matrix/client/v3/createRoom", RouteCreateRoom);
+
     /* Telodendria Admin API Routes */
 
     R("/_telodendria/admin/(restart|shutdown|stats)", RouteProcControl);
     R("/_telodendria/admin/config", RouteConfig);
     R("/_telodendria/admin/privileges", RoutePrivileges);
     R("/_telodendria/admin/privileges/(.*)", RoutePrivileges);
+
 
 #undef R
 

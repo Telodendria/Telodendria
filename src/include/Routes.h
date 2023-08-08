@@ -98,6 +98,8 @@ ROUTE(RouteProcControl);
 ROUTE(RouteConfig);
 ROUTE(RoutePrivileges);
 
+ROUTE(RouteCreateRoom);
+
 #undef ROUTE
 
 #endif
