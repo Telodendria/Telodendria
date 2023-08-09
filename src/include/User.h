@@ -61,7 +61,8 @@ typedef enum UserPrivileges
     USER_CONFIG = (1 << 2),
     USER_GRANT_PRIVILEGES = (1 << 3),
     USER_PROC_CONTROL = (1 << 4),
-    USER_ALL = ((1 << 5) - 1)
+    USER_ALIAS = (1 << 5),
+    USER_ALL = ((1 << 6) - 1)
 } UserPrivileges;
 
 /**

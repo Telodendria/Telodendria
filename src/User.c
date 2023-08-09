@@ -802,6 +802,10 @@ UserDecodePrivilege(const char *p)
     {
         return USER_PROC_CONTROL;
     }
+    else if (StrEquals(p, "ALIAS"))
+    {
+        return USER_ALIAS;
+    }
     else
     {
         return USER_NONE;
@@ -835,6 +839,7 @@ UserEncodePrivileges(int privileges)
     A(USER_CONFIG, "CONFIG");
     A(USER_GRANT_PRIVILEGES, "GRANT_PRIVILEGES");
     A(USER_PROC_CONTROL, "PROC_CONTROL");
+    A(USER_ALIAS, "ALIAS");
 
 #undef A
 

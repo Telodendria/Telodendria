@@ -61,7 +61,7 @@ Milestone: v0.4.0
 [ ] Finish RouteAliasDirectory
     [ ] Add "id" objects when putting aliases
     [ ] Delete from "id" when deleting alias
-    [ ] Add alias admin privilege to allow admins to manage aliases
+    [x] Add alias admin privilege to allow admins to manage aliases
 
 Milestone: v0.5.0
 -----------------

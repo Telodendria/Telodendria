@@ -135,7 +135,7 @@ ROUTE_IMPL(RouteAliasDirectory, path, argp)
                     goto finish;
                 }
 
-                if (!StrEquals(UserGetName(user), JsonValueAsString(JsonGet(aliases, 3, "alias", alias, "createdBy"))))
+                if (!(UserGetPrivileges(user) & USER_ALIAS) && !StrEquals(UserGetName(user), JsonValueAsString(JsonGet(aliases, 3, "alias", alias, "createdBy"))))
                 {
                     HttpResponseStatus(args->context, HTTP_UNAUTHORIZED);
                     response = MatrixErrorCreate(M_UNAUTHORIZED, NULL);

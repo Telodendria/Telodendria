@@ -1,4 +1,4 @@
-.Dd $Mdocdate: April 20 2023 $
+.Dd $Mdocdate: August 9 2023 $
 .Dt TELODENDRIA-ADMIN 7
 .Os Telodendria Project
 .Sh NAME
@@ -32,6 +32,10 @@ Allows a user to modify the Telodendria server daemon's configuration.
 .It Dv GRANT_PRIVILEGES
 Allows a user to modify his or her own privileges or the privileges of other
 local users.
+.It Dv ALIAS
+Allows a user to modify room aliases created by other users. By default, users
+can only manage their own room aliases, but an administrator may wish to take
+over an alias or remove an offensive alias.
 .It Dv PROC_CONTROL
 Allows a user to get statistics on the running process, as well as shutdown and
 restart the Telodendria daemon itself. Typically this will pair well with
