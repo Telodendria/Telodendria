@@ -53,6 +53,16 @@ Milestone: v0.4.0
 [ ] Refactor Config to use j2s.
 [ ] Refactor other endpoints to use j2s for validating request bodies.
 
+[ ] Add parser API to parse the identifier grammers
+    [ ] Use in alias endpoints
+[ ] Finish RouteRoomAliases
+    [ ] Get from "id" in aliases
+    [ ] Note to check permissions according to spec
+[ ] Finish RouteAliasDirectory
+    [ ] Add "id" objects when putting aliases
+    [ ] Delete from "id" when deleting alias
+    [ ] Add alias admin privilege to allow admins to manage aliases
+
 Milestone: v0.5.0
 -----------------
 

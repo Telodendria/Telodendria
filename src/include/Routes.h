@@ -100,6 +100,9 @@ ROUTE(RoutePrivileges);
 
 ROUTE(RouteCreateRoom);
 
+ROUTE(RouteAliasDirectory);
+ROUTE(RouteRoomAliases);
+
 #undef ROUTE
 
 #endif
