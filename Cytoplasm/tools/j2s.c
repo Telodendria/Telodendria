@@ -37,6 +37,13 @@
 
 #define MAX_DEPENDENCIES 32
 
+static char *
+Trim(char c, char *str)
+{
+    while (*str == c) str++;
+    return str;
+}
+
 static JsonType
 TypeToJsonType(char *type)
 {
@@ -610,11 +617,11 @@ Main(Array * args)
                 JsonType jsonType = isEnum ? JSON_STRING : TypeToJsonType(fieldType);
                 char *jsonTypeStr = JsonTypeToStr(jsonType);
 
-                StreamPrintf(implFile, "    val = HashMapGet(json, \"%s\");\n", key);
+                StreamPrintf(implFile, "    val = HashMapGet(json, \"%s\");\n", Trim('_', key));
 
                 StreamPrintf(implFile, "    if (val)\n    {\n");
                 StreamPrintf(implFile, "        if (JsonValueType(val) != %s)\n        {\n", jsonTypeStr);
-                StreamPrintf(implFile, "            *errp = \"%s.%s must be of type %s.\";\n", type, key, fieldType);
+                StreamPrintf(implFile, "            *errp = \"%s.%s must be of type %s.\";\n", type, Trim('_', key), fieldType);
                 StreamPrintf(implFile, "            return 0;\n");
                 StreamPrintf(implFile, "        }\n\n");
                 if (StrEquals(fieldType, "array"))
@@ -853,12 +860,12 @@ Main(Array * args)
                     StreamPrintf(implFile, "        {\n");
                     StreamPrintf(implFile, "            ArrayAdd(jsonArr, JsonValueDuplicate(ArrayGet(val->%s, i)));\n", key);
                     StreamPrintf(implFile, "        }\n");
-                    StreamPrintf(implFile, "        HashMapSet(json, \"%s\", JsonValueArray(jsonArr))\n", key);
+                    StreamPrintf(implFile, "        HashMapSet(json, \"%s\", JsonValueArray(jsonArr));\n", Trim('_', key));
                     StreamPrintf(implFile, "    }\n");
                 }
                 else if (StrEquals(fieldType, "object"))
                 {
-                    StreamPrintf(implFile, "    HashMapSet(json, \"%s\", JsonValueObject(JsonDuplicate(val->%s)));\n", key, key);
+                    StreamPrintf(implFile, "    HashMapSet(json, \"%s\", JsonValueObject(JsonDuplicate(val->%s)));\n", Trim('_', key), key);
                 }
                 else if (*fieldType == '[' && fieldType[strlen(fieldType) - 1] == ']')
                 {
@@ -920,7 +927,7 @@ Main(Array * args)
                     }
 
                     StreamPrintf(implFile, "        }\n");
-                    StreamPrintf(implFile, "        HashMapSet(json, \"%s\", JsonValueArray(jsonArr));\n", key);
+                    StreamPrintf(implFile, "        HashMapSet(json, \"%s\", JsonValueArray(jsonArr));\n", Trim('_', key));
                     StreamPrintf(implFile, "    }\n");
 
                     fieldType[strlen(fieldType)] = ']';
@@ -931,17 +938,17 @@ Main(Array * args)
                     {
                         if (isEnum)
                         {
-                            StreamPrintf(implFile, "    HashMapSet(json, \"%s\", JsonValueString(%sToStr(val->%s)));\n", key, fieldType, key);
+                            StreamPrintf(implFile, "    HashMapSet(json, \"%s\", JsonValueString(%sToStr(val->%s)));\n", Trim('_', key), fieldType, key);
                         }
                         else
                         {
-                            StreamPrintf(implFile, "    HashMapSet(json, \"%s\", JsonValueObject(%sToJson(&val->%s)));\n", key, fieldType, key);
+                            StreamPrintf(implFile, "    HashMapSet(json, \"%s\", JsonValueObject(%sToJson(&val->%s)));\n", Trim('_', key), fieldType, key);
                         }
                     }
                     else
                     {
                         *fieldType = toupper(*fieldType);
-                        StreamPrintf(implFile, "    HashMapSet(json, \"%s\", JsonValue%s(val->%s));\n", key, fieldType, key);
+                        StreamPrintf(implFile, "    HashMapSet(json, \"%s\", JsonValue%s(val->%s));\n", Trim('_', key), fieldType, key);
                         *fieldType = tolower(*fieldType);
                     }
                 }
@@ -1034,7 +1041,7 @@ Main(Array * args)
                     StreamPrintf(implFile, "    if");
                 }
 
-                StreamPrintf(implFile, " (StrEquals(str, \"%s\"))\n    {\n", key);
+                StreamPrintf(implFile, " (StrEquals(str, \"%s\"))\n    {\n", Trim('_', key));
                 StreamPrintf(implFile, "        return %s;\n", JsonValueAsString(JsonGet(fields, 2, key, "name")));
                 StreamPrintf(implFile, "    }\n");
             }
@@ -1053,7 +1060,7 @@ Main(Array * args)
                 char *name = JsonValueAsString(JsonGet(fields, 2, key, "name"));
 
                 StreamPrintf(implFile, "        case %s:\n", name);
-                StreamPrintf(implFile, "            return \"%s\";\n", key);
+                StreamPrintf(implFile, "            return \"%s\";\n", Trim('_', key));
             }
             StreamPrintf(implFile, "        default:\n");
             StreamPrintf(implFile, "            return NULL;\n");

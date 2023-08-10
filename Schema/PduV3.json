@@ -1,0 +1,77 @@
+{
+    "guard": "TELODENDRIA_SCHEMA_PDUV3_H",
+    "header": "Schema/PduV3.h",
+    "types": {
+        "PduV3EventHash": {
+            "type": "struct",
+            "fields": {
+                "sha256": {
+                    "type": "string",
+                    "required": true
+                }
+            }
+        },
+        "PduV3UnsignedData": {
+            "type": "struct",
+            "fields": {
+                "age": {
+                    "type": "integer"
+                }
+            }
+        },
+        "PduV3": {
+            "type": "struct",
+            "fields": {
+                "auth_events": {
+                    "type": "[string]",
+                    "required": true
+                },
+                "content": {
+                    "type": "object",
+                    "required": true
+                },
+                "depth": {
+                    "type": "integer",
+                    "required": true
+                },
+                "hashes": {
+                    "type": "PduV3EventHash",
+                    "required": true
+                },
+                "origin_server_ts": {
+                    "type": "integer",
+                    "required": true
+                },
+                "prev_events": {
+                    "type": "[string]",
+                    "required": true
+                },
+                "redacts": {
+                    "type": "string"
+                },
+                "room_id": {
+                    "type": "string",
+                    "required": true
+                },
+                "sender": {
+                    "type": "string",
+                    "required": true
+                },
+                "signatures": {
+                    "type": "object",
+                    "required": true
+                },
+                "state_key": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string",
+                    "required": true
+                },
+                "_unsigned": {
+                    "type": "PduV3UnsignedData"
+                }
+            }
+        }
+    }
+}

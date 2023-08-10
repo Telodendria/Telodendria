@@ -1,0 +1,58 @@
+{
+    "guard": "TELODENDRIA_SCHEMA_CLIENTEVENT_H",
+    "header": "Schema/ClientEvent.h",
+    "types": {
+        "ClientEventUnsignedData": {
+            "type": "struct",
+            "fields": {
+                "age": {
+                    "type": "integer"
+                },
+                "prev_content": {
+                    "type": "object"
+                },
+                "redacted_because": {
+                    "type": "object"
+                },
+                "transaction_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "ClientEvent": {
+            "type": "struct",
+            "fields": {
+                "content": {
+                    "type": "object",
+                    "required": true
+                },
+                "event_id": {
+                    "type": "string",
+                    "required": true
+                },
+                "origin_server_ts": {
+                    "type": "integer",
+                    "required": true
+                },
+                "room_id": {
+                    "type": "string",
+                    "required": true
+                },
+                "sender": {
+                    "type": "string",
+                    "required": true
+                },
+                "state_key": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string",
+                    "required": true
+                },
+                "_unsigned": {
+                    "type": "ClientEventUnsignedData"
+                }
+            }
+        }
+    }
+}

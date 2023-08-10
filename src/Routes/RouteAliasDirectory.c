@@ -141,6 +141,7 @@ ROUTE_IMPL(RouteAliasDirectory, path, argp)
                     response = MatrixErrorCreate(M_UNAUTHORIZED, NULL);
                     goto finish;
                 }
+
                 JsonValueFree(HashMapDelete(JsonValueAsObject(HashMapGet(aliases, "alias")), alias));
             }
             response = HashMapCreate();

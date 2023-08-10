@@ -39,6 +39,16 @@
 #include <Room.h>
 
 /**
+ * Retrieve the value of a state tuple.
+ */
+extern char *StateGet(HashMap *, char *, char *);
+
+/**
+ * Set a state tuple to a value.
+ */
+extern char *StateSet(HashMap *, char *, char *, char *);
+
+/**
  * Compute the room state before the specified event was sent.
  */
 extern HashMap * StateResolve(Room *, HashMap *);
