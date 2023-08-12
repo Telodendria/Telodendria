@@ -26,15 +26,28 @@
 #include <stddef.h>
 #include <signal.h>
 
+#ifdef INT64_NATIVE
+#define Int64Sign(x) ((int) (((UInt64) (x)) >> 63))
+#else
+#define Int64Sign(x) ((int) ((x).i[1] >> 31))
+#endif
+
 size_t
-UInt64Str(UInt64 x, int base, char *out, size_t len)
+Int64Str(Int64 x, int base, char *out, size_t len)
 {
     static const char symbols[] = "0123456789ABCDEF";
 
     size_t i = len - 1;
     size_t j = 0;
 
-    UInt64 base64 = UInt64Create(0, base);
+	int neg = Int64Sign(x);
+
+    Int64 base64 = Int64Create(0, base);
+
+	if (neg)
+	{
+		x = Int64Neg(x);
+	}
 
     /* We only have symbols up to base 16 */
     if (base < 2 || base > 16)
@@ -44,13 +57,27 @@ UInt64Str(UInt64 x, int base, char *out, size_t len)
 
     do
     {
-        UInt64 mod = UInt64Rem(x, base64);
-        UInt32 low = UInt64Low(mod);
+        Int64 mod = Int64Rem(x, base64);
+        Int32 low = Int64Low(mod);
 
         out[i] = symbols[low];
         i--;
-        x = UInt64Div(x, base64);
-    } while (UInt64Gt(x, UInt64Create(0, 0)));
+        x = Int64Div(x, base64);
+    } while (Int64Gt(x, Int64Create(0, 0)));
+
+	/*
+	 * Binary, octal, and hexadecimal are known to
+	 * be bit representations. Everything else (notably
+	 * decimal) should include the negative sign.
+	 */
+	if (base != 2 && base != 8 && base != 16)
+	{
+		if (neg)
+		{
+			out[i] = '-';
+			i--;
+		}
+	}
 
     while (++i < len)
     {
@@ -62,14 +89,14 @@ UInt64Str(UInt64 x, int base, char *out, size_t len)
     return j;
 }
 
-#ifndef UINT64_NATIVE
+#ifndef INT64_NATIVE
 
 /* No native 64-bit support, add our own */
 
-UInt64
-UInt64Create(UInt32 high, UInt32 low)
+Int64
+Int64Create(UInt32 high, UInt32 low)
 {
-    UInt64 x;
+    Int64 x;
 
     x.i[0] = low;
     x.i[1] = high;
@@ -77,10 +104,10 @@ UInt64Create(UInt32 high, UInt32 low)
     return x;
 }
 
-UInt64
-UInt64Add(UInt64 x, UInt64 y)
+Int64
+Int64Add(Int64 x, Int64 y)
 {
-    UInt64 z = UInt64Create(0, 0);
+    Int64 z = Int64Create(0, 0);
     int carry;
 
     z.i[0] = x.i[0] + y.i[0];
@@ -90,96 +117,131 @@ UInt64Add(UInt64 x, UInt64 y)
     return z;
 }
 
-UInt64
-UInt64Sub(UInt64 x, UInt64 y)
+Int64
+Int64Sub(Int64 x, Int64 y)
 {
-    UInt64 twosCompl = UInt64Add(UInt64Not(y), UInt64Create(0, 1));
-
-    return UInt64Add(x, twosCompl);
+    return Int64Add(x, Int64Neg(y));
 }
 
-UInt64
-UInt64Mul(UInt64 x, UInt64 y)
+Int64
+Int64Mul(Int64 x, Int64 y)
 {
-    UInt64 z = UInt64Create(0, 0);
+    Int64 z = Int64Create(0, 0);
+
+	int xneg = Int64Sign(x);
+	int yneg = Int64Sign(y);
+
+	if (xneg)
+	{
+		x = Int64Neg(x);
+	}
+
+	if (yneg)
+	{
+		y = Int64Neg(y);
+	}
 
     /* while (y > 0) */
-    while (UInt64Gt(y, UInt64Create(0, 0)))
+    while (Int64Gt(y, Int64Create(0, 0)))
     {
         /* if (y & 1 != 0) */
-        if (UInt64Neq(UInt64And(y, UInt64Create(0, 1)), UInt64Create(0, 0)))
+        if (Int64Neq(Int64And(y, Int64Create(0, 1)), Int64Create(0, 0)))
         {
-            z = UInt64Add(z, x);
+            z = Int64Add(z, x);
         }
 
-        x = UInt64Sll(x, 1);
-        y = UInt64Srl(y, 1);
+        x = Int64Sll(x, 1);
+        y = Int64Sra(y, 1);
     }
+
+	if (xneg != yneg)
+	{
+		z = Int64Neg(z);
+	}
 
     return z;
 }
 
 typedef struct
 {
-    UInt64 q;
-    UInt64 r;
-} UInt64Ldiv;
+    Int64 q;
+    Int64 r;
+} Int64Ldiv;
 
-static UInt64Ldiv
-UInt64LongDivision(UInt64 n, UInt64 d)
+static Int64Ldiv
+Int64LongDivision(Int64 n, Int64 d)
 {
-    UInt64Ldiv o;
+    Int64Ldiv o;
 
     int i;
 
-    o.q = UInt64Create(0, 0);
-    o.r = UInt64Create(0, 0);
+	int nneg = Int64Sign(n);
+	int dneg = Int64Sign(d);
 
-    if (UInt64Eq(d, UInt64Create(0, 0)))
+    o.q = Int64Create(0, 0);
+    o.r = Int64Create(0, 0);
+
+    if (Int64Eq(d, Int64Create(0, 0)))
     {
         raise(SIGFPE);
         return o;
     }
 
+	if (nneg)
+	{
+		n = Int64Neg(n);
+	}
+
+	if (dneg)
+	{
+		d = Int64Neg(d);
+	}
+
     for (i = 63; i >= 0; i--)
     {
-        UInt64 bit = UInt64And(UInt64Srl(n, i), UInt64Create(0, 1));
-        o.r = UInt64Sll(o.r, 1);
-        o.r = UInt64Or(o.r, bit);
+        Int64 bit = Int64And(Int64Sra(n, i), Int64Create(0, 1));
+        o.r = Int64Sll(o.r, 1);
+        o.r = Int64Or(o.r, bit);
 
-        if (UInt64Geq(o.r, d))
+        if (Int64Geq(o.r, d))
         {
-            o.r = UInt64Sub(o.r, d);
-            o.q = UInt64Or(o.q, UInt64Sll(UInt64Create(0, 1), i));
+            o.r = Int64Sub(o.r, d);
+            o.q = Int64Or(o.q, Int64Sll(Int64Create(0, 1), i));
         }
     }
+
+	if (nneg != dneg)
+	{
+		o.r = Int64Neg(o.r);
+		o.q = Int64Neg(o.q);
+	}
 
     return o;
 }
 
-UInt64
-UInt64Div(UInt64 x, UInt64 y)
+Int64
+Int64Div(Int64 x, Int64 y)
 {
-    return UInt64LongDivision(x, y).q;
+    return Int64LongDivision(x, y).q;
 }
 
-UInt64
-UInt64Rem(UInt64 x, UInt64 y)
+Int64
+Int64Rem(Int64 x, Int64 y)
 {
-    return UInt64LongDivision(x, y).r;
+    return Int64LongDivision(x, y).r;
 }
 
-UInt64
-UInt64Sll(UInt64 x, int y)
+Int64
+Int64Sll(Int64 x, int y)
 {
-    UInt64 z;
+    Int64 z;
 
     if (!y)
     {
         return x;
     }
 
-    z = UInt64Create(0, 0);
+    z = Int64Create(0, 0);
 
     if (y < 32)
     {
@@ -194,17 +256,19 @@ UInt64Sll(UInt64 x, int y)
     return z;
 }
 
-UInt64
-UInt64Srl(UInt64 x, int y)
+Int64
+Int64Sra(Int64 x, int y)
 {
-    UInt64 z;
+    Int64 z;
+
+	int neg = Int64Sign(x);
 
     if (!y)
     {
         return x;
     }
 
-    z = UInt64Create(0, 0);
+    z = Int64Create(0, 0);
 
     if (y < 32)
     {
@@ -216,49 +280,90 @@ UInt64Srl(UInt64 x, int y)
         z.i[0] = x.i[1] >> (y - 32);
     }
 
+	if (neg)
+	{
+		Int64 mask = Int64Create(0xFFFFFFFF, 0xFFFFFFFF);
+		z = Int64Or(Int64Sll(mask, (64 - y)), z);
+	}
+
     return z;
 }
 
-UInt64
-UInt64And(UInt64 x, UInt64 y)
+Int64
+Int64And(Int64 x, Int64 y)
 {
-    return UInt64Create(x.i[1] & y.i[1], x.i[0] & y.i[0]);
+    return Int64Create(x.i[1] & y.i[1], x.i[0] & y.i[0]);
 }
 
-UInt64
-UInt64Or(UInt64 x, UInt64 y)
+Int64
+Int64Or(Int64 x, Int64 y)
 {
-    return UInt64Create(x.i[1] | y.i[1], x.i[0] | y.i[0]);
+    return Int64Create(x.i[1] | y.i[1], x.i[0] | y.i[0]);
 }
 
-UInt64
-UInt64Xor(UInt64 x, UInt64 y)
+Int64
+Int64Xor(Int64 x, Int64 y)
 {
-    return UInt64Create(x.i[1] ^ y.i[1], x.i[0] ^ y.i[0]);
+    return Int64Create(x.i[1] ^ y.i[1], x.i[0] ^ y.i[0]);
 }
 
-UInt64
-UInt64Not(UInt64 x)
+Int64
+Int64Not(Int64 x)
 {
-    return UInt64Create(~(x.i[1]), ~(x.i[0]));
+    return Int64Create(~(x.i[1]), ~(x.i[0]));
 }
 
 int
-UInt64Eq(UInt64 x, UInt64 y)
+Int64Eq(Int64 x, Int64 y)
 {
     return x.i[0] == y.i[0] && x.i[1] == y.i[1];
 }
 
 int
-UInt64Lt(UInt64 x, UInt64 y)
+Int64Lt(Int64 x, Int64 y)
 {
-    return x.i[1] < y.i[1] || (x.i[1] == y.i[1] && x.i[0] < y.i[0]);
+	int xneg = Int64Sign(x);
+	int yneg = Int64Sign(y);
+
+	if (xneg != yneg)
+	{
+		return xneg > yneg;
+	}
+	else
+	{
+		if (xneg) /* Both negative */
+		{
+		    return x.i[1] > y.i[1] || (x.i[1] == y.i[1] && x.i[0] > y.i[0]);
+		}
+		else /* Both positive */
+		{
+    		return x.i[1] < y.i[1] || (x.i[1] == y.i[1] && x.i[0] < y.i[0]);
+		}
+	}
 }
 
 int
-UInt64Gt(UInt64 x, UInt64 y)
+Int64Gt(Int64 x, Int64 y)
 {
-    return x.i[1] > y.i[1] || (x.i[1] == y.i[1] && x.i[0] > y.i[0]);
+	int xneg = Int64Sign(x);
+	int yneg = Int64Sign(y);
+
+	if (xneg != yneg)
+	{
+		return xneg < yneg;
+	}
+	else
+	{
+		if (xneg) /* Both negative */
+		{
+    		return x.i[1] < y.i[1] || (x.i[1] == y.i[1] && x.i[0] < y.i[0]);
+		}
+		else /* Both positive */
+		{
+    		return x.i[1] > y.i[1] || (x.i[1] == y.i[1] && x.i[0] > y.i[0]);
+		}
+	}
+
 }
 
 #endif

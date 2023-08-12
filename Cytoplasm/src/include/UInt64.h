@@ -21,8 +21,8 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-#ifndef CYTOPLASM_INT64_H
-#define CYTOPLASM_INT64_H
+#ifndef CYTOPLASM_UINT64_H
+#define CYTOPLASM_UINT64_H
 
 /***
  * @Nm Int64
@@ -65,61 +65,56 @@
  */
 
 #include <Int.h>
-#include <UInt64.h>
 
 #include <stddef.h>
 
-#if 0 /* TODO REMOVE */
-
 #define BIT64_MAX 18446744073709551615UL
 
-#if UINT_MAX == BIT64_MAX
-typedef signed int Int64;
+/* TODO: Implement signed arithmetic */
 
-#define INT64_NATIVE
+#if UINT_MAX == BIT64_MAX
+/* typedef signed int Int64; */
+typedef unsigned int UInt64;
+
+#define UINT64_NATIVE
 
 #elif ULONG_MAX == BIT64_MAX
-typedef signed long Int64;
+/* typedef signed int Int64; */
+typedef unsigned long UInt64;
 
-#define INT64_NATIVE
+#define UINT64_NATIVE
 
 #endif
 
-#endif /* TODO REMOVE */
+#ifdef UINT64_NATIVE
 
-#ifdef INT64_NATIVE
+#define UInt64Create(high, low) (((UInt64) (high) << 32) | (low))
+#define UInt64Low(a) ((UInt32) ((a) & 0x00000000FFFFFFFF))
+#define UInt64High(a) ((UInt32) ((a) >> 32))
 
-#define Int64Create(high, low) ((Int64) (((UInt64) (high) << 32) | (low)))
-#define Int64Neg(x) (-(x))
+#define UInt64Add(a, b) ((a) + (b))
+#define UInt64Sub(a, b) ((a) - (b))
+#define UInt64Mul(a, b) ((a) * (b))
+#define UInt64Div(a, b) ((a) / (b))
+#define UInt64Rem(a, b) ((a) % (b))
 
-#define Int64Low(a) ((UInt32) (a))
-#define Int64High(a) ((UInt32) ((a) >> 32))
+#define UInt64Sll(a, b) ((a) << (b))
+#define UInt64Srl(a, b) ((a) >> (b))
 
-#define Int64Add(a, b) ((a) + (b))
-#define Int64Sub(a, b) ((a) - (b))
-#define Int64Mul(a, b) ((a) * (b))
-#define Int64Div(a, b) ((a) / (b))
-#define Int64Rem(a, b) ((a) % (b))
+#define UInt64And(a, b) ((a) & (b))
+#define UInt64Or(a, b) ((a) | (b))
+#define UInt64Xor(a, b) ((a) ^ (b))
+#define UInt64Not(a) (~(a))
 
-#define Int64Sll(a, b) ((a) << (b))
-#define Int64Sra(a, b) ((a) >> (b))
+#define UInt64Eq(a, b) ((a) == (b))
+#define UInt64Lt(a, b) ((a) < (b))
+#define UInt64Gt(a, b) ((a) > (b))
 
-#define Int64And(a, b) ((a) & (b))
-#define Int64Or(a, b) ((a) | (b))
-#define Int64Xor(a, b) ((a) ^ (b))
-#define Int64Not(a) (~(a))
-
-#define Int64Eq(a, b) ((a) == (b))
-#define Int64Lt(a, b) ((a) < (b))
-#define Int64Gt(a, b) ((a) > (b))
-
-#define Int64Neq(a, b) ((a) != (b))
-#define Int64Leq(a, b) ((a) <= (b))
-#define Int64Geq(a, b) ((a) >= (b))
+#define UInt64Neq(a, b) ((a) != (b))
+#define UInt64Leq(a, b) ((a) <= (b))
+#define UInt64Geq(a, b) ((a) >= (b))
 
 #else
-
-#define Int64Neg(x) (Int64Add(Int64Not(x), Int64Create(0, 1)))
 
 /**
  * For platforms that do not have a native integer large enough to
@@ -133,30 +128,24 @@ typedef signed long Int64;
  */
 typedef struct
 {
-	/*
-	 * Unsigned, because we will deal with the sign bits ourselves.
-	 * This also allows well-defined casting between signed and
-	 * unsigned integers.
-	 */
     UInt32 i[2];
-} Int64;
-
+} UInt64;
 
 /**
- * Create a new signed 64 bit integer using the given high and low
+ * Create a new unsigned 64 bit integer using the given high and low
  * bits.
  */
-extern Int64 Int64Create(UInt32, UInt32);
+extern UInt64 UInt64Create(UInt32, UInt32);
 
 /**
- * Add two signed 64 bit integers together.
+ * Add two unsigned 64 bit integers together.
  */
-extern Int64 Int64Add(Int64, Int64);
+extern UInt64 UInt64Add(UInt64, UInt64);
 
 /**
  * Subtract the second 64 bit integer from the first.
  */
-extern Int64 Int64Sub(Int64, Int64);
+extern UInt64 UInt64Sub(UInt64, UInt64);
 
 /**
  * Multiply two 64 bit integers together. The non-native version of
@@ -165,7 +154,7 @@ extern Int64 Int64Sub(Int64, Int64);
  * addition, but it is still rather slow and depends on the size of
  * the integers being multiplied.
  */
-extern Int64 Int64Mul(Int64, Int64);
+extern UInt64 UInt64Mul(UInt64, UInt64);
 
 /**
  * Divide the first 64 bit integer by the second and return the
@@ -173,7 +162,7 @@ extern Int64 Int64Mul(Int64, Int64);
  * long division, which is slow, but gauranteed to finish in constant
  * time.
  */
-extern Int64 Int64Div(Int64, Int64);
+extern UInt64 UInt64Div(UInt64, UInt64);
 
 /**
  * Divide the first 64 bit integer by the second and return the
@@ -181,86 +170,80 @@ extern Int64 Int64Div(Int64, Int64);
  * long division, which is slow, but gauranteed to finish in constant
  * time.
  */
-extern Int64 Int64Rem(Int64, Int64);
+extern UInt64 UInt64Rem(UInt64, UInt64);
 
 /**
  * Perform a left logical bit shift of a 64 bit integer. The second
  * parameter is how many places to shift, and is declared as a regular
  * integer because anything more than 64 does not make sense.
  */
-extern Int64 Int64Sll(Int64, int);
+extern UInt64 UInt64Sll(UInt64, int);
 
 /**
- * Perform a right arithmetic bit shift of a 64 bit integer. The second
+ * Perform a right logical bit shift of a 64 bit integer. The second
  * parameter is how many places to shift, and is declared as a regular
  * integer because anything more than 64 does not make sense.
- * .Pp
- * Note that on platforms that use the native 64-bit implementation,
- * this is technically implementation-defined, and may in fact be a
- * logical shift instead of an arithmetic shift. Note that typically
- * this operation is not performed on signed integers.
  */
-extern Int64 Int64Sra(Int64, int);
+extern UInt64 UInt64Srl(UInt64, int);
 
 /**
  * Perform a bitwise AND (&) of the provided 64 bit integers.
  */
-extern Int64 Int64And(Int64, Int64);
+extern UInt64 UInt64And(UInt64, UInt64);
 
 /**
  * Perform a bitwise OR (|) of the provided 64 bit integers.
  */
-extern Int64 Int64Or(Int64, Int64);
+extern UInt64 UInt64Or(UInt64, UInt64);
 
 /**
  * Perform a bitwise XOR (^) of the provided 64 bit integers.
  */
-extern Int64 Int64Xor(Int64, Int64);
+extern UInt64 UInt64Xor(UInt64, UInt64);
 
 /**
  * Perform a bitwise NOT (~) of the provided 64 bit integer.
  */
-extern Int64 Int64Not(Int64);
+extern UInt64 UInt64Not(UInt64);
 
 /**
  * Perform a comparison of the provided 64 bit integers and return a C
  * boolean that is true if and only if they are equal.
- */
-extern int Int64Eq(Int64, Int64);
+extern int UInt64Eq(UInt64, UInt64);
 
 /**
  * Perform a comparison of the provided 64 bit integers and return a C
  * boolean that is true if and only if the second operand is strictly
  * less than the first.
  */
-extern int Int64Lt(Int64, Int64);
+extern int UInt64Lt(UInt64, UInt64);
 
 /**
  * Perform a comparison of the provided 64 bit integers and return a C
  * boolean that is true if and only if the second operand is strictly
  * greater than the first.
  */
-extern int Int64Gt(Int64, Int64);
+extern int UInt64Gt(UInt64, UInt64);
 
-#define Int64Low(a) ((a).i[0])
-#define Int64High(a) ((a).i[1])
+#define UInt64Low(a) ((a).i[0])
+#define UInt64High(a) ((a).i[1])
 
-#define Int64Neq(a, b) (!Int64Eq(a, b))
-#define Int64Leq(a, b) (Int64Eq(a, b) || Int64Lt(a, b))
-#define Int64Geq(a, b) (Int64Eq(a, b) || Int64Gt(a, b))
+#define UInt64Neq(a, b) (!UInt64Eq(a, b))
+#define UInt64Leq(a, b) (UInt64Eq(a, b) || UInt64Lt(a, b))
+#define UInt64Geq(a, b) (UInt64Eq(a, b) || UInt64Gt(a, b))
 
 #endif
 
-#define INT64_STRBUF 65 /* Base 2 representation with '\0' */
+#define UINT64_STRBUF 65 /* Base 2 representation with '\0' */
 
 /**
  * Convert a 64 bit integer to a string in an arbitrary base
  * representation specified by the second parameter, using the provided
  * buffer and length specified by the third and fourth parameters. To
  * guarantee that the string will fit in the buffer, allocate it of
- * size INT64_STRBUF or larger. Note that a buffer size smaller than
- * INT64_STRBUF will invoke undefined behavior.
+ * size UINT64_STRBUF or larger. Note that a buffer size smaller than
+ * UINT64_STRBUF will invoke undefined behavior.
  */
-extern size_t Int64Str(Int64, int, char *, size_t);
+extern size_t UInt64Str(UInt64, int, char *, size_t);
 
-#endif /* CYTOPLASM_INT64_H */
+#endif /* CYTOPLASM_UINT64_H */
