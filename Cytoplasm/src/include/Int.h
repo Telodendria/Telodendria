@@ -55,10 +55,9 @@
 
 #include <limits.h>
 
-#define BIT64_MAX 18446744073709551615
-#define BIT32_MAX 4294967295
-#define BIT16_MAX 65535
-#define BIT8_MAX 255
+#define BIT32_MAX 4294967295UL
+#define BIT16_MAX 65535UL
+#define BIT8_MAX 255UL
 
 #ifndef UCHAR_MAX
 #error Size of char data type is unknown. Define UCHAR_MAX.
@@ -120,6 +119,4 @@ typedef unsigned char UInt32;
 #error Unable to determine suitable data type for 32-bit integers.
 #endif
 
-/* The ANSI C standard only guarantees a data size of up to 32 bits. */
-
-#endif
+#endif /* CYTOPLASM_INT_H */
