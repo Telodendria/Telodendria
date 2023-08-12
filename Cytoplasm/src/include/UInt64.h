@@ -25,7 +25,7 @@
 #define CYTOPLASM_UINT64_H
 
 /***
- * @Nm Int64
+ * @Nm UInt64
  * @Nd Fixed-width 64 bit integers.
  * @Dd August 11, 2023
  *
@@ -68,9 +68,9 @@
 
 #include <stddef.h>
 
-#define BIT64_MAX 18446744073709551615UL
+#ifndef INT64_FORCE_EMULATED
 
-/* TODO: Implement signed arithmetic */
+#define BIT64_MAX 18446744073709551615UL
 
 #if UINT_MAX == BIT64_MAX
 /* typedef signed int Int64; */
@@ -85,6 +85,8 @@ typedef unsigned long UInt64;
 #define UINT64_NATIVE
 
 #endif
+
+#endif /* ifndef INT64_FORCE_EMULATED */
 
 #ifdef UINT64_NATIVE
 
@@ -209,6 +211,7 @@ extern UInt64 UInt64Not(UInt64);
 /**
  * Perform a comparison of the provided 64 bit integers and return a C
  * boolean that is true if and only if they are equal.
+ */
 extern int UInt64Eq(UInt64, UInt64);
 
 /**

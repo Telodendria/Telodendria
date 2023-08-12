@@ -69,7 +69,7 @@
 
 #include <stddef.h>
 
-#if 0 /* TODO REMOVE */
+#ifndef INT64_FORCE_EMULATED
 
 #define BIT64_MAX 18446744073709551615UL
 
@@ -85,7 +85,7 @@ typedef signed long Int64;
 
 #endif
 
-#endif /* TODO REMOVE */
+#endif /* ifndef INT64_FORCE_EMULATED */
 
 #ifdef INT64_NATIVE
 
