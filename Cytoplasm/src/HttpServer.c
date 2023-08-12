@@ -465,7 +465,7 @@ HttpServerWorkerThread(void *args)
         ssize_t i = 0;
         HttpRequestMethod requestMethod;
 
-        long firstRead;
+        UInt64 firstRead;
 
         fp = DequeueConnection(server);
 
@@ -473,7 +473,7 @@ HttpServerWorkerThread(void *args)
         {
             /* Block for 1 millisecond before continuing so we don't
              * murder the CPU if the queue is empty. */
-            UtilSleepMillis(1);
+            UtilSleepMillis(UInt64Create(0, 1));
             continue;
         }
 
@@ -492,12 +492,12 @@ HttpServerWorkerThread(void *args)
 
             /* If the server is stopped, or it's been a while, just
              * give up so we aren't wasting a thread on this client. */
-            if (server->stop || (UtilServerTs() - firstRead) > 1000 * 30)
+            if (server->stop || UInt64Gt(UInt64Sub(UtilServerTs(), firstRead), UInt64Create(0, 1000 * 30)))
             {
                 goto finish;
             }
 
-            UtilSleepMillis(5);
+            UtilSleepMillis(UInt64Create(0, 5));
         }
 
         if (lineLen == -1)

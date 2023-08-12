@@ -3,7 +3,8 @@
 #include <Log.h>
 
 /* AssertEquals(actual, expected) */
-int AssertEquals(char *msg, Int64 x, Int64 y)
+int
+AssertEquals(char *msg, Int64 x, Int64 y)
 {
     if (!Int64Eq(x, y))
     {
@@ -17,9 +18,10 @@ int AssertEquals(char *msg, Int64 x, Int64 y)
     return 1;
 }
 
-int Main(void)
+int
+Main(void)
 {
-	Int64 x, y;
+    Int64 x, y;
 
     Log(LOG_INFO, "sizeof(Int64) = %lu", sizeof(Int64));
 
@@ -31,9 +33,9 @@ int Main(void)
 
     /* BSR Tests */
 
-	x = Int64Create(0x000000FF, 0x00000000);
+    x = Int64Create(0x000000FF, 0x00000000);
 
-	y = Int64Sra(x, 4);
+    y = Int64Sra(x, 4);
     AssertEquals("x >> 4", y, Int64Create(0x0000000F, 0xF0000000));
 
     y = Int64Sra(x, 8);
@@ -42,15 +44,15 @@ int Main(void)
     y = Int64Sra(x, 36);
     AssertEquals("x >> 36", y, Int64Create(0x00000000, 0x0000000F));
 
-	x = Int64Create(0xFF000000, 0x00000000);
+    x = Int64Create(0xFF000000, 0x00000000);
 
-	y = Int64Sra(x, 4);
+    y = Int64Sra(x, 4);
     AssertEquals("x >> 4", y, Int64Create(0xFFF00000, 0x00000000));
 
-	y = Int64Sra(x, 8);
+    y = Int64Sra(x, 8);
     AssertEquals("x >> 8", y, Int64Create(0xFFFF0000, 0x00000000));
 
-	y = Int64Sra(x, 63);
+    y = Int64Sra(x, 63);
     AssertEquals("x >> 63", y, Int64Create(0xFFFFFFFF, 0xFFFFFFFF));
 
     /* BSL Tests */
@@ -76,9 +78,9 @@ int Main(void)
     y = Int64Create(0x00000000, 0x10000000);
     AssertEquals("0xF0000000 + 0x10000000", Int64Add(x, y), Int64Create(0x00000001, 0x00000000));
 
-	x = Int64Create(0, 5);
-	y = Int64Neg(Int64Create(0, 10));
-	AssertEquals("5 + (-10)", Int64Add(x, y), Int64Neg(Int64Create(0, 5)));
+    x = Int64Create(0, 5);
+    y = Int64Neg(Int64Create(0, 10));
+    AssertEquals("5 + (-10)", Int64Add(x, y), Int64Neg(Int64Create(0, 5)));
 
     /* SUB Tests */
     x = Int64Create(0x00000000, 0x00000005);
@@ -89,13 +91,13 @@ int Main(void)
     y = Int64Create(0x00000000, 0x00000001);
     AssertEquals("0x00000001 0x00000000 - 0x00000001", Int64Sub(x, y), Int64Create(0x00000000, 0xFFFFFFFF));
 
-	x = Int64Create(0, 5);
-	y = Int64Create(0, 10);
-	AssertEquals("5 - 10", Int64Sub(x, y), Int64Neg(Int64Create(0, 5)));
+    x = Int64Create(0, 5);
+    y = Int64Create(0, 10);
+    AssertEquals("5 - 10", Int64Sub(x, y), Int64Neg(Int64Create(0, 5)));
 
-	x = Int64Create(0, 5);
-	y = Int64Neg(Int64Create(0, 10));
-	AssertEquals("5 - (-10)", Int64Sub(x, y), Int64Create(0, 15));
+    x = Int64Create(0, 5);
+    y = Int64Neg(Int64Create(0, 10));
+    AssertEquals("5 - (-10)", Int64Sub(x, y), Int64Create(0, 15));
 
     /* MUL Tests */
     x = Int64Create(0, 18);
@@ -136,7 +138,8 @@ int Main(void)
     y = Int64Create(0x00000000, 0x00000010);
     AssertEquals("0x00000000 0x000000F0 mod 0x00000010", Int64Rem(x, y), Int64Create(0, 0));
 
-	/* TODO: Add more tests for negative multiplication, division, and mod */
+    /* TODO: Add more tests for negative multiplication, division, and
+     * mod */
 
-	return 0;
+    return 0;
 }

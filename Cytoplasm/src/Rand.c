@@ -24,6 +24,7 @@
 #include <Rand.h>
 
 #include <Int.h>
+#include <UInt64.h>
 #include <Util.h>
 #include <Memory.h>
 
@@ -140,7 +141,8 @@ RandIntN(int *buf, size_t size, unsigned int max)
     if (!state)
     {
         /* Generate a seed from the system time, PID, and TID */
-        UInt32 seed = UtilServerTs() ^ getpid() ^ (unsigned long) pthread_self();
+        UInt64 ts = UtilServerTs();
+        UInt32 seed = UInt64Low(ts) ^ getpid() ^ (unsigned long) pthread_self();
 
         state = Malloc(sizeof(RandState));
         RandSeed(state, seed);

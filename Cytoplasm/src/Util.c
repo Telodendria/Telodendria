@@ -40,6 +40,8 @@
 #include <limits.h>
 #include <pthread.h>
 
+#include <UInt64.h>
+
 #ifndef PATH_MAX
 #define PATH_MAX 256
 #endif
@@ -48,33 +50,84 @@
 #define SSIZE_MAX LONG_MAX
 #endif
 
-unsigned long
+UInt64
 UtilServerTs(void)
 {
     struct timeval tv;
-    unsigned long ts;
+
+    UInt64 ts;
+    UInt64 sec;
+    UInt64 usec;
 
     gettimeofday(&tv, NULL);
-    ts = (tv.tv_sec * 1000) + (tv.tv_usec / 1000);
+
+    /*
+     * POSIX defines struct timeval to be:
+     *
+     * struct timeval {
+     *   time_t tv_sec;
+     *   suseconds_t tv_usec;
+     * };
+     *
+     * Note: Although the C standard does not require that
+     * time_t be an integer type (it may be floating point),
+     * according to POSIX, time_t shall be an integer type.
+     * As we are targeting POSIX, not ANSI/ISO C, we can
+     * rely on this.
+     *
+     * The same goes for suseconds_t.
+     */
+    if (sizeof(time_t) == sizeof(UInt64))
+    {
+        /* 64 bit time_t: convert it to a 64 bit integer */
+        time_t ms = tv.tv_sec * 1000;
+        UInt32 high = (UInt32) (ms >> 32);
+        UInt32 low = (UInt32) ms;
+
+        sec = UInt64Create(high, low);
+    }
+    else
+    {
+        /* Assume 32 bit time_t: promote to 64 bit, then multiply, in
+         * case multiplication overflows 32 bits. */
+        sec = UInt64Create(0, tv.tv_sec);
+        sec = UInt64Mul(sec, UInt64Create(0, 1000));
+    }
+
+    usec = UInt64Create(0, tv.tv_usec / 1000);
+    ts = UInt64Add(sec, usec);
 
     return ts;
 }
 
-unsigned long
+UInt64
 UtilLastModified(char *path)
 {
     struct stat st;
-    unsigned long ts;
+    UInt64 ts = UInt64Create(0, 0);
 
     if (stat(path, &st) == 0)
     {
-        ts = (st.st_mtim.tv_sec * 1000) + (st.st_mtim.tv_nsec / 1000000);
-        return ts;
+        if (sizeof(time_t) == sizeof(UInt64))
+        {
+            /* 64 bit time_t: convert it to a 64 bit integer */
+            time_t ms = st.st_mtim.tv_sec * 1000;
+            UInt32 high = (UInt32) (ms >> 32);
+            UInt32 low = (UInt32) ms;
+
+            ts = UInt64Create(high, low);
+        }
+        else
+        {
+            ts = UInt64Create(0, st.st_mtim.tv_sec);
+            ts = UInt64Mul(ts, UInt64Create(0, 1000));
+        }
+
+        /* nsec gauanteed to fit in 32 bits */
+        ts = UInt64Add(ts, UInt64Create(0, st.st_mtim.tv_nsec / 1000000));
     }
-    else
-    {
-        return 0;
-    }
+
+    return ts;
 }
 
 int
@@ -149,13 +202,21 @@ UtilMkdir(const char *dir, const mode_t mode)
 }
 
 int
-UtilSleepMillis(long ms)
+UtilSleepMillis(UInt64 ms)
 {
     struct timespec ts;
     int res;
 
-    ts.tv_sec = ms / 1000;
-    ts.tv_nsec = (ms % 1000) * 1000000;
+    if (sizeof(time_t) == sizeof(UInt64))
+    {
+        ts.tv_sec = ((time_t) UInt64High(ms) << 32 | UInt64Low(ms)) / 1000;
+    }
+    else
+    {
+        ts.tv_sec = UInt64Low(ms) / 1000;
+    }
+
+    ts.tv_nsec = UInt64Low(UInt64Rem(ms, UInt64Create(0, 1000))) * 1000000;
 
     res = nanosleep(&ts, &ts);
 
@@ -251,14 +312,14 @@ ThreadNoDestructor(void *p)
     free(p);
 }
 
-unsigned long
+UInt32
 UtilThreadNo(void)
 {
     static pthread_key_t key;
     static int createdKey = 0;
     static unsigned long count = 0;
 
-    unsigned long *no;
+    UInt32 *no;
 
     if (!createdKey)
     {
@@ -269,7 +330,7 @@ UtilThreadNo(void)
     no = pthread_getspecific(key);
     if (!no)
     {
-        no = malloc(sizeof(unsigned long));
+        no = malloc(sizeof(UInt32));
         *no = count++;
         pthread_setspecific(key, no);
     }

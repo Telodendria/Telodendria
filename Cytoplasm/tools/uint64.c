@@ -3,7 +3,8 @@
 #include <Log.h>
 
 /* AssertEquals(actual, expected) */
-int AssertEquals(char *msg, UInt64 x, UInt64 y)
+int
+AssertEquals(char *msg, UInt64 x, UInt64 y)
 {
     if (!UInt64Eq(x, y))
     {
@@ -17,9 +18,10 @@ int AssertEquals(char *msg, UInt64 x, UInt64 y)
     return 1;
 }
 
-int Main(void)
+int
+Main(void)
 {
-	UInt64 x, y;
+    UInt64 x, y;
 
     Log(LOG_INFO, "sizeof(UInt64) = %lu", sizeof(UInt64));
 
@@ -31,9 +33,9 @@ int Main(void)
 
     /* BSR Tests */
 
-	x = UInt64Create(0x000000FF, 0x00000000);
+    x = UInt64Create(0x000000FF, 0x00000000);
 
-	y = UInt64Srl(x, 4);
+    y = UInt64Srl(x, 4);
     AssertEquals("x >> 4", y, UInt64Create(0x0000000F, 0xF0000000));
 
     y = UInt64Srl(x, 8);
@@ -113,5 +115,5 @@ int Main(void)
     y = UInt64Create(0x00000000, 0x00000010);
     AssertEquals("0x00000000 0x000000F0 mod 0x00000010", UInt64Rem(x, y), UInt64Create(0, 0));
 
-	return 0;
+    return 0;
 }

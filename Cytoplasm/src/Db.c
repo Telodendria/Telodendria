@@ -23,6 +23,7 @@
  */
 #include <Db.h>
 
+#include <UInt64.h>
 #include <Memory.h>
 #include <Json.h>
 #include <Util.h>
@@ -76,7 +77,7 @@ struct DbRef
 {
     HashMap *json;
 
-    unsigned long ts;
+    UInt64 ts;
     size_t size;
 
     Array *name;
@@ -494,12 +495,12 @@ DbLockFromArr(Db * db, Array * args)
 
     if (ref)                       /* In cache */
     {
-        unsigned long diskTs = UtilLastModified(file);
+        UInt64 diskTs = UtilLastModified(file);
 
         ref->fd = fd;
         ref->stream = stream;
 
-        if (diskTs > ref->ts)
+        if (UInt64Gt(diskTs, ref->ts))
         {
             /* File was modified on disk since it was cached */
             HashMap *json = JsonDecode(ref->stream);
@@ -651,7 +652,7 @@ DbCreate(Db * db, size_t nArgs,...)
 
     file = DbFileName(db, args);
 
-    if (UtilLastModified(file))
+    if (UInt64Neq(UtilLastModified(file), UInt64Create(0, 0)))
     {
         Free(file);
         ArrayFree(args);
@@ -754,7 +755,7 @@ DbDelete(Db * db, size_t nArgs,...)
 
     Free(hash);
 
-    if (UtilLastModified(file))
+    if (UInt64Neq(UtilLastModified(file), UInt64Create(0, 0)))
     {
         ret = remove(file) == 0;
     }
@@ -872,7 +873,7 @@ DbExists(Db * db, size_t nArgs,...)
     pthread_mutex_lock(&db->lock);
 
     file = DbFileName(db, args);
-    ret = UtilLastModified(file);
+    ret = UInt64Neq(UtilLastModified(file), UInt64Create(0, 0));
 
     pthread_mutex_unlock(&db->lock);
 

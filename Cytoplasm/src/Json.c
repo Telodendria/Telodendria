@@ -872,7 +872,7 @@ JsonConsumeWhitespace(JsonParserState * state)
                 }
                 else
                 {
-                    UtilSleepMillis(delay);
+                    UtilSleepMillis(UInt64Create(0, delay));
                     continue;
                 }
             }

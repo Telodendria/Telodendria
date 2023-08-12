@@ -626,7 +626,7 @@ StreamCopy(Stream * in, Stream * out)
                 }
                 else
                 {
-                    UtilSleepMillis(STREAM_DELAY);
+                    UtilSleepMillis(UInt64Create(0, STREAM_DELAY));
                     continue;
                 }
             }

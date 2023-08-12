@@ -40,14 +40,14 @@ Int64Str(Int64 x, int base, char *out, size_t len)
     size_t i = len - 1;
     size_t j = 0;
 
-	int neg = Int64Sign(x);
+    int neg = Int64Sign(x);
 
     Int64 base64 = Int64Create(0, base);
 
-	if (neg)
-	{
-		x = Int64Neg(x);
-	}
+    if (neg)
+    {
+        x = Int64Neg(x);
+    }
 
     /* We only have symbols up to base 16 */
     if (base < 2 || base > 16)
@@ -65,19 +65,19 @@ Int64Str(Int64 x, int base, char *out, size_t len)
         x = Int64Div(x, base64);
     } while (Int64Gt(x, Int64Create(0, 0)));
 
-	/*
-	 * Binary, octal, and hexadecimal are known to
-	 * be bit representations. Everything else (notably
-	 * decimal) should include the negative sign.
-	 */
-	if (base != 2 && base != 8 && base != 16)
-	{
-		if (neg)
-		{
-			out[i] = '-';
-			i--;
-		}
-	}
+    /*
+     * Binary, octal, and hexadecimal are known to
+     * be bit representations. Everything else (notably
+     * decimal) should include the negative sign.
+     */
+    if (base != 2 && base != 8 && base != 16)
+    {
+        if (neg)
+        {
+            out[i] = '-';
+            i--;
+        }
+    }
 
     while (++i < len)
     {
@@ -128,18 +128,18 @@ Int64Mul(Int64 x, Int64 y)
 {
     Int64 z = Int64Create(0, 0);
 
-	int xneg = Int64Sign(x);
-	int yneg = Int64Sign(y);
+    int xneg = Int64Sign(x);
+    int yneg = Int64Sign(y);
 
-	if (xneg)
-	{
-		x = Int64Neg(x);
-	}
+    if (xneg)
+    {
+        x = Int64Neg(x);
+    }
 
-	if (yneg)
-	{
-		y = Int64Neg(y);
-	}
+    if (yneg)
+    {
+        y = Int64Neg(y);
+    }
 
     /* while (y > 0) */
     while (Int64Gt(y, Int64Create(0, 0)))
@@ -154,10 +154,10 @@ Int64Mul(Int64 x, Int64 y)
         y = Int64Sra(y, 1);
     }
 
-	if (xneg != yneg)
-	{
-		z = Int64Neg(z);
-	}
+    if (xneg != yneg)
+    {
+        z = Int64Neg(z);
+    }
 
     return z;
 }
@@ -175,8 +175,8 @@ Int64LongDivision(Int64 n, Int64 d)
 
     int i;
 
-	int nneg = Int64Sign(n);
-	int dneg = Int64Sign(d);
+    int nneg = Int64Sign(n);
+    int dneg = Int64Sign(d);
 
     o.q = Int64Create(0, 0);
     o.r = Int64Create(0, 0);
@@ -187,19 +187,20 @@ Int64LongDivision(Int64 n, Int64 d)
         return o;
     }
 
-	if (nneg)
-	{
-		n = Int64Neg(n);
-	}
+    if (nneg)
+    {
+        n = Int64Neg(n);
+    }
 
-	if (dneg)
-	{
-		d = Int64Neg(d);
-	}
+    if (dneg)
+    {
+        d = Int64Neg(d);
+    }
 
     for (i = 63; i >= 0; i--)
     {
         Int64 bit = Int64And(Int64Sra(n, i), Int64Create(0, 1));
+
         o.r = Int64Sll(o.r, 1);
         o.r = Int64Or(o.r, bit);
 
@@ -210,11 +211,11 @@ Int64LongDivision(Int64 n, Int64 d)
         }
     }
 
-	if (nneg != dneg)
-	{
-		o.r = Int64Neg(o.r);
-		o.q = Int64Neg(o.q);
-	}
+    if (nneg != dneg)
+    {
+        o.r = Int64Neg(o.r);
+        o.q = Int64Neg(o.q);
+    }
 
     return o;
 }
@@ -261,7 +262,7 @@ Int64Sra(Int64 x, int y)
 {
     Int64 z;
 
-	int neg = Int64Sign(x);
+    int neg = Int64Sign(x);
 
     if (!y)
     {
@@ -280,11 +281,12 @@ Int64Sra(Int64 x, int y)
         z.i[0] = x.i[1] >> (y - 32);
     }
 
-	if (neg)
-	{
-		Int64 mask = Int64Create(0xFFFFFFFF, 0xFFFFFFFF);
-		z = Int64Or(Int64Sll(mask, (64 - y)), z);
-	}
+    if (neg)
+    {
+        Int64 mask = Int64Create(0xFFFFFFFF, 0xFFFFFFFF);
+
+        z = Int64Or(Int64Sll(mask, (64 - y)), z);
+    }
 
     return z;
 }
@@ -322,47 +324,51 @@ Int64Eq(Int64 x, Int64 y)
 int
 Int64Lt(Int64 x, Int64 y)
 {
-	int xneg = Int64Sign(x);
-	int yneg = Int64Sign(y);
+    int xneg = Int64Sign(x);
+    int yneg = Int64Sign(y);
 
-	if (xneg != yneg)
-	{
-		return xneg > yneg;
-	}
-	else
-	{
-		if (xneg) /* Both negative */
-		{
-		    return x.i[1] > y.i[1] || (x.i[1] == y.i[1] && x.i[0] > y.i[0]);
-		}
-		else /* Both positive */
-		{
-    		return x.i[1] < y.i[1] || (x.i[1] == y.i[1] && x.i[0] < y.i[0]);
-		}
-	}
+    if (xneg != yneg)
+    {
+        return xneg > yneg;
+    }
+    else
+    {
+        if (xneg)
+        {
+            /* Both negative */
+            return x.i[1] > y.i[1] || (x.i[1] == y.i[1] && x.i[0] > y.i[0]);
+        }
+        else
+        {
+            /* Both positive */
+            return x.i[1] < y.i[1] || (x.i[1] == y.i[1] && x.i[0] < y.i[0]);
+        }
+    }
 }
 
 int
 Int64Gt(Int64 x, Int64 y)
 {
-	int xneg = Int64Sign(x);
-	int yneg = Int64Sign(y);
+    int xneg = Int64Sign(x);
+    int yneg = Int64Sign(y);
 
-	if (xneg != yneg)
-	{
-		return xneg < yneg;
-	}
-	else
-	{
-		if (xneg) /* Both negative */
-		{
-    		return x.i[1] < y.i[1] || (x.i[1] == y.i[1] && x.i[0] < y.i[0]);
-		}
-		else /* Both positive */
-		{
-    		return x.i[1] > y.i[1] || (x.i[1] == y.i[1] && x.i[0] > y.i[0]);
-		}
-	}
+    if (xneg != yneg)
+    {
+        return xneg < yneg;
+    }
+    else
+    {
+        if (xneg)
+        {
+            /* Both negative */
+            return x.i[1] < y.i[1] || (x.i[1] == y.i[1] && x.i[0] < y.i[0]);
+        }
+        else
+        {
+            /* Both positive */
+            return x.i[1] > y.i[1] || (x.i[1] == y.i[1] && x.i[0] > y.i[0]);
+        }
+    }
 
 }
 

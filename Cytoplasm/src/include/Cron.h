@@ -56,6 +56,8 @@
  * by any means.
  */
 
+#include <Int.h>
+
 /**
  * All functions defined here operate on a structure opaque to the
  * caller.
@@ -80,8 +82,7 @@ typedef void (JobFunc) (void *);
  * .Pp
  * This function takes the tick interval in milliseconds.
  */
-extern Cron *
- CronCreate(unsigned long);
+extern Cron * CronCreate(UInt32);
 
 /**
  * Schedule a one-off job to be executed only at the next tick, and

@@ -40,7 +40,8 @@
 static char *
 Trim(char c, char *str)
 {
-    while (*str == c) str++;
+    while (*str == c)
+        str++;
     return str;
 }
 
@@ -89,7 +90,7 @@ JsonTypeToStr(JsonType type)
 {
     switch (type)
     {
-        case JSON_OBJECT:
+            case JSON_OBJECT:
             return "JSON_OBJECT";
         case JSON_ARRAY:
             return "JSON_ARRAY";
@@ -355,6 +356,7 @@ Main(Array * args)
                     !StrEquals(fieldType, "boolean"))
                 {
                     Node *node = HashMapGet(typeToNode, fieldType);
+
                     if (!node)
                     {
                         node = Malloc(sizeof(Node));
@@ -603,11 +605,11 @@ Main(Array * args)
             StreamPrintf(implFile, "    (void) enumParseRes;\n");
             StreamPrintf(implFile, "\n");
             StreamPrintf(implFile, "    if (!json | !out)\n"
-                                   "    {\n"
-                                   "        *errp = \"Invalid pointers passed to %sFromJson()\";\n"
-                                   "        return 0;\n"
-                                   "    }\n\n"
-            , type);
+                         "    {\n"
+                         "        *errp = \"Invalid pointers passed to %sFromJson()\";\n"
+                         "        return 0;\n"
+                         "    }\n\n"
+                         ,type);
             for (i = 0; i < ArraySize(keys); i++)
             {
                 char *key = ArrayGet(keys, i);
@@ -777,7 +779,7 @@ Main(Array * args)
                         case JSON_INTEGER:
                             func = "Integer";
                             break;
-                        case JSON_FLOAT:    
+                        case JSON_FLOAT:
                             func = "Float";
                             break;
                         case JSON_BOOLEAN:
@@ -875,8 +877,8 @@ Main(Array * args)
                     fieldType[strlen(fieldType) - 1] = '\0';
                     isEnum = StrEquals(JsonValueAsString(JsonGet(types, 2, fieldType, "type")), "enum");
                     isPrimitive = StrEquals(fieldType, "integer") ||
-                                  StrEquals(fieldType, "boolean") ||
-                                  StrEquals(fieldType, "float");
+                            StrEquals(fieldType, "boolean") ||
+                            StrEquals(fieldType, "float");
 
 
                     StreamPrintf(implFile, "    if (val->%s)\n", key);
@@ -996,9 +998,9 @@ Main(Array * args)
                     fieldType[strlen(fieldType) - 1] = '\0';
                     isEnum = StrEquals(JsonValueAsString(JsonGet(types, 2, fieldType, "type")), "enum");
                     isPrimitive = StrEquals(fieldType, "boolean") ||
-                                  StrEquals(fieldType, "float") ||
-                                  StrEquals(fieldType, "integer") ||
-                                  StrEquals(fieldType, "string");
+                            StrEquals(fieldType, "float") ||
+                            StrEquals(fieldType, "integer") ||
+                            StrEquals(fieldType, "string");
 
                     StreamPrintf(implFile, "    if (val->%s)\n", key);
                     StreamPrintf(implFile, "    {\n");
@@ -1014,7 +1016,8 @@ Main(Array * args)
                 }
                 else
                 {
-                    /* Ignore primitives but call the appropriate free method on declared types */
+                    /* Ignore primitives but call the appropriate free
+                     * method on declared types */
                     if (!isEnum && HashMapGet(types, fieldType))
                     {
                         StreamPrintf(implFile, "    %sFree(&val->%s);\n", fieldType, key);

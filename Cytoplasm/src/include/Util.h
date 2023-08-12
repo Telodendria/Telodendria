@@ -43,6 +43,7 @@
 #include <sys/types.h>
 
 #include <Stream.h>
+#include <UInt64.h>
 
 /**
  * Get the current timestamp in milliseconds since the Unix epoch. This
@@ -60,7 +61,7 @@
  * numbers than the architecture supports. But we can always
  * re-evaluate over the next few years.
  */
-extern unsigned long UtilServerTs(void);
+extern UInt64 UtilServerTs(void);
 
 /**
  * Use
@@ -69,7 +70,7 @@ extern unsigned long UtilServerTs(void);
  * was an error getting the last modified time of a file. This is
  * primarily useful for caching file data.
  */
-extern unsigned long UtilLastModified(char *);
+extern UInt64 UtilLastModified(char *);
 
 /**
  * This function behaves just like the system call
@@ -85,7 +86,7 @@ extern int UtilMkdir(const char *, const mode_t);
  * .Xr nanosleep 2
  * to make its usage much, much simpler.
  */
-extern int UtilSleepMillis(long);
+extern int UtilSleepMillis(UInt64);
 
 /**
  * This function works identically to the POSIX
@@ -111,6 +112,6 @@ extern ssize_t UtilGetLine(char **, size_t *, Stream *);
  * .Fn pthread_self
  * to a number.
  */
-extern unsigned long UtilThreadNo(void);
+extern UInt32 UtilThreadNo(void);
 
 #endif                             /* CYTOPLASM_UTIL_H */

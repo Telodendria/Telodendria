@@ -144,6 +144,7 @@ UInt64LongDivision(UInt64 n, UInt64 d)
     for (i = 63; i >= 0; i--)
     {
         UInt64 bit = UInt64And(UInt64Srl(n, i), UInt64Create(0, 1));
+
         o.r = UInt64Sll(o.r, 1);
         o.r = UInt64Or(o.r, bit);
 

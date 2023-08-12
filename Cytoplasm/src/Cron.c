@@ -23,6 +23,7 @@
  */
 #include <Cron.h>
 
+#include <UInt64.h>
 #include <Array.h>
 #include <Memory.h>
 #include <Util.h>
@@ -31,7 +32,7 @@
 
 struct Cron
 {
-    unsigned long tick;
+    UInt64 tick;
     Array *jobs;
     pthread_mutex_t lock;
     volatile unsigned int stop:1;
@@ -40,14 +41,14 @@ struct Cron
 
 typedef struct Job
 {
-    unsigned long interval;
-    unsigned long lastExec;
+    UInt64 interval;
+    UInt64 lastExec;
     JobFunc *func;
     void *args;
 } Job;
 
 static Job *
-JobCreate(long interval, JobFunc * func, void *args)
+JobCreate(UInt32 interval, JobFunc * func, void *args)
 {
     Job *job;
 
@@ -62,8 +63,8 @@ JobCreate(long interval, JobFunc * func, void *args)
         return NULL;
     }
 
-    job->interval = interval;
-    job->lastExec = 0;
+    job->interval = UInt64Create(0, interval);
+    job->lastExec = UInt64Create(0, 0);
     job->func = func;
     job->args = args;
 
@@ -78,8 +79,8 @@ CronThread(void *args)
     while (!cron->stop)
     {
         size_t i;
-        unsigned long ts;          /* tick start */
-        unsigned long te;          /* tick end */
+        UInt64 ts;                 /* tick start */
+        UInt64 te;                 /* tick end */
 
         pthread_mutex_lock(&cron->lock);
 
@@ -89,13 +90,13 @@ CronThread(void *args)
         {
             Job *job = ArrayGet(cron->jobs, i);
 
-            if (ts - job->lastExec > job->interval)
+            if (UInt64Gt(UInt64Sub(ts, job->lastExec), job->interval))
             {
                 job->func(job->args);
                 job->lastExec = ts;
             }
 
-            if (!job->interval)
+            if (UInt64Eq(job->interval, UInt64Create(0, 0)))
             {
                 ArrayDelete(cron->jobs, i);
                 Free(job);
@@ -106,21 +107,23 @@ CronThread(void *args)
         pthread_mutex_unlock(&cron->lock);
 
         /* Only sleep if the jobs didn't overrun the tick */
-        if (cron->tick > (te - ts))
+        if (UInt64Gt(cron->tick, UInt64Sub(te, ts)))
         {
-            const unsigned long microTick = 100;
-            unsigned long remainingTick = cron->tick - (te - ts);
+            const UInt64 microTick = UInt64Create(0, 100);
+
+            UInt64 remainingTick = UInt64Sub(cron->tick, UInt64Sub(te, ts));
 
             /* Only sleep for microTick ms at a time because if the job
              * scheduler is supposed to stop before the tick is up, we
              * don't want to be stuck in a long sleep */
-            while (remainingTick >= microTick && !cron->stop)
+            while (UInt64Geq(remainingTick, microTick) && !cron->stop)
             {
                 UtilSleepMillis(microTick);
-                remainingTick -= microTick;
+
+                remainingTick = UInt64Sub(remainingTick, microTick);
             }
 
-            if (remainingTick && !cron->stop)
+            if (UInt64Neq(remainingTick, UInt64Create(0, 0)) && !cron->stop)
             {
                 UtilSleepMillis(remainingTick);
             }
@@ -131,7 +134,7 @@ CronThread(void *args)
 }
 
 Cron *
-CronCreate(unsigned long tick)
+CronCreate(UInt32 tick)
 {
     Cron *cron = Malloc(sizeof(Cron));
 
@@ -147,7 +150,7 @@ CronCreate(unsigned long tick)
         return NULL;
     }
 
-    cron->tick = tick;
+    cron->tick = UInt64Create(0, tick);
     cron->stop = 1;
 
     pthread_mutex_init(&cron->lock, NULL);
