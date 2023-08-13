@@ -26,6 +26,8 @@
 #include <stddef.h>
 #include <signal.h>
 
+#include <Log.h>
+
 #ifdef INT64_NATIVE
 #define Int64Sign(x) ((int) (((UInt64) (x)) >> 63))
 #else
@@ -44,15 +46,37 @@ Int64Str(Int64 x, int base, char *out, size_t len)
 
     Int64 base64 = Int64Create(0, base);
 
-    if (neg)
-    {
-        x = Int64Neg(x);
-    }
-
     /* We only have symbols up to base 16 */
     if (base < 2 || base > 16)
     {
         return 0;
+    }
+
+    /*
+     * This algorithm doesn't work on INT64_MIN.
+     *
+     * But it works on all other integers in the range, so we
+     * just scoot the range in by one for now. It's a hack and
+     * I'm not a huge fan of it, but this function is mostly
+     * used in Json, which shouldn't have a range this large
+     * anyway (Json is limited to -2^53 -> 2^53-1).
+     *
+     * Proper fixes are always welcome.
+     */
+    if (Int64Eq(x, Int64Create(0x80000000, 0x00000000)))
+    {
+        x = Int64Add(x, Int64Create(0, 1));
+    }
+    #if 0
+    else if (Int64Eq(x, Int64Create(0x7FFFFFFF, 0xFFFFFFFF)))
+    {
+        x = Int64Sub(x, Int64Create(0, 1));
+    }
+    #endif
+
+    if (base != 2 && base != 8 && base != 16 && neg)
+    {
+        x = Int64Neg(x);
     }
 
     do
@@ -65,13 +89,13 @@ Int64Str(Int64 x, int base, char *out, size_t len)
         x = Int64Div(x, base64);
     } while (Int64Gt(x, Int64Create(0, 0)));
 
-    /*
-     * Binary, octal, and hexadecimal are known to
-     * be bit representations. Everything else (notably
-     * decimal) should include the negative sign.
-     */
     if (base != 2 && base != 8 && base != 16)
     {
+        /*
+         * Binary, octal, and hexadecimal are known to
+         * be bit representations. Everything else (notably
+         * decimal) should include the negative sign.
+         */
         if (neg)
         {
             out[i] = '-';
