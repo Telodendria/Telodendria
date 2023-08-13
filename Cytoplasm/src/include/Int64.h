@@ -122,25 +122,11 @@ typedef signed long Int64;
 #define Int64Neg(x) (Int64Add(Int64Not(x), Int64Create(0, 1)))
 
 /**
- * For platforms that do not have a native integer large enough to
- * store a 64 bit integer, this struct is used. i[0] contains the low
- * bits of integer, and i[1] contains the high bits of the integer.
- * .Pp
- * This struct should not be accessed directly, because UInt64 may not
- * actually be this struct, it might be an actual integer type. For
- * maximum portability, only use the functions defined here to
- * manipulate 64 bit integers.
+ * The internal bit representation of a signed integer is identical
+ * to an unsigned integer, the difference is in the algorithms and
+ * the way the bits are interpreted.
  */
-typedef struct
-{
-	/*
-	 * Unsigned, because we will deal with the sign bits ourselves.
-	 * This also allows well-defined casting between signed and
-	 * unsigned integers.
-	 */
-    UInt32 i[2];
-} Int64;
-
+typedef UInt64 Int64;
 
 /**
  * Create a new signed 64 bit integer using the given high and low

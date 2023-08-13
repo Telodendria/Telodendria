@@ -443,6 +443,7 @@ Main(Array * args)
 
     StreamPrintf(headerFile, "#include <Array.h>\n");
     StreamPrintf(headerFile, "#include <HashMap.h>\n");
+    StreamPrintf(headerFile, "#include <Int64.h>\n");
 
     StreamPutc(headerFile, '\n');
 
@@ -491,7 +492,7 @@ Main(Array * args)
                 }
                 else if (StrEquals(fieldType, "integer"))
                 {
-                    cType = "long";
+                    cType = "Int64";
                 }
                 else if (StrEquals(fieldType, "boolean"))
                 {
@@ -664,7 +665,7 @@ Main(Array * args)
 
                         if (StrEquals(fieldType, "integer"))
                         {
-                            cType = "long";
+                            cType = "Int64";
                         }
                         else if (StrEquals(fieldType, "float"))
                         {
@@ -907,7 +908,7 @@ Main(Array * args)
 
                         if (StrEquals(fieldType, "integer"))
                         {
-                            cType = "long";
+                            cType = "Int64";
                         }
                         else if (StrEquals(fieldType, "float"))
                         {

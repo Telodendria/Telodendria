@@ -40,6 +40,7 @@
  */
 
 #include <Db.h>
+#include <Int64.h>
 
 /**
  * This structure describes a registration token that is in the
@@ -64,23 +65,23 @@ typedef struct RegTokenInfo
     /*
      * How many times the token was used.
      */
-    int used;
+    Int64 used;
 
     /*
      * How many uses are allowed.
      */
-    int uses;
+    Int64 uses;
 
     /*
      * Timestamp when this token was created.
      */
-    unsigned long created;
+    UInt64 created;
 
     /*
      * Timestamp when this token expires, or 0 if it does not
      * expire.
      */
-    unsigned long expires;
+    UInt64 expires;
 
     /*
      * A bit field describing the privileges this token grants. See
@@ -123,7 +124,7 @@ extern RegTokenInfo * RegTokenGetInfo(Db *, char *);
  * structure will be returned. Otherwise, NULL will be returned.
  */
 extern RegTokenInfo *
-RegTokenCreate(Db *, char *, char *, unsigned long, int, int);
+RegTokenCreate(Db *, char *, char *, UInt64, Int64, int);
 
 /**
  * Free the memory associated with the registration token. This should

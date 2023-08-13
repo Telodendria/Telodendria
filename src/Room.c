@@ -40,7 +40,7 @@ struct Room
 };
 
 Room *
-RoomCreate(Db * db, RoomCreateRequest *req)
+RoomCreate(Db * db, RoomCreateRequest * req)
 {
     return NULL;
 }

@@ -27,6 +27,8 @@
 #include <Str.h>
 #include <Sha.h>
 #include <Json.h>
+#include <Int64.h>
+#include <UInt64.h>
 
 #include <string.h>
 
@@ -128,7 +130,7 @@ UserAuthenticate(Db * db, char *accessToken)
 
     char *userName;
     char *deviceId;
-    long expires;
+    UInt64 expires;
 
     if (!db || !accessToken)
     {
@@ -143,7 +145,7 @@ UserAuthenticate(Db * db, char *accessToken)
 
     userName = JsonValueAsString(HashMapGet(DbJson(atRef), "user"));
     deviceId = JsonValueAsString(HashMapGet(DbJson(atRef), "device"));
-    expires = JsonValueAsInteger(HashMapGet(DbJson(atRef), "expires"));
+    expires =  JsonValueAsInteger(HashMapGet(DbJson(atRef), "expires"));
 
     user = UserLock(db, userName);
     if (!user)
@@ -152,7 +154,8 @@ UserAuthenticate(Db * db, char *accessToken)
         return NULL;
     }
 
-    if (expires && UtilServerTs() >= (unsigned long) expires)
+    if (UInt64Neq(expires, UInt64Create(0, 0)) &&
+        UInt64Geq(UtilServerTs(), expires))
     {
         UserUnlock(user);
         DbUnlock(db, atRef);
@@ -190,7 +193,7 @@ UserCreate(Db * db, char *name, char *password)
     User *user = NULL;
     HashMap *json = NULL;
 
-    unsigned long ts = UtilServerTs();
+    UInt64 ts = UtilServerTs();
 
     /* TODO: Put some sort of password policy(like for example at least
      * 8 chars, or maybe check it's entropy)? */
@@ -495,11 +498,11 @@ UserAccessTokenGenerate(User * user, char *deviceId, int withRefresh)
 
     if (withRefresh)
     {
-        token->lifetime = 1000 * 60 * 60 * 24 * 7;      /* 1 Week */
+        token->lifetime = Int64Create(0, 1000 * 60 * 60 * 24 * 7); /* 1 Week */
     }
     else
     {
-        token->lifetime = 0;
+        token->lifetime = Int64Create(0, 0);
     }
 
     return token;
@@ -528,9 +531,9 @@ UserAccessTokenSave(Db * db, UserAccessToken * token)
     HashMapSet(json, "user", JsonValueString(token->user));
     HashMapSet(json, "device", JsonValueString(token->deviceId));
 
-    if (token->lifetime)
+    if (Int64Neq(token->lifetime, Int64Create(0, 0)))
     {
-        HashMapSet(json, "expires", JsonValueInteger(UtilServerTs() + token->lifetime));
+        HashMapSet(json, "expires", JsonValueInteger(UInt64Add(UtilServerTs(), token->lifetime)));
     }
 
     return DbUnlock(db, ref);

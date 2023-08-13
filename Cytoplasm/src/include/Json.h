@@ -71,6 +71,7 @@
 #include <HashMap.h>
 #include <Array.h>
 #include <Stream.h>
+#include <Int64.h>
 
 #include <stdio.h>
 #include <stddef.h>
@@ -101,7 +102,7 @@ typedef enum JsonType
     JSON_OBJECT,  /* Maps to a HashMap of JsonValues */
     JSON_ARRAY,   /* Maps to an Array of JsonValues */
     JSON_STRING,  /* Maps to a null-terminated C string */
-    JSON_INTEGER, /* Maps to a C long */
+    JSON_INTEGER, /* Maps to an Int64  */
     JSON_FLOAT,   /* Maps to a C double */
     JSON_BOOLEAN  /* Maps to a C integer of either 0 or 1 */
 } JsonType;
@@ -151,7 +152,7 @@ extern char * JsonValueAsString(JsonValue *);
  * Encode a number as a JSON value that can be added to an object or
  * an array.
  */
-extern JsonValue * JsonValueInteger(long);
+extern JsonValue * JsonValueInteger(Int64);
 
 /**
  * Unwrap a JSON value that represents a number. This function will
@@ -159,7 +160,7 @@ extern JsonValue * JsonValueInteger(long);
  * misleading. Check the type of the value before making assumptions
  * about its value.
  */
-extern long JsonValueAsInteger(JsonValue *);
+extern Int64 JsonValueAsInteger(JsonValue *);
 
 /**
  * Encode a floating point number as a JSON value that can be added

@@ -27,6 +27,7 @@
 #include <Str.h>
 #include <Util.h>
 #include <Int.h>
+#include <Int64.h>
 
 #include <stdio.h>
 #include <stddef.h>
@@ -43,7 +44,7 @@ struct JsonValue
         HashMap *object;
         Array *array;
         char *string;
-        long integer;
+        Int64 integer;
         double floating;
         int boolean:1;
     } as;
@@ -200,7 +201,7 @@ JsonValueAsString(JsonValue * value)
 }
 
 JsonValue *
-JsonValueInteger(long integer)
+JsonValueInteger(Int64 integer)
 {
     JsonValue *value;
 
@@ -216,12 +217,12 @@ JsonValueInteger(long integer)
     return value;
 }
 
-long
+Int64
 JsonValueAsInteger(JsonValue * value)
 {
     if (!value || value->type != JSON_INTEGER)
     {
-        return 0;
+        return Int64Create(0, 0);
     }
 
     return value->as.integer;
@@ -605,6 +606,8 @@ JsonEncodeValue(JsonValue * value, Stream * out, int level)
     Array *arr;
     int length = 0;
 
+	char ibuf[INT64_STRBUF];
+
     switch (value->type)
     {
         case JSON_OBJECT:
@@ -641,7 +644,8 @@ JsonEncodeValue(JsonValue * value, Stream * out, int level)
             length += JsonEncodeString(value->as.string, out);
             break;
         case JSON_INTEGER:
-            length += StreamPrintf(out, "%ld", value->as.integer);
+			Int64Str(value->as.integer, 10, ibuf, INT64_STRBUF);
+            length += StreamPrintf(out, "%s", ibuf);
             break;
         case JSON_FLOAT:
             length += StreamPrintf(out, "%f", value->as.floating);
@@ -979,7 +983,7 @@ JsonTokenSeek(JsonParserState * state)
                         break;
                     }
 
-                    if (state->tokenLen >= allocated)
+                    if (state->tokenLen + 1 >= allocated)
                     {
                         char *tmp;
 
@@ -1119,6 +1123,10 @@ JsonDecodeValue(JsonParserState * state)
     JsonValue *value;
     char *strValue;
 
+	Int64 iValue;
+	size_t i;
+	int neg;
+
     switch (state->tokenType)
     {
         case TOKEN_OBJECT_OPEN:
@@ -1138,7 +1146,32 @@ JsonDecodeValue(JsonParserState * state)
             Free(strValue);
             break;
         case TOKEN_INTEGER:
-            value = JsonValueInteger(atol(state->token));
+			iValue = Int64Create(0, 0);
+			i = 0;
+			neg = 0;
+
+			while (state->token[i])
+			{
+				int d;
+
+				if (i == 0 && !neg && state->token[i] == '-')
+				{
+					neg = 1;
+					i++;
+					continue;
+				}
+
+				d = state->token[i] - '0';
+				iValue = Int64Mul(iValue, Int64Create(0, 10));
+				iValue = Int64Add(iValue, Int64Create(0, d));
+				i++;
+			}
+
+			if (neg)
+			{
+				iValue = Int64Neg(iValue);
+			}
+            value = JsonValueInteger(iValue);
             break;
         case TOKEN_FLOAT:
             value = JsonValueFloat(atof(state->token));

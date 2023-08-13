@@ -247,7 +247,7 @@ start:
         }
 
         token = StrRandom(32);
-        info = RegTokenCreate(matrixArgs.db, token, NULL, 0, 1, USER_ALL);
+        info = RegTokenCreate(matrixArgs.db, token, NULL, UInt64Create(0, 0), Int64Create(0, 1), USER_ALL);
         if (!info)
         {
             Free(token);
@@ -259,8 +259,8 @@ start:
         RegTokenClose(info);
         RegTokenFree(info);
 
-        /* Don't free token, because we need to print it when logging is
-         * set up. */
+        /* Don't free token, because we need to print it when logging
+         * is set up. */
     }
 
     Log(LOG_NOTICE, "Loading configuration...");
@@ -339,7 +339,8 @@ start:
         goto finish;
     }
 
-    /* If a token was created with a default config, print it to the log */
+    /* If a token was created with a default config, print it to the
+     * log */
     if (token)
     {
         Log(LOG_NOTICE, "Admin Registration token: %s", token);
@@ -384,14 +385,14 @@ start:
 
         if (serverCfg->flags & HTTP_FLAG_TLS)
         {
-            if (!UtilLastModified(serverCfg->tlsCert))
+            if (UInt64Eq(UtilLastModified(serverCfg->tlsCert), UInt64Create(0, 0)))
             {
                 Log(LOG_ERR, "%s: %s", strerror(errno), serverCfg->tlsCert);
                 exit = EXIT_FAILURE;
                 goto finish;
             }
 
-            if (!UtilLastModified(serverCfg->tlsKey))
+            if (UInt64Eq(UtilLastModified(serverCfg->tlsKey), UInt64Create(0, 0)))
             {
                 Log(LOG_ERR, "%s: %s", strerror(errno), serverCfg->tlsKey);
                 exit = EXIT_FAILURE;

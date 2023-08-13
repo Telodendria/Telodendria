@@ -491,7 +491,7 @@ UiaCleanup(MatrixHttpHandlerArgs * args)
         char *session = ArrayGet(sessions, i);
         DbRef *ref = DbLock(args->db, 2, "user_interactive", session);
 
-        unsigned long lastAccess;
+        UInt64 lastAccess;
 
         if (!ref)
         {
@@ -506,7 +506,7 @@ UiaCleanup(MatrixHttpHandlerArgs * args)
 
         /* If last access was greater than 15 minutes ago, remove this
          * session */
-        if (UtilServerTs() - lastAccess > 1000 * 60 * 15)
+        if (UInt64Gt(UInt64Sub(UtilServerTs(), lastAccess), UInt64Create(0, 1000 * 60 * 15)))
         {
             DbDelete(args->db, 2, "user_interactive", session);
             Log(LOG_DEBUG, "Deleted session %s", session);

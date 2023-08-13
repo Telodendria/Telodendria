@@ -30,6 +30,7 @@
 #include <Db.h>
 #include <HttpServer.h>
 #include <Log.h>
+#include <Int64.h>
 
 #include <stdlib.h>
 #include <ctype.h>
@@ -82,7 +83,7 @@
             tConfig->err = "Expected " key " to be of type JSON_INTEGER"; \
             goto error; \
         } \
-        into = JsonValueAsInteger(value); \
+        into = Int64Low(JsonValueAsInteger(value)); \
     } \
     else \
     { \
@@ -146,9 +147,9 @@ ConfigParseListen(Config * tConfig, Array * listen)
 
         obj = JsonValueAsObject(val);
 
-        serverCfg->port = JsonValueAsInteger(HashMapGet(obj, "port"));
-        serverCfg->threads = JsonValueAsInteger(HashMapGet(obj, "threads"));
-        serverCfg->maxConnections = JsonValueAsInteger(HashMapGet(obj, "maxConnections"));
+        serverCfg->port = Int64Low(JsonValueAsInteger(HashMapGet(obj, "port")));
+        serverCfg->threads = Int64Low(JsonValueAsInteger(HashMapGet(obj, "threads")));
+        serverCfg->maxConnections = Int64Low(JsonValueAsInteger(HashMapGet(obj, "maxConnections")));
 
         if (!serverCfg->port)
         {
@@ -450,7 +451,7 @@ ConfigCreateDefault(Db * db)
 
     listeners = ArrayCreate();
     listen = HashMapCreate();
-    HashMapSet(listen, "port", JsonValueInteger(8008));
+    HashMapSet(listen, "port", JsonValueInteger(Int64Create(0, 8008)));
     HashMapSet(listen, "tls", JsonValueBoolean(0));
     ArrayAdd(listeners, JsonValueObject(listen));
     HashMapSet(json, "listen", JsonValueArray(listeners));

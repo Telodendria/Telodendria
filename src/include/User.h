@@ -38,8 +38,8 @@
  * users, among many other tasks.
  */
 
+#include <Int64.h>
 #include <Db.h>
-
 #include <Json.h>
 
 /**
@@ -74,7 +74,7 @@ typedef struct UserAccessToken
     char *user;
     char *string;
     char *deviceId;
-    long lifetime;
+    Int64 lifetime;
 } UserAccessToken;
 
 /**

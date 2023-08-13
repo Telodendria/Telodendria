@@ -26,7 +26,7 @@
 #include <Schema/Filter.h>
 
 HashMap *
-FilterApply(Filter *filter, HashMap *event)
+FilterApply(Filter * filter, HashMap * event)
 {
     return NULL;
 }

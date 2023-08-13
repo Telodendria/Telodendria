@@ -93,7 +93,7 @@ ROUTE_IMPL(RouteAliasDirectory, path, argp)
                 HashMap *newAlias;
 
                 /* TODO: Validate alias domain and make sure it matches
-                   server name and is well formed. */
+                 * server name and is well formed. */
 
                 if (JsonGet(aliases, 2, "alias", alias))
                 {
@@ -117,7 +117,8 @@ ROUTE_IMPL(RouteAliasDirectory, path, argp)
                     goto finish;
                 }
 
-                /* TODO: Validate room ID to make sure it is well formed. */
+                /* TODO: Validate room ID to make sure it is well
+                 * formed. */
 
                 newAlias = HashMapCreate();
                 HashMapSet(newAlias, "createdBy", JsonValueString(UserGetName(user)));

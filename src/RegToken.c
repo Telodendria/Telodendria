@@ -31,14 +31,15 @@
 #include <Util.h>
 #include <Str.h>
 #include <User.h>
+#include <Int64.h>
 
 int
 RegTokenValid(RegTokenInfo * token)
 {
     HashMap *tokenJson;
-    int uses, used;
+    Int64 uses, used;
 
-    unsigned long expiration;
+    UInt64 expiration;
 
     if (!token || !RegTokenExists(token->db, token->name))
     {
@@ -50,8 +51,9 @@ RegTokenValid(RegTokenInfo * token)
     used = JsonValueAsInteger(HashMapGet(tokenJson, "used"));
     expiration = JsonValueAsInteger(HashMapGet(tokenJson, "expires_on"));
 
-    return (!expiration || (UtilServerTs() <= expiration)) &&
-            (uses == -1 || used < uses);
+    return (UInt64Eq(expiration, UInt64Create(0, 0)) ||
+            UInt64Geq(UtilServerTs(), expiration)) &&
+            (Int64Eq(uses, Int64Neg(Int64Create(0, 1))) || Int64Lt(used, uses));
 }
 void
 RegTokenUse(RegTokenInfo * token)
@@ -63,12 +65,13 @@ RegTokenUse(RegTokenInfo * token)
         return;
     }
 
-    if (token->uses >= 0 && token->used >= token->uses)
+    if (Int64Geq(token->uses, Int64Create(0, 0)) &&
+        Int64Geq(token->used, token->uses))
     {
         return;
     }
 
-    token->used++;
+    token->used = Int64Add(token->used, Int64Create(0, 1));
 
     /* Write the information to the hashmap */
     tokenJson = DbJson(token->ref);
@@ -196,12 +199,12 @@ RegTokenVerify(char *token)
 }
 
 RegTokenInfo *
-RegTokenCreate(Db * db, char *name, char *owner, unsigned long expires, int uses, int privileges)
+RegTokenCreate(Db * db, char *name, char *owner, UInt64 expires, Int64 uses, int privileges)
 {
     RegTokenInfo *ret;
     HashMap *tokenJson;
 
-    unsigned long timestamp = UtilServerTs();
+    UInt64 timestamp = UtilServerTs();
 
     if (!db || !name)
     {
@@ -211,13 +214,13 @@ RegTokenCreate(Db * db, char *name, char *owner, unsigned long expires, int uses
     /* -1 indicates infinite uses; zero and all positive values are a
      * valid number of uses; althought zero would be rather useless.
      * Anything less than -1 doesn't make sense. */
-    if (uses < -1)
+    if (Int64Lt(uses, Int64Neg(Int64Create(0, 1))))
     {
         return NULL;
     }
 
     /* Verify the token */
-    if (!RegTokenVerify(name) || (expires > 0 && expires < timestamp))
+    if (!RegTokenVerify(name) || (UInt64Gt(expires, UInt64Create(0, 0)) && UInt64Lt(expires, timestamp)))
     {
         return NULL;
     }
@@ -233,7 +236,7 @@ RegTokenCreate(Db * db, char *name, char *owner, unsigned long expires, int uses
     }
     ret->name = StrDuplicate(name);
     ret->owner = StrDuplicate(owner);
-    ret->used = 0;
+    ret->used = Int64Create(0, 0);
     ret->uses = uses;
     ret->created = timestamp;
     ret->expires = expires;

@@ -23,6 +23,7 @@
  */
 #include <Routes.h>
 
+#include <Int64.h>
 #include <User.h>
 #include <Memory.h>
 #include <Str.h>
@@ -80,10 +81,25 @@ ROUTE_IMPL(RouteProcControl, path, argp)
         case HTTP_GET:
             if (StrEquals(op, "stats"))
             {
+                size_t allocated = MemoryAllocated();
+                Int64 a;
+
                 response = HashMapCreate();
 
+                if (sizeof(size_t) == sizeof(Int64))
+                {
+                    UInt32 high = (UInt32) (allocated >> 32);
+                    UInt32 low = (UInt32) (allocated);
+
+                    a = Int64Create(high, low);
+                }
+                else
+                {
+                    a = Int64Create(0, allocated);
+                }
+
                 HashMapSet(response, "version", JsonValueString(TELODENDRIA_VERSION));
-                HashMapSet(response, "memory_allocated", JsonValueInteger(MemoryAllocated()));
+                HashMapSet(response, "memory_allocated", JsonValueInteger(a));
 
                 goto finish;
             }

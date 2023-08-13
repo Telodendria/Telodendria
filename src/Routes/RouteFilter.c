@@ -139,7 +139,7 @@ ROUTE_IMPL(RouteFilter, path, argp)
         DbRef *ref;
         char *filterId;
 
-        Filter filter = { 0 };
+        Filter filter = {0};
         char *parseErr;
         HashMap *filterJson;
 
