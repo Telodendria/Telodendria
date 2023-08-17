@@ -1009,6 +1009,10 @@ Main(Array * args)
                     StreamPrintf(implFile, "        for (i = 0; i < ArraySize(val->%s); i++)\n", key);
                     StreamPrintf(implFile, "        {\n");
                     StreamPrintf(implFile, "            %sFree(ArrayGet(val->%s, i));\n", (!isEnum && !isPrimitive) ? fieldType : "", key);
+					if (!isEnum && !isPrimitive)
+					{
+	                    StreamPrintf(implFile, "            Free(ArrayGet(val->%s, i));\n", key);
+					}
                     StreamPrintf(implFile, "        }\n");
                     StreamPrintf(implFile, "        ArrayFree(val->%s);\n", key);
                     StreamPrintf(implFile, "    }\n");
