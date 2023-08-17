@@ -52,14 +52,14 @@
  * and time_t, and converts it to a single number, which is then
  * returned to the caller.
  * .Pp
- * A note on the 2038 problem: as long as sizeof(long) >= 8, that is,
- * as long as the long data type is 64 bits or more, then everything
- * should be fine. On most, if not, all, 64-bit systems, long is 64
- * bits. I would expect Cytoplasm to break for 32 bit systems
- * eventually, but we should have a ways to go before that happens.
- * I didn't want to try to hack together some system to store larger
- * numbers than the architecture supports. But we can always
- * re-evaluate over the next few years.
+ * A note on the 2038 problem: as long as sizeof(time_t) >= 8, that is,
+ * as long as the time_t type is 64 bits or more, then everything
+ * should be fine. On most, if not, all, 64-bit systems, time_t is 64
+ * bits. time_t is promoted to a 64-bit integer before it is converted
+ * to milliseconds, so there is no risk of overflue due to the
+ * multiplication by 1000. However, if time_t is only 32 bits, it will
+ * overflow before it even gets to this function, which will cause this
+ * function to produce unexpected results.
  */
 extern UInt64 UtilServerTs(void);
 
