@@ -34,7 +34,11 @@ Milestone: v0.4.0
     [~] Debug OpenSSL
         [x] Database corruption
         [ ] File descriptor exhaustion
+    [ ] Fix tp on NetBSD
 [ ] Random memory corruption after many requests.
+[ ] HOST_NAME_MAX not defined on some systems?
+    -  Check if POSIX
+    - Might be enough to #define it when it doesn't exist.
 [~] j2s
     [x] Properly support arrays of primitives.
     [ ] How to set default value of true on boolean?
@@ -62,6 +66,7 @@ Milestone: v0.4.0
     [ ] Add "id" objects when putting aliases
     [ ] Delete from "id" when deleting alias
     [x] Add alias admin privilege to allow admins to manage aliases
+[ ] Fix note link on website main page.
 
 Milestone: v0.5.0
 -----------------
