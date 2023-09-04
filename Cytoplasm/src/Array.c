@@ -317,11 +317,52 @@ ArrayUnique(Array * array, int (*compare) (void *, void *))
     return ret;
 }
 
+
 /* Even though the following operations could be done using only the
  * public Array API defined above, I opted for low-level struct
  * manipulation because it allows much more efficient copying; we only
  * allocate what we for sure need upfront, and don't have to
  * re-allocate during the operation. */
+
+Array *
+ArrayReverse(Array * array)
+{
+    Array *ret;
+
+    size_t i;
+    size_t size;
+
+    if (!array)
+    {
+        return NULL;
+    }
+
+    if (!array->size)
+    {
+        return ArrayCreate();
+    }
+
+    ret = Malloc(sizeof(Array));
+
+    size = array->size;
+
+    ret->size = size;
+    ret->allocated = size;
+    ret->entries = Malloc(sizeof(void *) * size);
+
+    if (!ret->entries)
+    {
+        Free(ret);
+        return NULL;
+    }
+
+    for (i = 0; i < size; i++)
+    {
+        ret->entries[i] = array->entries[size - i - 1];
+    }
+
+    return ret;
+}
 
 Array *
 ArrayFromVarArgs(size_t n, va_list ap)

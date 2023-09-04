@@ -151,6 +151,14 @@ extern void ArraySort(Array *, int (*) (void *, void *));
  */
 extern Array *ArrayUnique(Array *, int (*) (void *, void *));
 
+
+/**
+ * Reverses the order of all elements in the array into a new array on 
+ * the heap, to be freed using 
+ * .Fn ArrayFree .
+ */
+extern Array *ArrayReverse(Array *);
+
 /**
  * If possible, reduce the amount of memory allocated to this array
  * by calling
