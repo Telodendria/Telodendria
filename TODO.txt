@@ -1,22 +1,7 @@
-Telodendria To-Do List
-======================
-
-Key:
-
-[ ] Not Started
-[x] Done
-[~] In Progress
-[!] Won't Do
-
 Milestone: v0.4.0
 -----------------
 
-[~] /_telodendria/admin/config endpoint
-    [ ] Update only certain values
-
 [~] Client-Server API
-    [x] 6: Filtering
-        [x] Finish validating filters before saving them.
     [~] 7: Events
         [x] Compute size of JSON object in Canonical JSON
         [x] Rename Sha2.h to just Sha; add Sha1() function
@@ -27,46 +12,14 @@ Milestone: v0.4.0
         [x] Profiles
         [~] Directory
 
-[ ] Admin API
-    [ ] Registration token endpoints
-
-[~] Cytoplasm
-    [~] Debug OpenSSL
-        [x] Database corruption
-        [ ] File descriptor exhaustion
-    [ ] Fix tp on NetBSD
 [ ] Random memory corruption after many requests.
-[ ] HOST_NAME_MAX not defined on some systems?
-    -  Check if POSIX
-    - Might be enough to #define it when it doesn't exist.
-[~] j2s
-    [x] Properly support arrays of primitives.
-    [ ] How to set default value of true on boolean?
-        - defaults probably need to be set at parser level, not
-          enough to set it after.
-        - Or booleans should default to -1 if not specified, let the
-          higher level logic set the default from there.
-    [ ] Write man page.
 
-[x] Refactor MatrixErrorCreate() to take a custom message or NULL to
-    use the default. This will make debugging a lot easier.
-    [ ] Use detailed error messages for HTTP 500s at the minimum. Other
-        error messages might also be useful.
-[x] Make sure admin registration token is printed to log, not stdout.
-    Unless they are the same, of course.
-[ ] Refactor Config to use j2s.
-[ ] Refactor other endpoints to use j2s for validating request bodies.
-
-[ ] Add parser API to parse the identifier grammers
-    [ ] Use in alias endpoints
 [ ] Finish RouteRoomAliases
     [ ] Get from "id" in aliases
     [ ] Note to check permissions according to spec
 [ ] Finish RouteAliasDirectory
     [ ] Add "id" objects when putting aliases
     [ ] Delete from "id" when deleting alias
-    [x] Add alias admin privilege to allow admins to manage aliases
-[ ] Fix note link on website main page.
 
 Milestone: v0.5.0
 -----------------
@@ -74,12 +27,6 @@ Milestone: v0.5.0
 [~] Client-Server API
     [ ] Modules
         [ ] Content Repository
-
-[ ] HTTP/1.1 support
-    [ ] Content-Length
-    [ ] Keep connections open
-    [ ] Chunked encoding
-[ ] Refactor Memory API to use mmap().
 
 Milestone: v0.6.0
 -----------------
