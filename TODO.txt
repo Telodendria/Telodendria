@@ -12,15 +12,6 @@ Milestone: v0.4.0
         [x] Profiles
         [~] Directory
 
-[ ] Random memory corruption after many requests.
-
-[ ] Finish RouteRoomAliases
-    [ ] Get from "id" in aliases
-    [ ] Note to check permissions according to spec
-[ ] Finish RouteAliasDirectory
-    [ ] Add "id" objects when putting aliases
-    [ ] Delete from "id" when deleting alias
-
 Milestone: v0.5.0
 -----------------
 
