@@ -1,0 +1,12 @@
+build
+data
+.env
+*.patch
+*.log
+vgcore.*
+Cytoplasm/build
+Cytoplasm/out
+Cytoplasm/*-leaked.txt
+contrib/.vagrant
+src/Schema
+src/include/Schema
