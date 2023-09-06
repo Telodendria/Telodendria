@@ -1,6 +1,0 @@
-build
-data
-.env
-*.patch
-*.log
-vgcore.*
