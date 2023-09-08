@@ -1,4 +1,5 @@
-# [Telodendria](https://telodendria.io)
+<p align="center"><img src="https://telodendria.io/assets/Telodendria-500x500.png"></p>
+<h1 align="center">Telodendria</h1>
 
 Telodendria is an extremely powerful, yet lightweight and portable
 chat server designed to be easy to install and configure. Powered by
