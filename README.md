@@ -11,6 +11,8 @@ hosting a complicated, high-maintenance homeserver or joining an
 existing homeserver for privacy or other reasons, then Telodendria
 might be for you.
 
+> **Note:** Telodendria still in development. See [Status](#status).
+
 ## What is Matrix?
 
 Matrix is an **open standard** for *interoperable*, *decentralized*,
@@ -70,6 +72,19 @@ Check out the [Documentation](docs/README.md) to get started with
 Telodendria.
 
 ## Status
+
+Telodendria is in the very early stages of development. As such, it may
+not yet deliver on all of its promises. Currently, Telodendria is not
+ready for end-users yet. While it features very basic user
+authentication, it does not actually work as a chat server yet.
+
+We are hoping to ship Telodendria `v0.4.0` by May of 2024. This
+release should be usable for communication between **local users**
+only. Additional features, including federation with other Matrix
+homeservers will be added in future releases.
+
+You can help speed up development by [sponsoring](#sponsorship)
+Telodendria or [getting involved](docs/CONTRIBUTING.md).
 
 ## Sponsorship
 
