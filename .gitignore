@@ -4,9 +4,11 @@ data
 *.patch
 *.log
 vgcore.*
+*.core
 Cytoplasm/build
 Cytoplasm/out
 Cytoplasm/*-leaked.txt
 contrib/.vagrant
 src/Schema
 src/include/Schema
+man/mandoc.db
