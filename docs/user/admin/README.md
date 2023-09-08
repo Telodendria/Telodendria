@@ -18,5 +18,5 @@ request.
 - [Privileges](privileges.md)
 - [Configuration](config.md)
 - [Server Statistics](stats.md)
-- [Process Control(proc.md)
+- [Process Control](proc.md)
 
