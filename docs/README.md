@@ -8,7 +8,7 @@ issue, and, even better, a pull request to fix the issue.
 
 - [System Requirements](user/requirements.md)
 - [Install](user/install.md)
-- [Command Line Options](user/cmd.md)
+- [Usage & Running](user/usage.md)
 - [Set Up](user/setup.md)
 - [Configuration Options](user/config.md)
 - [Administrator API](user/admin.md)
@@ -20,6 +20,7 @@ issue, and, even better, a pull request to fix the issue.
 
 ## Miscellaneous
 
+- [Matrix Specification](https://spec.matrix.org) ([Mirror](https://telodendria.io/spec.matrix.org))
 - [Change Log](CHANGELOG.md)
 - [Project Road Map](ROADMAP.md)
 
