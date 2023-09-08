@@ -15,6 +15,7 @@ issue, and, even better, a pull request to fix the issue.
 
 ## Developer Documentation
 
+- [Repository Structure](dev/repo.md)
 - [Contributing Guidelines](CONTRIBUTING.md)
 - [Porting Guidelines](dev/ports.md)
 
