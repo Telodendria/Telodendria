@@ -70,7 +70,7 @@ to add support for.
 a TLS port and a non-TLS port, for example.
 - Moved all program configuration to the data directory and added an administrator
 API endpoint to manage it. It is now no longer recommended to manually update the
-configuration file. Consult the [Administrator API](user/admin.md) documentation
+configuration file. Consult the [Administrator API](user/admin/README.md) documentation
 and the [Configuration](user/config.md) documentation.
 - Added an administrator API endpoint for process control. Telodendria can now be
 restarted or shutdown via API endpoint.

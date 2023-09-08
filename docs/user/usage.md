@@ -9,7 +9,7 @@ testing or debugging purposes.
 ## Command Line Options
 
 Typically, Telodendria is controlled via the
-[Administrator API](admin.md), but the Telodendria binary does include
+[Administrator API](admin/README.md), but the Telodendria binary does include
 a few command line options, which can be used in init scripts or for
 debugging purposes.
 

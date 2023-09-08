@@ -26,7 +26,7 @@ source, execute the binary directly. If needed, consult the
 initialize its database directly with a simple&mdash;and, importantly,
 safe&mdash;default configuration, as well as a randomly generated,
 single-use registration token that grants a user all privileges
-documented in the [Administrator API](admin.md) documentation.
+documented in the [Administrator API](admin/README.md) documentation.
 Consult the log file for this administrator registration token. By
 default, the log file is located in the data directory, and is named
 `telodendria.log`.
@@ -40,7 +40,7 @@ it also has all privileges granted to it, so it can make full use of
 the Administrator API.
 1. Using the access token granted for the administrator account via
 the login process, configure Telodendria as descibed in
-[Configuration](config.md). See the [Administrator API](admin.md)
+[Configuration](config.md). See the [Administrator API](admin/README.md)
 documentation for the configuration endpoint details.
 
 This is the recommended way to set up Telodendria. However, if you

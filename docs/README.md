@@ -4,6 +4,11 @@ Here you will find all of the documentation for Telodendria. If you
 find that some documentation is missing or incorrect, please open an
 issue, and, even better, a pull request to fix the issue.
 
+You are also welcome to join the
+[`#telodendria-general:bancino.net`](https://matrix.to/#/#telodendria-general:bancino.net)
+matrix room, where you can discuss Telodnedria with others and ask
+questions.
+
 ## User Documentation
 
 - [System Requirements](user/requirements.md)
@@ -11,7 +16,7 @@ issue, and, even better, a pull request to fix the issue.
 - [Usage & Running](user/usage.md)
 - [Initial Set Up](user/setup.md)
 - [Configuration Options](user/config.md)
-- [Administrator API](user/admin.md)
+- [Administrator API](user/admin/README.md)
 
 ## Developer Documentation
 
