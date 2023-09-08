@@ -9,7 +9,7 @@ issue, and, even better, a pull request to fix the issue.
 - [System Requirements](user/requirements.md)
 - [Install](user/install.md)
 - [Usage & Running](user/usage.md)
-- [Set Up](user/setup.md)
+- [Initial Set Up](user/setup.md)
 - [Configuration Options](user/config.md)
 - [Administrator API](user/admin.md)
 
