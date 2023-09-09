@@ -26,7 +26,9 @@ body:
         Please give a thorough and detailed description of the bug you
         are reporting. Provide all the information you have, and do
         some investigating to ensure you are providing a legitimate
-        issue report that is well thought out.
+        issue report that is well thought out. **Include details on
+        how to reproduce the issue, or explicitly state that you were
+        unable to reproduce it.**
     validations:
       required: true
   - type: textarea
