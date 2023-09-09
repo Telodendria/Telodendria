@@ -1,0 +1,47 @@
+name: Bug Report
+about: File a bug report regarding Telodendria, its website, or its documentation.
+body:
+  - type: markdown
+    attributes:
+      value: |
+        You are submitting a bug report. Please be sure to fill out the
+        title with a brief description of the bug.
+  - type: dropdown
+    attributes:
+      label: Type
+      description: Select the type of issue.
+      options:
+        - Memory Leak
+        - Crash
+        - Unexpected Error Message
+        - Documentation
+        - Website
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Description
+      description: |
+        Please give a thorough and detailed description of the bug you
+        are reporting. Provide all the information you have, and do
+        some investigating to ensure you are providing a legitimate
+        issue report that is well thought out.
+      validations:
+        required: true
+  - type: textarea
+    attributes:
+      label: Log Output
+      description: |
+        Please copy and paste the relevant sections of the log output,
+        or the entire log if it is not unreasonably large. The logs
+        will be automatically formatted, no code block is necessary.
+      render: shell
+    validations:
+      required: true
+  - type: markdown
+    attributes:
+      value: |
+        Please attach any additional files that may aid in our
+        investigation of this issue, including screenshots, debugging
+        session stack traces and dumps, etc.

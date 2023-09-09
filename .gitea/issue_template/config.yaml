@@ -1,0 +1,7 @@
+blank_issues_enabled: true
+contact_links:
+  - name: General Matrix Room
+  - url: https://matrix.to/#/#telodendria-general:bancino.net
+  - about: |
+	General discussion on Telodendria happens in this Matrix room. You
+	may get quicker feedback from there.

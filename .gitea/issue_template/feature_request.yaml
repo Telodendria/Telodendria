@@ -1,0 +1,18 @@
+name: Feature Request
+about: Request a new feature or enhancement be added to Telodendria.
+title: "[Feature] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        You are submitting a feature request. Please be sure to fill
+        out the title with a brief description of the feature you are
+        requesting.
+  - type: textarea
+    attributes:
+      label: Description
+      description: |
+        Please give a thorough and detailed description of the feature
+        you are requesting.
+    validations:
+      required: true
