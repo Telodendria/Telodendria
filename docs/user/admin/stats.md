@@ -20,5 +20,6 @@ process.
 #### 200 Response Format
 
 | Field | Type | Description |
+|-------|------|-------------|
 | `memory_allocated` | `Integer` | The total amount of memory allocated, measured in bytes.|
 | `version` | `String` | The current version of Telodendria.|
