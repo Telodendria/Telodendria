@@ -28,7 +28,7 @@ restarted to take full effect.
 
 There is also a special "pseudo-privilege":
 
-- **ALL:* Grants a user all of the aforementioned privileges, as well
+- **ALL:** Grants a user all of the aforementioned privileges, as well
 as privileges that do not yet exist. That is, if an update to
 Telodendria adds more privileges, users with this privilege will
 automatically gain those new privileges in addition to having all the
