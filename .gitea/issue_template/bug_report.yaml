@@ -27,8 +27,8 @@ body:
         are reporting. Provide all the information you have, and do
         some investigating to ensure you are providing a legitimate
         issue report that is well thought out.
-      validations:
-        required: true
+    validations:
+      required: true
   - type: textarea
     attributes:
       label: Log Output
