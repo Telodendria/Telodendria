@@ -89,7 +89,7 @@ owns the access token.
 |-------|------|-------------|
 | `privileges` | `Array` | An array of privileges, as described above. The privileges are encoded as JSON strings.|
 
-### **PUT** `/_telodendria/admin/privileges/[localpart]
+### **PUT** `/_telodendria/admin/privileges/[localpart]`
 
 Update the privileges of a local user by adding the privileges
 specified in the request to the users existing privileges.
