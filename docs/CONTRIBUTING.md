@@ -16,7 +16,7 @@ page. Donations of any size are greatly appreciated.
 An important way to get involved is to just report issues you find with
 Telodendria during experimentation or normal use. To report an issue,
 go to [Issues](/Telodendria/telodendria/issues) &rightarrow;
-[New Issue](/Telodendria/telodendria/issues/new) and follow the
+[New Issue](/Telodendria/telodendria/issues/new/choose) and follow the
 instructions.
 
 > **Note:** GitHub issues are not accepted. Issues may only be
@@ -106,7 +106,8 @@ as many as were in `td`.
 Telodendria follows the standard pull request procedures. Once you have
 made your changes, committed them, and pushed to your fork, you should
 be able to open a pull request on the main repository. When you do, you
-will be prompted to write a description
+will be prompted to write a description. Be sure to include the
+related issue that you are closing in your description.
 
 ### Code Style
 
@@ -159,3 +160,4 @@ comments to the appropriate header.
 
 If your pull request does not also include proper documentation, it
 will likely be rejected.
+
