@@ -20,3 +20,17 @@ request.
 - [Server Statistics](stats.md)
 - [Process Control](proc.md)
 
+## API Conventions
+
+Unless otherwise indicated, HTTP response codes that are not `200 Ok`
+will be accompanied by a standard Matrix API error. Consult the Matrix
+specification for the format of these errors. The following error
+conditions are assumed to be possible for all API endpoints listed
+in the Administrator API documentation:
+
+| Response Code | Description |
+|---------------|-------------|
+| 400           | The user is not authenticated, did not provide a valid JSON object, or provided a JSON object with invalid or missing parameters.|
+| 403           | The user does not have the privileges necessary to carry out the requested action.|
+| 500           | A fatal server error occurred. Check the logs for more information.|
+
