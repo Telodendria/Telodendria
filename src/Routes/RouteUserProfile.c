@@ -172,7 +172,10 @@ ROUTE_IMPL(RouteUserProfile, path, argp)
     }
 finish:
     ConfigUnlock(config);
-    Free(username);
+
+    /* Username is handled by the router, freeing it *will* cause issues
+     * (see #33). I honestly don't know how it didn't come to bite us sooner. 
+    Free(username); */
     Free(entry);
     UserIdFree(userId);
     UserUnlock(user);

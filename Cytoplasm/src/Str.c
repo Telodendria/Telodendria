@@ -147,7 +147,6 @@ StrSubstr(const char *inStr, size_t start, size_t end)
     }
 
     len = end - start;
-
     outStr = Malloc(len + 1);
     if (!outStr)
     {

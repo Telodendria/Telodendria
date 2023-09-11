@@ -196,7 +196,7 @@ HttpRouterRoute(HttpRouter * router, char *path, void *args, void **ret)
     char *pathPart;
     char *tmp;
     HttpRouteFunc *exec = NULL;
-    Array *matches;
+    Array *matches = NULL;
     size_t i;
     int retval;
 
@@ -254,14 +254,18 @@ HttpRouterRoute(HttpRouter * router, char *path, void *args, void **ret)
             {
                 /* pmatch[0] is the whole string, not the first
                  * subexpression */
+                char * substr;
+                regmatch_t cpmatch;
                 for (i = 1; i < REG_MAX_SUB; i++)
                 {
+                    cpmatch = pmatch[i];
+                    substr = StrSubstr(pathPart, cpmatch.rm_so, cpmatch.rm_eo);
                     if (pmatch[i].rm_so == -1)
                     {
                         break;
                     }
 
-                    ArrayAdd(matches, StrSubstr(pathPart, pmatch[i].rm_so, pmatch[i].rm_eo));
+                    ArrayAdd(matches, substr);
                 }
             }
         }
