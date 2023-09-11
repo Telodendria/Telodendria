@@ -19,6 +19,11 @@ The following endpoints were added:
 - **POST** `/_matrix/client/v3/user/{userId}/filter`
 - **GET** `/_matrix/client/v3/user/{userId}/filter/{filterId}`
 
+### Bug Fixes
+
+- Fixed a double-free in `RouteUserProfile()` that would cause errors with certain
+Matrix clients. (#35)
+
 ## v0.3.0
 
 **Saturday, June 10, 2023**
