@@ -82,11 +82,11 @@ RouterBuild(void)
 
     /* Telodendria Admin API Routes */
 
-    R("/_telodendria/admin/(restart|shutdown|stats)", RouteProcControl);
-    R("/_telodendria/admin/config", RouteConfig);
-    R("/_telodendria/admin/privileges", RoutePrivileges);
-    R("/_telodendria/admin/privileges/(.*)", RoutePrivileges);
-    R("/_telodendria/admin/deactivate/(.*)", RouteAdminDeactivate);
+    R("/_telodendria/admin/v1/(restart|shutdown|stats)", RouteProcControl);
+    R("/_telodendria/admin/v1/config", RouteConfig);
+    R("/_telodendria/admin/v1/privileges", RoutePrivileges);
+    R("/_telodendria/admin/v1/privileges/(.*)", RoutePrivileges);
+    R("/_telodendria/admin/v1/deactivate/(.*)", RouteAdminDeactivate);
 
 #undef R
 
