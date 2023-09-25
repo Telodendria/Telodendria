@@ -527,7 +527,7 @@ end_loop:
 
         size_t size;
         size_t len;
-        char c;
+        int c;
 
         Free(fileName);
         if (!file)
