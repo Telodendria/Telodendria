@@ -103,6 +103,8 @@ ROUTE(RouteCreateRoom);
 ROUTE(RouteAliasDirectory);
 ROUTE(RouteRoomAliases);
 
+ROUTE(RouteAdminDeactivate);
+
 #undef ROUTE
 
 #endif

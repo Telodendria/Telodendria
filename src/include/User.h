@@ -199,14 +199,24 @@ extern int UserSetPassword(User *, char *);
  * is to prevent future users from pretending to be a previous user
  * of a given localpart. The user is logged out; all access tokens are
  * invalidated.
+ * Additionally, it stores information on who deactivated the account 
+ * (be it an admin or the user itself), and why. If the user
+ * responsible for deactivating the target user is NULL, then it is 
+ * set to the target's own name.
  */
-extern int UserDeactivate(User *);
+extern int UserDeactivate(User *, char *, char *);
+
+/**
+ * Reactivates the given user account if it has been deactvated with 
+ * .Fn UserDeactivate ,
+ * otherwise, it simply doesn't do anything.
+ */
+extern int UserReactivate(User *);
 
 /**
  * Return a boolean value indicating whether or not the user was
  * deactivated using
  * .Fn UserDeactivate .
- * Note that once deactivated, users cannot be reactivated.
  */
 extern int UserDeactivated(User *);
 

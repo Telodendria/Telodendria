@@ -24,6 +24,11 @@ The following endpoints were added:
 - Fixed a double-free in `RouteUserProfile()` that would cause errors with certain
 Matrix clients. (#35)
 
+### New Features
+
+Implemented `/_telodendria/admin/deactivate/[localpart]` for admins to be able to 
+deactivate users.
+
 ## v0.3.0
 
 **Saturday, June 10, 2023**

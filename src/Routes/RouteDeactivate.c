@@ -126,7 +126,7 @@ ROUTE_IMPL(RouteDeactivate, path, argp)
         goto finish;
     }
 
-    if (!UserDeleteTokens(user, NULL) || !UserDeactivate(user))
+    if (!UserDeleteTokens(user, NULL) || !UserDeactivate(user, NULL, NULL))
     {
         HttpResponseStatus(args->context, HTTP_INTERNAL_SERVER_ERROR);
         response = MatrixErrorCreate(M_UNKNOWN, NULL);

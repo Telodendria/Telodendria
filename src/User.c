@@ -429,7 +429,40 @@ UserSetPassword(User * user, char *password)
 }
 
 int
-UserDeactivate(User * user)
+UserDeactivate(User * user, char * from, char * reason)
+{
+    HashMap *json;
+    JsonValue *val;
+
+    if (!user)
+    {
+        return 0;
+    }
+    
+    /* By default, it's the target's username */
+    if (!from)
+    {
+        from = UserGetName(user);
+    }
+
+    json = DbJson(user->ref);
+
+    JsonValueFree(HashMapSet(json, "deactivated", JsonValueBoolean(1)));
+
+    val = JsonValueString(from);
+    JsonValueFree(JsonSet(json, val, 2, "deactivate", "by"));
+    if (reason)
+    {
+        val = JsonValueString(reason);
+        JsonValueFree(JsonSet(json, val, 2, "deactivate", "reason"));
+    }
+
+    return 1;
+
+}
+
+int
+UserReactivate(User * user)
 {
     HashMap *json;
 
@@ -440,7 +473,10 @@ UserDeactivate(User * user)
 
     json = DbJson(user->ref);
 
-    JsonValueFree(HashMapSet(json, "deactivated", JsonValueBoolean(1)));
+
+    JsonValueFree(HashMapSet(json, "deactivated", JsonValueBoolean(0)));
+    
+    JsonValueFree(HashMapDelete(json, "deactivate"));
 
     return 1;
 }
