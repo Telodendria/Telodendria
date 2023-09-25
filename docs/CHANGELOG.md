@@ -23,11 +23,15 @@ The following endpoints were added:
 
 - Fixed a double-free in `RouteUserProfile()` that would cause errors with certain
 Matrix clients. (#35)
+- Improved compatibility with NetBSD on various platforms.
 
 ### New Features
 
-Implemented `/_telodendria/admin/deactivate/[localpart]` for admins to be able to 
+- Implemented `/_telodendria/admin/v1/deactivate/[localpart]` for admins to be able to 
 deactivate users.
+- Moved all administrator API endpoints to `/_telodendria/admin/v1`, because later revisions
+of the administrator API may break clients, so we want a way to give those breaking revisions
+new endpoints.
 
 ## v0.3.0
 
