@@ -254,8 +254,9 @@ HttpRouterRoute(HttpRouter * router, char *path, void *args, void **ret)
             {
                 /* pmatch[0] is the whole string, not the first
                  * subexpression */
-                char * substr;
+                char *substr;
                 regmatch_t cpmatch;
+
                 for (i = 1; i < REG_MAX_SUB; i++)
                 {
                     cpmatch = pmatch[i];

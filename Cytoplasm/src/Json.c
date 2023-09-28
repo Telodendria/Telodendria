@@ -606,7 +606,7 @@ JsonEncodeValue(JsonValue * value, Stream * out, int level)
     Array *arr;
     int length = 0;
 
-	char ibuf[INT64_STRBUF];
+    char ibuf[INT64_STRBUF];
 
     switch (value->type)
     {
@@ -644,7 +644,7 @@ JsonEncodeValue(JsonValue * value, Stream * out, int level)
             length += JsonEncodeString(value->as.string, out);
             break;
         case JSON_INTEGER:
-			Int64Str(value->as.integer, 10, ibuf, INT64_STRBUF);
+            Int64Str(value->as.integer, 10, ibuf, INT64_STRBUF);
             length += StreamPrintf(out, "%s", ibuf);
             break;
         case JSON_FLOAT:
@@ -1123,9 +1123,9 @@ JsonDecodeValue(JsonParserState * state)
     JsonValue *value;
     char *strValue;
 
-	Int64 iValue;
-	size_t i;
-	int neg;
+    Int64 iValue;
+    size_t i;
+    int neg;
 
     switch (state->tokenType)
     {
@@ -1146,31 +1146,31 @@ JsonDecodeValue(JsonParserState * state)
             Free(strValue);
             break;
         case TOKEN_INTEGER:
-			iValue = Int64Create(0, 0);
-			i = 0;
-			neg = 0;
+            iValue = Int64Create(0, 0);
+            i = 0;
+            neg = 0;
 
-			while (state->token[i])
-			{
-				int d;
+            while (state->token[i])
+            {
+                int d;
 
-				if (i == 0 && !neg && state->token[i] == '-')
-				{
-					neg = 1;
-					i++;
-					continue;
-				}
+                if (i == 0 && !neg && state->token[i] == '-')
+                {
+                    neg = 1;
+                    i++;
+                    continue;
+                }
 
-				d = state->token[i] - '0';
-				iValue = Int64Mul(iValue, Int64Create(0, 10));
-				iValue = Int64Add(iValue, Int64Create(0, d));
-				i++;
-			}
+                d = state->token[i] - '0';
+                iValue = Int64Mul(iValue, Int64Create(0, 10));
+                iValue = Int64Add(iValue, Int64Create(0, d));
+                i++;
+            }
 
-			if (neg)
-			{
-				iValue = Int64Neg(iValue);
-			}
+            if (neg)
+            {
+                iValue = Int64Neg(iValue);
+            }
             value = JsonValueInteger(iValue);
             break;
         case TOKEN_FLOAT:

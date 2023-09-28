@@ -67,12 +67,12 @@ Int64Str(Int64 x, int base, char *out, size_t len)
     {
         x = Int64Add(x, Int64Create(0, 1));
     }
-    #if 0
+#if 0
     else if (Int64Eq(x, Int64Create(0x7FFFFFFF, 0xFFFFFFFF)))
     {
         x = Int64Sub(x, Int64Create(0, 1));
     }
-    #endif
+#endif
 
     if (base != 2 && base != 8 && base != 16 && neg)
     {
