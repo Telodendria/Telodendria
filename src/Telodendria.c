@@ -23,14 +23,16 @@
  */
 
 #include <Telodendria.h>
-#include <Memory.h>
-#include <Log.h>
-
-#include <HttpRouter.h>
-#include <Routes.h>
 
 #include <time.h>
 #include <signal.h>
+
+#include <Cytoplasm/Cytoplasm.h>
+#include <Cytoplasm/Memory.h>
+#include <Cytoplasm/Log.h>
+#include <Cytoplasm/HttpRouter.h>
+
+#include <Routes.h>
 
 const char
  TelodendriaLogo[TELODENDRIA_LOGO_HEIGHT][TELODENDRIA_LOGO_WIDTH] = {
@@ -130,7 +132,7 @@ TelodendriaPrintHeader(void)
         Log(LOG_INFO, "%s", TelodendriaHeader[i]);
     }
 
-    Log(LOG_INFO, "Telodendria v" TELODENDRIA_VERSION);
+    Log(LOG_INFO, "Telodendria v" TELODENDRIA_VERSION " (%s v%s)", CytoplasmGetName(), CytoplasmGetVersion());
     Log(LOG_INFO, "");
     Log(LOG_INFO,
         "Copyright (C) 2023 Jordan Bancino <@jordan:bancino.net>");

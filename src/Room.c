@@ -24,9 +24,9 @@
 
 #include <Room.h>
 
-#include <Memory.h>
-#include <Str.h>
-#include <Db.h>
+#include <Cytoplasm/Memory.h>
+#include <Cytoplasm/Str.h>
+#include <Cytoplasm/Db.h>
 
 #include <Schema/RoomCreateRequest.h>
 

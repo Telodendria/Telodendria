@@ -30,12 +30,7 @@ for general build instructions.
 To package Telodendria, you should collect the following files, and
 figure out where they should be installed on your system:
 
-- The `telodendria` server binary itself, located at
-`build/telodendria`.
-- All manual pages in the `man/` directory. These should be prefixed
-with `telodendria-`. You may also wish to ship the `docs/` directory
-so that the user can read the documentation offline, and ensure that
-they are reading the correct documentation for the installed version.
+- The `telodendria` server binary itself.
 - An init script. People that wish to install Telodendria on their
 system using your package are going to expect it to be integrated
 enough that Telodendria can easily be started at boot and otherwise
@@ -43,6 +38,9 @@ managed by the system's daemon tools, be it `systemd` or another
 init system. Consult your system's documentation for writing an init
 script. **Note:** Telodendria *does not* fork itself to the background;
 the init script should do that.
+- You may also wish to ship the `docs/` directory
+so that the user can read the documentation offline, and ensure that
+they are reading the correct documentation for the installed version.
 
 You may wish to optionally create a dedicated user under which
 Telodendria should run. Telodendria can be directly started as that
@@ -51,7 +49,7 @@ user. Additionally, it might be helpful to provide a default
 configuration, which can be placed in the samples directory on your
 platform, or in a default location that Telodendria will load from.
 A good default directory that you may wish to provide for configuration,
-data, and logs could perhaps be `/var/telodendria` on Unix-like systems.
+data, and logs could perhaps be `/var/telodendria` or `/var/db/telodendria` on Unix-like systems.
 
 Once you have collected the necessary files and directories that need
 to be installed, make sure your package performs the following tasks

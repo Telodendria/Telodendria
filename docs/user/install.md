@@ -52,9 +52,5 @@ If you would like to build Telodendria from source, you can download
 the latest release code from the
 [Releases](/Telodendria/telodendria/releases) page. After extracting
 the tarball, read
-[Contributing &rightarrow; Developing &rightarrow; Building &amp; Running](../CONTRIBUTING#building-and-running)
+[Contributing &rightarrow; Developing &rightarrow; Building &amp; Running](../CONTRIBUTING.md#building-amp-running)
 for details on how to build Telodendria.
-
-If all goes well, you will find the server binary in the `build/`
-directory. If an error occured, and you didn't modify the code,
-please open an issue.

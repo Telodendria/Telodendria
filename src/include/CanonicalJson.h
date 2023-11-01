@@ -53,9 +53,9 @@
 
 #include <stdio.h>
 
-#include <HashMap.h>
-#include <Stream.h>
-#include <Json.h>
+#include <Cytoplasm/HashMap.h>
+#include <Cytoplasm/Stream.h>
+#include <Cytoplasm/Json.h>
 
 /**
  * Encode a JSON object following the rules of Canonical JSON. See the

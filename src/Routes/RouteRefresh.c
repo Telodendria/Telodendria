@@ -25,10 +25,10 @@
 
 #include <string.h>
 
-#include <Memory.h>
-#include <Json.h>
-#include <HashMap.h>
-#include <Str.h>
+#include <Cytoplasm/Memory.h>
+#include <Cytoplasm/Json.h>
+#include <Cytoplasm/HashMap.h>
+#include <Cytoplasm/Str.h>
 
 #include <User.h>
 

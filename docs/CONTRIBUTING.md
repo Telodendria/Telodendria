@@ -64,6 +64,9 @@ them do&mdash;pick your favorite, and if you find it doesn't work,
 open an issue!).
 - `make` for building the project.
 - `git` for managing your changes.
+- [Cytoplasm](/Telodendria/Cytoplasm), a simple C library written by
+the Telodendria developers for the purpose of supporting Telodendria
+in a modular way.
 
 Optionally, you may also find these tools helpful:
 
@@ -81,8 +84,8 @@ request to ask us to pull your changes into our repo.
 1. Fork this repository.
 1. In your development environment, clone your fork:
    ```shell
-   git clone https://git.telodendria.io/[YOUR_USERNAME]/telodendria.git
-   cd telodendria
+   git clone https://git.telodendria.io/[YOUR_USERNAME]/Telodendria.git
+   cd Telodendria
    ```
 
    Please base your changes on the `master` branch. If you need help
@@ -91,12 +94,61 @@ request to ask us to pull your changes into our repo.
 
 ### Building &amp; Running
 
-Telodendria uses the `make` build system.
+Telodendria uses the `make` build system. Because it aims at maximum
+portability, it targets POSIX `make` and should thus run on any POSIX
+system that provides a `make`, be it GNU, BSD, or something different
+entirely. To facilitate this, Telodendria provides a `configure` script
+which generates the `Makefile`, because the `Makefile` would be far too
+verbose and tedious to maintain in a POSIX-compatible way otherwise.
+This is similar to how other C programs and libraries are built, although
+note that Telodendria's `configure` script is not nearly as advanced as
+an `autoconf` script, for example.
 
-**TODO:** Update this section before #19 is closed. Provide quick
-make, run, and install directions (maybe just redirect to Porting for
-install directions), then list all the `make` recipes. Shouldn't be
-as many as were in `td`.
+Please follow the build and installation directions for
+[Cytoplasm](/Telodendria/Cytoplasm) first before attempting to build
+Telodendria, because Telodendria depends on Cytoplasm and assumes it is
+installed in the standard location for your system. For the best results,
+it is recommended to take the time to enable TLS, unless you plan on
+running Telodendria behind a reverse proxy.
+
+To build Telodendria, simply run `configure`, then `make`:
+
+```
+$ ./configure
+$ make
+```
+
+You may find some of the following options for `configure` helpful:
+
+- `--prefix=<path>`: Set the install prefix to set by default in the `Makefile`. This defaults to `/usr/local`, which should be appropriate for most Unix-like systems.
+- `--(enable|disable)-ld-extra`: Control whether or not to enable additional linking flags that create a more optimized binary. For large compilers such as GCC and Clang, these flags should be enabled. However, if you are using a small or more obscure compiler, then these flags may not be supported, so you can disable them with this option.
+- `--(enable|disable)-debug`: Control whether or not to enable debug mode. This sets the optimization level to 0 and builds with debug symbols. Useful for running with a debugger.
+- `--static` and `--no-static`: Controls whether static binaries are built by default. On BSD systems, `--static` is perfectly acceptable, but on GNU systems, `--no-static` is often desirable to silence warnings about static binaries emitted by the GNU linker.
+
+Telodendria can be customized with the following options:
+
+- `--bin-name=<name>`: The output name of the server binary. This defaults to `telodendria`. Common alternatives are `matrix-telodendria` or `telodendria-server`.
+- `--version=<version>`: The version string to embed in the binary. This can be used to indicate build customizations or non-release versions of Telodendria.
+
+The following recipes are available in the generated `Makefile`:
+
+- `all`: This is the default target. It builds everything.
+- `telodendria`: Build the `telodendria` binary. If you specified an alternative `--bin-name`, then this target will be named after that.
+- `docs`: Generate the header documentation as `man` pages.
+- `tools`: Build the supplemental tools which may be useful for development.
+- `clean`: Remove the build and output directories. Telodendria builds are out-of-tree, which greatly simplifies this recipe compared to in-tree builds.
+
+If you're developing Telodendria, these recipes may also be helpful:
+
+- `format`: Format the source code using `indent`. This may require a BSD `indent` because last time I tried GNU `indent`, it didn't like the flags in `indent.pro`. Your mileage may vary.
+- `license`: Update the license headers in all source code files with the contents of the `LICENSE.txt`.
+
+To install Telodendria to your system, the following recipes are available:
+
+- `install`: This installs Telodendria under the prefix set with `./configure --prefix=<dir>` or with `make PREFIX=<dir>`. By default, the `make` `PREFIX` is set to whatever was set with `configure --prefix`.
+- `uninstall`: Uninstall Telodendria from the same prefix as specified above.
+
+After a build, you can find the object files in `build/` and the output binary in `out/bin/`.
 
 ### Pull Requests
 

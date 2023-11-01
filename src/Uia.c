@@ -26,11 +26,11 @@
 #include <string.h>
 
 #include <RegToken.h>
-#include <Memory.h>
-#include <Array.h>
-#include <Json.h>
-#include <Str.h>
-#include <Util.h>
+#include <Cytoplasm/Memory.h>
+#include <Cytoplasm/Array.h>
+#include <Cytoplasm/Json.h>
+#include <Cytoplasm/Str.h>
+#include <Cytoplasm/Util.h>
 
 #include <Matrix.h>
 #include <User.h>

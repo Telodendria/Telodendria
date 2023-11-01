@@ -38,9 +38,9 @@
  * can be in a separate compilation unit.
  */
 
-#include <Memory.h>
-#include <Log.h>
-#include <HttpRouter.h>
+#include <Cytoplasm/Memory.h>
+#include <Cytoplasm/Log.h>
+#include <Cytoplasm/HttpRouter.h>
 
 #define TELODENDRIA_LOGO_WIDTH 56
 #define TELODENDRIA_LOGO_HEIGHT 22

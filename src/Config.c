@@ -22,15 +22,15 @@
  * SOFTWARE.
  */
 #include <Config.h>
-#include <Memory.h>
-#include <Json.h>
-#include <HashMap.h>
-#include <Array.h>
-#include <Str.h>
-#include <Db.h>
-#include <HttpServer.h>
-#include <Log.h>
-#include <Int64.h>
+#include <Cytoplasm/Memory.h>
+#include <Cytoplasm/Json.h>
+#include <Cytoplasm/HashMap.h>
+#include <Cytoplasm/Array.h>
+#include <Cytoplasm/Str.h>
+#include <Cytoplasm/Db.h>
+#include <Cytoplasm/HttpServer.h>
+#include <Cytoplasm/Log.h>
+#include <Cytoplasm/Int64.h>
 
 #include <stdlib.h>
 #include <ctype.h>

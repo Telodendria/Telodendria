@@ -23,12 +23,12 @@
  */
 #include <Routes.h>
 
-#include <Json.h>
-#include <HashMap.h>
-#include <Str.h>
+#include <Cytoplasm/Json.h>
+#include <Cytoplasm/HashMap.h>
+#include <Cytoplasm/Str.h>
 
 #include <User.h>
-#include <Log.h>
+#include <Cytoplasm/Log.h>
 
 ROUTE_IMPL(RouteAdminDeactivate, path, argp)
 {

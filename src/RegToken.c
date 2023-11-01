@@ -26,12 +26,12 @@
 #include <string.h>
 #include <ctype.h>
 
-#include <Memory.h>
-#include <Json.h>
-#include <Util.h>
-#include <Str.h>
+#include <Cytoplasm/Memory.h>
+#include <Cytoplasm/Json.h>
+#include <Cytoplasm/Util.h>
+#include <Cytoplasm/Str.h>
 #include <User.h>
-#include <Int64.h>
+#include <Cytoplasm/Int64.h>
 
 int
 RegTokenValid(RegTokenInfo * token)

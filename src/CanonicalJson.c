@@ -23,9 +23,9 @@
  */
 #include <CanonicalJson.h>
 
-#include <HashMap.h>
-#include <Array.h>
-#include <Json.h>
+#include <Cytoplasm/HashMap.h>
+#include <Cytoplasm/Array.h>
+#include <Cytoplasm/Json.h>
 
 #include <stdio.h>
 #include <string.h>

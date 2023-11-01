@@ -36,13 +36,13 @@
  * Matrix homeserver.
  */
 
-#include <HttpServer.h>
-#include <HttpRouter.h>
-#include <Log.h>
-#include <HashMap.h>
+#include <Cytoplasm/HttpServer.h>
+#include <Cytoplasm/HttpRouter.h>
+#include <Cytoplasm/Log.h>
+#include <Cytoplasm/HashMap.h>
 
 #include <Config.h>
-#include <Db.h>
+#include <Cytoplasm/Db.h>
 
 /**
  * The valid errors that can be used with

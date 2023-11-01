@@ -24,8 +24,8 @@
 
 #include <State.h>
 
-#include <HashMap.h>
-#include <Array.h>
+#include <Cytoplasm/HashMap.h>
+#include <Cytoplasm/Array.h>
 
 #include <Room.h>
 #include <Event.h>

@@ -25,13 +25,13 @@
 #include <string.h>
 #include <getopt.h>
 
-#include <Args.h>
-#include <Array.h>
-#include <HashMap.h>
-#include <Str.h>
-#include <Memory.h>
+#include <Cytoplasm/Args.h>
+#include <Cytoplasm/Array.h>
+#include <Cytoplasm/HashMap.h>
+#include <Cytoplasm/Str.h>
+#include <Cytoplasm/Memory.h>
 
-#include <Json.h>
+#include <Cytoplasm/Json.h>
 #include <CanonicalJson.h>
 
 #define FLAG_ENCODE (1 << 0)

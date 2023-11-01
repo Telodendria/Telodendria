@@ -39,8 +39,8 @@
  * to be granted all privileges when it is created.
  */
 
-#include <Db.h>
-#include <Int64.h>
+#include <Cytoplasm/Db.h>
+#include <Cytoplasm/Int64.h>
 
 /**
  * This structure describes a registration token that is in the

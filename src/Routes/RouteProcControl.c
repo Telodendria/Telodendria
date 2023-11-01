@@ -23,10 +23,10 @@
  */
 #include <Routes.h>
 
-#include <Int64.h>
+#include <Cytoplasm/Int64.h>
 #include <User.h>
-#include <Memory.h>
-#include <Str.h>
+#include <Cytoplasm/Memory.h>
+#include <Cytoplasm/Str.h>
 
 #include <string.h>
 #include <signal.h>

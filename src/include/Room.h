@@ -36,8 +36,8 @@
  * provides a way of working with persistent rooms.
  */
 
-#include <HashMap.h>
-#include <Db.h>
+#include <Cytoplasm/HashMap.h>
+#include <Cytoplasm/Db.h>
 
 #include <Schema/RoomCreateRequest.h>
 

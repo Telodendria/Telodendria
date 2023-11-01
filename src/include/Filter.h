@@ -26,6 +26,8 @@
 
 #include <Schema/Filter.h>
 
+#include <Cytoplasm/HashMap.h>
+
 /***
  * @Nm Filter
  * @Nd Validate JSON filters and apply them to events.

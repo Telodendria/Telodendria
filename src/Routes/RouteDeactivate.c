@@ -25,11 +25,11 @@
 
 #include <string.h>
 
-#include <Array.h>
-#include <HashMap.h>
-#include <Json.h>
-#include <Str.h>
-#include <Memory.h>
+#include <Cytoplasm/Array.h>
+#include <Cytoplasm/HashMap.h>
+#include <Cytoplasm/Json.h>
+#include <Cytoplasm/Str.h>
+#include <Cytoplasm/Memory.h>
 #include <User.h>
 #include <Uia.h>
 

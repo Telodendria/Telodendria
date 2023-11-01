@@ -22,13 +22,13 @@
  * SOFTWARE.
  */
 #include <User.h>
-#include <Util.h>
-#include <Memory.h>
-#include <Str.h>
-#include <Sha.h>
-#include <Json.h>
-#include <Int64.h>
-#include <UInt64.h>
+#include <Cytoplasm/Util.h>
+#include <Cytoplasm/Memory.h>
+#include <Cytoplasm/Str.h>
+#include <Cytoplasm/Sha.h>
+#include <Cytoplasm/Json.h>
+#include <Cytoplasm/Int64.h>
+#include <Cytoplasm/UInt64.h>
 
 #include <string.h>
 

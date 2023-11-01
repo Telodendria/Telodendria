@@ -1,13 +1,17 @@
+# Telodendria .gitignore
+
 build
+out
 data
+Makefile
+
+*-leaked.txt
 .env
 *.patch
+*.orig
 *.log
 vgcore.*
 *.core
-Cytoplasm/build
-Cytoplasm/out
-Cytoplasm/*-leaked.txt
 contrib/.vagrant
 src/Schema
 src/include/Schema

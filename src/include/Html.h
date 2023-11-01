@@ -55,7 +55,7 @@
  * .El
  */
 
-#include <Stream.h>
+#include <Cytoplasm/Stream.h>
 
 #define HtmlBeginJs(stream) StreamPuts(stream, \
         "<script>" \

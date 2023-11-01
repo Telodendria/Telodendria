@@ -41,9 +41,9 @@
  * utilize this authentication mechanism to implement it.
  */
 
-#include <Array.h>
-#include <HashMap.h>
-#include <HttpServer.h>
+#include <Cytoplasm/Array.h>
+#include <Cytoplasm/HashMap.h>
+#include <Cytoplasm/HttpServer.h>
 #include <Matrix.h>
 
 /**

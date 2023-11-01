@@ -24,7 +24,7 @@
 
 #include <Routes.h>
 
-#include <Json.h>
+#include <Cytoplasm/Json.h>
 
 ROUTE_IMPL(RouteRoomAliases, path, argp)
 {

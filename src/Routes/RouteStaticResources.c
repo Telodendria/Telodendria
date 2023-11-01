@@ -23,7 +23,7 @@
  */
 #include <Routes.h>
 
-#include <Str.h>
+#include <Cytoplasm/Str.h>
 
 ROUTE_IMPL(RouteStaticResources, path, argp)
 {

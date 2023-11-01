@@ -25,7 +25,7 @@
 #ifndef TELODENDRIA_EVENT_H
 #define TELODENDRIA_EVENT_H
 
-#include <HashMap.h>
+#include <Cytoplasm/HashMap.h>
 
 #include <Room.h>
 

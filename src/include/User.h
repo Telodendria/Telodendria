@@ -38,9 +38,9 @@
  * users, among many other tasks.
  */
 
-#include <Int64.h>
-#include <Db.h>
-#include <Json.h>
+#include <Cytoplasm/Int64.h>
+#include <Cytoplasm/Db.h>
+#include <Cytoplasm/Json.h>
 
 /**
  * Many functions here operate on an opaque user structure.

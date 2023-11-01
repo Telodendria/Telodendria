@@ -48,9 +48,9 @@
  * .Xr telodendria-config 7 .
  */
 
-#include <HashMap.h>
-#include <Array.h>
-#include <Db.h>
+#include <Cytoplasm/HashMap.h>
+#include <Cytoplasm/Array.h>
+#include <Cytoplasm/Db.h>
 
 /**
  * Bit flags that can be set in the flags field of the configuration

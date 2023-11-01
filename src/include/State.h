@@ -34,7 +34,7 @@
  * to maintain room state.
  */
 
-#include <HashMap.h>
+#include <Cytoplasm/HashMap.h>
 
 #include <Room.h>
 

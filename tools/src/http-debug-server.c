@@ -26,13 +26,13 @@
 #include <string.h>
 
 #include <Telodendria.h>
-#include <HttpServer.h>
-#include <Util.h>
+#include <Cytoplasm/HttpServer.h>
+#include <Cytoplasm/Util.h>
 
-#include <Memory.h>
-#include <Log.h>
-#include <Db.h>
-#include <Json.h>
+#include <Cytoplasm/Memory.h>
+#include <Cytoplasm/Log.h>
+#include <Cytoplasm/Db.h>
+#include <Cytoplasm/Json.h>
 
 static HttpServer *server = NULL;
 

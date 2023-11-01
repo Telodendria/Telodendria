@@ -25,11 +25,11 @@
 
 #include <string.h>
 
-#include <HashMap.h>
-#include <Memory.h>
+#include <Cytoplasm/HashMap.h>
+#include <Cytoplasm/Memory.h>
 #include <User.h>
-#include <Json.h>
-#include <Str.h>
+#include <Cytoplasm/Json.h>
+#include <Cytoplasm/Str.h>
 
 ROUTE_IMPL(RouteUserProfile, path, argp)
 {
