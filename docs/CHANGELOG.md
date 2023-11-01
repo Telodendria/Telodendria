@@ -19,11 +19,13 @@ The following endpoints were added:
 - **POST** `/_matrix/client/v3/user/{userId}/filter`
 - **GET** `/_matrix/client/v3/user/{userId}/filter/{filterId}`
 
-### Bug Fixes
+### Bug Fixes & General Improvements
 
 - Fixed a double-free in `RouteUserProfile()` that would cause errors with certain
 Matrix clients. (#35)
 - Improved compatibility with NetBSD on various platforms.
+- Moved [Cytoplasm](/Telodendria/Cytoplasm) to its own repository.
+- Use a `configure` script and `make` to build Telodendria instead of custom scripts.
 
 ### New Features
 
