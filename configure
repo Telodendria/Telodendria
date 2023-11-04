@@ -14,7 +14,7 @@ INCLUDE="src/include"
 TOOLS="tools/src"
 SCHEMA="Schema"
 
-CFLAGS="-Wall -Wextra -pedantic -std=c89 -O3 -pipe -D_DEFAULT_SOURCE -I${INCLUDE}"
+CFLAGS="-Wall -Wextra -pedantic -std=c89 -O3 -pipe -D_DEFAULT_SOURCE -I${INCLUDE} -I${BUILD}"
 LIBS="-lm -pthread -lCytoplasm"
 
 
@@ -112,8 +112,10 @@ compile_obj() {
 	src="$1"
 	obj="$2"
 
-	pref=$(cc -I${INCLUDE} -MM -MT "${obj}" "${src}")
-    echo "$pref $(collect ${SCHEMA}/ .json .h ${INCLUDE}/Schema/ print_obj)"
+    # TODO: Add a --cc flag to set the C compiler to use for
+    # Makefile generation.
+	pref=$(cc -I${INCLUDE} -I${BUILD} -MM -MT "${obj}" "${src}")
+    echo "$pref $(collect ${SCHEMA}/ .json .h ${BUILD}/Schema/ print_obj)"
 	echo "${TAB}@mkdir -p $(dirname ${obj})"
 	echo "${TAB}\$(CC) \$(CFLAGS) -fPIC -c -o \"${obj}\" \"${src}\""
 }
@@ -153,13 +155,19 @@ compile_schema() {
     src="$1"
     out="$2"
 
-    echo "${INCLUDE}/Schema/${out}.h:"
-    echo "${TAB}@mkdir -p ${INCLUDE}/Schema ${SRC}/Schema"
-    echo "${TAB}j2s -s \"${src}\" -h \"${INCLUDE}/Schema/${out}.h\" -c \"${SRC}/Schema/${out}.c\""
+    obj="${BUILD}/Schema/${out}.o"
 
-    echo "${SRC}/Schema/${out}.c:"
-    echo "${TAB}@mkdir -p ${INCLUDE}/Schema ${SRC}/Schema"
-    echo "${TAB}j2s -s \"${src}\" -h \"${INCLUDE}/Schema/${out}.h\" -c \"${SRC}/Schema/${out}.c\""
+    echo "${BUILD}/Schema/${out}.h:"
+    echo "${TAB}@mkdir -p ${BUILD}/Schema"
+    echo "${TAB}j2s -s \"${src}\" -h \"${BUILD}/Schema/${out}.h\" -c \"${BUILD}/Schema/${out}.c\""
+
+    echo "${BUILD}/Schema/${out}.c:"
+    echo "${TAB}@mkdir -p ${BUILD}/Schema"
+    echo "${TAB}j2s -s \"${src}\" -h \"${BUILD}/Schema/${out}.h\" -c \"${BUILD}/Schema/${out}.c\""
+
+    echo "${obj}: ${src} ${BUILD}/Schema/${out}.c"
+    echo "${TAB}@mkdir -p ${BUILD}/Schema"
+    echo "${TAB}\$(CC) \$(CFLAGS) -fPIC -c -o \"${obj}\" \"${BUILD}/Schema/${out}.c\""
 }
 
 install_out() {
@@ -185,14 +193,8 @@ uninstall_out() {
 
 echo "Generating Makefile..."
 
-OBJS=$(collect ${SRC}/ .c .o ${BUILD}/ print_obj)
+OBJS="$(collect ${SRC}/ .c .o ${BUILD}/ print_obj) $(collect ${SCHEMA}/ .json .o ${BUILD}/Schema/ print_obj)"
 TAB=$(printf '\t')
-
-# If objects don't include the schema (this is the first configure),
-# then include them manually.
-if ! echo "${OBJS}" | grep "Schema" > /dev/null; then
-    OBJS="${OBJS} $(collect ${SCHEMA}/ .json .o ${BUILD}/Schema/ print_obj)"
-fi
 
 cat << EOF > Makefile
 .POSIX:
