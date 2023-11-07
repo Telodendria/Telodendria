@@ -39,6 +39,7 @@ ROUTE_IMPL(RouteConfig, path, argp)
 
     HashMap *request = NULL;
     Config *newConf;
+    HashMap *newJson = NULL;
 
     (void) path;
 
@@ -121,7 +122,54 @@ ROUTE_IMPL(RouteConfig, path, argp)
             JsonFree(request);
             break;
         case HTTP_PUT:
-            /* TODO: Support incremental changes to the config */
+            request = JsonDecode(HttpServerStream(args->context));
+            if (!request)
+            {
+                HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
+                response = MatrixErrorCreate(M_NOT_JSON, NULL);
+                break;
+            }
+
+            newJson = JsonDuplicate(DbJson(config->ref));
+            JsonMerge(newJson, request);
+
+            newConf = ConfigParse(newJson);
+
+            /* TODO: Don't leak newJson. */
+
+            if (!newConf)
+            {
+                HttpResponseStatus(args->context, HTTP_INTERNAL_SERVER_ERROR);
+                response = MatrixErrorCreate(M_UNKNOWN, NULL);
+                break;
+            }
+
+            if (newConf->ok)
+            {
+                if (DbJsonSet(config->ref, newJson))
+                {
+                    response = HashMapCreate();
+                    /*
+                     * TODO: Apply configuration and set this only if a main
+                     * component was reconfigured, such as the listeners.
+                     */
+                    HashMapSet(response, "restart_required", JsonValueBoolean(1));
+                }
+                else
+                {
+                    HttpResponseStatus(args->context, HTTP_INTERNAL_SERVER_ERROR);
+                    response = MatrixErrorCreate(M_UNKNOWN, NULL);
+                }
+            }
+            else
+            {
+                HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
+                response = MatrixErrorCreate(M_BAD_JSON, newConf->err);
+            }
+
+            ConfigFree(newConf);
+            JsonFree(request);
+            break;
         default:
             HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
             response = MatrixErrorCreate(M_UNRECOGNIZED, NULL);
