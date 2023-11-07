@@ -135,8 +135,6 @@ ROUTE_IMPL(RouteConfig, path, argp)
 
             newConf = ConfigParse(newJson);
 
-            /* TODO: Don't leak newJson. */
-
             if (!newConf)
             {
                 HttpResponseStatus(args->context, HTTP_INTERNAL_SERVER_ERROR);
@@ -169,10 +167,11 @@ ROUTE_IMPL(RouteConfig, path, argp)
 
             ConfigFree(newConf);
             JsonFree(request);
+            JsonFree(newJson);
             break;
         default:
             HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-            response = MatrixErrorCreate(M_UNRECOGNIZED, NULL);
+            response = MatrixErrorCreate(M_UNRECOGNIZED, "Unknown request method.");
             break;
     }
 

@@ -31,6 +31,8 @@ Matrix clients. (#35)
 
 - Implemented `/_telodendria/admin/v1/deactivate/[localpart]` for admins to be able to 
 deactivate users.
+- Added a **PUT** option to `/_telodendria/admin/v1/config` that gives the ability to change
+only a subset of the configuration.
 - Moved all administrator API endpoints to `/_telodendria/admin/v1`, because later revisions
 of the administrator API may break clients, so we want a way to give those breaking revisions
 new endpoints.
