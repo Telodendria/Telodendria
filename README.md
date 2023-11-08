@@ -1,5 +1,4 @@
-<p align="center"><img src="https://telodendria.io/assets/Telodendria-500x500.png"></p>
-<h1 align="center">Telodendria</h1>
+<h1 style="text-align: center;">Telodendria</h1>
 
 Telodendria is an extremely powerful, yet lightweight and portable
 chat server designed to be easy to install and configure. Powered by
@@ -12,7 +11,7 @@ hosting a complicated, high-maintenance homeserver or joining an
 existing homeserver for privacy or other reasons, then Telodendria
 might be for you.
 
-> **Note:** Telodendria still in development. See [Status](#status).
+!!!! **Note:** Telodendria still in development. See **Status** below.
 
 ## What is Matrix?
 
@@ -64,12 +63,13 @@ incredibly outdated. Telodendria, on the other hand, aims to be stable.
 It should *just work* for long periods of time between upgrades, and
 you should never feel like Telodendria is going to change significantly
 between upgrades.
+- **Well-Documented:** Telodendria places as much emphasis on documentation as on code, which means you can be sure that the documentation will always remain up-to-date, accurate, and most importantly, reasonably exhaustive.
 
-[Read Technical Rationale &rightarrow;](docs/dev/rationale.md)
+[Read Technical Rationale &rightarrow;](https://git.telodendria.io/Telodendria/Telodendria/src/branch/master/docs/dev/rationale.md)
 
 ## Get Started
 
-Check out the [Documentation](docs/README.md) to get started with
+Check out the [Documentation](https://git.telodendria.io/Telodendria/telodendria/src/branch/master/docs/README.md) to get started with
 Telodendria.
 
 ## Status
@@ -79,13 +79,13 @@ not yet deliver on all of its promises. Currently, Telodendria is not
 ready for end-users yet. While it features very basic user
 authentication, it does not actually work as a chat server yet.
 
-We are hoping to ship Telodendria `v0.4.0` by May of 2024. This
+We are hoping to ship Telodendria `v1.7.0-alpha4` by May of 2024. This
 release should be usable for communication between **local users**
 only. Additional features, including federation with other Matrix
 homeservers will be added in future releases.
 
-You can help speed up development by [sponsoring](#sponsorship)
-Telodendria or [getting involved](docs/CONTRIBUTING.md).
+You can help speed up development by **sponsoring**
+Telodendria or [getting involved](https://git.telodendria.io/Telodendria/Telodendria/src/branch/master/docs/CONTRIBUTING.md).
 
 ## Sponsorship
 
@@ -96,7 +96,7 @@ Telodendria's long-term success, please consider sponsoring the
 project.
 
 You can make a recurring donation to Telodendria using
-[LiberaPay](https://bancino.net/Telodendria/donate). You can also make
+[LiberaPay](https://liberapay.com/Telodendria/donate). You can also make
 one-time donations using
 [Stripe](https://donate.stripe.com/8wM29AfF5bRJc48eUU). If you would
 like to make a recurring donation larger than that allowed by
@@ -108,7 +108,7 @@ LiberaPay, please contact Jordan Bancino over Matrix at
 While there are no set sponsorship tiers at this time, sponsoring
 Telodendria is a mutually beneficial relationship. Depending on the
 amount you donate, you can get your name, logo, and website links
-on the [Sponsors](docs/SPONSORS.md) page, the project `README`, or the
+on the [Sponsors](../sponsors) page, the project `README`, or the
 main website.
 
 ## License
@@ -116,7 +116,7 @@ main website.
 All of the code and documentation for Telodendria is licensed under a
 modified MIT license. The MIT license is an extremely permissive
 license that has very few restrictions. Please consult the
-[`LICENSE.txt`](LICENSE.txt) file for the actual license text. It is
+[`LICENSE.txt`](https://git.telodendria.io/Telodendria/Telodendria/src/branch/master/LICENSE.txt) file for the actual license text. It is
 important to note that the Telodendria license text differs from the
 original MIT license in the following ways:
 
@@ -133,4 +133,3 @@ to use the logo in any way as long as it represents or links to the
 official project. If Telodendria is forked, the logo must be removed
 completely from the project, and optionally replaced by a different
 one.
-

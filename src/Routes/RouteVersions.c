@@ -35,7 +35,12 @@ ROUTE_IMPL(RouteVersions, path, argp)
     (void) path;
     (void) argp;
 
-    ArrayAdd(versions, JsonValueString("v1.6"));
+#define DECLARE_SPEC_VERSION(x) ArrayAdd(versions, JsonValueString(x))
+
+    DECLARE_SPEC_VERSION("v1.7");
+    /* Declare additional spec version support here. */
+
+#undef DECLARE_SPEC_VERSION
 
     HashMapSet(response, "versions", JsonValueArray(versions));
     return response;

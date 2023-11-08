@@ -19,7 +19,7 @@ LIBS="-lm -pthread -lCytoplasm"
 
 
 # Set default args for all platforms
-SCRIPT_ARGS="--cc=cc --prefix=/usr/local --enable-ld-extra --bin-name=telodendria --version=0.4.0 --static $@"
+SCRIPT_ARGS="--cc=cc --prefix=/usr/local --enable-ld-extra --bin-name=telodendria --version=1.7.0-alpha4 --static $@"
 
 echo "Processing options..."
 echo "Ran with arguments: $SCRIPT_ARGS"

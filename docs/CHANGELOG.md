@@ -5,12 +5,22 @@ It is intended to be updated with every commit that makes a user-facing change w
 reporting in the change log. As such, it changes frequently between releases. Final
 change log entries are published as [Releases](releases).
 
-## v0.4.0
+## v1.7.0-alpha4
 
 **Not Released Yet.**
 
-This release brings filters, rooms, and events! The core of the Matrix protocol architecture
-is not in place.
+This release brings filters, rooms, and events! The core of the Matrix
+protocol architecture is now in place.
+
+Note that the versioning scheme has changed from `v0.X.0` to
+`v1.7.0-alphaX`. This is so that Telodendria releases correspond to the
+Matrix specification that they implement, in accordance with
+[this blog post](https://telodendria.io/blog/on-matrixs-release-cadence-and-state-resolution-v1).
+This versioning scheme change does not indicate a drastic leap forward
+in Telodendria's development&mdash;the `-alpha4` suffix indicates that
+this is the 4th pre-release, with the target being a stable `v1.7.0`.
+Note also that we still have a *long* way to go before we reach that
+stable release.
 
 ### Matrix Specification
 
@@ -21,21 +31,23 @@ The following endpoints were added:
 
 ### Bug Fixes & General Improvements
 
-- Fixed a double-free in `RouteUserProfile()` that would cause errors with certain
-Matrix clients. (#35)
+- Fixed a double-free in `RouteUserProfile()` that would cause errors
+with certain Matrix clients. (#35)
 - Improved compatibility with NetBSD on various platforms.
-- Moved [Cytoplasm](/Telodendria/Cytoplasm) to its own repository.
-- Use a `configure` script and `make` to build Telodendria instead of custom scripts.
+- Moved [Cytoplasm](/Telodendria/Cytoplasm) to its own repository. It
+will now be maintained separately and have its own releases as well.
+- Use a `configure` script and `make` to build Telodendria instead of
+custom scripts.
 
 ### New Features
 
-- Implemented `/_telodendria/admin/v1/deactivate/[localpart]` for admins to be able to 
-deactivate users.
-- Added a **PUT** option to `/_telodendria/admin/v1/config` that gives the ability to change
-only a subset of the configuration.
-- Moved all administrator API endpoints to `/_telodendria/admin/v1`, because later revisions
-of the administrator API may break clients, so we want a way to give those breaking revisions
-new endpoints.
+- Moved all administrator API endpoints to `/_telodendria/admin/v1`,
+because later revisions of the administrator API may break clients, so
+we want a way to give those breaking revisions new endpoints.
+- Implemented `/_telodendria/admin/v1/deactivate/[localpart]` for admins
+to be able to deactivate users.
+- Added a **PUT** option to `/_telodendria/admin/v1/config` that gives
+the ability to change only a subset of the configuration.
 
 ## v0.3.0
 
