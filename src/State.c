@@ -33,12 +33,14 @@
 static HashMap *
 StateResolveV1(Array * states)
 {
+    (void) states;
     return NULL;
 }
 
 static HashMap *
 StateResolveV2(Array * states)
 {
+    (void) states;
     return NULL;
 }
 

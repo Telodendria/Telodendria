@@ -28,5 +28,7 @@
 HashMap *
 FilterApply(Filter * filter, HashMap * event)
 {
+    (void) filter;
+    (void) event;
     return NULL;
 }

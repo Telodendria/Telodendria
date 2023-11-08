@@ -42,6 +42,8 @@ struct Room
 Room *
 RoomCreate(Db * db, RoomCreateRequest * req)
 {
+    (void) db;
+    (void) req;
     return NULL;
 }
 

@@ -37,6 +37,10 @@ ROUTE_IMPL(RouteRoomAliases, path, argp)
     Db *db = args->matrixArgs->db;
     DbRef *ref = NULL;
 
+    (void) roomId;
+
+    /* TODO: Placeholder; remove. */
+    goto finish;
 finish:
     DbUnlock(db, ref);
     JsonFree(request);
