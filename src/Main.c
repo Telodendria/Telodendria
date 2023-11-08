@@ -128,10 +128,6 @@ start:
     httpServers = NULL;
     restart = 0;
 
-    /* For getopt() */
-    opterr = 1;
-    optind = 1;
-
     /* Local variables */
     exit = EXIT_SUCCESS;
     flags = 0;
