@@ -5,7 +5,7 @@ information about how the server process is performing.
 
 ## API Endpoints
 
-### **GET** `/_telodendria/admin/stats`
+### **GET** `/_telodendria/admin/v1/stats`
 
 Retrieve basic statistics about the currently running Telodendria
 process.

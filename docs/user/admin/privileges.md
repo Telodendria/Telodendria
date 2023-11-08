@@ -41,7 +41,7 @@ this privilege level.
 
 The following API endpoints are implemented for managing privileges.
 
-### **GET** `/_telodendria/admin/privileges/[localpart]`
+### **GET** `/_telodendria/admin/v1/privileges/[localpart]`
 
 Retrieve the permissions for a user. If the localpart is omitted, then
 retrieve the privileges for the user that owns the access token being 
@@ -62,7 +62,7 @@ used. Note that the owner of the access token must have the
 |-------|------|-------------|
 | `privileges` | `Array` | An array of privileges, as described above. The privileges are encoded as JSON strings.|
 
-### **POST** `/_telodendria/admin/privileges/[localpart]`
+### **POST** `/_telodendria/admin/v1/privileges/[localpart]`
 
 Update the privileges of a local user by replacing the privileges array
 with the one specified in the request. Like the **GET** version of this
@@ -89,7 +89,7 @@ owns the access token.
 |-------|------|-------------|
 | `privileges` | `Array` | An array of privileges, as described above. The privileges are encoded as JSON strings.|
 
-### **PUT** `/_telodendria/admin/privileges/[localpart]`
+### **PUT** `/_telodendria/admin/v1/privileges/[localpart]`
 
 Update the privileges of a local user by adding the privileges
 specified in the request to the users existing privileges.
@@ -114,7 +114,7 @@ specified in the request to the users existing privileges.
 |-------|------|-------------|
 | `privileges` | `Array` | An array of privileges, as described above. The privileges are encoded as JSON strings.|
 
-### **DELETE** `/_telodendria/admin/privileges/[localpart]`
+### **DELETE** `/_telodendria/admin/v1/privileges/[localpart]`
 
 Update the privileges of a local user by removing the privileges
 specified in the request from the user's existing privileges.

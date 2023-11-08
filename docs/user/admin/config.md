@@ -8,7 +8,7 @@ update the configuration described in that document.
 
 ## API Endpoints
 
-### **GET** `/_telodendria/admin/config`
+### **GET** `/_telodendria/admin/v1/config`
 
 Retrieve the current configuration.
 
@@ -20,7 +20,7 @@ Retrieve the current configuration.
 |---------------|-------------|
 | 200           | The current configuration was successfully retrieved.|
 
-### **POST** `/_telodendria/admin/config`
+### **POST** `/_telodendria/admin/v1/config`
 
 Installs a new configuration. This endpoint validates the request body,
 ensuring it is a proper configuration, then it replaces the existing
@@ -40,7 +40,7 @@ configuration with the new one.
 |-------|------|-------------|
 | `restart_required` | `Boolean` | Whether or not the process needs to be restarted to finish applying the configuration. If this is `true`, then the restart endpoint should be used at a convenient time to apply the configuration.
 
-### **PUT** `/_telodendria/admin/config`
+### **PUT** `/_telodendria/admin/v1/config`
 
 Update the currently installed configuration instead of completely replacing it. This endpoint
 validates the request body, merges it on top of the current configuration, validates the resulting

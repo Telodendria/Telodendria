@@ -5,7 +5,7 @@ administrator to manage the Telodendria process itself.
 
 ## API Endpoints
 
-### **POST** `/_telodendria/admin/restart`
+### **POST** `/_telodendria/admin/v1/restart`
 
 Restart the Telodendria daemon cleanly. This endpoint will respond
 immediately after signaling to the daemon that it should be restarted
@@ -26,7 +26,7 @@ starts over.
 
 On success, this endpoint simply returns an empty JSON object.
 
-### **POST** `/_telodendria/admin/shutdown`
+### **POST** `/_telodendria/admin/v1/shutdown`
 
 Shut down the Telodendria process cleanly. This endpoint will respond
 immediately after signalling to the daemon that it should be shut
