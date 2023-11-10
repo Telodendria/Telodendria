@@ -30,8 +30,10 @@
 #include <Cytoplasm/Json.h>
 #include <Cytoplasm/Util.h>
 #include <Cytoplasm/Str.h>
-#include <User.h>
 #include <Cytoplasm/Int64.h>
+#include <Cytoplasm/Log.h>
+
+#include <User.h>
 
 int
 RegTokenValid(RegTokenInfo * token)
@@ -99,8 +101,7 @@ RegTokenDelete(RegTokenInfo * token)
     {
         return 0;
     }
-    Free(token->name);
-    Free(token->owner);
+    RegTokenInfoFree(token);
     Free(token);
     return 1;
 }
@@ -112,6 +113,8 @@ RegTokenGetInfo(Db * db, char *token)
 
     DbRef *tokenRef;
     HashMap *tokenJson;
+
+    char *errp = NULL;
 
     if (!RegTokenExists(db, token))
     {
@@ -126,46 +129,42 @@ RegTokenGetInfo(Db * db, char *token)
     tokenJson = DbJson(tokenRef);
     ret = Malloc(sizeof(RegTokenInfo));
 
+    if (!RegTokenInfoFromJson(tokenJson, ret, &errp))
+    {
+        Log(LOG_ERR, "RegTokenGetInfo(): Database decoding error: %s", errp);
+        RegTokenFree(ret);
+        return NULL;
+    }
+
     ret->db = db;
     ret->ref = tokenRef;
-
-    ret->owner =
-            StrDuplicate(JsonValueAsString(HashMapGet(tokenJson, "created_by")));
-    ret->name = StrDuplicate(token);
-
-    ret->expires =
-            JsonValueAsInteger(HashMapGet(tokenJson, "expires_on"));
-    ret->created =
-            JsonValueAsInteger(HashMapGet(tokenJson, "created_on"));
-
-    ret->uses =
-            JsonValueAsInteger(HashMapGet(tokenJson, "uses"));
-    ret->used =
-            JsonValueAsInteger(HashMapGet(tokenJson, "used"));
-
-    ret->grants =
-            UserDecodePrivileges(HashMapGet(tokenJson, "grants"));
 
     return ret;
 }
 
 void
-RegTokenFree(RegTokenInfo * tokeninfo)
+RegTokenFree(RegTokenInfo *tokeninfo)
 {
     if (tokeninfo)
     {
-        Free(tokeninfo->name);
-        Free(tokeninfo->owner);
+        RegTokenInfoFree(tokeninfo);
         Free(tokeninfo);
     }
 }
 int
 RegTokenClose(RegTokenInfo * tokeninfo)
 {
+    HashMap *json;
+
     if (!tokeninfo)
     {
         return 0;
     }
+
+    /* Write object to database. */
+    json = RegTokenInfoToJson(tokeninfo);
+    DbJsonSet(tokeninfo->ref, json); /* Copies json into internal structure. */
+    JsonFree(json);
 
     return DbUnlock(tokeninfo->db, tokeninfo->ref);
 }
@@ -202,7 +201,6 @@ RegTokenInfo *
 RegTokenCreate(Db * db, char *name, char *owner, UInt64 expires, Int64 uses, int privileges)
 {
     RegTokenInfo *ret;
-    HashMap *tokenJson;
 
     UInt64 timestamp = UtilServerTs();
 
@@ -235,26 +233,12 @@ RegTokenCreate(Db * db, char *name, char *owner, UInt64 expires, Int64 uses, int
         return NULL;
     }
     ret->name = StrDuplicate(name);
-    ret->owner = StrDuplicate(owner);
+    ret->created_by = StrDuplicate(owner);
     ret->used = Int64Create(0, 0);
     ret->uses = uses;
-    ret->created = timestamp;
-    ret->expires = expires;
-    ret->grants = privileges;
-
-    /* Write user info to database. */
-    tokenJson = DbJson(ret->ref);
-    HashMapSet(tokenJson, "created_by",
-               JsonValueString(ret->owner));
-    HashMapSet(tokenJson, "created_on",
-               JsonValueInteger(ret->created));
-    HashMapSet(tokenJson, "expires_on",
-               JsonValueInteger(ret->expires));
-    HashMapSet(tokenJson, "used",
-               JsonValueInteger(ret->used));
-    HashMapSet(tokenJson, "uses",
-               JsonValueInteger(ret->uses));
-    HashMapSet(tokenJson, "grants", UserEncodePrivileges(privileges));
+    ret->created_on = timestamp;
+    ret->expires_on = expires;
+    ret->grants = UserEncodePrivileges(privileges);
 
     return ret;
 }

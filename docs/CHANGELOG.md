@@ -48,6 +48,11 @@ we want a way to give those breaking revisions new endpoints.
 to be able to deactivate users.
 - Added a **PUT** option to `/_telodendria/admin/v1/config` that gives
 the ability to change only a subset of the configuration.
+- Implemented the following APIs for managing registration tokens:
+    - **GET** `/_telodendria/admin/tokens`
+    - **GET** `/_telodendria/admin/tokens/[token]`
+    - **POST** `/_telodendria/admin/tokens`
+    - **DELETE** `/_telodendria/admin/tokens/[token]`
 
 ## v0.3.0
 

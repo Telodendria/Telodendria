@@ -19,6 +19,7 @@ request.
 - [Configuration](config.md)
 - [Server Statistics](stats.md)
 - [Process Control](proc.md)
+- [Registration Tokens](tokens.md)
 
 ## API Conventions
 

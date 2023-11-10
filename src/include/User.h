@@ -286,13 +286,13 @@ extern int UserSetPrivileges(User *, int);
  * Decode the JSON that represents the user privileges into a packed
  * bit field for simple manipulation.
  */
-extern int UserDecodePrivileges(JsonValue *);
+extern int UserDecodePrivileges(Array *);
 
 /**
  * Encode the packed bit field that represents user privileges as a
  * JSON value.
  */
-extern JsonValue *UserEncodePrivileges(int);
+extern Array *UserEncodePrivileges(int);
 
 /**
  * Convert a string privilege into its bit in the bit field. This is

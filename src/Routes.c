@@ -87,6 +87,8 @@ RouterBuild(void)
     R("/_telodendria/admin/v1/privileges", RoutePrivileges);
     R("/_telodendria/admin/v1/privileges/(.*)", RoutePrivileges);
     R("/_telodendria/admin/v1/deactivate/(.*)", RouteAdminDeactivate);
+    R("/_telodendria/admin/v1/tokens/(.*)", RouteAdminTokens);
+    R("/_telodendria/admin/v1/tokens", RouteAdminTokens);
 
 #undef R
 

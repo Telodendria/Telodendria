@@ -98,15 +98,15 @@ ROUTE_IMPL(RoutePrivileges, path, argp)
             switch (HttpRequestMethodGet(args->context))
             {
                 case HTTP_POST:
-                    privileges = UserDecodePrivileges(val);
+                    privileges = UserDecodePrivileges(JsonValueAsArray(val));
                     break;
                 case HTTP_PUT:
                     privileges = UserGetPrivileges(user);
-                    privileges |= UserDecodePrivileges(val);
+                    privileges |= UserDecodePrivileges(JsonValueAsArray(val));
                     break;
                 case HTTP_DELETE:
                     privileges = UserGetPrivileges(user);
-                    privileges &= ~UserDecodePrivileges(val);
+                    privileges &= ~UserDecodePrivileges(JsonValueAsArray(val));
                     break;
                 default:
                     /* Impossible */
@@ -124,7 +124,7 @@ ROUTE_IMPL(RoutePrivileges, path, argp)
             /* Fall through */
         case HTTP_GET:
             response = HashMapCreate();
-            HashMapSet(response, "privileges", UserEncodePrivileges(UserGetPrivileges(user)));
+            HashMapSet(response, "privileges", JsonValueArray(UserEncodePrivileges(UserGetPrivileges(user))));
             break;
         default:
             HttpResponseStatus(args->context, HTTP_BAD_REQUEST);

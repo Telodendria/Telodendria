@@ -1,0 +1,49 @@
+{
+  "guard": "TELODENDRIA_SCHEMA_REGTOKEN_H",
+  "header": "Schema\/RegToken.h",
+  "include": [
+    "Cytoplasm\/Db.h"
+  ],
+  "types": {
+    "Db *": {
+      "type": "extern"
+    },
+    "DbRef *": {
+      "type": "extern"
+    },
+    "RegTokenInfo": {
+      "fields": {
+        "db": {
+          "type": "Db *",
+          "ignore": true
+        },
+        "ref": {
+          "type": "DbRef *",
+          "ignore": true
+        },
+        "name": {
+          "type": "string"
+        },
+        "created_by": {
+          "type": "string"
+        },
+        "created_on": {
+          "type": "integer"
+        },
+        "expires_on": {
+          "type": "integer"
+        },
+        "used": {
+          "type": "integer"
+        },
+        "uses": {
+          "type": "integer"
+        },
+        "grants": {
+          "type": "array"
+        }
+      },
+      "type": "struct"
+    }
+  }
+}

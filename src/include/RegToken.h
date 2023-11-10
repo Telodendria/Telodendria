@@ -42,54 +42,7 @@
 #include <Cytoplasm/Db.h>
 #include <Cytoplasm/Int64.h>
 
-/**
- * This structure describes a registration token that is in the
- * database.
- */
-typedef struct RegTokenInfo
-{
-    Db *db;
-    DbRef *ref;
-
-    /*
-     * The token itself.
-     */
-    char *name;
-
-    /*
-     * Who created this token. Note that this can be NULL if the
-     * token was created by Telodendria itself.
-     */
-    char *owner;
-
-    /*
-     * How many times the token was used.
-     */
-    Int64 used;
-
-    /*
-     * How many uses are allowed.
-     */
-    Int64 uses;
-
-    /*
-     * Timestamp when this token was created.
-     */
-    UInt64 created;
-
-    /*
-     * Timestamp when this token expires, or 0 if it does not
-     * expire.
-     */
-    UInt64 expires;
-
-    /*
-     * A bit field describing the privileges this token grants. See
-     * the User API documentation for the privileges supported.
-     */
-    int grants;
-
-} RegTokenInfo;
+#include <Schema/RegToken.h>
 
 /**
  * ``Use'' the specified registration token by increasing the used
@@ -132,7 +85,6 @@ RegTokenCreate(Db *, char *, char *, UInt64, Int64, int);
  * .Fn RegTokenClose .
  */
 extern void RegTokenFree(RegTokenInfo *);
-
 /**
  * Return a boolean value indicating whether or not the specified token
  * is valid. A registration token is only valid if it has not expired

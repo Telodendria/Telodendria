@@ -1,4 +1,5 @@
 {
+  "guard": "TELODENDRIA_SCHEMA_FILTER_H",
   "header": "Schema\/Filter.h",
   "types": {
     "FilterRoom": {
@@ -116,6 +117,5 @@
       },
       "type": "struct"
     }
-  },
-  "guard": "TELODENDRIA_SCHEMA_FILTER_H"
+  }
 }

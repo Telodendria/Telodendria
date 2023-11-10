@@ -105,6 +105,8 @@ ROUTE(RouteRoomAliases);
 
 ROUTE(RouteAdminDeactivate);
 
+ROUTE(RouteAdminTokens);
+
 #undef ROUTE
 
 #endif

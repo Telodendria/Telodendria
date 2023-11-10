@@ -276,7 +276,7 @@ ROUTE_IMPL(RouteRegister, path, argp)
 
                 if (info)
                 {
-                    UserSetPrivileges(user, info->grants);
+                    UserSetPrivileges(user, UserDecodePrivileges(info->grants));
                     RegTokenClose(info);
                     RegTokenFree(info);
                 }

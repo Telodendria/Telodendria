@@ -749,7 +749,7 @@ UserGetPrivileges(User * user)
         return USER_NONE;
     }
 
-    return UserDecodePrivileges(HashMapGet(DbJson(user->ref), "privileges"));
+    return UserDecodePrivileges(JsonValueAsArray(HashMapGet(DbJson(user->ref), "privileges")));
 }
 
 int
@@ -768,7 +768,7 @@ UserSetPrivileges(User * user, int privileges)
         return 1;
     }
 
-    val = UserEncodePrivileges(privileges);
+    val = JsonValueArray(UserEncodePrivileges(privileges));
     if (!val)
     {
         return 0;
@@ -779,31 +779,26 @@ UserSetPrivileges(User * user, int privileges)
 }
 
 int
-UserDecodePrivileges(JsonValue * val)
+UserDecodePrivileges(Array * arr)
 {
     int privileges = USER_NONE;
 
     size_t i;
-    Array *arr;
 
-    if (!val)
+    if (!arr)
     {
         goto finish;
     }
 
-    if (JsonValueType(val) == JSON_ARRAY)
+    for (i = 0; i < ArraySize(arr); i++)
     {
-        arr = JsonValueAsArray(val);
-        for (i = 0; i < ArraySize(arr); i++)
+        JsonValue *val = ArrayGet(arr, i);
+        if (!val || JsonValueType(val) != JSON_STRING)
         {
-            val = ArrayGet(arr, i);
-            if (!val || JsonValueType(val) != JSON_STRING)
-            {
-                continue;
-            }
-
-            privileges |= UserDecodePrivilege(JsonValueAsString(val));
+            continue;
         }
+
+        privileges |= UserDecodePrivilege(JsonValueAsString(val));
     }
 
 finish:
@@ -851,7 +846,7 @@ UserDecodePrivilege(const char *p)
     }
 }
 
-JsonValue *
+Array *
 UserEncodePrivileges(int privileges)
 {
     Array *arr = ArrayCreate();
@@ -883,7 +878,7 @@ UserEncodePrivileges(int privileges)
 #undef A
 
 finish:
-    return JsonValueArray(arr);
+    return arr;
 }
 
 UserId *
