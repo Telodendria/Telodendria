@@ -38,6 +38,8 @@ with certain Matrix clients. (#35)
 will now be maintained separately and have its own releases as well.
 - Use a `configure` script and `make` to build Telodendria instead of
 custom scripts.
+- Greatly simplified some endpoint code by using Cytoplasm's `j2s` for
+parsing request bodies.
 
 ### New Features
 
