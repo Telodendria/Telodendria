@@ -1,6 +1,6 @@
-<h1 style="text-align: center;">Telodendria</h1>
+<h1 style="text-align: center;">Lightweight, Decentralized Chat.</h1>
 
-Telodendria is an extremely powerful, yet lightweight and portable
+**Telodendria** is an extremely powerful, yet lightweight and portable
 chat server designed to be easy to install and configure. Powered by
 the [Matrix](https://matrix.org) protocol, Telodendria empowers
 everyone to run their own chat server on ordinary hardware, including
@@ -79,7 +79,7 @@ not yet deliver on all of its promises. Currently, Telodendria is not
 ready for end-users yet. While it features very basic user
 authentication, it does not actually work as a chat server yet.
 
-We are hoping to ship Telodendria `v1.7.0-alpha4` by May of 2024. This
+We are hoping to ship Telodendria `v1.7.0-alpha4` by January of 2025. This
 release should be usable for communication between **local users**
 only. Additional features, including federation with other Matrix
 homeservers will be added in future releases.
