@@ -1,0 +1,21 @@
+{
+  "header": "Schema\/RequestToken.h",
+  "types": {
+    "RequestToken": {
+      "fields": {
+        "client_secret": { "type": "string" },
+        "send_attempt": { "type": "integer" },
+        "next_link": { "type": "string" },
+        "id_access_token": { "type": "string" },
+        "id_server": { "type": "string" },
+        
+        "email": { "type": "string" },
+
+        "country": { "type": "string" },
+        "phone_number": { "type": "string" }
+      },
+      "type": "struct"
+    }
+  },
+  "guard": "TELODENDRIA_SCHEMA_REQUESTTOKEN_H"
+}

@@ -25,6 +25,8 @@
 
 #include <string.h>
 
+#include <Schema/LoginRequest.h>
+
 #include <Cytoplasm/Json.h>
 #include <Cytoplasm/HashMap.h>
 #include <Cytoplasm/Str.h>
@@ -43,12 +45,9 @@ ROUTE_IMPL(RouteLogin, path, argp)
 
     HashMap *identifier;
 
-    char *deviceId = NULL;
-    char *initialDeviceDisplayName = NULL;
-    int refreshToken = 0;
+    LoginRequest loginRequest;
+    LoginRequestUserIdentifier userIdentifier;
 
-    char *password;
-    char *type;
     UserId *userId = NULL;
 
     Db *db = args->matrixArgs->db;
@@ -56,6 +55,14 @@ ROUTE_IMPL(RouteLogin, path, argp)
     User *user;
     UserLoginInfo *loginInfo;
     char *fullUsername;
+
+    char *type;
+    char *initialDeviceDisplayName;
+    char *deviceId;
+    char *password;
+    int refreshToken;
+
+    char *msg;
 
     Config *config = ConfigLock(db);
 
@@ -67,6 +74,9 @@ ROUTE_IMPL(RouteLogin, path, argp)
     }
 
     (void) path;
+
+    memset(&loginRequest, 0, sizeof(LoginRequest));
+    memset(&userIdentifier, 0, sizeof(LoginRequestUserIdentifier));
 
     switch (HttpRequestMethodGet(args->context))
     {
@@ -88,45 +98,21 @@ ROUTE_IMPL(RouteLogin, path, argp)
                 break;
             }
 
-            val = HashMapGet(request, "type");
-            if (!val)
+            if (!LoginRequestFromJson(request, &loginRequest, &msg))
             {
                 HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-                response = MatrixErrorCreate(M_MISSING_PARAM, NULL);
+                response = MatrixErrorCreate(M_BAD_JSON, msg);
                 break;
             }
 
-            if (JsonValueType(val) != JSON_STRING)
-            {
-                HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-                response = MatrixErrorCreate(M_BAD_JSON, NULL);
-                break;
-            }
-
-            type = JsonValueAsString(val);
-            if (!StrEquals(type, "m.login.password"))
+            if (loginRequest.type != REQUEST_TYPE_PASSWORD)
             {
                 HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
                 response = MatrixErrorCreate(M_UNRECOGNIZED, NULL);
                 break;
             }
 
-            val = HashMapGet(request, "identifier");
-            if (!val)
-            {
-                HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-                response = MatrixErrorCreate(M_MISSING_PARAM, NULL);
-                break;
-            }
-
-            if (JsonValueType(val) != JSON_OBJECT)
-            {
-                HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-                response = MatrixErrorCreate(M_BAD_JSON, NULL);
-                break;
-            }
-
-            identifier = JsonValueAsObject(val);
+            identifier = loginRequest.identifier;
 
             val = HashMapGet(identifier, "type");
             if (!val)
@@ -150,23 +136,16 @@ ROUTE_IMPL(RouteLogin, path, argp)
                 response = MatrixErrorCreate(M_UNRECOGNIZED, NULL);
                 break;
             }
-
-            val = HashMapGet(identifier, "user");
-            if (!val)
+            if (!LoginRequestUserIdentifierFromJson(identifier, 
+                                        &userIdentifier, &msg))
             {
                 HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-                response = MatrixErrorCreate(M_MISSING_PARAM, NULL);
+                response = MatrixErrorCreate(M_BAD_JSON, msg);
                 break;
             }
 
-            if (JsonValueType(val) != JSON_STRING)
-            {
-                HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-                response = MatrixErrorCreate(M_BAD_JSON, NULL);
-                break;
-            }
 
-            userId = UserIdParse(JsonValueAsString(val), config->serverName);
+            userId = UserIdParse(userIdentifier.user, config->serverName);
             if (!userId)
             {
                 HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
@@ -181,62 +160,12 @@ ROUTE_IMPL(RouteLogin, path, argp)
                 response = MatrixErrorCreate(M_FORBIDDEN, NULL);
                 break;
             }
+            
+            deviceId = loginRequest.device_id;
 
-            val = HashMapGet(request, "device_id");
-            if (val)
-            {
-                if (JsonValueType(val) != JSON_STRING)
-                {
-                    HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-                    response = MatrixErrorCreate(M_BAD_JSON, NULL);
-                    break;
-                }
-
-                deviceId = JsonValueAsString(val);
-            }
-
-            val = HashMapGet(request, "initial_device_display_name");
-            if (val)
-            {
-                if (JsonValueType(val) != JSON_STRING)
-                {
-                    HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-                    response = MatrixErrorCreate(M_BAD_JSON, NULL);
-                    break;
-                }
-
-                initialDeviceDisplayName = JsonValueAsString(val);
-            }
-
-            val = HashMapGet(request, "password");
-            if (!val)
-            {
-                HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-                response = MatrixErrorCreate(M_MISSING_PARAM, NULL);
-                break;
-            }
-
-            if (JsonValueType(val) != JSON_STRING)
-            {
-                HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-                response = MatrixErrorCreate(M_BAD_JSON, NULL);
-                break;
-            }
-
-            password = JsonValueAsString(val);
-
-            val = HashMapGet(request, "refresh_token");
-            if (val)
-            {
-                if (JsonValueType(val) != JSON_BOOLEAN)
-                {
-                    HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-                    response = MatrixErrorCreate(M_BAD_JSON, NULL);
-                    break;
-                }
-
-                refreshToken = JsonValueAsBoolean(val);
-            }
+            initialDeviceDisplayName =loginRequest.initial_device_display_name;
+            password = loginRequest.password;
+            refreshToken = loginRequest.refresh_token;
 
             user = UserLock(db, userId->localpart);
 
@@ -308,6 +237,9 @@ ROUTE_IMPL(RouteLogin, path, argp)
     UserIdFree(userId);
     JsonFree(request);
     ConfigUnlock(config);
+
+    LoginRequestFree(&loginRequest);
+    LoginRequestUserIdentifierFree(&userIdentifier);
 
     return response;
 }

@@ -28,7 +28,6 @@
 #include <Cytoplasm/Str.h>
 
 #include <User.h>
-#include <Cytoplasm/Log.h>
 
 ROUTE_IMPL(RouteAdminDeactivate, path, argp)
 {

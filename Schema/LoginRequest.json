@@ -1,0 +1,38 @@
+{
+  "header": "Schema\/LoginRequest.h",
+  "types": {
+    "LoginRequestType": {
+      "fields": {
+        "m.login.password": { "name": "REQUEST_TYPE_PASSWORD" }
+      },
+      "type": "enum"
+    },
+    "LoginRequestUserIdentifier": {
+      "fields": {
+        "type": { "type": "string" },
+        "user": { "type": "string" }
+      },
+      "type": "struct"
+    },
+    "LoginRequest": {
+      "fields": {
+        "type": { "type": "LoginRequestType" },
+           
+        "identifier": { "type": "object" },
+        
+        "password": { "type": "string" },
+        "address": { "type": "string" },
+        "user": { "type": "string" },
+        "device_id": { "type": "string" },
+        "initial_device_display_name": { "type": "string" },
+        "medium": { "type": "string" },
+        "token": { "type": "string" },
+
+        "refresh_token": { "type": "boolean" }
+      },
+      "type": "struct"
+    }
+  },
+  "guard": "TELODENDRIA_SCHEMA_LOGIN_REQUEST_H"
+}
+

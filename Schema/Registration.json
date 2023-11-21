@@ -1,0 +1,17 @@
+{
+  "header": "Schema\/Registration.h",
+  "types": {
+    "RegistrationRequest": {
+      "fields": {
+        "username": { "type": "string" },
+        "password": { "type": "string" },
+        "device_id": { "type": "string" },
+        "inhibit_login": { "type": "boolean" },
+        "initial_device_display_name": { "type": "string" },
+        "refresh_token": { "type": "boolean" }
+      },
+      "type": "struct"
+    }
+  },
+  "guard": "TELODENDRIA_SCHEMA_REGISTRATION_H"
+}

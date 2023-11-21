@@ -30,6 +30,8 @@
 #include <Cytoplasm/Str.h>
 #include <Cytoplasm/Memory.h>
 
+#include <Schema/Registration.h>
+
 #include <User.h>
 #include <Uia.h>
 #include <RegToken.h>
@@ -55,22 +57,15 @@ ROUTE_IMPL(RouteRegister, path, argp)
     HashMap *request = NULL;
     HashMap *response = NULL;
 
-    JsonValue *val;
+    RegistrationRequest regReq;
 
     char *kind;
-
-    char *username = NULL;
-    char *password = NULL;
-    char *initialDeviceDisplayName = NULL;
-    int refreshToken = 0;
-    int inhibitLogin = 0;
-    char *deviceId = NULL;
     char *fullUsername;
+    char *msg;
+    char *username;
 
     Db *db = args->matrixArgs->db;
-
     User *user = NULL;
-
     Array *uiaFlows = NULL;
     int uiaResult;
 
@@ -78,6 +73,16 @@ ROUTE_IMPL(RouteRegister, path, argp)
     DbRef *sessionRef;
 
     Config *config = ConfigLock(db);
+
+    regReq.username = NULL;
+    regReq.password = NULL;
+    regReq.device_id = NULL;
+    regReq.initial_device_display_name = NULL;
+    regReq.refresh_token = 0;
+    regReq.inhibit_login = 0;
+
+
+
 
     if (!config)
     {
@@ -102,26 +107,23 @@ ROUTE_IMPL(RouteRegister, path, argp)
             response = MatrixErrorCreate(M_NOT_JSON, NULL);
             goto end;
         }
-
-        val = HashMapGet(request, "username");
-        if (val)
+        if (!RegistrationRequestFromJson(request, &regReq, &msg))
         {
-            if (JsonValueType(val) != JSON_STRING)
-            {
-                HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-                response = MatrixErrorCreate(M_BAD_JSON, NULL);
-                goto finish;
-            }
-            username = StrDuplicate(JsonValueAsString(val));
+            HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
+            response = MatrixErrorCreate(M_NOT_JSON, msg);
+            goto end;
+        }
 
-            if (!UserValidate(username, config->serverName))
+        if (regReq.username)
+        {
+            if (!UserValidate(regReq.username, config->serverName))
             {
                 HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
                 response = MatrixErrorCreate(M_INVALID_USERNAME, NULL);
                 goto finish;
             }
 
-            if (UserExists(db, username))
+            if (UserExists(db, regReq.username))
             {
                 HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
                 response = MatrixErrorCreate(M_USER_IN_USE, NULL);
@@ -158,99 +160,44 @@ ROUTE_IMPL(RouteRegister, path, argp)
         /* We don't support guest accounts yet */
         if (kind && !StrEquals(kind, "user"))
         {
+            msg = "Guest accounts are currently not supported";
             HttpResponseStatus(args->context, HTTP_FORBIDDEN);
-            response = MatrixErrorCreate(M_INVALID_PARAM, NULL);
+            response = MatrixErrorCreate(M_INVALID_PARAM, msg);
             goto finish;
         }
 
-        val = HashMapGet(request, "password");
-        if (!val)
+        if (!regReq.password)
         {
+            msg = "'password' field is unset";
             HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-            response = MatrixErrorCreate(M_MISSING_PARAM, NULL);
+            response = MatrixErrorCreate(M_MISSING_PARAM, msg);
             goto finish;
         }
 
-        if (JsonValueType(val) != JSON_STRING)
-        {
-            HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-            response = MatrixErrorCreate(M_BAD_JSON, NULL);
-            goto finish;
-        }
+        /* All of the other fields are optional, we don't have to check 
+         * them. */
 
-        password = StrDuplicate(JsonValueAsString(val));
-
-        val = HashMapGet(request, "device_id");
-        if (val)
-        {
-            if (JsonValueType(val) != JSON_STRING)
-            {
-                HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-                response = MatrixErrorCreate(M_BAD_JSON, NULL);
-                goto finish;
-            }
-
-            deviceId = StrDuplicate(JsonValueAsString(val));
-        }
-
-        val = HashMapGet(request, "inhibit_login");
-        if (val)
-        {
-            if (JsonValueType(val) != JSON_BOOLEAN)
-            {
-                HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-                response = MatrixErrorCreate(M_BAD_JSON, NULL);
-                goto finish;
-            }
-
-            inhibitLogin = JsonValueAsBoolean(val);
-        }
-
-        val = HashMapGet(request, "initial_device_display_name");
-        if (val)
-        {
-            if (JsonValueType(val) != JSON_STRING)
-            {
-                HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-                response = MatrixErrorCreate(M_BAD_JSON, NULL);
-                goto finish;
-            }
-
-            initialDeviceDisplayName = StrDuplicate(JsonValueAsString(val));
-        }
-
-        val = HashMapGet(request, "refresh_token");
-        if (val)
-        {
-            if (JsonValueType(val) != JSON_BOOLEAN)
-            {
-                HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-                response = MatrixErrorCreate(M_BAD_JSON, NULL);
-                goto finish;
-            }
-
-            refreshToken = JsonValueAsBoolean(val);
-        }
-
-        user = UserCreate(db, username, password);
+        user = UserCreate(db, regReq.username, regReq.password);
         response = HashMapCreate();
 
-        fullUsername = StrConcat(4, "@", UserGetName(user), ":", config->serverName);
+        fullUsername = StrConcat(4, 
+            "@", UserGetName(user), ":", config->serverName);
         HashMapSet(response, "user_id", JsonValueString(fullUsername));
         Free(fullUsername);
 
         HttpResponseStatus(args->context, HTTP_OK);
-        if (!inhibitLogin)
+        if (!regReq.inhibit_login)
         {
-            UserLoginInfo *loginInfo = UserLogin(user, password, deviceId,
-                              initialDeviceDisplayName, refreshToken);
+            UserLoginInfo *loginInfo = UserLogin(user, regReq.password, 
+                regReq.device_id, regReq.initial_device_display_name, 
+                regReq.refresh_token);
 
             HashMapSet(response, "access_token",
                      JsonValueString(loginInfo->accessToken->string));
             HashMapSet(response, "device_id",
                    JsonValueString(loginInfo->accessToken->deviceId));
 
-            if (refreshToken)
+            if (regReq.refresh_token)
             {
                 HashMapSet(response, "expires_in_ms",
                   JsonValueInteger(loginInfo->accessToken->lifetime));
@@ -294,10 +241,7 @@ ROUTE_IMPL(RouteRegister, path, argp)
         UserUnlock(user);
 finish:
         UiaFlowsFree(uiaFlows);
-        Free(username);
-        Free(password);
-        Free(deviceId);
-        Free(initialDeviceDisplayName);
+        RegistrationRequestFree(&regReq);
         JsonFree(request);
     }
     else

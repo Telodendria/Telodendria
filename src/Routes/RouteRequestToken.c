@@ -26,14 +26,31 @@
 #include <Cytoplasm/Str.h>
 #include <Cytoplasm/Json.h>
 
+#include <Schema/RequestToken.h>
+
 ROUTE_IMPL(RouteRequestToken, path, argp)
 {
     RouteArgs *args = argp;
     char *type = ArrayGet(path, 0);
     HashMap *request;
     HashMap *response;
-    JsonValue *val;
-    char *str;
+
+    char *msg;
+
+    RequestToken reqTok;
+
+    Int64 minusOne = Int64Neg(Int64Create(0, 1));
+
+    reqTok.client_secret = NULL;
+    reqTok.next_link = NULL;
+    reqTok.id_access_token = NULL;
+    reqTok.id_server = NULL;
+
+    reqTok.email = NULL;
+    reqTok.country = NULL;
+    reqTok.phone_number = NULL;
+
+    reqTok.send_attempt = minusOne;
 
     if (HttpRequestMethodGet(args->context) != HTTP_POST)
     {
@@ -48,87 +65,92 @@ ROUTE_IMPL(RouteRequestToken, path, argp)
         return MatrixErrorCreate(M_NOT_JSON, NULL);
     }
 
-    val = HashMapGet(request, "client_secret");
-    if (!val || JsonValueType(val) != JSON_STRING)
+    if (!RequestTokenFromJson(request, &reqTok, &msg))
     {
         HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-        response = MatrixErrorCreate(M_BAD_JSON, NULL);
+        response = MatrixErrorCreate(M_BAD_JSON, msg);
         goto finish;
     }
 
-    str = JsonValueAsString(val);
-    if (strlen(str) > 255 || StrBlank(str))
+    if (!reqTok.client_secret)
     {
+        msg = "'client_secret' is not set";
         HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-        response = MatrixErrorCreate(M_BAD_JSON, NULL);
+        response = MatrixErrorCreate(M_BAD_JSON, msg);
         goto finish;
     }
 
-    val = HashMapGet(request, "send_attempt");
-    if (!val || JsonValueType(val) != JSON_INTEGER)
+    if (strlen(reqTok.client_secret) > 255 || StrBlank(reqTok.client_secret))
     {
+        msg = "'client_secret' is blank or too long";
         HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-        response = MatrixErrorCreate(M_BAD_JSON, NULL);
+        response = MatrixErrorCreate(M_BAD_JSON, msg);
         goto finish;
     }
 
-    val = HashMapGet(request, "next_link");
-    if (val && JsonValueType(val) != JSON_STRING)
+    if (Int64Eq(reqTok.send_attempt, minusOne))
     {
+        msg = "Invalid or inexistent 'send_attempt'";
         HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-        response = MatrixErrorCreate(M_BAD_JSON, NULL);
+        response = MatrixErrorCreate(M_BAD_JSON, msg);
         goto finish;
     }
 
-    val = HashMapGet(request, "id_access_token");
-    if (val && JsonValueType(val) != JSON_STRING)
+    if (!reqTok.next_link)
     {
+        msg = "'next_link' is not set";
         HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-        response = MatrixErrorCreate(M_BAD_JSON, NULL);
+        response = MatrixErrorCreate(M_BAD_JSON, msg);
         goto finish;
     }
-
-    val = HashMapGet(request, "id_server");
-    if (val && JsonValueType(val) != JSON_STRING)
+    if (!reqTok.id_access_token)
     {
+        msg = "'id_access_token' is not set";
         HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-        response = MatrixErrorCreate(M_BAD_JSON, NULL);
+        response = MatrixErrorCreate(M_BAD_JSON, msg);
+        goto finish;
+    }
+    if (!reqTok.id_server)
+    {
+        msg = "'id_server' is not set";
+        HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
+        response = MatrixErrorCreate(M_BAD_JSON, msg);
         goto finish;
     }
 
     if (StrEquals(type, "email"))
     {
-        val = HashMapGet(request, "email");
-        if (val && JsonValueType(val) != JSON_STRING)
+        if (!reqTok.email)
         {
+            msg = "Type is set to 'email' yet none was set";
             HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-            response = MatrixErrorCreate(M_BAD_JSON, NULL);
+            response = MatrixErrorCreate(M_BAD_JSON, msg);
             goto finish;
         }
     }
     else if (StrEquals(type, "msisdn"))
     {
-        val = HashMapGet(request, "country");
-        if (val && JsonValueType(val) != JSON_STRING)
+        if (!reqTok.country)
         {
+            msg = "Type is set to 'msisdn' yet no country is set";
             HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-            response = MatrixErrorCreate(M_BAD_JSON, NULL);
+            response = MatrixErrorCreate(M_BAD_JSON, msg);
             goto finish;
         }
 
-        str = JsonValueAsString(val);
-        if (strlen(str) != 2)
+        if (strlen(reqTok.country) != 2)
         {
+            msg = "Invalid country tag, length must be 2";
             HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-            response = MatrixErrorCreate(M_BAD_JSON, NULL);
+            response = MatrixErrorCreate(M_BAD_JSON, msg);
             goto finish;
         }
 
-        val = HashMapGet(request, "phone_number");
-        if (val && JsonValueType(val) != JSON_STRING)
+        if (!reqTok.phone_number)
         {
+            msg = "Type is set to 'msisdn' yet phone_number is unset";
             HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-            response = MatrixErrorCreate(M_BAD_JSON, NULL);
+            response = MatrixErrorCreate(M_BAD_JSON, msg);
             goto finish;
         }
     }
@@ -145,5 +167,6 @@ ROUTE_IMPL(RouteRequestToken, path, argp)
 
 finish:
     JsonFree(request);
+    RequestTokenFree(&reqTok);
     return response;
 }
