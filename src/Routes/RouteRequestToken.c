@@ -54,8 +54,9 @@ ROUTE_IMPL(RouteRequestToken, path, argp)
 
     if (HttpRequestMethodGet(args->context) != HTTP_POST)
     {
+        msg = "This route only accepts POST.";
         HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-        return MatrixErrorCreate(M_UNRECOGNIZED, NULL);
+        return MatrixErrorCreate(M_UNRECOGNIZED, msg);
     }
 
     request = JsonDecode(HttpServerStream(args->context));

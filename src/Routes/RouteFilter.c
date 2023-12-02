@@ -69,6 +69,8 @@ ROUTE_IMPL(RouteFilter, path, argp)
 
     char *userParam = ArrayGet(path, 0);
 
+    char *msg;
+
     if (!userParam)
     {
         /* Should be impossible */
@@ -87,15 +89,17 @@ ROUTE_IMPL(RouteFilter, path, argp)
     id = UserIdParse(userParam, serverName);
     if (!id)
     {
+        msg = "Invalid user ID.";
         HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-        response = MatrixErrorCreate(M_INVALID_PARAM, NULL);
+        response = MatrixErrorCreate(M_INVALID_PARAM, msg);
         goto finish;
     }
 
     if (!StrEquals(id->server, serverName))
     {
+        msg = "Cannot use /filter for non-local users.";
         HttpResponseStatus(args->context, HTTP_UNAUTHORIZED);
-        response = MatrixErrorCreate(M_UNAUTHORIZED, NULL);
+        response = MatrixErrorCreate(M_UNAUTHORIZED, msg);
         goto finish;
     }
 
@@ -115,8 +119,9 @@ ROUTE_IMPL(RouteFilter, path, argp)
 
     if (!StrEquals(id->localpart, UserGetName(user)))
     {
+        msg = "Unauthorized to use /filter.";
         HttpResponseStatus(args->context, HTTP_UNAUTHORIZED);
-        response = MatrixErrorCreate(M_INVALID_PARAM, NULL);
+        response = MatrixErrorCreate(M_INVALID_PARAM, msg);
         goto finish;
     }
 
@@ -126,8 +131,9 @@ ROUTE_IMPL(RouteFilter, path, argp)
 
         if (!ref)
         {
+            msg = "The filter for this user was not found.";
             HttpResponseStatus(args->context, HTTP_NOT_FOUND);
-            response = MatrixErrorCreate(M_NOT_FOUND, NULL);
+            response = MatrixErrorCreate(M_NOT_FOUND, msg);
             goto finish;
         }
 
@@ -161,8 +167,9 @@ ROUTE_IMPL(RouteFilter, path, argp)
         filterId = StrRandom(12);
         if (!filterId)
         {
+            msg = "Couldn't generate random filter ID; this is unintended.";
             HttpResponseStatus(args->context, HTTP_INTERNAL_SERVER_ERROR);
-            response = MatrixErrorCreate(M_UNKNOWN, NULL);
+            response = MatrixErrorCreate(M_UNKNOWN, msg);
             goto finish;
         }
 
@@ -170,8 +177,9 @@ ROUTE_IMPL(RouteFilter, path, argp)
         if (!ref)
         {
             Free(filterId);
+            msg = "Couldn't write filter to the database, this is unintended.";
             HttpResponseStatus(args->context, HTTP_INTERNAL_SERVER_ERROR);
-            response = MatrixErrorCreate(M_UNKNOWN, NULL);
+            response = MatrixErrorCreate(M_UNKNOWN, msg);
             goto finish;
         }
 

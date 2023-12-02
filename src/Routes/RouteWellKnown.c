@@ -37,11 +37,14 @@ ROUTE_IMPL(RouteWellKnown, path, argp)
 
     Config *config = ConfigLock(args->matrixArgs->db);
 
+    char *msg;
+
     if (!config)
     {
         Log(LOG_ERR, "Well-known endpoint failed to lock configuration.");
+        msg = "Internal server error: couldn't lock database.";
         HttpResponseStatus(args->context, HTTP_INTERNAL_SERVER_ERROR);
-        return MatrixErrorCreate(M_UNKNOWN, NULL);
+        return MatrixErrorCreate(M_UNKNOWN, msg);
     }
 
     if (StrEquals(ArrayGet(path, 0), "client"))

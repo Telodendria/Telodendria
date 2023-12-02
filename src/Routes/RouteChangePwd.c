@@ -65,6 +65,8 @@ ROUTE_IMPL(RouteChangePwd, path, argp)
     char *token;
     char *newPassword;
 
+    char *msg;
+
     Config *config = ConfigLock(db);
 
     if (!config)
@@ -78,8 +80,9 @@ ROUTE_IMPL(RouteChangePwd, path, argp)
 
     if (HttpRequestMethodGet(args->context) != HTTP_POST)
     {
+        msg = "Route only supports POST.";
         HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-        response = MatrixErrorCreate(M_UNRECOGNIZED, NULL);
+        response = MatrixErrorCreate(M_UNRECOGNIZED, msg);
         goto finish;
     }
 
@@ -118,9 +121,10 @@ ROUTE_IMPL(RouteChangePwd, path, argp)
     newPassword = JsonValueAsString(HashMapGet(request, "new_password"));
     if (!newPassword)
     {
+        msg = "'new_password' is unset or not a string.";
         JsonFree(request);
         HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-        response = MatrixErrorCreate(M_BAD_JSON, NULL);
+        response = MatrixErrorCreate(M_BAD_JSON, msg);
         goto finish;
     }
 

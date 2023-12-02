@@ -38,14 +38,17 @@ ROUTE_IMPL(RouteLogout, path, argp)
 
     char *tokenstr;
 
+    char *msg;
+
     Db *db = args->matrixArgs->db;
 
     User *user;
 
     if (HttpRequestMethodGet(args->context) != HTTP_POST)
     {
+        msg = "This route only accepts POST.";
         HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-        return MatrixErrorCreate(M_UNRECOGNIZED, NULL);
+        return MatrixErrorCreate(M_UNRECOGNIZED, msg);
     }
 
     response = MatrixGetAccessToken(args->context, &tokenstr);
@@ -84,8 +87,9 @@ ROUTE_IMPL(RouteLogout, path, argp)
     {
         if (!UserDeleteToken(user, tokenstr))
         {
+            msg = "Internal server error: couldn't delete token.";
             HttpResponseStatus(args->context, HTTP_INTERNAL_SERVER_ERROR);
-            response = MatrixErrorCreate(M_UNKNOWN, NULL);
+            response = MatrixErrorCreate(M_UNKNOWN, msg);
             goto finish;
         }
 

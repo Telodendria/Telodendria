@@ -41,13 +41,15 @@ ROUTE_IMPL(RouteTokenValid, path, argp)
     RegTokenInfo *info = NULL;
 
     char *tokenstr;
+    char *msg;
 
     (void) path;
 
     if (HttpRequestMethodGet(args->context) != HTTP_GET)
     {
+        msg = "This route only accepts GET.";
         HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-        return MatrixErrorCreate(M_UNRECOGNIZED, NULL);
+        return MatrixErrorCreate(M_UNRECOGNIZED, msg);
     }
 
     request = JsonDecode(HttpServerStream(args->context));

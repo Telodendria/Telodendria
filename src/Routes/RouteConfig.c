@@ -33,6 +33,7 @@ ROUTE_IMPL(RouteConfig, path, argp)
     RouteArgs *args = argp;
     HashMap *response;
     char *token;
+    char *msg;
 
     User *user = NULL;
     Config *config = NULL;
@@ -59,17 +60,19 @@ ROUTE_IMPL(RouteConfig, path, argp)
 
     if (!(UserGetPrivileges(user) & USER_CONFIG))
     {
+        msg = "User does not have the 'CONFIG' privilege.";
         HttpResponseStatus(args->context, HTTP_FORBIDDEN);
-        response = MatrixErrorCreate(M_FORBIDDEN, NULL);
+        response = MatrixErrorCreate(M_FORBIDDEN, msg);
         goto finish;
     }
 
     config = ConfigLock(args->matrixArgs->db);
     if (!config)
     {
+        msg = "Internal server error while locking configuration.";
         Log(LOG_ERR, "Config endpoint failed to lock configuration.");
         HttpResponseStatus(args->context, HTTP_INTERNAL_SERVER_ERROR);
-        response = MatrixErrorCreate(M_UNKNOWN, NULL);
+        response = MatrixErrorCreate(M_UNKNOWN, msg);
         goto finish;
     }
 
@@ -90,8 +93,9 @@ ROUTE_IMPL(RouteConfig, path, argp)
             newConf = ConfigParse(request);
             if (!newConf)
             {
+                msg = "Internal server error while parsing config.";
                 HttpResponseStatus(args->context, HTTP_INTERNAL_SERVER_ERROR);
-                response = MatrixErrorCreate(M_UNKNOWN, NULL);
+                response = MatrixErrorCreate(M_UNKNOWN, msg);
                 break;
             }
 
@@ -108,8 +112,9 @@ ROUTE_IMPL(RouteConfig, path, argp)
                 }
                 else
                 {
+                    msg = "Internal server error while writing the config.";
                     HttpResponseStatus(args->context, HTTP_INTERNAL_SERVER_ERROR);
-                    response = MatrixErrorCreate(M_UNKNOWN, NULL);
+                    response = MatrixErrorCreate(M_UNKNOWN, msg);
                 }
             }
             else
@@ -137,8 +142,9 @@ ROUTE_IMPL(RouteConfig, path, argp)
 
             if (!newConf)
             {
+                msg = "Internal server error while parsing config.";
                 HttpResponseStatus(args->context, HTTP_INTERNAL_SERVER_ERROR);
-                response = MatrixErrorCreate(M_UNKNOWN, NULL);
+                response = MatrixErrorCreate(M_UNKNOWN, msg);
                 break;
             }
 
@@ -155,8 +161,9 @@ ROUTE_IMPL(RouteConfig, path, argp)
                 }
                 else
                 {
+                    msg = "Internal server error while writing the config.";
                     HttpResponseStatus(args->context, HTTP_INTERNAL_SERVER_ERROR);
-                    response = MatrixErrorCreate(M_UNKNOWN, NULL);
+                    response = MatrixErrorCreate(M_UNKNOWN, msg);
                 }
             }
             else
@@ -170,8 +177,9 @@ ROUTE_IMPL(RouteConfig, path, argp)
             JsonFree(newJson);
             break;
         default:
+            msg = "Unknown request method.";
             HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-            response = MatrixErrorCreate(M_UNRECOGNIZED, "Unknown request method.");
+            response = MatrixErrorCreate(M_UNRECOGNIZED, msg);
             break;
     }
 

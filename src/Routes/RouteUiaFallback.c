@@ -36,6 +36,8 @@ ROUTE_IMPL(RouteUiaFallback, path, argp)
     char *authType = ArrayGet(path, 0);
     char *sessionId;
 
+    char *msg;
+
     if (!authType)
     {
         /* This should never happen */
@@ -56,9 +58,10 @@ ROUTE_IMPL(RouteUiaFallback, path, argp)
         config = ConfigLock(args->matrixArgs->db);
         if (!config)
         {
+            msg = "Internal server error: failed to lock configuration.";
             Log(LOG_ERR, "UIA fallback failed to lock configuration.");
             HttpResponseStatus(args->context, HTTP_INTERNAL_SERVER_ERROR);
-            return MatrixErrorCreate(M_UNKNOWN, NULL);
+            return MatrixErrorCreate(M_UNKNOWN, msg);
         }
 
         request = JsonDecode(HttpServerStream(args->context));
@@ -93,15 +96,17 @@ ROUTE_IMPL(RouteUiaFallback, path, argp)
     }
     else if (HttpRequestMethodGet(args->context) != HTTP_GET)
     {
+        msg = "Route only supports GET.";
         HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-        return MatrixErrorCreate(M_UNRECOGNIZED, NULL);
+        return MatrixErrorCreate(M_UNRECOGNIZED, msg);
     }
 
     sessionId = HashMapGet(requestParams, "session");
     if (!sessionId)
     {
+        msg = "'session' parameter is unset.";
         HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-        return MatrixErrorCreate(M_MISSING_PARAM, NULL);
+        return MatrixErrorCreate(M_MISSING_PARAM, msg);
     }
 
     HttpResponseHeader(args->context, "Content-Type", "text/html");
@@ -121,25 +126,25 @@ ROUTE_IMPL(RouteUiaFallback, path, argp)
         HtmlEndForm(stream);
         HtmlBeginJs(stream);
         StreamPrintf(stream,
-                     "function buildRequest() {"
+                 "function buildRequest() {"
                  "  let user = document.getElementById('user').value;"
-             "  let pass = document.getElementById('password').value;"
-                     "  if (!user || !pass) {"
-        "    setFormError('Please specify a username and password.');"
-                     "    return false;"
-                     "  }"
-                     "  return {"
-                     "    auth: {"
-                     "      type: '%s',"
-                     "      identifier: {"
-                     "        type: 'm.id.user',"
-                     "        user: user"
-                     "      },"
-                     "      password: pass,"
-                     "      session: '%s'"
-                     "    }"
-                     "  };"
-                     "}", authType, sessionId);
+                 "  let pass = document.getElementById('password').value;"
+                 "  if (!user || !pass) {"
+                 "    setFormError('Please specify a username and password.');"
+                 "    return false;"
+                 "  }"
+                 "  return {"
+                 "    auth: {"
+                 "      type: '%s',"
+                 "      identifier: {"
+                 "        type: 'm.id.user',"
+                 "        user: user"
+                 "      },"
+                 "      password: pass,"
+                 "      session: '%s'"
+                 "    }"
+                 "  };"
+                 "}", authType, sessionId);
         HtmlEndJs(stream);
     }
     else if (StrEquals(authType, "m.login.registration_token"))
@@ -186,10 +191,10 @@ ROUTE_IMPL(RouteUiaFallback, path, argp)
                  "function processResponse(xhr) {"
                  "  let r = JSON.parse(xhr.responseText);"
                  "  console.log(r);"
-            "  if (xhr.status == 200 || r.completed.includes('%s')) {"
+                 "  if (xhr.status == 200 || r.completed.includes('%s')) {"
                  "    if (window.onAuthDone) {"
                  "      window.onAuthDone();"
-        "    } else if (window.opener && window.opener.postMessage) {"
+                 "    } else if (window.opener && window.opener.postMessage) {"
                  "      window.opener.postMessage('authDone', '*');"
                  "    } else {"
                  "      setFormError('Client error.');"

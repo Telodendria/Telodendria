@@ -47,6 +47,8 @@ ROUTE_IMPL(RouteDeactivate, path, argp)
     User *user = NULL;
     Config *config = ConfigLock(db);
 
+    char *msg;
+
     (void) path;
 
     if (!config)
@@ -59,8 +61,9 @@ ROUTE_IMPL(RouteDeactivate, path, argp)
 
     if (HttpRequestMethodGet(args->context) != HTTP_POST)
     {
+        msg = "Route only accepts POST.";
         HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-        response = MatrixErrorCreate(M_UNRECOGNIZED, NULL);
+        response = MatrixErrorCreate(M_UNRECOGNIZED, msg);
         goto finish;
     }
 
@@ -128,8 +131,9 @@ ROUTE_IMPL(RouteDeactivate, path, argp)
 
     if (!UserDeleteTokens(user, NULL) || !UserDeactivate(user, NULL, NULL))
     {
+        msg = "Internal server error: couldn't remove user properly.";
         HttpResponseStatus(args->context, HTTP_INTERNAL_SERVER_ERROR);
-        response = MatrixErrorCreate(M_UNKNOWN, NULL);
+        response = MatrixErrorCreate(M_UNKNOWN, msg);
         goto finish;
     }
 

@@ -222,6 +222,8 @@ UiaComplete(Array * flows, HttpServerContext * context, Db * db,
     HashMap *dbJson;
     int ret;
 
+    char *msg;
+
     if (!flows)
     {
         return -1;
@@ -242,8 +244,9 @@ UiaComplete(Array * flows, HttpServerContext * context, Db * db,
 
     if (JsonValueType(val) != JSON_OBJECT)
     {
+        msg = "'auth' is not an object.";
         HttpResponseStatus(context, HTTP_BAD_REQUEST);
-        *response = MatrixErrorCreate(M_BAD_JSON, NULL);
+        *response = MatrixErrorCreate(M_BAD_JSON, msg);
         return 0;
     }
 
@@ -252,8 +255,9 @@ UiaComplete(Array * flows, HttpServerContext * context, Db * db,
 
     if (!val || JsonValueType(val) != JSON_STRING)
     {
+        msg = "'auth->session' is unset or not a string.";
         HttpResponseStatus(context, HTTP_BAD_REQUEST);
-        *response = MatrixErrorCreate(M_BAD_JSON, NULL);
+        *response = MatrixErrorCreate(M_BAD_JSON, msg);
         return 0;
     }
 
@@ -311,8 +315,9 @@ UiaComplete(Array * flows, HttpServerContext * context, Db * db,
 
     if (!val || JsonValueType(val) != JSON_STRING)
     {
+        msg = "'auth->type' is unset or not a string.";
         HttpResponseStatus(context, HTTP_BAD_REQUEST);
-        *response = MatrixErrorCreate(M_BAD_JSON, NULL);
+        *response = MatrixErrorCreate(M_BAD_JSON, msg);
         ret = 0;
         goto finish;
     }

@@ -48,6 +48,8 @@ ROUTE_IMPL(RouteUserProfile, path, argp)
     char *token = NULL;
     char *value = NULL;
 
+    char *msg;
+
     Config *config = ConfigLock(db);
 
     if (!config)
@@ -63,15 +65,18 @@ ROUTE_IMPL(RouteUserProfile, path, argp)
     userId = UserIdParse(username, serverName);
     if (!userId)
     {
+        msg = "Invalid user ID.";
         HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-        response = MatrixErrorCreate(M_INVALID_PARAM, NULL);
+        response = MatrixErrorCreate(M_INVALID_PARAM, msg);
         goto finish;
     }
     if (strcmp(userId->server, serverName))
     {
         /* TODO: Implement lookup over federation. */
+        msg =   "User profile endpoint currently doesn't support lookup over "
+                "federation.";
         HttpResponseStatus(args->context, HTTP_FORBIDDEN);
-        response = MatrixErrorCreate(M_FORBIDDEN, NULL);
+        response = MatrixErrorCreate(M_FORBIDDEN, msg);
         goto finish;
     }
 
@@ -82,8 +87,9 @@ ROUTE_IMPL(RouteUserProfile, path, argp)
             user = UserLock(db, userId->localpart);
             if (!user)
             {
+                msg = "Couldn't lock user.";
                 HttpResponseStatus(args->context, HTTP_NOT_FOUND);
-                response = MatrixErrorCreate(M_NOT_FOUND, NULL);
+                response = MatrixErrorCreate(M_NOT_FOUND, msg);
                 goto finish;
             }
 
@@ -138,7 +144,7 @@ ROUTE_IMPL(RouteUserProfile, path, argp)
                     StrEquals(entry, "avatar_url"))
                 {
                     /* Check if user has privilege to do that action. */
-                    if (strcmp(userId->localpart, UserGetName(user)) == 0)
+                    if (StrEquals(userId->localpart, UserGetName(user)))
                     {
                         value = JsonValueAsString(HashMapGet(request, entry));
                         /* TODO: Make UserSetProfile notify other
@@ -148,14 +154,16 @@ ROUTE_IMPL(RouteUserProfile, path, argp)
                         goto finish;
                     }
                     /* User is not allowed to carry-on the action */
+                    msg = "Cannot change another user's profile.";
                     HttpResponseStatus(args->context, HTTP_FORBIDDEN);
-                    response = MatrixErrorCreate(M_FORBIDDEN, NULL);
+                    response = MatrixErrorCreate(M_FORBIDDEN, msg);
                     goto finish;
                 }
                 else
                 {
+                    msg = "Invalid property being changed.";
                     HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-                    response = MatrixErrorCreate(M_UNRECOGNIZED, NULL);
+                    response = MatrixErrorCreate(M_UNRECOGNIZED, msg);
                     goto finish;
                 }
             }
@@ -166,8 +174,9 @@ ROUTE_IMPL(RouteUserProfile, path, argp)
                 goto finish;
             }
         default:
+            msg = "Route only accepts GET and PUT.";
             HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-            response = MatrixErrorCreate(M_UNKNOWN, NULL);
+            response = MatrixErrorCreate(M_UNKNOWN, msg);
             break;
     }
 finish:

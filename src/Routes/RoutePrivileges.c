@@ -39,6 +39,8 @@ ROUTE_IMPL(RoutePrivileges, path, argp)
     JsonValue *val;
     int privileges;
 
+    char *msg;
+
     response = MatrixGetAccessToken(args->context, &token);
     if (response)
     {
@@ -55,8 +57,9 @@ ROUTE_IMPL(RoutePrivileges, path, argp)
 
     if (!(UserGetPrivileges(user) & USER_GRANT_PRIVILEGES))
     {
+        msg = "User doesn't have the GRANT_PRIVILEGES privilege";
         HttpResponseStatus(args->context, HTTP_FORBIDDEN);
-        response = MatrixErrorCreate(M_FORBIDDEN, NULL);
+        response = MatrixErrorCreate(M_FORBIDDEN, msg);
         goto finish;
     }
 
@@ -68,8 +71,9 @@ ROUTE_IMPL(RoutePrivileges, path, argp)
         user = UserLock(args->matrixArgs->db, ArrayGet(path, 0));
         if (!user)
         {
+            msg = "Unknown user.";
             HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-            response = MatrixErrorCreate(M_INVALID_PARAM, NULL);
+            response = MatrixErrorCreate(M_INVALID_PARAM, msg);
             goto finish;
         }
     }
@@ -90,8 +94,9 @@ ROUTE_IMPL(RoutePrivileges, path, argp)
             val = HashMapGet(request, "privileges");
             if (!val || JsonValueType(val) != JSON_ARRAY)
             {
+                msg = "'privileges' is unset or not an array.";
                 HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-                response = MatrixErrorCreate(M_BAD_JSON, NULL);
+                response = MatrixErrorCreate(M_BAD_JSON, msg);
                 break;
             }
 
@@ -116,8 +121,9 @@ ROUTE_IMPL(RoutePrivileges, path, argp)
 
             if (!UserSetPrivileges(user, privileges))
             {
+                msg = "Internal server error: couldn't set privileges.";
                 HttpResponseStatus(args->context, HTTP_INTERNAL_SERVER_ERROR);
-                response = MatrixErrorCreate(M_UNKNOWN, NULL);
+                response = MatrixErrorCreate(M_UNKNOWN, msg);
                 break;
             }
 
@@ -127,8 +133,9 @@ ROUTE_IMPL(RoutePrivileges, path, argp)
             HashMapSet(response, "privileges", JsonValueArray(UserEncodePrivileges(UserGetPrivileges(user))));
             break;
         default:
+            msg = "Route only accepts POST, PUT, DELETE, and GET.";
             HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-            response = MatrixErrorCreate(M_UNRECOGNIZED, NULL);
+            response = MatrixErrorCreate(M_UNRECOGNIZED, msg);
             goto finish;
             break;
     }

@@ -86,9 +86,10 @@ ROUTE_IMPL(RouteRegister, path, argp)
 
     if (!config)
     {
+        msg = "Internal server error while locking configuration.";
         Log(LOG_ERR, "Registration endpoint failed to lock configuration.");
         HttpResponseStatus(args->context, HTTP_INTERNAL_SERVER_ERROR);
-        return MatrixErrorCreate(M_UNKNOWN, NULL);
+        return MatrixErrorCreate(M_UNKNOWN, msg);
     }
 
     if (ArraySize(path) == 0)
@@ -254,8 +255,9 @@ finish:
 
             if (!username)
             {
+                msg = "'username' path parameter is not set.";
                 HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-                response = MatrixErrorCreate(M_MISSING_PARAM, NULL);
+                response = MatrixErrorCreate(M_MISSING_PARAM, msg);
             }
             else if (!UserValidate(username, config->serverName))
             {

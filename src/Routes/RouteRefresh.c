@@ -45,6 +45,8 @@ ROUTE_IMPL(RouteRefresh, path, argp)
     UserAccessToken *newAccessToken;
     char *deviceId;
 
+    char *msg;
+
     Db *db = args->matrixArgs->db;
 
     User *user = NULL;
@@ -55,8 +57,9 @@ ROUTE_IMPL(RouteRefresh, path, argp)
 
     if (HttpRequestMethodGet(args->context) != HTTP_POST)
     {
+        msg = "This route only accepts POST.";
         HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-        return MatrixErrorCreate(M_UNRECOGNIZED, NULL);
+        return MatrixErrorCreate(M_UNRECOGNIZED, msg);
     }
 
     request = JsonDecode(HttpServerStream(args->context));
@@ -69,8 +72,9 @@ ROUTE_IMPL(RouteRefresh, path, argp)
     val = HashMapGet(request, "refresh_token");
     if (!val || JsonValueType(val) != JSON_STRING)
     {
+        msg = "'refresh_token' is unset or not a string.";
         HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-        response = MatrixErrorCreate(M_BAD_JSON, NULL);
+        response = MatrixErrorCreate(M_BAD_JSON, msg);
         goto finish;
     }
 

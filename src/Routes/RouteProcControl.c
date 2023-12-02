@@ -37,6 +37,7 @@ ROUTE_IMPL(RouteProcControl, path, argp)
     char *op = ArrayGet(path, 0);
     HashMap *response;
     char *token;
+    char *msg;
     User *user = NULL;
 
     response = MatrixGetAccessToken(args->context, &token);
@@ -55,11 +56,13 @@ ROUTE_IMPL(RouteProcControl, path, argp)
 
     if (!(UserGetPrivileges(user) & USER_PROC_CONTROL))
     {
+        msg = "User doesn't have PROC_CONTROL privilege.";
         HttpResponseStatus(args->context, HTTP_FORBIDDEN);
-        response = MatrixErrorCreate(M_FORBIDDEN, NULL);
+        response = MatrixErrorCreate(M_FORBIDDEN, msg);
         goto finish;
     }
 
+    msg = "Unknown operation.";
     switch (HttpRequestMethodGet(args->context))
     {
         case HTTP_POST:
@@ -74,7 +77,7 @@ ROUTE_IMPL(RouteProcControl, path, argp)
             else
             {
                 HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-                response = MatrixErrorCreate(M_UNRECOGNIZED, NULL);
+                response = MatrixErrorCreate(M_UNRECOGNIZED, msg);
                 goto finish;
             }
             break;
@@ -106,12 +109,12 @@ ROUTE_IMPL(RouteProcControl, path, argp)
             else
             {
                 HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-                response = MatrixErrorCreate(M_UNRECOGNIZED, NULL);
+                response = MatrixErrorCreate(M_UNRECOGNIZED, msg);
                 goto finish;
             }
         default:
             HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-            response = MatrixErrorCreate(M_UNRECOGNIZED, NULL);
+            response = MatrixErrorCreate(M_UNRECOGNIZED, msg);
             goto finish;
             break;
     }

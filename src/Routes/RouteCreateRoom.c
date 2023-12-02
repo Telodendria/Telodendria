@@ -41,8 +41,9 @@ ROUTE_IMPL(RouteCreateRoom, path, argp)
 
     if (HttpRequestMethodGet(args->context) != HTTP_POST)
     {
+        err = "Unknown request method.";
         HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-        response = MatrixErrorCreate(M_UNRECOGNIZED, "Unknown request method.");
+        response = MatrixErrorCreate(M_UNRECOGNIZED, err);
         goto finish;
     }
 

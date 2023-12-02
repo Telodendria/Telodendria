@@ -107,8 +107,9 @@ ROUTE_IMPL(RouteLogin, path, argp)
 
             if (loginRequest.type != REQUEST_TYPE_PASSWORD)
             {
+                msg = "Unsupported login type.";
                 HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-                response = MatrixErrorCreate(M_UNRECOGNIZED, NULL);
+                response = MatrixErrorCreate(M_UNRECOGNIZED, msg);
                 break;
             }
 
@@ -117,6 +118,7 @@ ROUTE_IMPL(RouteLogin, path, argp)
             val = HashMapGet(identifier, "type");
             if (!val)
             {
+                msg = "No login identifier type set.";
                 HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
                 response = MatrixErrorCreate(M_MISSING_PARAM, NULL);
                 break;
@@ -124,16 +126,18 @@ ROUTE_IMPL(RouteLogin, path, argp)
 
             if (JsonValueType(val) != JSON_STRING)
             {
+                msg = "Invalid login identifier type.";
                 HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-                response = MatrixErrorCreate(M_BAD_JSON, NULL);
+                response = MatrixErrorCreate(M_BAD_JSON, msg);
                 break;
             }
 
             type = JsonValueAsString(val);
             if (!StrEquals(type, "m.id.user"))
             {
+                msg = "Invalid login identifier type.";
                 HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-                response = MatrixErrorCreate(M_UNRECOGNIZED, NULL);
+                response = MatrixErrorCreate(M_UNRECOGNIZED, msg);
                 break;
             }
             if (!LoginRequestUserIdentifierFromJson(identifier, 
@@ -148,16 +152,18 @@ ROUTE_IMPL(RouteLogin, path, argp)
             userId = UserIdParse(userIdentifier.user, config->serverName);
             if (!userId)
             {
+                msg = "Invalid user ID.";
                 HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-                response = MatrixErrorCreate(M_BAD_JSON, NULL);
+                response = MatrixErrorCreate(M_BAD_JSON, msg);
                 break;
             }
 
             if (!StrEquals(userId->server, config->serverName)
                 || !UserExists(db, userId->localpart))
             {
+                msg = "Unknown user ID.";
                 HttpResponseStatus(args->context, HTTP_FORBIDDEN);
-                response = MatrixErrorCreate(M_FORBIDDEN, NULL);
+                response = MatrixErrorCreate(M_FORBIDDEN, msg);
                 break;
             }
             
@@ -171,8 +177,9 @@ ROUTE_IMPL(RouteLogin, path, argp)
 
             if (!user)
             {
+                msg = "Couldn't lock user.";
                 HttpResponseStatus(args->context, HTTP_FORBIDDEN);
-                response = MatrixErrorCreate(M_FORBIDDEN, NULL);
+                response = MatrixErrorCreate(M_FORBIDDEN, msg);
                 break;
             }
 
@@ -190,10 +197,11 @@ ROUTE_IMPL(RouteLogin, path, argp)
 
             if (!loginInfo)
             {
+                msg = "Invalid creditentials for user.";
                 UserUnlock(user);
 
                 HttpResponseStatus(args->context, HTTP_FORBIDDEN);
-                response = MatrixErrorCreate(M_FORBIDDEN, NULL);
+                response = MatrixErrorCreate(M_FORBIDDEN, msg);
                 break;
             }
 
@@ -229,8 +237,9 @@ ROUTE_IMPL(RouteLogin, path, argp)
 
             break;
         default:
+            msg = "Route only accepts GET and POST.";
             HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-            response = MatrixErrorCreate(M_UNRECOGNIZED, NULL);
+            response = MatrixErrorCreate(M_UNRECOGNIZED, msg);
             break;
     }
 

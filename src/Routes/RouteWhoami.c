@@ -42,14 +42,16 @@ ROUTE_IMPL(RouteWhoami, path, argp)
     char *token;
     char *userID;
     char *deviceID;
+    char *msg;
 
     Config *config = ConfigLock(db);
 
     if (!config)
     {
+        msg = "Internal server error: couldn't lock database.";
         Log(LOG_ERR, "Who am I endpoint failed to lock configuration.");
         HttpResponseStatus(args->context, HTTP_INTERNAL_SERVER_ERROR);
-        return MatrixErrorCreate(M_UNKNOWN, NULL);
+        return MatrixErrorCreate(M_UNKNOWN, msg);
     }
 
     (void) path;
