@@ -213,3 +213,44 @@ comments to the appropriate header.
 If your pull request does not also include proper documentation, it
 will likely be rejected.
 
+### Be Recognized!
+
+If your pull request gets approved, you should be recognized for your
+contributions to the project!
+
+To have your work recognized, add your information to the `CONTRIBUTORS.txt`
+file in the root of the Telodendria repository if it isn't there already.
+You should do this as a part of your pull request so that when it is merged,
+your information will be automatically added to the repository.
+
+The `CONTRIBUTORS.txt` file loosely follows the Linux kernel's
+[CREDITS](https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/CREDITS)
+file format. It is designed to be human-readable, but also parsable by
+scripts.
+
+The following fields are available:
+
+```
+  (N) Name
+  (E) Email
+  (M) Matrix ID
+  (W) Website
+  (D) Description of contribution
+  (L) Physical location
+```
+
+Here are the rules:
+
+* All fields are optional. If you don't want to include a field, that's
+  okay, simply omit it.
+* All fields identify you however you wish. The goal is to recognize you for
+  your contribution, but if you wish to remain anonymous, you don't have to
+  use your real information.
+* All fields can be specified multiple times. For example, if you have
+  multiple email addresses, websites, or Matrix IDs and you want to include
+  all of them, you absolutely may. Likewise, if you have made multiple
+  contributions, you can add multiple description entries.
+* You can make up your own fields if you want. Just add their description
+  above.
+* Leave exactly one blank like between entries in this file.
+

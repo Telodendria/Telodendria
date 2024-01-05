@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2022-2024 Jordan Bancino <@jordan:bancino.net>
+ * Copyright (C) 2022-2024 Jordan Bancino <@jordan:bancino.net> with
+ * other valuable contributors. See CONTRIBUTORS.txt for the full list.
  *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation files

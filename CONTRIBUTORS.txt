@@ -1,0 +1,7 @@
+N: Jordan Bancino
+E: jordan@bancino.net
+M: @jordan:bancino.net
+W: https://bancino.net
+D: Project Lead
+L: United States
+
