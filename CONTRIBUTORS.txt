@@ -5,3 +5,12 @@ W: https://bancino.net
 D: Project Lead
 L: United States
 
+N: LDA
+E: marie@doskel.net
+E: ldasta@tedomum.fr
+E: lda@freetards.xyz
+M: @lda:a.freetards.xyz
+M: @lda:pain.agency
+M: @fourier:ari.lt
+D: Developer
+L: France
