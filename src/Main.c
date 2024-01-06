@@ -105,9 +105,9 @@ Main(Array * args)
     /* Program configuration */
     Config tConfig;
     Stream *logFile;
-    Stream *pidFile = NULL;
+    Stream *pidFile;
 
-    char *pidPath = NULL;
+    char *pidPath;
 
     /* User validation */
     struct passwd *userInfo;
@@ -137,6 +137,8 @@ start:
     flags = 0;
     dbPath = NULL;
     logFile = NULL;
+    pidFile = NULL;
+    pidPath = NULL;
     userInfo = NULL;
     groupInfo = NULL;
     cron = NULL;
