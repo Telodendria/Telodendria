@@ -49,67 +49,11 @@
  * .Xr telodendria-config 7 .
  */
 
+#include <Schema/Config.h>
+
 #include <Cytoplasm/HashMap.h>
 #include <Cytoplasm/Array.h>
 #include <Cytoplasm/Db.h>
-
-/**
- * Bit flags that can be set in the flags field of the configuration
- * structure.
- */
-typedef enum ConfigFlag
-{
-    CONFIG_FEDERATION = (1 << 0),
-    CONFIG_REGISTRATION = (1 << 1),
-    CONFIG_LOG_COLOR = (1 << 2),
-    CONFIG_LOG_FILE = (1 << 3),
-    CONFIG_LOG_STDOUT = (1 << 4),
-    CONFIG_LOG_SYSLOG = (1 << 5)
-} ConfigFlag;
-
-/**
- * The configuration structure is not opaque like many of the other
- * structures present in the other public APIs. This is intentional;
- * defining functions for all of the fields would simply add too much
- * unnecessary overhead.
- */
-typedef struct Config
-{
-    /*
-     * These are used internally and should not be touched outside of
-     * the functions defined in this API.
-     */
-    Db *db;
-    DbRef *ref;
-
-    /*
-     * Whether or not the parsing was successful. If this boolean
-     * value is 0, then read the error message and assume that all
-     * other fields are invalid.
-     */
-    int ok;
-    char *err;
-
-    char *serverName;
-    char *baseUrl;
-    char *identityServer;
-
-    char *uid;
-    char *gid;
-
-    unsigned int flags;
-
-    size_t maxCache;
-
-    char *logTimestamp;
-    int logLevel;
-
-    /*
-     * An array of HttpServerConfig structures. Consult the HttpServer
-     * API.
-     */
-    Array *servers;
-} Config;
 
 /**
  * Parse a JSON object, extracting the necessary values, validating
@@ -121,14 +65,7 @@ typedef struct Config
  * set the ok flag to 0. The caller should always check the ok flag,
  * and if there is an error, it should display the error to the user.
  */
-extern Config * ConfigParse(HashMap *);
-
-/**
- * Free all the values inside of the given configuration structure,
- * as well as the structure itself, such that it is completely invalid
- * when this function returns.
- */
-extern void ConfigFree(Config *);
+extern void ConfigParse(HashMap *, Config *);
 
 /**
  * Check whether or not the configuration exists in the database,
@@ -151,7 +88,7 @@ extern int ConfigCreateDefault(Db *);
  * The return value of this function is the same as
  * .Fn ConfigParse .
  */
-extern Config * ConfigLock(Db *);
+extern void ConfigLock(Db *, Config *);
 
 /**
  * Unlock the specified configuration, returning it back to the
@@ -160,5 +97,10 @@ extern Config * ConfigLock(Db *);
  * called should be duplicated as necessary.
  */
 extern int ConfigUnlock(Config *);
+
+/**
+ * Converts a ConfigLogLevel into a valid syslog level.
+ */
+extern int ConfigLogLevelToSyslog(ConfigLogLevel);
 
 #endif                             /* TELODENDRIA_CONFIG_H */

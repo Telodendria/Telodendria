@@ -52,23 +52,22 @@ ROUTE_IMPL(RouteUiaFallback, path, argp)
         HashMap *request;
         HashMap *response;
         int uiaResult;
-        Config *config;
+        Config config;
         Array *flows;
         Array *flow;
 
-        config = ConfigLock(args->matrixArgs->db);
-        if (!config)
+        ConfigLock(args->matrixArgs->db, &config);
+        if (!config.ok)
         {
-            msg = "Internal server error: failed to lock configuration.";
-            Log(LOG_ERR, "UIA fallback failed to lock configuration.");
+            Log(LOG_ERR, "%s", config.err);
             HttpResponseStatus(args->context, HTTP_INTERNAL_SERVER_ERROR);
-            return MatrixErrorCreate(M_UNKNOWN, msg);
+            return MatrixErrorCreate(M_UNKNOWN, config.err);
         }
 
         request = JsonDecode(HttpServerStream(args->context));
         if (!request)
         {
-            ConfigUnlock(config);
+            ConfigUnlock(&config);
             HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
             return MatrixErrorCreate(M_NOT_JSON, NULL);
         }
@@ -92,7 +91,7 @@ ROUTE_IMPL(RouteUiaFallback, path, argp)
         }
 
         JsonFree(request);
-        ConfigUnlock(config);
+        ConfigUnlock(&config);
         return response;
     }
     else if (HttpRequestMethodGet(args->context) != HTTP_GET)

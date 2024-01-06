@@ -206,7 +206,7 @@ UiaStageBuild(char *type, HashMap * params)
 
 int
 UiaComplete(Array * flows, HttpServerContext * context, Db * db,
-            HashMap * request, HashMap ** response, Config * config)
+            HashMap * request, HashMap ** response, Config config)
 {
     JsonValue *val;
     HashMap *auth;
@@ -363,10 +363,10 @@ UiaComplete(Array * flows, HttpServerContext * context, Db * db,
 
         type = JsonValueAsString(HashMapGet(identifier, "type"));
         userId = UserIdParse(JsonValueAsString(HashMapGet(identifier, "user")),
-                             config->serverName);
+                             config.serverName);
 
         if (!type || !StrEquals(type, "m.id.user")
-         || !userId || !StrEquals(userId->server, config->serverName))
+         || !userId || !StrEquals(userId->server, config.serverName))
         {
             HttpResponseStatus(context, HTTP_UNAUTHORIZED);
             ret = BuildResponse(flows, db, response, session, dbRef);

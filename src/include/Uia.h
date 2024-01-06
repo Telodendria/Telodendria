@@ -133,7 +133,7 @@ extern void UiaCleanup(MatrixHttpHandlerArgs *);
  * the caller proceed with its logic.
  */
 extern int
- UiaComplete(Array *, HttpServerContext *, Db *, HashMap *, HashMap **, Config *);
+ UiaComplete(Array *, HttpServerContext *, Db *, HashMap *, HashMap **, Config);
 
 /**
  * Free an array of flows, as described above. Even though the caller

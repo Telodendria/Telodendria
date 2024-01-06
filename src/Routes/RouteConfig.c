@@ -37,10 +37,10 @@ ROUTE_IMPL(RouteConfig, path, argp)
     char *msg;
 
     User *user = NULL;
-    Config *config = NULL;
+    Config config;
 
     HashMap *request = NULL;
-    Config *newConf;
+    Config newConf;
     HashMap *newJson = NULL;
 
     (void) path;
@@ -67,20 +67,19 @@ ROUTE_IMPL(RouteConfig, path, argp)
         goto finish;
     }
 
-    config = ConfigLock(args->matrixArgs->db);
-    if (!config)
+    ConfigLock(args->matrixArgs->db, &config);
+    if (!config.ok)
     {
-        msg = "Internal server error while locking configuration.";
-        Log(LOG_ERR, "Config endpoint failed to lock configuration.");
+        Log(LOG_ERR, "%s", config.err);
         HttpResponseStatus(args->context, HTTP_INTERNAL_SERVER_ERROR);
-        response = MatrixErrorCreate(M_UNKNOWN, msg);
+        response = MatrixErrorCreate(M_UNKNOWN, config.err);
         goto finish;
     }
 
     switch (HttpRequestMethodGet(args->context))
     {
         case HTTP_GET:
-            response = JsonDuplicate(DbJson(config->ref));
+            response = JsonDuplicate(DbJson(config.ref));
             break;
         case HTTP_POST:
             request = JsonDecode(HttpServerStream(args->context));
@@ -91,18 +90,10 @@ ROUTE_IMPL(RouteConfig, path, argp)
                 break;
             }
 
-            newConf = ConfigParse(request);
-            if (!newConf)
+            ConfigParse(request, &newConf);
+            if (newConf.ok)
             {
-                msg = "Internal server error while parsing config.";
-                HttpResponseStatus(args->context, HTTP_INTERNAL_SERVER_ERROR);
-                response = MatrixErrorCreate(M_UNKNOWN, msg);
-                break;
-            }
-
-            if (newConf->ok)
-            {
-                if (DbJsonSet(config->ref, request))
+                if (DbJsonSet(config.ref, request))
                 {
                     response = HashMapCreate();
                     /*
@@ -121,10 +112,10 @@ ROUTE_IMPL(RouteConfig, path, argp)
             else
             {
                 HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-                response = MatrixErrorCreate(M_BAD_JSON, newConf->err);
+                response = MatrixErrorCreate(M_BAD_JSON, newConf.err);
             }
 
-            ConfigFree(newConf);
+            ConfigFree(&newConf);
             JsonFree(request);
             break;
         case HTTP_PUT:
@@ -136,22 +127,14 @@ ROUTE_IMPL(RouteConfig, path, argp)
                 break;
             }
 
-            newJson = JsonDuplicate(DbJson(config->ref));
+            newJson = JsonDuplicate(DbJson(config.ref));
             JsonMerge(newJson, request);
 
-            newConf = ConfigParse(newJson);
+            ConfigParse(newJson, &newConf);
 
-            if (!newConf)
+            if (newConf.ok)
             {
-                msg = "Internal server error while parsing config.";
-                HttpResponseStatus(args->context, HTTP_INTERNAL_SERVER_ERROR);
-                response = MatrixErrorCreate(M_UNKNOWN, msg);
-                break;
-            }
-
-            if (newConf->ok)
-            {
-                if (DbJsonSet(config->ref, newJson))
+                if (DbJsonSet(config.ref, newJson))
                 {
                     response = HashMapCreate();
                     /*
@@ -170,10 +153,10 @@ ROUTE_IMPL(RouteConfig, path, argp)
             else
             {
                 HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
-                response = MatrixErrorCreate(M_BAD_JSON, newConf->err);
+                response = MatrixErrorCreate(M_BAD_JSON, newConf.err);
             }
 
-            ConfigFree(newConf);
+            ConfigFree(&newConf);
             JsonFree(request);
             JsonFree(newJson);
             break;
@@ -186,6 +169,6 @@ ROUTE_IMPL(RouteConfig, path, argp)
 
 finish:
     UserUnlock(user);
-    ConfigUnlock(config);
+    ConfigUnlock(&config);
     return response;
 }

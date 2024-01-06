@@ -40,16 +40,17 @@ GetServerName(Db * db)
 {
     char *name;
 
-    Config *config = ConfigLock(db);
+    Config config;
 
-    if (!config)
+    ConfigLock(db, &config);
+    if (!config.ok)
     {
         return NULL;
     }
 
-    name = StrDuplicate(config->serverName);
+    name = StrDuplicate(config.serverName);
 
-    ConfigUnlock(config);
+    ConfigUnlock(&config);
 
     return name;
 }

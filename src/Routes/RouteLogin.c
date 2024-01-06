@@ -65,13 +65,14 @@ ROUTE_IMPL(RouteLogin, path, argp)
 
     char *msg;
 
-    Config *config = ConfigLock(db);
+    Config config;
 
-    if (!config)
+    ConfigLock(db, &config);
+    if (!config.ok)
     {
-        Log(LOG_ERR, "Login endpoint failed to lock configuration.");
+        Log(LOG_ERR, "%s", config.err);
         HttpResponseStatus(args->context, HTTP_INTERNAL_SERVER_ERROR);
-        return MatrixErrorCreate(M_UNKNOWN, NULL);
+        return MatrixErrorCreate(M_UNKNOWN, config.err);
     }
 
     (void) path;
@@ -150,7 +151,7 @@ ROUTE_IMPL(RouteLogin, path, argp)
             }
 
 
-            userId = UserIdParse(userIdentifier.user, config->serverName);
+            userId = UserIdParse(userIdentifier.user, config.serverName);
             if (!userId)
             {
                 msg = "Invalid user ID.";
@@ -159,7 +160,7 @@ ROUTE_IMPL(RouteLogin, path, argp)
                 break;
             }
 
-            if (!StrEquals(userId->server, config->serverName)
+            if (!StrEquals(userId->server, config.serverName)
                 || !UserExists(db, userId->localpart))
             {
                 msg = "Unknown user ID.";
@@ -222,13 +223,13 @@ ROUTE_IMPL(RouteLogin, path, argp)
             }
 
             fullUsername = StrConcat(4, "@", UserGetName(user), ":",
-                                     config->serverName);
+                                     config.serverName);
             HashMapSet(response, "user_id", JsonValueString(fullUsername));
             Free(fullUsername);
 
             HashMapSet(response, "well_known",
                        JsonValueObject(
-                                       MatrixClientWellKnown(config->baseUrl, config->identityServer)));
+                                       MatrixClientWellKnown(config.baseUrl, config.identityServer)));
 
             UserAccessTokenFree(loginInfo->accessToken);
             Free(loginInfo->refreshToken);
@@ -246,7 +247,7 @@ ROUTE_IMPL(RouteLogin, path, argp)
 
     UserIdFree(userId);
     JsonFree(request);
-    ConfigUnlock(config);
+    ConfigUnlock(&config);
 
     LoginRequestFree(&loginRequest);
     LoginRequestUserIdentifierFree(&userIdentifier);

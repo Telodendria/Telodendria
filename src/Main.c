@@ -103,8 +103,11 @@ Main(Array * args)
     char *dbPath;
 
     /* Program configuration */
-    Config *tConfig;
+    Config tConfig;
     Stream *logFile;
+    Stream *pidFile = NULL;
+
+    char *pidPath = NULL;
 
     /* User validation */
     struct passwd *userInfo;
@@ -133,7 +136,6 @@ start:
     exit = EXIT_SUCCESS;
     flags = 0;
     dbPath = NULL;
-    tConfig = NULL;
     logFile = NULL;
     userInfo = NULL;
     groupInfo = NULL;
@@ -262,33 +264,20 @@ start:
 
     Log(LOG_NOTICE, "Loading configuration...");
 
-    tConfig = ConfigLock(matrixArgs.db);
-    if (!tConfig)
+    ConfigLock(matrixArgs.db, &tConfig);
+    if (!tConfig.ok)
     {
-        Log(LOG_ERR, "Error locking the configuration.");
-        Log(LOG_ERR, "The configuration object is corrupted or otherwise invalid.");
-        Log(LOG_ERR, "Please restore from a backup.");
-        exit = EXIT_FAILURE;
-        goto finish;
-    }
-    else if (!tConfig->ok)
-    {
-        Log(LOG_ERR, tConfig->err);
+        Log(LOG_ERR, tConfig.err);
         exit = EXIT_FAILURE;
         goto finish;
     }
 
-    if (!tConfig->logTimestamp || !StrEquals(tConfig->logTimestamp, "default"))
+    if (!tConfig.log.timestampFormat || !StrEquals(tConfig.log.timestampFormat, "default"))
     {
-        LogConfigTimeStampFormatSet(LogConfigGlobal(), tConfig->logTimestamp);
-    }
-    else
-    {
-        Free(tConfig->logTimestamp);
-        tConfig->logTimestamp = NULL;
+        LogConfigTimeStampFormatSet(LogConfigGlobal(), tConfig.log.timestampFormat);
     }
 
-    if (tConfig->flags & CONFIG_LOG_COLOR)
+    if (tConfig.log.color)
     {
         LogConfigFlagSet(LogConfigGlobal(), LOG_FLAG_COLOR);
     }
@@ -297,9 +286,13 @@ start:
         LogConfigFlagClear(LogConfigGlobal(), LOG_FLAG_COLOR);
     }
 
-    LogConfigLevelSet(LogConfigGlobal(), flags & ARG_VERBOSE ? LOG_DEBUG : tConfig->logLevel);
+    LogConfigLevelSet(
+            LogConfigGlobal(), 
+            flags & ARG_VERBOSE ?
+                LOG_DEBUG : 
+                ConfigLogLevelToSyslog(tConfig.log.level));
 
-    if (tConfig->flags & CONFIG_LOG_FILE)
+    if (tConfig.log.output == CONFIG_LOG_OUTPUT_FILE)
     {
         logFile = StreamOpen("telodendria.log", "a");
 
@@ -307,18 +300,18 @@ start:
         {
             Log(LOG_ERR, "Unable to open log file for appending.");
             exit = EXIT_FAILURE;
-            tConfig->flags &= CONFIG_LOG_STDOUT;
+            tConfig.log.output = CONFIG_LOG_OUTPUT_STDOUT;
             goto finish;
         }
 
         Log(LOG_INFO, "Logging to the log file. Check there for all future messages.");
         LogConfigOutputSet(LogConfigGlobal(), logFile);
     }
-    else if (tConfig->flags & CONFIG_LOG_STDOUT)
+    else if (tConfig.log.output == CONFIG_LOG_OUTPUT_STDOUT)
     {
         Log(LOG_DEBUG, "Already logging to standard output.");
     }
-    else if (tConfig->flags & CONFIG_LOG_SYSLOG)
+    else if (tConfig.log.output == CONFIG_LOG_OUTPUT_SYSLOG)
     {
         Log(LOG_INFO, "Logging to the syslog. Check there for all future messages.");
         LogConfigFlagSet(LogConfigGlobal(), LOG_FLAG_SYSLOG);
@@ -327,13 +320,6 @@ start:
         /* Always log everything, because the Log API will control what
          * messages get passed to the syslog */
         setlogmask(LOG_UPTO(LOG_DEBUG));
-    }
-    else
-    {
-        Log(LOG_ERR, "Unknown logging method in flags: '%d'", tConfig->flags);
-        Log(LOG_ERR, "This is a programmer error; please report it.");
-        exit = EXIT_FAILURE;
-        goto finish;
     }
 
     /* If a token was created with a default config, print it to the
@@ -344,14 +330,30 @@ start:
         Free(token);
     }
 
+    if (tConfig.pid)
+    {
+        pidFile = StreamOpen(tConfig.pid, "w+");
+        if (!pidFile)
+        {
+            char *msg = "Couldn't lock PID file at '%s'";
+            Log(LOG_ERR, msg, tConfig.pid);
+            exit = EXIT_FAILURE;
+            goto finish;
+        }
+        pidPath = StrDuplicate(tConfig.pid);
+        StreamPrintf(pidFile, "%ld", (long) getpid());
+        StreamClose(pidFile);
+    }
+
     Log(LOG_DEBUG, "Configuration:");
     LogConfigIndent(LogConfigGlobal());
-    Log(LOG_DEBUG, "Server Name: %s", tConfig->serverName);
-    Log(LOG_DEBUG, "Base URL: %s", tConfig->baseUrl);
-    Log(LOG_DEBUG, "Identity Server: %s", tConfig->identityServer);
-    Log(LOG_DEBUG, "Run As: %s:%s", tConfig->uid, tConfig->gid);
-    Log(LOG_DEBUG, "Max Cache: %ld", tConfig->maxCache);
-    Log(LOG_DEBUG, "Flags: %x", tConfig->flags);
+    Log(LOG_DEBUG, "Server Name: %s", tConfig.serverName);
+    Log(LOG_DEBUG, "Base URL: %s", tConfig.baseUrl);
+    Log(LOG_DEBUG, "Identity Server: %s", tConfig.identityServer);
+    Log(LOG_DEBUG, "Run As: %s:%s", tConfig.runAs.uid, tConfig.runAs.gid);
+    Log(LOG_DEBUG, "Max Cache: %ld", tConfig.maxCache);
+    Log(LOG_DEBUG, "Registration: %s", tConfig.registration ? "true" : "false");
+    Log(LOG_DEBUG, "Federation: %s", tConfig.federation ? "true" : "false");
     LogConfigUnindent(LogConfigGlobal());
 
     httpServers = ArrayCreate();
@@ -363,41 +365,51 @@ start:
     }
 
     /* Bind servers before possibly dropping permissions. */
-    for (i = 0; i < ArraySize(tConfig->servers); i++)
+    for (i = 0; i < ArraySize(tConfig.listen); i++)
     {
-        HttpServerConfig *serverCfg = ArrayGet(tConfig->servers, i);
+        ConfigListener *serverCfg = ArrayGet(tConfig.listen, i);
+
+        HttpServerConfig args;
+
+        args.port = serverCfg->port;
+        args.threads = serverCfg->maxConnections;
+        args.maxConnections = serverCfg->maxConnections;
+        args.tlsCert = serverCfg->tls.cert;
+        args.tlsKey = serverCfg->tls.key;
+        args.flags = args.tlsCert && args.tlsKey ? HTTP_FLAG_TLS : HTTP_FLAG_NONE;
 
         Log(LOG_DEBUG, "HTTP listener: %lu", i);
         LogConfigIndent(LogConfigGlobal());
         Log(LOG_DEBUG, "Port: %hu", serverCfg->port);
         Log(LOG_DEBUG, "Threads: %u", serverCfg->threads);
         Log(LOG_DEBUG, "Max Connections: %u", serverCfg->maxConnections);
-        Log(LOG_DEBUG, "Flags: %d", serverCfg->flags);
-        Log(LOG_DEBUG, "TLS Cert: %s", serverCfg->tlsCert);
-        Log(LOG_DEBUG, "TLS Key: %s", serverCfg->tlsKey);
+        Log(LOG_DEBUG, "Flags: %d", args.flags);
+        Log(LOG_DEBUG, "TLS Cert: %s", serverCfg->tls.cert);
+        Log(LOG_DEBUG, "TLS Key: %s", serverCfg->tls.key);
         LogConfigUnindent(LogConfigGlobal());
 
-        serverCfg->handler = MatrixHttpHandler;
-        serverCfg->handlerArgs = &matrixArgs;
 
-        if (serverCfg->flags & HTTP_FLAG_TLS)
+        args.handler = MatrixHttpHandler;
+        args.handlerArgs = &matrixArgs;
+
+        if (args.flags & HTTP_FLAG_TLS)
         {
-            if (UInt64Eq(UtilLastModified(serverCfg->tlsCert), UInt64Create(0, 0)))
+            if (UInt64Eq(UtilLastModified(serverCfg->tls.cert), UInt64Create(0, 0)))
             {
-                Log(LOG_ERR, "%s: %s", strerror(errno), serverCfg->tlsCert);
+                Log(LOG_ERR, "%s: %s", strerror(errno), serverCfg->tls.cert);
                 exit = EXIT_FAILURE;
                 goto finish;
             }
 
-            if (UInt64Eq(UtilLastModified(serverCfg->tlsKey), UInt64Create(0, 0)))
+            if (UInt64Eq(UtilLastModified(serverCfg->tls.key), UInt64Create(0, 0)))
             {
-                Log(LOG_ERR, "%s: %s", strerror(errno), serverCfg->tlsKey);
+                Log(LOG_ERR, "%s: %s", strerror(errno), serverCfg->tls.key);
                 exit = EXIT_FAILURE;
                 goto finish;
             }
         }
 
-        server = HttpServerCreate(serverCfg);
+        server = HttpServerCreate(&args);
         if (!server)
         {
             Log(LOG_ERR, "Unable to create HTTP server on port %d: %s",
@@ -418,10 +430,10 @@ start:
 
     Log(LOG_DEBUG, "Running as uid:gid: %d:%d.", getuid(), getgid());
 
-    if (tConfig->uid && tConfig->gid)
+    if (tConfig.runAs.uid && tConfig.runAs.gid)
     {
-        userInfo = getpwnam(tConfig->uid);
-        groupInfo = getgrnam(tConfig->gid);
+        userInfo = getpwnam(tConfig.runAs.uid);
+        groupInfo = getgrnam(tConfig.runAs.gid);
 
         if (!userInfo || !groupInfo)
         {
@@ -451,7 +463,7 @@ start:
             }
             else
             {
-                Log(LOG_DEBUG, "Set uid/gid to %s:%s.", tConfig->uid, tConfig->gid);
+                Log(LOG_DEBUG, "Set uid/gid to %s:%s.", tConfig.runAs.uid, tConfig.runAs.gid);
             }
         }
         else
@@ -463,7 +475,7 @@ start:
     }
     else
     {
-        if (tConfig->uid && tConfig->gid)
+        if (tConfig.runAs.uid && tConfig.runAs.gid)
         {
             if (getuid() != userInfo->pw_uid || getgid() != groupInfo->gr_gid)
             {
@@ -476,17 +488,16 @@ start:
         }
     }
 
-    if (!tConfig->maxCache)
+    if (!tConfig.maxCache)
     {
         Log(LOG_WARNING, "Database caching is disabled.");
         Log(LOG_WARNING, "If this is not what you intended, check the config file");
         Log(LOG_WARNING, "and ensure that maxCache is a valid number of bytes.");
     }
 
-    DbMaxCacheSet(matrixArgs.db, tConfig->maxCache);
+    DbMaxCacheSet(matrixArgs.db, tConfig.maxCache);
 
-    ConfigUnlock(tConfig);
-    tConfig = NULL;
+    ConfigUnlock(&tConfig);
 
     cron = CronCreate(60 * 1000);  /* 1-minute tick */
     if (!cron)
@@ -593,7 +604,7 @@ finish:
         Log(LOG_DEBUG, "Stopped and freed job scheduler.");
     }
 
-    ConfigUnlock(tConfig);
+    ConfigUnlock(&tConfig);
     Log(LOG_DEBUG, "Unlocked configuration.");
 
     DbClose(matrixArgs.db);
@@ -601,6 +612,12 @@ finish:
 
     HttpRouterFree(matrixArgs.router);
     Log(LOG_DEBUG, "Freed routing tree.");
+
+    if (pidPath)
+    {
+        remove(pidPath);
+        Free(pidPath);
+    }
 
     /*
      * Uninstall the memory hook because it uses the Log

@@ -1,0 +1,88 @@
+{
+  "guard": "TELODENDRIA_SCHEMA_CONFIG_H",
+  "header": "Schema\/Config.h",
+  "include": [ "Cytoplasm\/Db.h", "Cytoplasm/HttpServer.h" ],
+
+  "types": {
+    "ConfigTls": {
+      "fields": {
+        "cert": { "type": "string",                     "required": true }, 
+        "key":  { "type": "string",                     "required": true } 
+      },
+      "type": "struct"
+    },
+
+    "ConfigListener": {
+      "fields": {
+        "port":           { "type": "integer",          "required": true },
+        "threads":        { "type": "integer",          "required": false },
+        "maxConnections": { "type": "integer",          "required": false },
+        "tls":            { "type": "ConfigTls",        "required": false }
+      },
+      "type": "struct"
+    },
+    "ConfigRunAs": {
+      "fields": {
+        "uid":            { "type": "string",     "required": false },
+        "gid":            { "type": "string",     "required": true }
+      },
+      "type": "struct"
+    },
+    "ConfigLogOutput": {
+      "fields": {
+        "stdout":         { "name": "CONFIG_LOG_OUTPUT_STDOUT" },
+        "file":           { "name": "CONFIG_LOG_OUTPUT_FILE" },
+        "syslog":         { "name": "CONFIG_LOG_OUTPUT_SYSLOG" }
+      },
+      "type": "enum"
+    },
+    "ConfigLogLevel": {
+      "fields": {
+        "message":        { "name": "CONFIG_LOG_LEVEL_MESSAGE" },
+        "debug":          { "name": "CONFIG_LOG_LEVEL_DEBUG" },
+        "notice":         { "name": "CONFIG_LOG_LEVEL_NOTICE" },
+        "warning":        { "name": "CONFIG_LOG_LEVEL_WARNING" },
+        "error":          { "name": "CONFIG_LOG_LEVEL_ERROR" }
+      },
+      "type": "enum"
+    },
+    "ConfigLogConfig": {
+      "fields": {
+        "output":         { "type": "ConfigLogOutput",  "required": true },
+        "level":          { "type": "ConfigLogLevel",   "required": false },
+        "timestampFormat":{ "type": "string",           "required": false },
+        "color":          { "type": "boolean",          "required": false }
+      },
+      "type": "struct"
+    },
+
+    "Db *": { "type": "extern" },
+    "DbRef *": { "type": "extern" },
+    "char *": { "type": "extern" },
+
+    "Config": {
+      "fields": {
+        "db":             { "type": "Db *",             "ignore": true },
+        "ref":            { "type": "DbRef *",          "ignore": true },
+
+        "ok":             { "type": "boolean",          "ignore": true },
+        "err":            { "type": "char *",           "ignore": true },
+
+        "listen":         { "type": "[ConfigListener]", "required": true },
+        "runAs":          { "type": "ConfigRunAs",      "required": false },
+        "log":            { "type": "ConfigLogConfig",  "required": true },
+
+        "serverName":     { "type": "string",           "required": true },
+        "baseUrl":        { "type": "string",           "required": false },
+        "identityServer": { "type": "string",           "required": false },
+        "pid":            { "type": "string",           "required": false },
+
+        "maxCache":       { "type": "integer",          "required": false },
+
+        "federation":     { "type": "boolean",          "required": true },
+        "registration":   { "type": "boolean",          "required": true }
+      },
+      "type": "struct"
+    }
+  }
+}

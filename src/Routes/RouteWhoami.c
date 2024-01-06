@@ -45,14 +45,15 @@ ROUTE_IMPL(RouteWhoami, path, argp)
     char *deviceID;
     char *msg;
 
-    Config *config = ConfigLock(db);
+    Config config;
 
-    if (!config)
+    ConfigLock(db, &config);
+
+    if (!config.ok)
     {
-        msg = "Internal server error: couldn't lock database.";
-        Log(LOG_ERR, "Who am I endpoint failed to lock configuration.");
+        Log(LOG_ERR, "%s", config.err);
         HttpResponseStatus(args->context, HTTP_INTERNAL_SERVER_ERROR);
-        return MatrixErrorCreate(M_UNKNOWN, msg);
+        return MatrixErrorCreate(M_UNKNOWN, config.err);
     }
 
     (void) path;
@@ -76,7 +77,7 @@ ROUTE_IMPL(RouteWhoami, path, argp)
 
     response = HashMapCreate();
 
-    userID = StrConcat(4, "@", UserGetName(user), ":", config->serverName);
+    userID = StrConcat(4, "@", UserGetName(user), ":", config.serverName);
     deviceID = StrDuplicate(UserGetDeviceId(user));
 
     UserUnlock(user);
@@ -88,6 +89,6 @@ ROUTE_IMPL(RouteWhoami, path, argp)
     Free(deviceID);
 
 finish:
-    ConfigUnlock(config);
+    ConfigUnlock(&config);
     return response;
 }

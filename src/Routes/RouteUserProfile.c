@@ -51,16 +51,18 @@ ROUTE_IMPL(RouteUserProfile, path, argp)
 
     char *msg;
 
-    Config *config = ConfigLock(db);
+    Config config;
 
-    if (!config)
+    ConfigLock(db, &config);
+
+    if (!config.ok)
     {
-        Log(LOG_ERR, "User profile endpoint failed to lock configuration.");
+        Log(LOG_ERR, "%s", config.err);
         HttpResponseStatus(args->context, HTTP_INTERNAL_SERVER_ERROR);
-        return MatrixErrorCreate(M_UNKNOWN, NULL);
+        return MatrixErrorCreate(M_UNKNOWN, config.err);
     }
 
-    serverName = config->serverName;
+    serverName = config.serverName;
 
     username = ArrayGet(path, 0);
     userId = UserIdParse(username, serverName);
@@ -181,11 +183,9 @@ ROUTE_IMPL(RouteUserProfile, path, argp)
             break;
     }
 finish:
-    ConfigUnlock(config);
+    ConfigUnlock(&config);
 
-    /* Username is handled by the router, freeing it *will* cause issues
-     * (see #33). I honestly don't know how it didn't come to bite us sooner. 
-    Free(username); */
+    /* Username is handled by the router, freeing it would cause issues. */
     Free(entry);
     UserIdFree(userId);
     UserUnlock(user);

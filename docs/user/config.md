@@ -19,8 +19,7 @@ key-value form:
     "serverName": "telodendria.io",
     "listen": [
         {
-            "port": 8008,
-            "tls": false
+            "port": 8008
         }
     ]
 
@@ -51,7 +50,7 @@ Here are the top-level directives:
     this is a concern, a reverse-proxy such as `relayd` can be placed
     in front of Telodendria to block access to undesired APIs.
 
-  - **tls:** `Object|null|false`
+  - **tls:** `Object`
 
     Telodendria can be compiled with TLS support. If it is, then a
     particular listener can be set to use TLS for connections. If
@@ -105,6 +104,9 @@ Here are the top-level directives:
   it should never change unless you want unexpected things to happen
   or you want to start over. **serverName** should be a DNS name that
   can be publicly resolved. This directive is required.
+
+- **pid:** `String`
+  Configure the file Telodendria writes its PID to.
 
 - **baseUrl:** `String`
 

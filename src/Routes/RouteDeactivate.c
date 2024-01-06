@@ -46,17 +46,19 @@ ROUTE_IMPL(RouteDeactivate, path, argp)
 
     Db *db = args->matrixArgs->db;
     User *user = NULL;
-    Config *config = ConfigLock(db);
+    Config config;
+
 
     char *msg;
 
     (void) path;
 
-    if (!config)
+    ConfigLock(db, &config);
+    if (!config.ok)
     {
-        Log(LOG_ERR, "Deactivate endpoint failed to lock configuration.");
+        Log(LOG_ERR, "%s", config.err);
         HttpResponseStatus(args->context, HTTP_INTERNAL_SERVER_ERROR);
-        response = MatrixErrorCreate(M_UNKNOWN, NULL);
+        response = MatrixErrorCreate(M_UNKNOWN, config.err);
         goto finish;
     }
 
@@ -149,6 +151,6 @@ ROUTE_IMPL(RouteDeactivate, path, argp)
 finish:
     JsonFree(request);
     UserUnlock(user);
-    ConfigUnlock(config);
+    ConfigUnlock(&config);
     return response;
 }

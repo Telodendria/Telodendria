@@ -31,6 +31,7 @@ The following endpoints were added:
 
 ### Bug Fixes & General Improvements
 
+- Use `j2s` for parsing the configuration
 - Fixed a double-free in `RouteUserProfile()` that would cause errors
 with certain Matrix clients. (#35)
 - Improved compatibility with NetBSD on various platforms.
@@ -43,6 +44,8 @@ parsing request bodies.
 
 ### New Features
 
+- Implemented a `"pid"` option in the configuration, allowing Telodendria 
+to write its process ID to a specified file.
 - Moved all administrator API endpoints to `/_telodendria/admin/v1`,
 because later revisions of the administrator API may break clients, so
 we want a way to give those breaking revisions new endpoints.

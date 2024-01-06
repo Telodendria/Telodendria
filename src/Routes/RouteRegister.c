@@ -73,7 +73,7 @@ ROUTE_IMPL(RouteRegister, path, argp)
     char *session;
     DbRef *sessionRef;
 
-    Config *config = ConfigLock(db);
+    Config config;
 
     regReq.username = NULL;
     regReq.password = NULL;
@@ -82,15 +82,12 @@ ROUTE_IMPL(RouteRegister, path, argp)
     regReq.refresh_token = 0;
     regReq.inhibit_login = 0;
 
-
-
-
-    if (!config)
+    ConfigLock(db, &config);
+    if (!config.ok)
     {
-        msg = "Internal server error while locking configuration.";
-        Log(LOG_ERR, "Registration endpoint failed to lock configuration.");
+        Log(LOG_ERR, "%s", config.err);
         HttpResponseStatus(args->context, HTTP_INTERNAL_SERVER_ERROR);
-        return MatrixErrorCreate(M_UNKNOWN, msg);
+        return MatrixErrorCreate(M_UNKNOWN, config.err);
     }
 
     if (ArraySize(path) == 0)
@@ -118,7 +115,7 @@ ROUTE_IMPL(RouteRegister, path, argp)
 
         if (regReq.username)
         {
-            if (!UserValidate(regReq.username, config->serverName))
+            if (!UserValidate(regReq.username, config.serverName))
             {
                 HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
                 response = MatrixErrorCreate(M_INVALID_USERNAME, NULL);
@@ -136,7 +133,7 @@ ROUTE_IMPL(RouteRegister, path, argp)
         uiaFlows = ArrayCreate();
         ArrayAdd(uiaFlows, RouteRegisterRegFlow());
 
-        if (config->flags & CONFIG_REGISTRATION)
+        if (config.registration)
         {
             ArrayAdd(uiaFlows, UiaDummyFlow());
         }
@@ -183,7 +180,7 @@ ROUTE_IMPL(RouteRegister, path, argp)
         response = HashMapCreate();
 
         fullUsername = StrConcat(4, 
-            "@", UserGetName(user), ":", config->serverName);
+            "@", UserGetName(user), ":", config.serverName);
         HashMapSet(response, "user_id", JsonValueString(fullUsername));
         Free(fullUsername);
 
@@ -260,7 +257,7 @@ finish:
                 HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
                 response = MatrixErrorCreate(M_MISSING_PARAM, msg);
             }
-            else if (!UserValidate(username, config->serverName))
+            else if (!UserValidate(username, config.serverName))
             {
                 HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
                 response = MatrixErrorCreate(M_INVALID_USERNAME, NULL);
@@ -284,6 +281,6 @@ finish:
     }
 
 end:
-    ConfigUnlock(config);
+    ConfigUnlock(&config);
     return response;
 }
