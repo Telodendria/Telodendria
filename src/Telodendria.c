@@ -136,7 +136,7 @@ TelodendriaPrintHeader(void)
     Log(LOG_INFO, "Telodendria v" TELODENDRIA_VERSION " (%s v%s)", CytoplasmGetName(), CytoplasmGetVersion());
     Log(LOG_INFO, "");
     Log(LOG_INFO,
-        "Copyright (C) 2023 Jordan Bancino <@jordan:bancino.net>");
+        "Copyright (C) 2024 Jordan Bancino <@jordan:bancino.net>");
     Log(LOG_INFO,
         "Documentation/Support: https://telodendria.io");
     Log(LOG_INFO, "");
