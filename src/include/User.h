@@ -43,6 +43,8 @@
 #include <Cytoplasm/Db.h>
 #include <Cytoplasm/Json.h>
 
+#include <Parser.h>
+
 /**
  * Many functions here operate on an opaque user structure.
  */
@@ -87,15 +89,6 @@ typedef struct UserLoginInfo
     UserAccessToken *accessToken;
     char *refreshToken;
 } UserLoginInfo;
-
-/**
- * A description of a Matrix user ID.
- */
-typedef struct UserId
-{
-    char *localpart;
-    char *server;
-} UserId;
 
 /**
  * Take a localpart and domain as separate parameters and validate them
@@ -303,15 +296,15 @@ extern Array *UserEncodePrivileges(int);
 extern int UserDecodePrivilege(const char *);
 
 /**
- * Parse either a localpart or a fully qualified Matrix ID. If the
+ * Parse either a localpart or a fully qualified Matrix common ID. If the
  * first argument is a localpart, then the second argument is used as
  * the server name.
  */
-extern UserId * UserIdParse(char *, char *);
+extern CommonID * UserIdParse(char *, char *);
 
 /**
- * Free the memory associated with the parsed Matrix ID.
+ * Frees the user's common ID and the memory allocated for it.
  */
-extern void UserIdFree(UserId *);
+extern void UserIdFree(CommonID *);
 
 #endif                             /* TELODENDRIA_USER_H */

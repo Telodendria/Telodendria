@@ -64,7 +64,7 @@ ROUTE_IMPL(RouteFilter, path, argp)
     HashMap *response = NULL;
 
     User *user = NULL;
-    UserId *id = NULL;
+    CommonID *id = NULL;
     char *token = NULL;
 
     char *serverName = NULL;
@@ -97,7 +97,7 @@ ROUTE_IMPL(RouteFilter, path, argp)
         goto finish;
     }
 
-    if (!StrEquals(id->server, serverName))
+    if (!ParserServerNameEquals(id->server, serverName))
     {
         msg = "Cannot use /filter for non-local users.";
         HttpResponseStatus(args->context, HTTP_UNAUTHORIZED);
@@ -119,7 +119,7 @@ ROUTE_IMPL(RouteFilter, path, argp)
         goto finish;
     }
 
-    if (!StrEquals(id->localpart, UserGetName(user)))
+    if (!StrEquals(id->local, UserGetName(user)))
     {
         msg = "Unauthorized to use /filter.";
         HttpResponseStatus(args->context, HTTP_UNAUTHORIZED);

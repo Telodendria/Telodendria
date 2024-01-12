@@ -49,7 +49,7 @@ ROUTE_IMPL(RouteLogin, path, argp)
     LoginRequest loginRequest;
     LoginRequestUserIdentifier userIdentifier;
 
-    UserId *userId = NULL;
+    CommonID *userId = NULL;
 
     Db *db = args->matrixArgs->db;
 
@@ -160,8 +160,8 @@ ROUTE_IMPL(RouteLogin, path, argp)
                 break;
             }
 
-            if (!StrEquals(userId->server, config.serverName)
-                || !UserExists(db, userId->localpart))
+            if (!ParserServerNameEquals(userId->server, config.serverName)
+                || !UserExists(db, userId->local))
             {
                 msg = "Unknown user ID.";
                 HttpResponseStatus(args->context, HTTP_FORBIDDEN);
@@ -175,7 +175,7 @@ ROUTE_IMPL(RouteLogin, path, argp)
             password = loginRequest.password;
             refreshToken = loginRequest.refresh_token;
 
-            user = UserLock(db, userId->localpart);
+            user = UserLock(db, userId->local);
 
             if (!user)
             {

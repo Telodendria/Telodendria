@@ -40,7 +40,7 @@ ROUTE_IMPL(RouteUserProfile, path, argp)
     HashMap *request = NULL;
     HashMap *response = NULL;
 
-    UserId *userId = NULL;
+    CommonID *userId = NULL;
     User *user = NULL;
 
     char *serverName;
@@ -73,7 +73,7 @@ ROUTE_IMPL(RouteUserProfile, path, argp)
         response = MatrixErrorCreate(M_INVALID_PARAM, msg);
         goto finish;
     }
-    if (strcmp(userId->server, serverName))
+    if (!ParserServerNameEquals(userId->server, serverName))
     {
         /* TODO: Implement lookup over federation. */
         msg =   "User profile endpoint currently doesn't support lookup over "
@@ -87,7 +87,7 @@ ROUTE_IMPL(RouteUserProfile, path, argp)
     switch (HttpRequestMethodGet(args->context))
     {
         case HTTP_GET:
-            user = UserLock(db, userId->localpart);
+            user = UserLock(db, userId->local);
             if (!user)
             {
                 msg = "Couldn't lock user.";
@@ -147,11 +147,11 @@ ROUTE_IMPL(RouteUserProfile, path, argp)
                     StrEquals(entry, "avatar_url"))
                 {
                     /* Check if user has privilege to do that action. */
-                    if (StrEquals(userId->localpart, UserGetName(user)))
+                    if (StrEquals(userId->local, UserGetName(user)))
                     {
                         value = JsonValueAsString(HashMapGet(request, entry));
-                        /* TODO: Make UserSetProfile notify other
-                         * parties of the change */
+                        /* TODO: Make UserSetProfile notify other parties of 
+                         * the change */
                         UserSetProfile(user, entry, value);
                         response = HashMapCreate();
                         goto finish;

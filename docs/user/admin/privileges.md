@@ -16,10 +16,10 @@ registration tokens.
 configuration.
 - **GRANT_PRIVILEGES:** Allows a user to modify his or her own
 privileges or the privileges of other local users.
-- **ALIAS:** Allows a user to modify room aliases created by other
-users. By default, users can only manage their own room aliases, but
-an administrator may wish to take over an alias or remove an offensive
-alias.
+- **ALIAS:** Allows a user to modify and see room aliases created by 
+other users. By default, users can only manage their own room aliases, 
+but an administrator may wish to take over an alias or remove an 
+offensive alias.
 - **PROC_CONTROL:** Allows a user to get statistics on the running
 process, as well as shutdown and resetart the Telodendria daemon
 itself. Typically this will pair well with **CONFIG**, because there

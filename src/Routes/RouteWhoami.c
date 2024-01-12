@@ -43,7 +43,6 @@ ROUTE_IMPL(RouteWhoami, path, argp)
     char *token;
     char *userID;
     char *deviceID;
-    char *msg;
 
     Config config;
 

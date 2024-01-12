@@ -25,25 +25,80 @@
 
 #include <Routes.h>
 
+#include <Cytoplasm/Memory.h>
 #include <Cytoplasm/Json.h>
+#include <Cytoplasm/Db.h>
+
+#include <Matrix.h>
+#include <User.h>
 
 ROUTE_IMPL(RouteRoomAliases, path, argp)
 {
     RouteArgs *args = argp;
     char *roomId = ArrayGet(path, 0);
+    char *token;
+    char *msg;
 
-    HashMap *request = NULL;
     HashMap *response = NULL;
+    HashMap *aliases = NULL;
+    HashMap *reversealias = NULL;
+
+    JsonValue *val;
 
     Db *db = args->matrixArgs->db;
     DbRef *ref = NULL;
 
-    (void) roomId;
+    User *user = NULL;
 
-    /* TODO: Placeholder; remove. */
-    goto finish;
+    if (HttpRequestMethodGet(args->context) != HTTP_GET)
+    {
+        msg = "Route only accepts GET.";
+        HttpResponseStatus(args->context, HTTP_FORBIDDEN);
+        response = MatrixErrorCreate(M_FORBIDDEN, msg);
+        goto finish;
+    }
+
+    response = MatrixGetAccessToken(args->context, &token);
+    if (response)
+    {
+        goto finish;
+    }
+    user = UserAuthenticate(db, token);
+    if (!user)
+    {
+        HttpResponseStatus(args->context, HTTP_UNAUTHORIZED);
+        response = MatrixErrorCreate(M_UNKNOWN_TOKEN, NULL);
+        goto finish;
+    }
+
+    /* TODO: Check whenever the user is in the room or if its world readable 
+     * once this is implemented instead of just checking for the ALIAS 
+     * privilege. */
+    if (!(UserGetPrivileges(user) & USER_ALIAS))
+    {
+        msg = "User is not allowed to get this room's aliases.";
+        HttpResponseStatus(args->context, HTTP_FORBIDDEN);
+        response = MatrixErrorCreate(M_FORBIDDEN, msg);
+        goto finish;
+    }
+
+    ref = DbLock(db, 1, "aliases");
+    aliases = DbJson(ref);
+    reversealias = JsonValueAsObject(JsonGet(aliases, 2, "id", roomId));
+    if (!reversealias)
+    {
+        /* We do not know about the room ID. */
+        msg = "Unknown room ID.";
+        HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
+        response = MatrixErrorCreate(M_INVALID_PARAM, msg);
+        goto finish;
+    }
+
+    response = HashMapCreate();
+    val = JsonGet(reversealias, 1, "aliases");
+    HashMapSet(response, "aliases", JsonValueDuplicate(val));
 finish:
     DbUnlock(db, ref);
-    JsonFree(request);
+    UserUnlock(user);
     return response;
 }

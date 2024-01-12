@@ -31,6 +31,8 @@
 #include <Cytoplasm/Int64.h>
 #include <Cytoplasm/UInt64.h>
 
+#include <Parser.h>
+
 #include <string.h>
 
 struct User
@@ -882,10 +884,11 @@ finish:
     return arr;
 }
 
-UserId *
+CommonID *
 UserIdParse(char *id, char *defaultServer)
 {
-    UserId *userId;
+    CommonID *userId;
+    char *server;
 
     if (!id)
     {
@@ -898,48 +901,38 @@ UserIdParse(char *id, char *defaultServer)
         return NULL;
     }
 
-    userId = Malloc(sizeof(UserId));
+    userId = Malloc(sizeof(CommonID));
     if (!userId)
     {
         goto finish;
     }
+    memset(userId, 0, sizeof(CommonID));
 
     /* Fully-qualified user ID */
     if (*id == '@')
     {
-        char *localStart = id + 1;
-        char *serverStart = localStart;
-
-        while (*serverStart != ':' && *serverStart != '\0')
+        if (!ParseCommonID(id, userId) || !userId->server.hostname)
         {
-            serverStart++;
-        }
+            UserIdFree(userId);
 
-        if (*serverStart == '\0')
-        {
-            Free(userId);
             userId = NULL;
             goto finish;
         }
-
-        *serverStart = '\0';
-        serverStart++;
-
-        userId->localpart = StrDuplicate(localStart);
-        userId->server = StrDuplicate(serverStart);
     }
     else
     {
         /* Treat it as just a localpart */
-        userId->localpart = StrDuplicate(id);
-        userId->server = StrDuplicate(defaultServer);
+        userId->local = StrDuplicate(id);
+        ParseServerPart(defaultServer, &userId->server);
     }
 
-    if (!UserHistoricalValidate(userId->localpart, userId->server))
+    server = ParserRecomposeServerPart(userId->server);
+    if (!UserHistoricalValidate(userId->local, server))
     {
         UserIdFree(userId);
         userId = NULL;
     }
+    Free(server);
 
 finish:
     Free(id);
@@ -947,12 +940,11 @@ finish:
 }
 
 void
-UserIdFree(UserId * id)
+UserIdFree(CommonID * id)
 {
     if (id)
     {
-        Free(id->localpart);
-        Free(id->server);
+        CommonIDFree(*id);
         Free(id);
     }
 }

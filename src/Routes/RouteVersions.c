@@ -37,9 +37,14 @@ ROUTE_IMPL(RouteVersions, path, argp)
     (void) argp;
 
 #define DECLARE_SPEC_VERSION(x) ArrayAdd(versions, JsonValueString(x))
+    DECLARE_SPEC_VERSION("v1.2");
+    DECLARE_SPEC_VERSION("v1.3");
+    DECLARE_SPEC_VERSION("v1.4");
+    DECLARE_SPEC_VERSION("v1.5");
+    DECLARE_SPEC_VERSION("v1.6");
 
+    /* The curently supported version. */
     DECLARE_SPEC_VERSION("v1.7");
-    /* Declare additional spec version support here. */
 
 #undef DECLARE_SPEC_VERSION
 

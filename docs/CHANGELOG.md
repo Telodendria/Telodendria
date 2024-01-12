@@ -41,6 +41,8 @@ will now be maintained separately and have its own releases as well.
 custom scripts.
 - Greatly simplified some endpoint code by using Cytoplasm's `j2s` for
 parsing request bodies.
+- Create a parser API for grammars found in Matrix, and refactor the 
+User API to use it.
 
 ### New Features
 
@@ -58,6 +60,10 @@ the ability to change only a subset of the configuration.
     - **GET** `/_telodendria/admin/tokens/[token]`
     - **POST** `/_telodendria/admin/tokens`
     - **DELETE** `/_telodendria/admin/tokens/[token]`
+    - **GET** `/_matrix/client/v3/directory/room/[alias]`
+    - **PUT** `/_matrix/client/v3/directory/room/[alias]`
+    - **DELETE** `/_matrix/client/v3/directory/room/[alias]`
+    - **GET** `/_matrix/client/v3/rooms/[id]/aliases`
 
 ## v0.3.0
 

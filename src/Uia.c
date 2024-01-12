@@ -351,7 +351,7 @@ UiaComplete(Array * flows, HttpServerContext * context, Db * db,
         char *password = JsonValueAsString(HashMapGet(auth, "password"));
         HashMap *identifier = JsonValueAsObject(HashMapGet(auth, "identifier"));
         char *type;
-        UserId *userId;
+        CommonID *userId;
         User *user;
 
         if (!password || !identifier)
@@ -366,7 +366,8 @@ UiaComplete(Array * flows, HttpServerContext * context, Db * db,
                              config.serverName);
 
         if (!type || !StrEquals(type, "m.id.user")
-         || !userId || !StrEquals(userId->server, config.serverName))
+         || !userId
+         || !ParserServerNameEquals(userId->server, config.serverName))
         {
             HttpResponseStatus(context, HTTP_UNAUTHORIZED);
             ret = BuildResponse(flows, db, response, session, dbRef);
@@ -374,7 +375,7 @@ UiaComplete(Array * flows, HttpServerContext * context, Db * db,
             goto finish;
         }
 
-        user = UserLock(db, userId->localpart);
+        user = UserLock(db, userId->local);
         if (!user)
         {
             HttpResponseStatus(context, HTTP_UNAUTHORIZED);

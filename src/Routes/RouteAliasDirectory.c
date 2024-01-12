@@ -25,8 +25,12 @@
 
 #include <Routes.h>
 
+#include <Cytoplasm/Memory.h>
 #include <Cytoplasm/Json.h>
 #include <Cytoplasm/Str.h>
+
+#include <Config.h>
+#include <Parser.h>
 #include <User.h>
 
 ROUTE_IMPL(RouteAliasDirectory, path, argp)
@@ -38,20 +42,40 @@ ROUTE_IMPL(RouteAliasDirectory, path, argp)
     HashMap *response;
 
     Db *db = args->matrixArgs->db;
-    DbRef *ref;
+    DbRef *ref = NULL;
     HashMap *aliases;
+    HashMap *idObject;
     JsonValue *val;
+    Array *arr;
 
     char *token;
+    char *msg;
     User *user = NULL;
 
-    /* TODO: Return HTTP 400 M_INVALID_PARAM if alias is invalid */
+    CommonID aliasID;
+    Config config;
+
+    aliasID.sigil = '\0';
+    aliasID.local = NULL;
+    aliasID.server.hostname = NULL;
+    aliasID.server.port = NULL;
+
+    ConfigLock(db, &config);
+
+    if (!ParseCommonID(alias, &aliasID) || aliasID.sigil != '#')
+    {
+        msg = "Invalid room alias.";
+        HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
+        response = MatrixErrorCreate(M_INVALID_PARAM, msg);
+        goto finish;
+    }
 
     ref = DbLock(db, 1, "aliases");
     if (!ref && !(ref = DbCreate(db, 1, "aliases")))
     {
+        msg = "Unable to access alias database.",
         HttpResponseStatus(args->context, HTTP_INTERNAL_SERVER_ERROR);
-        response = MatrixErrorCreate(M_UNKNOWN, "Unable to access alias database.");
+        response = MatrixErrorCreate(M_UNKNOWN, msg);
         goto finish;
     }
 
@@ -69,8 +93,9 @@ ROUTE_IMPL(RouteAliasDirectory, path, argp)
             }
             else
             {
+                msg = "There is no mapped room ID for this room alias.";
                 HttpResponseStatus(args->context, HTTP_NOT_FOUND);
-                response = MatrixErrorCreate(M_NOT_FOUND, "There is no mapped room ID for this room alias.");
+                response = MatrixErrorCreate(M_NOT_FOUND, msg);
             }
             break;
         case HTTP_PUT:
@@ -92,9 +117,21 @@ ROUTE_IMPL(RouteAliasDirectory, path, argp)
             if (HttpRequestMethodGet(args->context) == HTTP_PUT)
             {
                 HashMap *newAlias;
+                char *id;
+                char *serverPart;
 
-                /* TODO: Validate alias domain and make sure it matches
-                 * server name and is well formed. */
+                serverPart = ParserRecomposeServerPart(aliasID.server);
+                if (!StrEquals(serverPart, config.serverName))
+                {
+                    msg = "Invalid server name.";
+                    HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
+                    response = MatrixErrorCreate(M_INVALID_PARAM, msg);
+
+                    Free(serverPart);
+                    goto finish;
+                }
+
+                Free(serverPart);
 
                 if (JsonGet(aliases, 2, "alias", alias))
                 {
@@ -111,40 +148,81 @@ ROUTE_IMPL(RouteAliasDirectory, path, argp)
                     goto finish;
                 }
 
-                if (!JsonValueAsString(HashMapGet(request, "room_id")))
+                id = JsonValueAsString(HashMapGet(request, "room_id"));
+                if (!id)
                 {
                     HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
                     response = MatrixErrorCreate(M_BAD_JSON, "Missing or invalid room_id.");
                     goto finish;
                 }
-
-                /* TODO: Validate room ID to make sure it is well
-                 * formed. */
+                
+                if (!ValidCommonID(id, '!'))
+                {
+                    msg = "Invalid room ID.";
+                    HttpResponseStatus(args->context, HTTP_BAD_REQUEST);
+                    response = MatrixErrorCreate(M_INVALID_PARAM, msg);
+                    goto finish;
+                }
 
                 newAlias = HashMapCreate();
                 HashMapSet(newAlias, "createdBy", JsonValueString(UserGetName(user)));
-                HashMapSet(newAlias, "id", JsonValueDuplicate(HashMapGet(request, "room_id")));
+                HashMapSet(newAlias, "id", JsonValueString(id));
                 HashMapSet(newAlias, "servers", JsonValueArray(ArrayCreate()));
 
                 JsonSet(aliases, JsonValueObject(newAlias), 2, "alias", alias);
+
+                if (!(idObject = JsonValueAsObject(JsonGet(aliases, 2, "id", id))))
+                {
+                    arr = ArrayCreate();
+                    idObject = HashMapCreate();
+                    HashMapSet(idObject, "aliases", JsonValueArray(arr));
+                    JsonSet(aliases, JsonValueObject(idObject), 2, "id", id);
+                }
+                val = HashMapGet(idObject, "aliases");
+                arr = JsonValueAsArray(val);
+                ArrayAdd(arr, JsonValueString(alias));
+
             }
             else
             {
-                if (!JsonGet(aliases, 2, "alias", alias))
+                HashMap *roomAlias;
+                char *id;
+
+                if (!(val = JsonGet(aliases, 2, "alias", alias)))
                 {
                     HttpResponseStatus(args->context, HTTP_NOT_FOUND);
                     response = MatrixErrorCreate(M_NOT_FOUND, "Room alias not found.");
                     goto finish;
                 }
+                roomAlias = JsonValueAsObject(val);
+                id = StrDuplicate(JsonValueAsString(HashMapGet(roomAlias, "id")));
 
-                if (!(UserGetPrivileges(user) & USER_ALIAS) && !StrEquals(UserGetName(user), JsonValueAsString(JsonGet(aliases, 3, "alias", alias, "createdBy"))))
+                if (!(UserGetPrivileges(user) & USER_ALIAS) && !StrEquals(UserGetName(user), JsonValueAsString(JsonGet(roomAlias, 1, "createdBy"))))
                 {
                     HttpResponseStatus(args->context, HTTP_UNAUTHORIZED);
                     response = MatrixErrorCreate(M_UNAUTHORIZED, NULL);
+                    Free(id);
                     goto finish;
                 }
 
                 JsonValueFree(HashMapDelete(JsonValueAsObject(HashMapGet(aliases, "alias")), alias));
+
+                idObject = JsonValueAsObject(JsonGet(aliases, 2, "id", id));
+                if (idObject)
+                {
+                    size_t i;
+                    val = HashMapGet(idObject, "aliases");
+                    arr = JsonValueAsArray(val);
+                    for (i = 0; i < ArraySize(arr); i++)
+                    {
+                        if (StrEquals(JsonValueAsString(ArrayGet(arr, i)), alias))
+                        {
+                            JsonValueFree(ArrayDelete(arr, i));
+                            break;
+                        }
+                    }
+                }
+                Free(id);
             }
             response = HashMapCreate();
 
@@ -156,6 +234,8 @@ ROUTE_IMPL(RouteAliasDirectory, path, argp)
     }
 
 finish:
+    CommonIDFree(aliasID);
+    ConfigUnlock(&config);
     UserUnlock(user);
     DbUnlock(db, ref);
     JsonFree(request);
