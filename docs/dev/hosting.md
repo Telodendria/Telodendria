@@ -15,7 +15,7 @@ The general sequence of steps required for setting up a CI runner is as follows:
     Run these commands to install the packages:
     - **OpenBSD:** `pkg_add git go node`
     - **FreeBSD:** `pkg install git go node`
-    - **NetBSD:** `pkgin install git go node openssl mozilla-rootcerts-openssl`
+    - **NetBSD:** `pkgin install git go nodejs openssl mozilla-rootcerts-openssl`
       (Note that the `go` executable is `go121` or whatever version was installed. and that NetBSD has no root certificates installed by default)
     - **Debian:** `apt install git golang nodejs`
     - **Alpine:** `apk add git go nodejs`
