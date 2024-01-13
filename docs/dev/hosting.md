@@ -24,7 +24,7 @@ The general sequence of steps required for setting up a CI runner is as follows:
     - **Debian:** `apt install make gcc libssl-dev`
     - **Alpine:** `apk add make gcc musl-dev openssl-dev`
 4. Clone `https://git.telodendria.io/Telodendria/act_runner.git`.
-5. Run `go build` in the `act_runner` directory. On NetBSD, you may have to `umount /tmp` first because `/tmp` is by default very small.
+5. Run `go build` in the `act_runner` directory. On NetBSD, you may have to `umount /tmp` first because `/tmp` is by default very small. Otherwise, make `/tmp` larger during installation. 2GB should be plenty.
 6. Run `./act_runner register` to register the runner. When prompted for the tags, follow following convention:
     - **Linux Distros:** `linux`, `<distro>-v<version>`, `<arch>`
     - **BSD Derivatives:** `bsd`, `<osname>-v<version>`, `<arch>`
@@ -33,3 +33,4 @@ The general sequence of steps required for setting up a CI runner is as follows:
     - **Others:** `other`, `<osname>-v<version>`, `<arch>`
 
     Where `<arch>` is one of `x86` or `x64` for now. ARM runners will be a future project.
+7. Run `./act_runner daemon`.
