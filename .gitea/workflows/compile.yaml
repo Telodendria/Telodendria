@@ -1,0 +1,27 @@
+name: Compile Telodendria
+run-name: Compile Telodendria on ${{ gitea.actor }}
+on: [push]
+
+jobs:
+    "Compile Telodendria":
+        strategy:
+            matrix:
+                os: [debian-v12.4, alpine-v3.19, openbsd-v7.4, freebsd-v14.0, netbsd-v9.3]
+                arch: [x86, x86_64]
+                exclude:
+                    # 32-bit OpenBSD does not behave well in QEMU. Even when using
+                    # QEMU to emulate i386, it utilizes 100% of its CPU core and is
+                    # still extremely sluggish. Thus, we don't have a working 32-bit
+                    # OpenBSD runner, so exclude it from the matrix configuration.
+                    - os: openbsd-v7.4
+                      arch: x86
+        runs-on: ["${{ matrix.os }}", "${{ matrix.arch }}"]
+        steps:
+            - name: Check out repository
+              uses: actions/checkout@v3
+            - name: Configure Telodendria
+              run: ./configure
+            - name: Configure & Build Cytoplasm
+              run: make cytoplasm
+            - name: Build Telodendria
+              run: make

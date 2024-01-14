@@ -283,7 +283,7 @@ ${TAB}    diff -u -p - "LICENSE.txt" | \\
 ${TAB}    patch "\$\$src" | grep -v "^Hmm"; \\
 ${TAB}done
 
-${BIN_NAME}: $(if [ -n "${CYTOPLASM}" ]; then echo "cytoplasm"; fi) ${OUT}/bin/${BIN_NAME}
+${BIN_NAME}: ${OUT}/bin/${BIN_NAME}
 
 install: ${BIN_NAME}
 ${TAB}install -D ${OUT}/bin/${BIN_NAME} \$(PREFIX)/bin/${BIN_NAME}
