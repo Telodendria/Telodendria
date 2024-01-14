@@ -34,3 +34,26 @@ The general sequence of steps required for setting up a CI runner is as follows:
 
     Where `<arch>` is one of `x86` or `x64` for now. ARM runners will be a future project.
 7. Run `./act_runner daemon`.
+
+### Startup Scripts
+
+We will obviously want `act_runner` to execute on bootup. Here are the start scripts I used:
+
+#### Alpine
+
+In `/etc/init.d/act_runner`:
+
+```shell
+#!/sbin/openrc-run
+
+directory="/home/runner/act_runner"
+command="/home/runner/act_runner/act_runner"
+command_args="daemon"
+command_user="runner:runner"
+command_background="true"
+pidfile="/run/act_runner.pid"
+```
+
+Don't forget to `chmod +x /etc/init.d/act_runner`.
+
+Then just `rc-update add act_runner` and `rc-service act_runner start`.
