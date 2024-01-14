@@ -89,7 +89,8 @@ for arg in $SCRIPT_ARGS; do
                     exit 1
                 fi
 
-                CFLAGS="${CFLAGS} -L${CYTOPLASM}/out/lib -I${CYTOPLASM}/include"
+                CFLAGS="${CFLAGS} -I${CYTOPLASM}/include"
+                LDFLAGS="${LDFLAGS} -L${CYTOPLASM}/out/lib"
             fi
             ;;
         *)
