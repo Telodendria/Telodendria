@@ -133,7 +133,7 @@ TelodendriaPrintHeader(void)
         Log(LOG_INFO, "%s", TelodendriaHeader[i]);
     }
 
-    Log(LOG_INFO, "Telodendria v" TELODENDRIA_VERSION " (%s v%s)", CytoplasmGetName(), CytoplasmGetVersion());
+    Log(LOG_INFO, "Telodendria v" TELODENDRIA_VERSION " (Cytoplasm v%s)", CytoplasmGetVersionStr());
     Log(LOG_INFO, "");
     Log(LOG_INFO,
         "Copyright (C) 2024 Jordan Bancino <@jordan:bancino.net>");

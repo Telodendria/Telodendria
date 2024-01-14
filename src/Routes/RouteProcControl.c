@@ -24,7 +24,6 @@
  */
 #include <Routes.h>
 
-#include <Cytoplasm/Int64.h>
 #include <User.h>
 #include <Cytoplasm/Memory.h>
 #include <Cytoplasm/Str.h>
@@ -86,24 +85,11 @@ ROUTE_IMPL(RouteProcControl, path, argp)
             if (StrEquals(op, "stats"))
             {
                 size_t allocated = MemoryAllocated();
-                Int64 a;
 
                 response = HashMapCreate();
 
-                if (sizeof(size_t) == sizeof(Int64))
-                {
-                    UInt32 high = (UInt32) (allocated >> 32);
-                    UInt32 low = (UInt32) (allocated);
-
-                    a = Int64Create(high, low);
-                }
-                else
-                {
-                    a = Int64Create(0, allocated);
-                }
-
                 HashMapSet(response, "version", JsonValueString(TELODENDRIA_VERSION));
-                HashMapSet(response, "memory_allocated", JsonValueInteger(a));
+                HashMapSet(response, "memory_allocated", JsonValueInteger(allocated));
 
                 goto finish;
             }

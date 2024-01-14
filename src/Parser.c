@@ -27,7 +27,6 @@
 
 #include <Cytoplasm/Memory.h>
 #include <Cytoplasm/Str.h>
-#include <Cytoplasm/Int.h>
 
 #include <string.h>
 #include <stdlib.h>
@@ -38,7 +37,7 @@
 #define Iterate(s) (*(*s)++)
 
 /* Parse an extended localpart */
-static int
+static bool
 ParseUserLocalpart(char **str, char **out)
 {
     char c;
@@ -47,7 +46,7 @@ ParseUserLocalpart(char **str, char **out)
 
     if (!str || !out)
     {
-        return 0;
+        return false;
     }
     /* An extended localpart contains every ASCII printable character, 
      * except an ':'. */
@@ -60,7 +59,7 @@ ParseUserLocalpart(char **str, char **out)
     if (length < 1)
     {
         *str = start;
-        return 0;
+        return false;
     }
     if (c == ':')
     {
@@ -71,8 +70,9 @@ ParseUserLocalpart(char **str, char **out)
     memcpy(*out, start, length);
     (*out)[length] = '\0';
 
-    return 1;
+    return true;
 }
+
 /* Parses an IPv4 address. */
 static int
 ParseIPv4(char **str, char **out)
@@ -102,14 +102,14 @@ ParseIPv4(char **str, char **out)
         {
             /* Current digit is too long for the spec! */
             *str = start;
-            return 0;
+            return false;
         }
         memcpy(buffer, *str - digit - 1, digit);
         if (atoi(buffer) > 255)
         {
             /* Current digit is too large for the spec! */
             *str = start;
-            return 0;
+            return false;
         }
         memset(buffer, 0, sizeof(buffer));
         digit = 0;
@@ -118,20 +118,22 @@ ParseIPv4(char **str, char **out)
     if (c == '.' || digits != 3)
     {
         *str = start;
-        return 0;
+        return false;
     }
     length = (size_t) (*str - start) - 1;
     *out = Malloc(length + 1);
     memcpy(*out, start, length);
     (*str)--;
-    return 1;
+    return true;
 }
-static int
+
+static bool
 IsIPv6Char(char c)
 {
-    return isxdigit(c) || c == ':' || c == '.';
+    return (isxdigit(c) || c == ':' || c == '.');
 }
-static int
+
+static bool
 ParseIPv6(char **str, char **out)
 {
     char *start;
@@ -174,7 +176,7 @@ ParseIPv6(char **str, char **out)
                 /* RFC3513 says the following:
                  * > 'The "::" can only appear once in an address.' */
                 *str = start;
-                return 0;
+                return false;
             }
             if (digit < 1 || digit > 4)
             {
@@ -217,12 +219,13 @@ end:
     memset(*out, '\0', length + 1);
     memcpy(*out, start, length);
 
-    return 1;
+    return true;
 fail:
     *str = start;
-    return 0;
+    return false;
 }
-static int
+
+static bool
 ParseHostname(char **str, char **out)
 {
     char *start;
@@ -239,16 +242,16 @@ ParseHostname(char **str, char **out)
     if (length < 1 || length > 255)
     {
         *str = start;
-        return 0;
+        return false;
     }
     length = (size_t) (*str - start) - 1;
     *out = Malloc(length + 1);
     memcpy(*out, start, length);
     (*str)--;
-    return 1;
+    return true;
 }
 
-static int
+static bool
 ParseServerName(char **str, ServerPart *out)
 {
     char c;
@@ -261,7 +264,7 @@ ParseServerName(char **str, ServerPart *out)
 
     if (!str || !out)
     {
-        return 0;
+        return false;
     }
 
     start = *str;
@@ -284,7 +287,7 @@ ParseServerName(char **str, ServerPart *out)
     if (!host)
     {
         /* Can't parse a valid server name. */
-        return 0;
+        return false;
     }
     /* Now, there's only 2 options: a ':', or the end(everything else.) */
     if (**str != ':')
@@ -292,7 +295,7 @@ ParseServerName(char **str, ServerPart *out)
         /* We're done. */
         out->hostname = host;
         out->port = NULL;
-        return 1;
+        return true;
     }
     /* TODO: Separate this out */
     startPort = ++(*str);
@@ -305,7 +308,7 @@ ParseServerName(char **str, ServerPart *out)
         *str = start;
         Free(host);
         host = NULL;
-        return 0;
+        return false;
     }
 
     port = Malloc(chars + 1);
@@ -316,24 +319,26 @@ ParseServerName(char **str, ServerPart *out)
         Free(port);
         Free(host);
         *str = start;
-        return 0;
+        return false;
     }
 
     out->hostname = host;
     out->port = port;
 
-    return 1;
+    return true;
 }
-int
+
+bool
 ParseServerPart(char *str, ServerPart *part)
 {
     /* This is a wrapper behind the internal ParseServerName. */
     if (!str || !part)
     {
-        return 0;
+        return false;
     }
     return ParseServerName(&str, part);
 }
+
 void
 ServerPartFree(ServerPart part)
 {
@@ -347,20 +352,20 @@ ServerPartFree(ServerPart part)
     }
 }
 
-int
+bool
 ParseCommonID(char *str, CommonID *id)
 {
     char sigil;
 
     if (!str || !id)
     {
-        return 0;
+        return false;
     }
     
     /* There must at least be 2 chararacters: the sigil and a string.*/
     if (strlen(str) < 2)
     {
-        return 0;
+        return false;
     }
 
     sigil = *str++;
@@ -369,7 +374,7 @@ ParseCommonID(char *str, CommonID *id)
      */
     if ((sigil == '#' || sigil == '@') && strlen(str) > 255)
     {
-        return 0;
+        return false;
     }
     id->sigil = sigil;
     id->local = NULL;
@@ -383,7 +388,7 @@ ParseCommonID(char *str, CommonID *id)
              * accepting it all. */
             if (!ParseUserLocalpart(&str, &id->local))
             {
-                return 0;
+                return false;
             }
             if (*str == ':')
             {
@@ -392,9 +397,9 @@ ParseCommonID(char *str, CommonID *id)
                 {
                     Free(id->local);
                     id->local = NULL;
-                    return 0;
+                    return false;
                 }
-                return 1;
+                return true;
             }
             break;
         case '!':
@@ -403,23 +408,23 @@ ParseCommonID(char *str, CommonID *id)
         case '@':
             if (!ParseUserLocalpart(&str, &id->local))
             {
-                return 0;
+                return false;
             }
             if (*str++ != ':')
             {
                 Free(id->local);
                 id->local = NULL;
-                return 0;
+                return false;
             }
             if (!ParseServerName(&str, &id->server))
             {
                 Free(id->local);
                 id->local = NULL;
-                return 0;
+                return false;
             }
             break;
     }
-    return 1;
+    return true;
 }
 
 void
@@ -431,15 +436,18 @@ CommonIDFree(CommonID id)
     }
     ServerPartFree(id.server);
 }
-int
+
+bool
 ValidCommonID(char *str, char sigil)
 {
     CommonID id;
-    int ret;
+    bool ret;
+
     memset(&id, 0, sizeof(CommonID));
+
     if (!str)
     {
-        return 0;
+        return false;
     }
 
     ret = ParseCommonID(str, &id) && id.sigil == sigil;
@@ -447,6 +455,7 @@ ValidCommonID(char *str, char sigil)
     CommonIDFree(id);
     return ret;
 }
+
 char *
 ParserRecomposeServerPart(ServerPart serverPart)
 {
@@ -460,6 +469,7 @@ ParserRecomposeServerPart(ServerPart serverPart)
     }
     return NULL;
 }
+
 char *
 ParserRecomposeCommonID(CommonID id)
 {
@@ -485,15 +495,18 @@ ParserRecomposeCommonID(CommonID id)
     }
     return ret;
 }
-int
+
+bool
 ParserServerNameEquals(ServerPart serverPart, char *str)
 {
     char *idServer;
-    int ret;
+    bool ret;
+
     if (!str)
     {
-        return 0;
+        return false;
     }
+
     idServer = ParserRecomposeServerPart(serverPart);
 
     ret = StrEquals(idServer, str);

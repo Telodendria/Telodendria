@@ -36,14 +36,12 @@
 
 #include <Cytoplasm/Args.h>
 #include <Cytoplasm/Memory.h>
-#include <Config.h>
 #include <Cytoplasm/Log.h>
 #include <Cytoplasm/HashMap.h>
 #include <Cytoplasm/Json.h>
 #include <Cytoplasm/HttpServer.h>
 #include <Cytoplasm/Db.h>
 #include <Cytoplasm/Cron.h>
-#include <Uia.h>
 #include <Cytoplasm/Util.h>
 #include <Cytoplasm/Str.h>
 
@@ -52,6 +50,9 @@
 #include <User.h>
 #include <RegToken.h>
 #include <Routes.h>
+#include <Uia.h>
+#include <Config.h>
+
 
 static Array *httpServers;
 static volatile int restart;
@@ -248,7 +249,7 @@ start:
         }
 
         token = StrRandom(32);
-        info = RegTokenCreate(matrixArgs.db, token, NULL, UInt64Create(0, 0), Int64Create(0, 1), USER_ALL);
+        info = RegTokenCreate(matrixArgs.db, token, NULL, /* expires */ 0, /* uses */ 1, USER_ALL);
         if (!info)
         {
             Free(token);
@@ -396,14 +397,14 @@ start:
 
         if (args.flags & HTTP_FLAG_TLS)
         {
-            if (UInt64Eq(UtilLastModified(serverCfg->tls.cert), UInt64Create(0, 0)))
+            if (!UtilLastModified(serverCfg->tls.cert))
             {
                 Log(LOG_ERR, "%s: %s", strerror(errno), serverCfg->tls.cert);
                 exit = EXIT_FAILURE;
                 goto finish;
             }
 
-            if (UInt64Eq(UtilLastModified(serverCfg->tls.key), UInt64Create(0, 0)))
+            if (UtilLastModified(serverCfg->tls.key))
             {
                 Log(LOG_ERR, "%s: %s", strerror(errno), serverCfg->tls.key);
                 exit = EXIT_FAILURE;

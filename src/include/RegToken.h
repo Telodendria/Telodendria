@@ -41,7 +41,6 @@
  */
 
 #include <Cytoplasm/Db.h>
-#include <Cytoplasm/Int64.h>
 
 #include <Schema/RegToken.h>
 
@@ -78,7 +77,7 @@ extern RegTokenInfo * RegTokenGetInfo(Db *, char *);
  * structure will be returned. Otherwise, NULL will be returned.
  */
 extern RegTokenInfo *
-RegTokenCreate(Db *, char *, char *, UInt64, Int64, int);
+RegTokenCreate(Db *, char *, char *, uint64_t, int64_t, int);
 
 /**
  * Free the memory associated with the registration token. This should

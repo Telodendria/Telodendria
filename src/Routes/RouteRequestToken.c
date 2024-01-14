@@ -40,8 +40,6 @@ ROUTE_IMPL(RouteRequestToken, path, argp)
 
     RequestToken reqTok;
 
-    Int64 minusOne = Int64Neg(Int64Create(0, 1));
-
     reqTok.client_secret = NULL;
     reqTok.next_link = NULL;
     reqTok.id_access_token = NULL;
@@ -51,7 +49,7 @@ ROUTE_IMPL(RouteRequestToken, path, argp)
     reqTok.country = NULL;
     reqTok.phone_number = NULL;
 
-    reqTok.send_attempt = minusOne;
+    reqTok.send_attempt = -1;
 
     if (HttpRequestMethodGet(args->context) != HTTP_POST)
     {
@@ -90,7 +88,7 @@ ROUTE_IMPL(RouteRequestToken, path, argp)
         goto finish;
     }
 
-    if (Int64Eq(reqTok.send_attempt, minusOne))
+    if (reqTok.send_attempt == -1)
     {
         msg = "Invalid or inexistent 'send_attempt'";
         HttpResponseStatus(args->context, HTTP_BAD_REQUEST);

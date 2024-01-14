@@ -39,11 +39,12 @@
  * users, among many other tasks.
  */
 
-#include <Cytoplasm/Int64.h>
 #include <Cytoplasm/Db.h>
 #include <Cytoplasm/Json.h>
 
 #include <Parser.h>
+
+#include <stdbool.h>
 
 /**
  * Many functions here operate on an opaque user structure.
@@ -77,7 +78,7 @@ typedef struct UserAccessToken
     char *user;
     char *string;
     char *deviceId;
-    Int64 lifetime;
+    uint64_t lifetime;
 } UserAccessToken;
 
 /**
@@ -98,7 +99,7 @@ typedef struct UserLoginInfo
  * the local part is allowed to be. This function is used to ensure
  * that client-provided Matrix IDs are valid on this server.
  */
-extern int UserValidate(char *, char *);
+extern bool UserValidate(char *, char *);
 
 /**
  * This function behaves just like
@@ -109,13 +110,13 @@ extern int UserValidate(char *, char *);
  * spec compliant but remain in use since before the new restrictions
  * were put in place.
  */
-extern int UserHistoricalValidate(char *, char *);
+extern bool UserHistoricalValidate(char *, char *);
 
 /**
  * Determine whether the user identified by the specified localpart
  * exists in the database.
  */
-extern int UserExists(Db *, char *);
+extern bool UserExists(Db *, char *);
 
 /**
  * Create a new user with the specified localpart and password, in
@@ -146,7 +147,7 @@ extern User * UserAuthenticate(Db *, char *);
  * .Fn DbUnlock
  * under the hood.
  */
-extern int UserUnlock(User *);
+extern bool UserUnlock(User *);
 
 /**
  * Log in a user. This function takes the user's password, desired
@@ -179,13 +180,13 @@ extern char * UserGetDeviceId(User *);
  * does not store passwords in plain text, so this function hashes the
  * password and checks it against what is stored in the database.
  */
-extern int UserCheckPassword(User *, char *);
+extern bool UserCheckPassword(User *, char *);
 
 /**
  * Reset the given user's password by hashing a plain text password and
  * storing it in the database.
  */
-extern int UserSetPassword(User *, char *);
+extern bool UserSetPassword(User *, char *);
 
 /**
  * Immediately deactivate the given user account such that it can no
@@ -198,21 +199,21 @@ extern int UserSetPassword(User *, char *);
  * responsible for deactivating the target user is NULL, then it is 
  * set to the target's own name.
  */
-extern int UserDeactivate(User *, char *, char *);
+extern bool UserDeactivate(User *, char *, char *);
 
 /**
  * Reactivates the given user account if it has been deactvated with 
  * .Fn UserDeactivate ,
  * otherwise, it simply doesn't do anything.
  */
-extern int UserReactivate(User *);
+extern bool UserReactivate(User *);
 
 /**
  * Return a boolean value indicating whether or not the user was
  * deactivated using
  * .Fn UserDeactivate .
  */
-extern int UserDeactivated(User *);
+extern bool UserDeactivated(User *);
 
 /**
  * Fetches the devices that belong to the user, in JSON format,
@@ -233,7 +234,7 @@ extern UserAccessToken * UserAccessTokenGenerate(User *, char *, int);
  * Write the specified access token to the database, returning a
  * boolean value indicating success.
  */
-extern int UserAccessTokenSave(Db *, UserAccessToken *);
+extern bool UserAccessTokenSave(Db *, UserAccessToken *);
 
 /**
  * Free the memory associated with the given access token.
@@ -243,7 +244,7 @@ extern void UserAccessTokenFree(UserAccessToken *);
 /**
  * Delete a specific access token by name.
  */
-extern int UserDeleteToken(User *, char *);
+extern bool UserDeleteToken(User *, char *);
 
 /**
  * Get a string property from the user's profile given the specified
@@ -262,7 +263,7 @@ extern void UserSetProfile(User *, char *, char *);
  * except for the one provided by name, unless NULL is provided for
  * the name.
  */
-extern int UserDeleteTokens(User *, char *);
+extern bool UserDeleteTokens(User *, char *);
 
 /**
  * Get the current privileges of the user as a packed bit field. Use
@@ -274,7 +275,7 @@ extern int UserGetPrivileges(User *);
 /**
  * Set the privileges of the user.
  */
-extern int UserSetPrivileges(User *, int);
+extern bool UserSetPrivileges(User *, int);
 
 /**
  * Decode the JSON that represents the user privileges into a packed

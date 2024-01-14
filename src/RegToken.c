@@ -31,7 +31,6 @@
 #include <Cytoplasm/Json.h>
 #include <Cytoplasm/Util.h>
 #include <Cytoplasm/Str.h>
-#include <Cytoplasm/Int64.h>
 #include <Cytoplasm/Log.h>
 
 #include <User.h>
@@ -40,9 +39,9 @@ int
 RegTokenValid(RegTokenInfo * token)
 {
     HashMap *tokenJson;
-    Int64 uses, used;
+    int64_t uses, used;
 
-    UInt64 expiration;
+    uint64_t expiration;
 
     if (!token || !RegTokenExists(token->db, token->name))
     {
@@ -54,9 +53,7 @@ RegTokenValid(RegTokenInfo * token)
     used = JsonValueAsInteger(HashMapGet(tokenJson, "used"));
     expiration = JsonValueAsInteger(HashMapGet(tokenJson, "expires_on"));
 
-    return (UInt64Eq(expiration, UInt64Create(0, 0)) ||
-            UInt64Geq(UtilServerTs(), expiration)) &&
-            (Int64Eq(uses, Int64Neg(Int64Create(0, 1))) || Int64Lt(used, uses));
+    return (!expiration || (UtilTsMillis() < expiration)) && (uses == -1 || used < uses);
 }
 void
 RegTokenUse(RegTokenInfo * token)
@@ -68,13 +65,12 @@ RegTokenUse(RegTokenInfo * token)
         return;
     }
 
-    if (Int64Geq(token->uses, Int64Create(0, 0)) &&
-        Int64Geq(token->used, token->uses))
+    if (token->uses >= 0 && token->used >= token->uses)
     {
         return;
     }
 
-    token->used = Int64Add(token->used, Int64Create(0, 1));
+    token->used++;
 
     /* Write the information to the hashmap */
     tokenJson = DbJson(token->ref);
@@ -199,11 +195,11 @@ RegTokenVerify(char *token)
 }
 
 RegTokenInfo *
-RegTokenCreate(Db * db, char *name, char *owner, UInt64 expires, Int64 uses, int privileges)
+RegTokenCreate(Db * db, char *name, char *owner, uint64_t expires, int64_t uses, int privileges)
 {
     RegTokenInfo *ret;
 
-    UInt64 timestamp = UtilServerTs();
+    uint64_t timestamp = UtilTsMillis();
 
     if (!db || !name)
     {
@@ -213,13 +209,13 @@ RegTokenCreate(Db * db, char *name, char *owner, UInt64 expires, Int64 uses, int
     /* -1 indicates infinite uses; zero and all positive values are a
      * valid number of uses; althought zero would be rather useless.
      * Anything less than -1 doesn't make sense. */
-    if (Int64Lt(uses, Int64Neg(Int64Create(0, 1))))
+    if (uses < -1)
     {
         return NULL;
     }
 
     /* Verify the token */
-    if (!RegTokenVerify(name) || (UInt64Gt(expires, UInt64Create(0, 0)) && UInt64Lt(expires, timestamp)))
+    if (!RegTokenVerify(name) || ((expires > 0) && (expires < timestamp)))
     {
         return NULL;
     }
@@ -235,7 +231,7 @@ RegTokenCreate(Db * db, char *name, char *owner, UInt64 expires, Int64 uses, int
     }
     ret->name = StrDuplicate(name);
     ret->created_by = StrDuplicate(owner);
-    ret->used = Int64Create(0, 0);
+    ret->used = 0;
     ret->uses = uses;
     ret->created_on = timestamp;
     ret->expires_on = expires;

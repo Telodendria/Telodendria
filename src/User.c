@@ -28,8 +28,6 @@
 #include <Cytoplasm/Str.h>
 #include <Cytoplasm/Sha.h>
 #include <Cytoplasm/Json.h>
-#include <Cytoplasm/Int64.h>
-#include <Cytoplasm/UInt64.h>
 
 #include <Parser.h>
 
@@ -44,7 +42,7 @@ struct User
     char *deviceId;
 };
 
-int
+bool
 UserValidate(char *localpart, char *domain)
 {
     size_t maxLen = 255 - strlen(domain) - 1;
@@ -56,23 +54,23 @@ UserValidate(char *localpart, char *domain)
 
         if (i > maxLen)
         {
-            return 0;
+            return false;
         }
 
         if (!((c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') ||
               (c == '.') || (c == '_') || (c == '=') || (c == '-') ||
               (c == '/')))
         {
-            return 0;
+            return false;
         }
 
         i++;
     }
 
-    return 1;
+    return true;
 }
 
-int
+bool
 UserHistoricalValidate(char *localpart, char *domain)
 {
     size_t maxLen = 255 - strlen(domain) - 1;
@@ -84,21 +82,21 @@ UserHistoricalValidate(char *localpart, char *domain)
 
         if (i > maxLen)
         {
-            return 0;
+            return false;
         }
 
         if (!((c >= 0x21 && c <= 0x39) || (c >= 0x3B && c <= 0x7E)))
         {
-            return 0;
+            return false;
         }
 
         i++;
     }
 
-    return 1;
+    return true;
 }
 
-int
+bool
 UserExists(Db * db, char *name)
 {
     return DbExists(db, 2, "users", name);
@@ -133,7 +131,7 @@ UserAuthenticate(Db * db, char *accessToken)
 
     char *userName;
     char *deviceId;
-    UInt64 expires;
+    uint64_t expires;
 
     if (!db || !accessToken)
     {
@@ -157,8 +155,7 @@ UserAuthenticate(Db * db, char *accessToken)
         return NULL;
     }
 
-    if (UInt64Neq(expires, UInt64Create(0, 0)) &&
-        UInt64Geq(UtilServerTs(), expires))
+    if (expires && UtilTsMillis() >= expires)
     {
         UserUnlock(user);
         DbUnlock(db, atRef);
@@ -171,14 +168,14 @@ UserAuthenticate(Db * db, char *accessToken)
     return user;
 }
 
-int
+bool
 UserUnlock(User * user)
 {
-    int ret;
+    bool ret;
 
     if (!user)
     {
-        return 0;
+        return false;
     }
 
     Free(user->name);
@@ -196,7 +193,7 @@ UserCreate(Db * db, char *name, char *password)
     User *user = NULL;
     HashMap *json = NULL;
 
-    UInt64 ts = UtilServerTs();
+    uint64_t ts = UtilTsMillis();
 
     /* TODO: Put some sort of password policy(like for example at least
      * 8 chars, or maybe check it's entropy)? */
@@ -233,7 +230,7 @@ UserCreate(Db * db, char *name, char *password)
 
     json = DbJson(user->ref);
     HashMapSet(json, "createdOn", JsonValueInteger(ts));
-    HashMapSet(json, "deactivated", JsonValueBoolean(0));
+    HashMapSet(json, "deactivated", JsonValueBoolean(false));
 
     return user;
 }
@@ -356,7 +353,7 @@ UserGetDeviceId(User * user)
     return user ? user->deviceId : NULL;
 }
 
-int
+bool
 UserCheckPassword(User * user, char *password)
 {
     HashMap *json;
@@ -368,11 +365,11 @@ UserCheckPassword(User * user, char *password)
     char *hashedPwd;
     char *tmp;
 
-    int result;
+    bool result;
 
     if (!user || !password)
     {
-        return 0;
+        return false;
     }
 
     json = DbJson(user->ref);
@@ -382,7 +379,7 @@ UserCheckPassword(User * user, char *password)
 
     if (!storedHash || !salt)
     {
-        return 0;
+        return false;
     }
 
     tmp = StrConcat(2, password, salt);
@@ -398,7 +395,7 @@ UserCheckPassword(User * user, char *password)
     return result;
 }
 
-int
+bool
 UserSetPassword(User * user, char *password)
 {
     HashMap *json;
@@ -410,7 +407,7 @@ UserSetPassword(User * user, char *password)
 
     if (!user || !password)
     {
-        return 0;
+        return false;
     }
 
     json = DbJson(user->ref);
@@ -428,10 +425,10 @@ UserSetPassword(User * user, char *password)
     Free(hashBytes);
     Free(tmpstr);
 
-    return 1;
+    return true;
 }
 
-int
+bool
 UserDeactivate(User * user, char * from, char * reason)
 {
     HashMap *json;
@@ -439,7 +436,7 @@ UserDeactivate(User * user, char * from, char * reason)
 
     if (!user)
     {
-        return 0;
+        return false;
     }
     
     /* By default, it's the target's username */
@@ -450,7 +447,7 @@ UserDeactivate(User * user, char * from, char * reason)
 
     json = DbJson(user->ref);
 
-    JsonValueFree(HashMapSet(json, "deactivated", JsonValueBoolean(1)));
+    JsonValueFree(HashMapSet(json, "deactivated", JsonValueBoolean(true)));
 
     val = JsonValueString(from);
     JsonValueFree(JsonSet(json, val, 2, "deactivate", "by"));
@@ -460,38 +457,38 @@ UserDeactivate(User * user, char * from, char * reason)
         JsonValueFree(JsonSet(json, val, 2, "deactivate", "reason"));
     }
 
-    return 1;
+    return true;
 
 }
 
-int
+bool
 UserReactivate(User * user)
 {
     HashMap *json;
 
     if (!user)
     {
-        return 0;
+        return false;
     }
 
     json = DbJson(user->ref);
 
 
-    JsonValueFree(HashMapSet(json, "deactivated", JsonValueBoolean(0)));
+    JsonValueFree(HashMapSet(json, "deactivated", JsonValueBoolean(false)));
     
     JsonValueFree(HashMapDelete(json, "deactivate"));
 
-    return 1;
+    return true;
 }
 
-int
+bool
 UserDeactivated(User * user)
 {
     HashMap *json;
 
     if (!user)
     {
-        return 1;
+        return true;
     }
 
     json = DbJson(user->ref);
@@ -537,17 +534,17 @@ UserAccessTokenGenerate(User * user, char *deviceId, int withRefresh)
 
     if (withRefresh)
     {
-        token->lifetime = Int64Create(0, 1000 * 60 * 60 * 24 * 7); /* 1 Week */
+        token->lifetime = 1000 * 60 * 60 * 24 * 7; /* 1 Week */
     }
     else
     {
-        token->lifetime = Int64Create(0, 0);
+        token->lifetime = 0;
     }
 
     return token;
 }
 
-int
+bool
 UserAccessTokenSave(Db * db, UserAccessToken * token)
 {
     DbRef *ref;
@@ -555,14 +552,14 @@ UserAccessTokenSave(Db * db, UserAccessToken * token)
 
     if (!token)
     {
-        return 0;
+        return false;
     }
 
     ref = DbCreate(db, 3, "tokens", "access", token->string);
 
     if (!ref)
     {
-        return 0;
+        return false;
     }
 
     json = DbJson(ref);
@@ -570,9 +567,9 @@ UserAccessTokenSave(Db * db, UserAccessToken * token)
     HashMapSet(json, "user", JsonValueString(token->user));
     HashMapSet(json, "device", JsonValueString(token->deviceId));
 
-    if (Int64Neq(token->lifetime, Int64Create(0, 0)))
+    if (token->lifetime)
     {
-        HashMapSet(json, "expires", JsonValueInteger(UInt64Add(UtilServerTs(), token->lifetime)));
+        HashMapSet(json, "expires", JsonValueInteger(UtilTsMillis() + token->lifetime));
     }
 
     return DbUnlock(db, ref);
@@ -592,7 +589,7 @@ UserAccessTokenFree(UserAccessToken * token)
     Free(token);
 }
 
-int
+bool
 UserDeleteToken(User * user, char *token)
 {
     char *username;
@@ -610,14 +607,14 @@ UserDeleteToken(User * user, char *token)
 
     if (!user || !token)
     {
-        return 0;
+        return false;
     }
 
     db = user->db;
     /* First check if the token even exists */
     if (!DbExists(db, 3, "tokens", "access", token))
     {
-        return 0;
+        return false;
     }
 
     /* If it does, get it's username. */
@@ -625,7 +622,7 @@ UserDeleteToken(User * user, char *token)
 
     if (!tokenRef)
     {
-        return 0;
+        return false;
     }
     tokenJson = DbJson(tokenRef);
     username = JsonValueAsString(HashMapGet(tokenJson, "user"));
@@ -635,7 +632,7 @@ UserDeleteToken(User * user, char *token)
     {
         /* Token does not match user, do not delete it */
         DbUnlock(db, tokenRef);
-        return 0;
+        return false;
     }
 
     userJson = DbJson(user->ref);
@@ -643,7 +640,7 @@ UserDeleteToken(User * user, char *token)
 
     if (!deviceObj)
     {
-        return 0;
+        return false;
     }
 
     /* Delete refresh token, if present */
@@ -657,17 +654,17 @@ UserDeleteToken(User * user, char *token)
     deletedVal = HashMapDelete(deviceObj, deviceId);
     if (!deletedVal)
     {
-        return 0;
+        return false;
     }
     JsonValueFree(deletedVal);
 
     /* Delete the access token. */
     if (!DbUnlock(db, tokenRef) || !DbDelete(db, 3, "tokens", "access", token))
     {
-        return 0;
+        return false;
     }
 
-    return 1;
+    return true;
 }
 
 char *
@@ -699,7 +696,7 @@ UserSetProfile(User * user, char *name, char *val)
     JsonValueFree(JsonSet(json, JsonValueString(val), 2, "profile", name));
 }
 
-int
+bool
 UserDeleteTokens(User * user, char *exempt)
 {
     HashMap *devices;
@@ -708,13 +705,13 @@ UserDeleteTokens(User * user, char *exempt)
 
     if (!user)
     {
-        return 0;
+        return false;
     }
 
     devices = JsonValueAsObject(HashMapGet(DbJson(user->ref), "devices"));
     if (!devices)
     {
-        return 0;
+        return false;
     }
 
     while (HashMapIterate(devices, &deviceId, (void **) &deviceObj))
@@ -741,7 +738,7 @@ UserDeleteTokens(User * user, char *exempt)
         JsonValueFree(HashMapDelete(devices, deviceId));
     }
 
-    return 1;
+    return true;
 }
 
 int
@@ -755,30 +752,30 @@ UserGetPrivileges(User * user)
     return UserDecodePrivileges(JsonValueAsArray(HashMapGet(DbJson(user->ref), "privileges")));
 }
 
-int
+bool
 UserSetPrivileges(User * user, int privileges)
 {
     JsonValue *val;
 
     if (!user)
     {
-        return 0;
+        return false;
     }
 
     if (!privileges)
     {
         JsonValueFree(HashMapDelete(DbJson(user->ref), "privileges"));
-        return 1;
+        return true;
     }
 
     val = JsonValueArray(UserEncodePrivileges(privileges));
     if (!val)
     {
-        return 0;
+        return false;
     }
 
     JsonValueFree(HashMapSet(DbJson(user->ref), "privileges", val));
-    return 1;
+    return true;
 }
 
 int

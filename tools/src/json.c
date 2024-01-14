@@ -70,41 +70,17 @@ query(char *select, HashMap * json, int canonical)
         {
             if (StrEquals(keyName + 1, "length"))
             {
-                UInt64 len;
+                uint64_t len;
 
                 switch (JsonValueType(val))
                 {
                     case JSON_ARRAY:
-                        if (sizeof(size_t) == sizeof(UInt64))
-                        {
-                            size_t slen = ArraySize(JsonValueAsArray(val));
-                            UInt32 high = slen >> 32;
-                            UInt32 low = slen;
-
-                            len = UInt64Create(high, low);
-                        }
-                        else
-                        {
-                            len = UInt64Create(0, ArraySize(JsonValueAsArray(val)));
-                        }
-
+                        len = ArraySize(JsonValueAsArray(val));
                         val = JsonValueInteger(len);
                         ArrayAdd(cleanUp, val);
                         break;
                     case JSON_STRING:
-                        if (sizeof(size_t) == sizeof(UInt64))
-                        {
-                            size_t slen = strlen(JsonValueAsString(val));
-                            UInt32 high = slen >> 32;
-                            UInt32 low = slen;
-
-                            len = UInt64Create(high, low);
-                        }
-                        else
-                        {
-                            len = UInt64Create(0, strlen(JsonValueAsString(val)));
-                        }
-
+                        len = strlen(JsonValueAsString(val));
                         val = JsonValueInteger(len);
                         ArrayAdd(cleanUp, val);
                         break;

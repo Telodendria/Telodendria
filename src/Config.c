@@ -30,7 +30,6 @@
 #include <Cytoplasm/Str.h>
 #include <Cytoplasm/Db.h>
 #include <Cytoplasm/Log.h>
-#include <Cytoplasm/Int64.h>
 #include <Cytoplasm/Util.h>
 
 #include <sys/types.h>
@@ -59,7 +58,7 @@ ConfigParse(HashMap * config, Config *tConfig)
 
     memset(tConfig, 0, sizeof(Config));
 
-    tConfig->maxCache = Int64Create(0, 0);
+    tConfig->maxCache = 0;
 
     if (!ConfigFromJson(config, tConfig, &tConfig->err))
     {
@@ -85,17 +84,17 @@ ConfigParse(HashMap * config, Config *tConfig)
     for (i = 0; i < ArraySize(tConfig->listen); i++)
     {
         ConfigListener *listener = ArrayGet(tConfig->listen, i);
-        if (Int64Eq(listener->maxConnections, Int64Create(0, 0)))
+        if (!listener->maxConnections)
         {
-            listener->maxConnections = Int64Create(0, 32);
+            listener->maxConnections = 32;
         }
-        if (Int64Eq(listener->threads, Int64Create(0, 0)))
+        if (!listener->threads)
         {
-            listener->threads = Int64Create(0, 4);
+            listener->threads = 4;
         }
-        if (Int64Eq(listener->port, Int64Create(0, 0)))
+        if (!listener->port)
         {
-            listener->port = Int64Create(0, 8008);
+            listener->port = 8008;
         }
     }
     tConfig->ok = 1;
@@ -148,9 +147,9 @@ ConfigCreateDefault(Db * db)
     /* Add simple listener without TLS. */
     config.listen = ArrayCreate();
     listener = Malloc(sizeof(ConfigListener));
-    listener->maxConnections = Int64Create(0, 32);
-    listener->port = Int64Create(0, 8008);
-    listener->threads = Int64Create(0, 4);
+    listener->maxConnections = 32;
+    listener->port = 8008;
+    listener->threads = 4;
 
     ArrayAdd(config.listen, listener);
 

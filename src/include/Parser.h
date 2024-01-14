@@ -25,6 +25,8 @@
 #ifndef TELODENDRIA_PARSER_H
 #define TELODENDRIA_PARSER_H
 
+#include <stdbool.h>
+
 /***
  * @Nm Parser
  * @Nd Functions for dealing with grammars found in Matrix
@@ -58,17 +60,17 @@ typedef struct CommonID {
  * Parses a common identifier, as per the Common Identifier Format as defined 
  * by the [matrix] specification.
  */
-extern int ParseCommonID(char *, CommonID *);
+extern bool ParseCommonID(char *, CommonID *);
 
 /** 
  * Parses the server part in a common identifier.
  */
-extern int ParseServerPart(char *, ServerPart *);
+extern bool ParseServerPart(char *, ServerPart *);
 
 /** 
  * Checks whenever the string is a valid common ID with the correct sigil.
  */
-extern int ValidCommonID(char *, char);
+extern bool ValidCommonID(char *, char);
 
 /** 
  * Frees a CommonID's values. Note that it doesn't free the CommonID itself.
@@ -100,7 +102,7 @@ extern char * ParserRecomposeServerPart(ServerPart);
 /**
  * Compares whenever a ServerName is equivalent to a server name string.
  */
-extern int ParserServerNameEquals(ServerPart, char *);
+extern bool ParserServerNameEquals(ServerPart, char *);
 
 
 #endif                             /* TELODENDRIA_PARSER_H */

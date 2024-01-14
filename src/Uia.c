@@ -135,7 +135,7 @@ BuildResponse(Array * flows, Db * db, HashMap ** response, char *session, DbRef 
 
         json = DbJson(ref);
         HashMapSet(json, "completed", JsonValueArray(ArrayCreate()));
-        HashMapSet(json, "last_access", JsonValueInteger(UtilServerTs()));
+        HashMapSet(json, "last_access", JsonValueInteger(UtilTsMillis()));
         DbUnlock(db, ref);
 
         HashMapSet(*response, "completed", JsonValueArray(ArrayCreate()));
@@ -452,7 +452,7 @@ UiaComplete(Array * flows, HttpServerContext * context, Db * db,
 
 finish:
     ArrayFree(possibleNext);
-    JsonValueFree(HashMapSet(dbJson, "last_access", JsonValueInteger(UtilServerTs())));
+    JsonValueFree(HashMapSet(dbJson, "last_access", JsonValueInteger(UtilTsMillis())));
     DbUnlock(db, dbRef);
     return ret;
 }
@@ -498,7 +498,7 @@ UiaCleanup(MatrixHttpHandlerArgs * args)
         char *session = ArrayGet(sessions, i);
         DbRef *ref = DbLock(args->db, 2, "user_interactive", session);
 
-        UInt64 lastAccess;
+        uint64_t lastAccess;
 
         if (!ref)
         {
@@ -513,7 +513,7 @@ UiaCleanup(MatrixHttpHandlerArgs * args)
 
         /* If last access was greater than 15 minutes ago, remove this
          * session */
-        if (UInt64Gt(UInt64Sub(UtilServerTs(), lastAccess), UInt64Create(0, 1000 * 60 * 15)))
+        if ((UtilTsMillis() - lastAccess) > (1000 * 60 * 15))
         {
             DbDelete(args->db, 2, "user_interactive", session);
             Log(LOG_DEBUG, "Deleted session %s", session);
