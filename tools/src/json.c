@@ -130,7 +130,7 @@ query(char *select, HashMap * json, int canonical)
             {
                 size_t i;
 
-                if (sscanf(keyName + 1, "%lu", &i) == 1)
+                if (sscanf(keyName + 1, "%zu", &i) == 1)
                 {
                     JsonValueFree(ArrayDelete(JsonValueAsArray(val), i));
                 }
