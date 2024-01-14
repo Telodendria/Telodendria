@@ -57,3 +57,24 @@ pidfile="/run/act_runner.pid"
 Don't forget to `chmod +x /etc/init.d/act_runner`.
 
 Then just `rc-update add act_runner` and `rc-service act_runner start`.
+
+#### Debian
+
+In `/etc/systemd/system/act_runner.service`:
+
+```
+[Unit]
+Description=Gitea Actions runner
+
+[Service]
+ExecStart=/home/runner/act_runner/act_runner daemon
+ExecReload=/bin/kill -s HUP $MAINPID
+WorkingDirectory=/home/runner/act_runner
+TimeoutSec=0
+RestartSec=10
+Restart=always
+User=runner
+
+[Install]
+WantedBy=multi-user.target
+```
