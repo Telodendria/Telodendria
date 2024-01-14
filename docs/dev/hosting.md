@@ -78,3 +78,17 @@ User=runner
 [Install]
 WantedBy=multi-user.target
 ```
+
+Then just `systemctl enable act_runner` and `systemctl start act_runner`.
+
+#### Other
+
+Eventually I got sick of writing init scripts for all the various operating systems.
+
+Just put this in `runner`'s `crontab`:
+
+```
+@reboot cd /home/runner/act_runner && ./act_runner daemon
+```
+
+That seems to do the job good enough, and it's cross platform.
