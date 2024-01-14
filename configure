@@ -13,13 +13,40 @@ SRC="src"
 INCLUDE="src/include"
 TOOLS="tools/src"
 SCHEMA="Schema"
+CYTOPLASM="Cytoplasm"
 
-CFLAGS="-Wall -Wextra -pedantic -std=c89 -O3 -pipe -D_DEFAULT_SOURCE -I${INCLUDE} -I${BUILD}"
+CFLAGS="-O1 -D_DEFAULT_SOURCE -I${INCLUDE} -I${BUILD}"
 LIBS="-lm -pthread -lCytoplasm"
 
 
 # Set default args for all platforms
-SCRIPT_ARGS="--cc=cc --prefix=/usr/local --enable-ld-extra --bin-name=telodendria --version=1.7.0-alpha4 --static $@"
+SCRIPT_ARGS="--prefix=/usr/local --bin-name=telodendria --version=1.7.0-alpha4"
+
+if [ -f "${CYTOPLASM}/configure" ]; then
+    SCRIPT_ARGS="${SCRIPT_ARGS} --cytoplasm=${CYTOPLASM}"
+else
+    SCRIPT_ARGS="${SCRIPT_ARGS} --cytoplasm=" # No cytoplasm path.
+fi
+
+# Set compiler depending on the platform.
+case "$(uname)" in
+    Linux|NetBSD)
+        # These systems typically use GCC.
+        SCRIPT_ARGS="${SCRIPT_ARGS} --cc=gcc"
+        ;;
+    OpenBSD|FreeBSD)
+        # These systems typically use Clang.
+        SCRIPT_ARGS="${SCRIPT_ARGS} --cc=clang"
+        ;;
+    *)
+        # Use default compiler which is required to be present on
+        # all POSIX-compliant systems.
+        SCRIPT_ARGS="${SCRIPT_ARGS} --cc=c99"
+        ;;
+esac
+
+# Append any additional args specified by user
+SCRIPT_ARGS="${SCRIPT_ARGS} $@"
 
 echo "Processing options..."
 echo "Ran with arguments: $SCRIPT_ARGS"
@@ -29,15 +56,17 @@ for arg in $SCRIPT_ARGS; do
     case "$arg" in
         --cc=*)
             CC=$(echo "$arg" | cut -d '=' -f 2-)
+            case "${CC}" in
+                gcc*|clang*)
+                    # "Fancy" compilers that support a plethora of additional flags we
+                    # want to enable if present.
+                    CFLAGS="-Wall -Wextra -Werror -pedantic -std=c99 -O3 ${CFLAGS}"
+                    LDFLAGS="-flto -fdata-sections -ffunction-sections -s -Wl,-gc-sections"
+                    ;;
+            esac
             ;;
         --prefix=*)
             PREFIX=$(echo "$arg" | cut -d '=' -f 2-)
-            ;;
-        --enable-ld-extra)
-            LD_EXTRA="-flto -fdata-sections -ffunction-sections -s -Wl,-gc-sections"
-            ;;
-        --disable-ld-extra)
-            LD_EXTRA=""
             ;;
         --bin-name=*)
             BIN_NAME=$(echo "$arg" | cut -d '=' -f 2-)
@@ -47,20 +76,21 @@ for arg in $SCRIPT_ARGS; do
             ;;
         --enable-debug)
             DEBUG="-O0 -g"
-            echo "Notice: --enable-debug implies --disable-ld-extra and --no-static."
-            echo "You must explicitly provide --enable-ld-extra and/or --static after"
-            echo "specifying --enable-debug if you wish to enable these features in debug mode."
-            LD_EXTRA=""
-            STATIC=""
             ;;
         --disable-debug)
             DEBUG=""
             ;;
-        --static)
-            STATIC="-static -Wl,-static"
-            ;;
-        --no-static)
-            STATIC=""
+        --cytoplasm=*)
+            CYTOPLASM=$(echo "$arg" | cut -d '=' -f 2-)
+            if [ -n "${CYTOPLASM}" ]; then
+                if [ ! -f "${CYTOPLASM}/configure" ]; then
+                    echo "Path for Cytoplasm does not appear to actually contain Cytoplasm source:"
+                    echo "${CYTOPLASM}"
+                    exit 1
+                fi
+
+                CFLAGS="${CFLAGS} -L${CYTOPLASM}/out/lib -I${CYTOPLASM}/include"
+            fi
             ;;
         *)
             echo "Invalid argument: $arg"
@@ -70,7 +100,7 @@ for arg in $SCRIPT_ARGS; do
 done
 
 CFLAGS="${CFLAGS} '-DTELODENDRIA_VERSION=\"${VERSION}\"' ${DEBUG}"
-LDFLAGS="${LIBS} ${LD_EXTRA}"
+LDFLAGS="${LIBS} ${LDFLAGS}"
 
 #
 # Makefile generation
@@ -103,6 +133,16 @@ prefix() {
     done
 }
 
+cytoplasm_tool() {
+    tool="$1"
+
+    if [ -n "${CYTOPLASM}" ]; then
+        echo "LD_LIBRARY_PATH=${CYTOPLASM}/out/lib ${CYTOPLASM}/out/bin/$tool"
+    else
+        echo "$tool"
+    fi
+}
+
 print_src() {
 	printf '%s ' "$1"
 }
@@ -111,11 +151,27 @@ print_obj() {
 	printf '%s ' "$2"
 }
 
+get_deps() {
+    src="$1"
+
+    ${CC} -I${INCLUDE} -I${BUILD} $(if [ -n "${CYTOPLASM}" ]; then echo "-I${CYTOPLASM}/include"; fi) -E "$src" \
+        | grep '^#'                          \
+        | awk '{print $3}'                   \
+        | cut -d '"' -f 2                    \
+        | sort                               \
+        | uniq                               \
+        | grep -v '^[/<]'                    \
+        | grep -e "^${SRC}/" -e "^${BUILD}/" \
+        | while IFS= read -r dep; do
+        printf "%s " "$dep"
+    done
+}
+
 compile_obj() {
 	src="$1"
 	obj="$2"
 
-	pref=$(${CC} -I${INCLUDE} -I${BUILD} -MM -MT "${obj}" "${src}")
+	pref="${obj}: $(get_deps ${src})"
     echo "$pref $(collect ${SCHEMA}/ .json .h ${BUILD}/Schema/ print_obj)"
 	echo "${TAB}@mkdir -p $(dirname ${obj})"
 	echo "${TAB}\$(CC) \$(CFLAGS) -fPIC -c -o \"${obj}\" \"${src}\""
@@ -129,7 +185,7 @@ compile_bin() {
     
     echo "${out}: ${src}"
     echo "${TAB}@mkdir -p ${OUT}/bin"
-    echo "${TAB}\$(CC) \$(CFLAGS) -o \"${out}\" \"${src}\" $depObjs \$(LDFLAGS) ${STATIC}"
+    echo "${TAB}\$(CC) \$(CFLAGS) -o \"${out}\" \"${src}\" $depObjs \$(LDFLAGS)"
 }
 
 compile_doc() {
@@ -142,7 +198,7 @@ compile_doc() {
 
 	echo "${out}: ${src}"
 	echo "${TAB}@mkdir -p ${OUT}/man/man3"
-	echo "${TAB}hdoc -D \"Os=${BIN_NAME}\" -i \"${src}\" -o \"${out}\""
+	echo "${TAB}$(cytoplasm_tool hdoc) -D \"Os=${BIN_NAME}\" -i \"${src}\" -o \"${out}\""
 }
 
 print_doc() {
@@ -160,11 +216,11 @@ compile_schema() {
 
     echo "${BUILD}/Schema/${out}.h:"
     echo "${TAB}@mkdir -p ${BUILD}/Schema"
-    echo "${TAB}j2s -s \"${src}\" -h \"${BUILD}/Schema/${out}.h\" -c \"${BUILD}/Schema/${out}.c\""
+    echo "${TAB}$(cytoplasm_tool j2s) -s \"${src}\" -h \"${BUILD}/Schema/${out}.h\" -c \"${BUILD}/Schema/${out}.c\""
 
     echo "${BUILD}/Schema/${out}.c:"
     echo "${TAB}@mkdir -p ${BUILD}/Schema"
-    echo "${TAB}j2s -s \"${src}\" -h \"${BUILD}/Schema/${out}.h\" -c \"${BUILD}/Schema/${out}.c\""
+    echo "${TAB}$(cytoplasm_tool j2s) -s \"${src}\" -h \"${BUILD}/Schema/${out}.h\" -c \"${BUILD}/Schema/${out}.c\""
 
     echo "${obj}: ${src} ${BUILD}/Schema/${out}.c"
     echo "${TAB}@mkdir -p ${BUILD}/Schema"
@@ -227,7 +283,7 @@ ${TAB}    diff -u -p - "LICENSE.txt" | \\
 ${TAB}    patch "\$\$src" | grep -v "^Hmm"; \\
 ${TAB}done
 
-${BIN_NAME}: ${OUT}/bin/${BIN_NAME}
+${BIN_NAME}: $(if [ -n "${CYTOPLASM}" ]; then echo "cytoplasm"; fi) ${OUT}/bin/${BIN_NAME}
 
 install: ${BIN_NAME}
 ${TAB}install -D ${OUT}/bin/${BIN_NAME} \$(PREFIX)/bin/${BIN_NAME}
@@ -246,6 +302,13 @@ $(collect ${SCHEMA}/ .json '' '' compile_schema)
 $(collect ${SRC}/ .c .o ${BUILD}/ compile_obj)
 $(collect ${TOOLS}/ .c '' ${OUT}/bin/ compile_bin)
 $(collect ${INCLUDE}/ .h .3 ${OUT}/man/man3/${BIN_NAME}- compile_doc)
+
+$(
+if [ -n "${CYTOPLASM}" ]; then
+    echo "cytoplasm:"
+    echo "${TAB}cd ${CYTOPLASM} && ./configure && \$(MAKE)"
+fi
+)
 
 EOF
 
