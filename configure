@@ -61,7 +61,7 @@ for arg in $SCRIPT_ARGS; do
                     # "Fancy" compilers that support a plethora of additional flags we
                     # want to enable if present.
                     CFLAGS="-Wall -Wextra -Werror -pedantic -std=c99 -O3 ${CFLAGS}"
-                    LDFLAGS="-flto -fdata-sections -ffunction-sections -s -Wl,-gc-sections"
+                    LDFLAGS="${LDFLAGS} -flto -fdata-sections -ffunction-sections -s -Wl,-gc-sections"
                     ;;
             esac
             ;;
@@ -101,7 +101,7 @@ for arg in $SCRIPT_ARGS; do
 done
 
 CFLAGS="${CFLAGS} '-DTELODENDRIA_VERSION=\"${VERSION}\"' ${DEBUG}"
-LDFLAGS="${LIBS} ${LDFLAGS}"
+LDFLAGS="${LDFLAGS} ${LIBS}"
 
 #
 # Makefile generation
