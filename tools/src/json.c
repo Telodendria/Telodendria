@@ -64,7 +64,7 @@ query(char *select, HashMap * json, int canonical)
         int expectArr = 0;
         int func = 0;
 
-        expectArr = (sscanf(key, "%127[^[][%lu]", keyName, &arrInd) == 2);
+        expectArr = (sscanf(key, "%127[^[][%zu]", keyName, &arrInd) == 2);
 
         if (keyName[0] == '@')
         {
