@@ -185,8 +185,6 @@ ROUTE_IMPL(RouteUserProfile, path, argp)
 finish:
     ConfigUnlock(&config);
 
-    /* Username is handled by the router, freeing it would cause issues. */
-    Free(entry);
     UserIdFree(userId);
     UserUnlock(user);
     JsonFree(request);
