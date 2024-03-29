@@ -152,7 +152,7 @@ ParseIPv6(char **str, char **out)
         goto fail;
     }
 
-    while ((c = Iterate(str)) && IsIPv6Char(c))
+    while ((c = Iterate(str)) && IsIPv6Char(c) && digits < 8)
     {
         char *ipv4;
         if (isxdigit(c))
