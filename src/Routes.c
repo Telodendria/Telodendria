@@ -72,6 +72,7 @@ RouterBuild(void)
 
     R("/_matrix/client/v3/profile/(.*)", RouteUserProfile);
     R("/_matrix/client/v3/profile/(.*)/(avatar_url|displayname)", RouteUserProfile);
+    R("/_matrix/client/v3/user_directory/search", RouteUserDirectory);
 
     R("/_matrix/client/v3/user/(.*)/filter", RouteFilter);
     R("/_matrix/client/v3/user/(.*)/filter/(.*)", RouteFilter);

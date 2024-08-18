@@ -86,6 +86,7 @@ ROUTE(RouteChangePwd);
 ROUTE(RouteDeactivate);
 ROUTE(RouteTokenValid);
 ROUTE(RouteUserProfile);
+ROUTE(RouteUserDirectory);
 ROUTE(RouteRequestToken);
 
 ROUTE(RouteUiaFallback);

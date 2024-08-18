@@ -1,0 +1,13 @@
+{
+  "header": "Schema\/UserDirectoryRequest.h",
+  "types": {
+    "UserDirectoryRequest": {
+      "fields": {
+        "search_term": { "type": "string" },
+        "limit": { "type": "integer" }
+      },
+      "type": "struct"
+    }
+  },
+  "guard": "TELODENDRIA_SCHEMA_USERDIRECTORYREQUEST_H"
+}
