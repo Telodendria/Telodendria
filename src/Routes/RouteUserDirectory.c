@@ -45,7 +45,7 @@ ROUTE_IMPL(RouteUserDirectory, path, argp)
 
     Db *db = args->matrixArgs->db;
 
-    Config *config = NULL;
+    Config config = { .ok = 0 };
 
     User *user = NULL;
 
@@ -60,7 +60,7 @@ ROUTE_IMPL(RouteUserDirectory, path, argp)
     (void) path;
 
     dirRequest.search_term = NULL;
-    dirRequest.limit = Int64Create(0, 10);
+    dirRequest.limit = 10;
 
 
     if (HttpRequestMethodGet(args->context) != HTTP_POST)
@@ -116,17 +116,17 @@ ROUTE_IMPL(RouteUserDirectory, path, argp)
      * local server. */
     users = DbList(db, 1, "users");
 
-    config = ConfigLock(db);
-    if (!config)
+    ConfigLock(db, &config);
+    if (!config.ok)
     {
         Log(LOG_ERR, "Directory endpoint failed to lock configuration.");
         HttpResponseStatus(args->context, HTTP_INTERNAL_SERVER_ERROR);
-        response = MatrixErrorCreate(M_UNKNOWN, NULL);
+        response = MatrixErrorCreate(M_UNKNOWN, config.err);
 
         goto finish;
     }
 
-#define IncludedLtLimit (Int64Lt(Int64Create(0, included), dirRequest.limit))
+#define IncludedLtLimit ((int64_t) included < dirRequest.limit)
     for (i = 0, included = 0; i < ArraySize(users) && IncludedLtLimit; i++)
 #undef IncludedLtLimit
     {
@@ -168,7 +168,7 @@ ROUTE_IMPL(RouteUserDirectory, path, argp)
             }
             if (name)
             {
-                char *uID = StrConcat(4, "@", name, ":", config->serverName);
+                char *uID = StrConcat(4, "@", name, ":", config.serverName);
                 JsonSet(obj, JsonValueString(uID), 1, "user_id");
                 Free(uID);
             }
@@ -184,15 +184,16 @@ ROUTE_IMPL(RouteUserDirectory, path, argp)
         }
     }
     JsonSet(response, JsonValueArray(results), 1, "results");
-    JsonSet(response, JsonValueBoolean(
-            Int64Eq(Int64Create(0, included), dirRequest.limit)), 1, 
-            "limited");
+    JsonSet(response, 
+        JsonValueBoolean((int64_t) included == dirRequest.limit), 
+        1, "limited"
+    );
 
 finish:
     UserUnlock(user);
     JsonFree(request);
     DbListFree(users);
-    ConfigUnlock(config);
+    ConfigUnlock(&config);
     UserDirectoryRequestFree(&dirRequest);
     return response;
 }
