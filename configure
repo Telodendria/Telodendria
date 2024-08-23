@@ -231,15 +231,19 @@ compile_schema() {
 install_out() {
 	src="$1"
 	out="$2"
+	dir=$(dirname "$out")
 
-	echo "${TAB}install -D \"$src\" \"$out\""
+	echo "${TAB}mkdir -p \"$dir\""
+	echo "${TAB}cp \"$src\" \"$out\""
 }
 
 install_man() {
 	src="${OUT}/man/man3/${BIN_NAME}-$(basename $1 .h).3"
 	out="$2"
+	dir=$(dirname "$out")
 
-	echo "${TAB}install -D \"$src\" \"$out\""
+	echo "${TAB}mkdir -p \"$dir\""
+	echo "${TAB}cp \"$src\" \"$out\""
 }
 
 uninstall_out() {
@@ -287,7 +291,8 @@ ${TAB}done
 ${BIN_NAME}: ${OUT}/bin/${BIN_NAME}
 
 install: ${BIN_NAME}
-${TAB}install -D ${OUT}/bin/${BIN_NAME} \$(PREFIX)/bin/${BIN_NAME}
+${TAB}mkdir -p \$(PREFIX)/bin
+${TAB}cp ${OUT}/bin/${BIN_NAME} \$(PREFIX)/bin/${BIN_NAME}
 
 uninstall:
 ${TAB}rm \$(PREFIX)/bin/${BIN_NAME}
