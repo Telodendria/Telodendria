@@ -384,7 +384,7 @@ UserCheckPassword(User * user, char *password)
 
     tmp = StrConcat(2, password, salt);
     hashBytes = Sha256(tmp);
-    hashedPwd = ShaToHex(hashBytes);
+    hashedPwd = ShaToHex(hashBytes, HASH_SHA256);
     Free(tmp);
     Free(hashBytes);
 
@@ -415,7 +415,7 @@ UserSetPassword(User * user, char *password)
     salt = StrRandom(16);
     tmpstr = StrConcat(2, password, salt);
     hashBytes = Sha256(tmpstr);
-    hash = ShaToHex(hashBytes);
+    hash = ShaToHex(hashBytes, HASH_SHA256);
 
     JsonValueFree(HashMapSet(json, "salt", JsonValueString(salt)));
     JsonValueFree(HashMapSet(json, "password", JsonValueString(hash)));
