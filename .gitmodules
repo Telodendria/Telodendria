@@ -1,3 +1,3 @@
 [submodule "Cytoplasm"]
 	path = Cytoplasm
-	url = https://git.telodendria.io/Telodendria/Cytoplasm.git
+	url = git@telodendria.io/Telodendria/Cytoplasm.git
