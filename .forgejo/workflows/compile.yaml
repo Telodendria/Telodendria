@@ -1,0 +1,22 @@
+name: Compile Telodendria
+run-name: Compile Telodendria on ${{ forgejo.actor }}
+on: [push]
+
+jobs:
+    "Compile Telodendria":
+        strategy:
+            matrix:
+                os: [alpine]
+                arch: [aarch64]
+        runs-on: ["${{ matrix.os }}", "${{ matrix.arch }}"]
+        steps:
+            - name: Check out repository
+              uses: actions/checkout@v4
+              with:
+                submodules: true
+            - name: Configure Telodendria
+              run: ./configure
+            - name: Configure & Build Cytoplasm
+              run: make cytoplasm
+            - name: Build Telodendria
+              run: make
