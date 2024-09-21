@@ -14,13 +14,13 @@ jobs:
                 arch: [aarch64]
         runs-on: ["${{ matrix.os }}", "${{ matrix.arch }}"]
         steps:
-            - name: Determine release tag
-              id: tag
-              run: echo ::set-output name=TAG:$(git rev-parse --abbrev-ref HEAD)
             - name: Check out repository
               uses: actions/checkout@v4
               with:
                 submodules: true
+            - name: Determine release tag
+              id: tag
+              run: echo ::set-output name=TAG:$(git rev-parse --abbrev-ref HEAD)
             - name: Archive submodules
               run: git submodule foreach --recursive 'git archive --format tar --prefix=$displaypath/ -o submodule.tar HEAD'
             - name: Archive repository
