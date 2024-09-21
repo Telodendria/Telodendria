@@ -1,7 +1,10 @@
 name: Release Telodendria
 run-name: Release Telodendria on ${{ forgejo.actor }}
 
-on: [tag]
+on:
+  push:
+    tags:
+      - 'v*'
 
 jobs:
     "Release Telodendria":
