@@ -24,7 +24,7 @@ jobs:
             - name: Archive submodules
               run: git submodule foreach --recursive 'git archive --format tar --prefix=$displaypath/ -o submodule.tar HEAD'
             - name: Archive repository
-              run: git archive --format -tar -o release.tar HEAD
+              run: git archive --format tar -o release.tar HEAD
             - name: Produce release archive
               run: |
                 TOPDIR=$(pwd) git submodule --quiet foreach --recursive 'cd $TOPDIR; tar --concatenate --file=release.tar $displaypath/submodule.tar; rm -fv $displaypath/submodule.tar'
