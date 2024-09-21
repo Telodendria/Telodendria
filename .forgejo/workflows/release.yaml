@@ -35,5 +35,5 @@ jobs:
             - name: Upload artifact
               uses: actions/upload-artifact@v3
               with:
-                name: Release
+                name: Telodendria-${{steps.tag.outputs.TAG}}.tar.gz
                 path: Telodendria-${{steps.tag.outputs.TAG}}.tar.gz
