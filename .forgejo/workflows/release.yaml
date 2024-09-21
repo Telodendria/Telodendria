@@ -1,10 +1,7 @@
 name: Release Telodendria
 run-name: Release Telodendria on ${{ forgejo.actor }}
-# on:
-#   tags:
-#     - 'v*'
-# For testing only:
-on: [push]
+
+on: [tag]
 
 jobs:
     "Release Telodendria":
@@ -18,9 +15,6 @@ jobs:
               uses: actions/checkout@v4
               with:
                 submodules: true
-            - name: Determine release tag
-              id: tag
-              run: echo ::set-output name=TAG:$(git rev-parse --abbrev-ref HEAD)
             - name: Archive submodules
               run: git submodule foreach --recursive 'git archive --format tar --prefix=$displaypath/ -o submodule.tar HEAD'
             - name: Archive repository
@@ -29,11 +23,19 @@ jobs:
               run: |
                 TOPDIR=$(pwd) git submodule --quiet foreach --recursive 'cd $TOPDIR; tar --concatenate --file=release.tar $displaypath/submodule.tar; rm -fv $displaypath/submodule.tar'
                 gzip release.tar
-                mv release.tar.gz Telodendria-$RELEASE_TAG.tar.gz
-              env:
-                RELEASE_TAG: ${{steps.tag.outputs.TAG}}
+                mkdir release
+                mv release.tar.gz release/Telodendria-$GITHUB_REF_NAME.tar.gz
             - name: Upload artifact
               uses: actions/upload-artifact@v3
               with:
-                name: Telodendria-${{steps.tag.outputs.TAG}}.tar.gz
-                path: Telodendria-${{steps.tag.outputs.TAG}}.tar.gz
+                name: Telodendria-$GITHUB_REF_NAME.tar.gz
+                path: release/Telodendria-$GITHUB_REF_NAME.tar.gz
+            - name: Publish release
+              uses: actions/forgejo-release@v3
+              with:
+                tag: $GITHUB_REF_NAME
+                title: "Telodendria $GITHUB_REF_NAME"
+                release-dir: release/
+                release-notes: "docs/CHANGELOG.md"
+                direction: upload
+                prerelease: true
