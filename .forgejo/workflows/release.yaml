@@ -16,7 +16,7 @@ jobs:
         steps:
             - name: Determine release tag
               id: tag
-              run: echo ::set-output name=TAG:${GITHUB_REF#refs/tags/}
+              run: echo ::set-output name=TAG:$(git rev-parse --abbrev-ref HEAD)
             - name: Check out repository
               uses: actions/checkout@v4
               with:
