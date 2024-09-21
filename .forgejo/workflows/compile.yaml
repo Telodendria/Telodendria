@@ -1,6 +1,11 @@
 name: Compile Telodendria
 run-name: Compile Telodendria on ${{ forgejo.actor }}
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - 'ma*'
+  pull_request:
+    types: [opened, synchronize, reopened]
 
 jobs:
     "Compile Telodendria":

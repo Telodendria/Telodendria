@@ -34,7 +34,7 @@ jobs:
                 name: Telodendria-$GITHUB_REF_NAME.tar.gz
                 path: release/Telodendria-$GITHUB_REF_NAME.tar.gz
             - name: Publish release
-              uses: actions/forgejo-release@v3
+              uses: actions/forgejo-release@v1
               with:
                 tag: $GITHUB_REF_NAME
                 title: "Telodendria $GITHUB_REF_NAME"
