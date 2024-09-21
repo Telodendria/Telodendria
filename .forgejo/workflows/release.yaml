@@ -1,0 +1,39 @@
+name: Release Telodendria
+run-name: Release Telodendria on ${{ forgejo.actor }}
+# on:
+#   tags:
+#     - 'v*'
+# For testing only:
+on: [push]
+
+jobs:
+    "Release Telodendria":
+        strategy:
+            matrix:
+                os: [alpine]
+                arch: [aarch64]
+        runs-on: ["${{ matrix.os }}", "${{ matrix.arch }}"]
+        steps:
+            - name: Determine release tag
+              id: tag
+              run: echo ::set-output name=TAG:${GITHUB_REF#refs/tags/}
+            - name: Check out repository
+              uses: actions/checkout@v4
+              with:
+                submodules: true
+            - name: Archive submodules
+              run: git submodule foreach --recursive 'git archive --format tar --prefix=$displaypath/ -o submodule.tar HEAD'
+            - name: Archive repository
+              run: git archive --format -tar -o release.tar HEAD
+            - name: Produce release archive
+              run: |
+                TOPDIR=$(pwd) git submodule --quiet foreach --recursive 'cd $TOPDIR; tar --concatenate --file=release.tar $displaypath/submodule.tar; rm -fv $displaypath/submodule.tar'
+                gzip release.tar
+                mv release.tar.gz Telodendria-$RELEASE_TAG.tar.gz
+              env:
+                RELEASE_TAG: ${{steps.tag.outputs.TAG}}
+            - name: Upload artifact
+              uses: actions/upload-artifact@v3
+              with:
+                name: Release
+                path: Telodendria-${{steps.tag.outputs.TAG}}.tar.gz
