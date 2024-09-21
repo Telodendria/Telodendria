@@ -34,7 +34,7 @@ case "$(uname)" in
         # These systems typically use GCC.
         SCRIPT_ARGS="${SCRIPT_ARGS} --cc=gcc"
         ;;
-    OpenBSD|FreeBSD)
+    OpenBSD|FreeBSD|Darwin)
         # These systems typically use Clang.
         SCRIPT_ARGS="${SCRIPT_ARGS} --cc=clang"
         ;;
