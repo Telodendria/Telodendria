@@ -5,7 +5,7 @@ find that some documentation is missing or incorrect, please open an
 issue, and, even better, a pull request to fix the issue.
 
 You are also welcome to join the
-[`#telodendria-general:bancino.net`](https://matrix.to/#/#telodendria-general:bancino.net)
+[`#general:synapse.telodendria.io`](https://matrix.to/#/#general:synapse.telodendria.io)
 matrix room, where you can discuss Telodnedria with others and ask
 questions.
 
