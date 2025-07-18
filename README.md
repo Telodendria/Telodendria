@@ -65,11 +65,11 @@ you should never feel like Telodendria is going to change significantly
 between upgrades.
 - **Well-Documented:** Telodendria places as much emphasis on documentation as on code, which means you can be sure that the documentation will always remain up-to-date, accurate, and most importantly, reasonably exhaustive.
 
-[Read Technical Rationale &rightarrow;](https://git.telodendria.io/Telodendria/Telodendria/src/branch/master/docs/dev/rationale.md)
+[Read Technical Rationale &rightarrow;](https://git.telodendria.org/Telodendria/Telodendria/src/branch/master/docs/dev/rationale.md)
 
 ## Get Started
 
-Check out the [Documentation](https://git.telodendria.io/Telodendria/telodendria/src/branch/master/docs/README.md) to get started with
+Check out the [Documentation](https://git.telodendria.org/Telodendria/telodendria/src/branch/master/docs/README.md) to get started with
 Telodendria.
 
 ## Status
@@ -85,7 +85,7 @@ only. Additional features, including federation with other Matrix
 homeservers will be added in future releases.
 
 You can help speed up development by **sponsoring**
-Telodendria or [getting involved](https://git.telodendria.io/Telodendria/Telodendria/src/branch/master/docs/CONTRIBUTING.md).
+Telodendria or [getting involved](https://git.telodendria.org/Telodendria/Telodendria/src/branch/master/docs/CONTRIBUTING.md).
 
 ## Sponsorship
 
@@ -101,7 +101,7 @@ one-time donations using
 [Stripe](https://donate.stripe.com/8wM29AfF5bRJc48eUU). If you would
 like to make a recurring donation larger than that allowed by
 LiberaPay, please contact Jordan Bancino over Matrix at
-`@jordan:bancino.net` or email at `jordan@bancino.net`.
+`@jordan:synapse.telodendria.org`.
 
 ### Benefits
 
@@ -116,7 +116,7 @@ main website.
 All of the code and documentation for Telodendria is licensed under a
 modified MIT license. The MIT license is an extremely permissive
 license that has very few restrictions. Please consult the
-[`LICENSE.txt`](https://git.telodendria.io/Telodendria/Telodendria/src/branch/master/LICENSE.txt) file for the actual license text. It is
+[`LICENSE.txt`](https://git.telodendria.org/Telodendria/Telodendria/src/branch/master/LICENSE.txt) file for the actual license text. It is
 important to note that the Telodendria license text differs from the
 original MIT license in the following ways:
 

@@ -15,7 +15,7 @@ protocol architecture is now in place.
 Note that the versioning scheme has changed from `v0.X.0` to
 `v1.7.0-alphaX`. This is so that Telodendria releases correspond to the
 Matrix specification that they implement, in accordance with
-[this blog post](https://telodendria.io/blog/on-matrixs-release-cadence-and-state-resolution-v1).
+[this blog post](https://telodendria.org/blog/on-matrixs-release-cadence-and-state-resolution-v1).
 This versioning scheme change does not indicate a drastic leap forward
 in Telodendria's development&mdash;the `-alpha4` suffix indicates that
 this is the 4th pre-release, with the target being a stable `v1.7.0`.

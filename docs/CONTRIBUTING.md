@@ -20,7 +20,7 @@ go to [Issues](/Telodendria/telodendria/issues) &rightarrow;
 instructions.
 
 > **Note:** GitHub issues are not accepted. Issues may only be
-> submitted to the official [Gitea](https://git.telodendria.io)
+> submitted to the official [Forgejo](https://git.telodendria.org)
 > instance.
 
 ### Feature Requests
@@ -80,11 +80,11 @@ changes is to fork the main repository, and then creating a pull
 request to ask us to pull your changes into our repo.
 
 1. If you don't have an account on the
-[Gitea instance](https://git.telodendria.io), create one and sign in.
+[Forgejo instance](https://git.telodendria.org), create one and sign in.
 1. Fork this repository.
 1. In your development environment, clone your fork:
    ```shell
-   git clone https://git.telodendria.io/[YOUR_USERNAME]/Telodendria.git
+   git clone https://git.telodendria.org/[YOUR_USERNAME]/Telodendria.git
    cd Telodendria
    ```
 

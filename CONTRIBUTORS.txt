@@ -1,7 +1,5 @@
 N: Jordan Bancino
-E: jordan@bancino.net
-M: @jordan:bancino.net
-W: https://bancino.net
+M: @jordan:synapse.telodendria.org
 D: Project Lead
 L: United States
 

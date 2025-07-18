@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2022-2024 Jordan Bancino <@jordan:bancino.net> with
- * other valuable contributors. See CONTRIBUTORS.txt for the full list.
+ * Copyright (C) 2022-2025 Jordan Bancino <@jordan:synapse.telodendria.org>
+ * with other valuable contributors. See CONTRIBUTORS.txt for the full list.
  *
  * Permission is hereby granted, free of charge, to any person
  * obtaining a copy of this software and associated documentation files
@@ -136,8 +136,8 @@ TelodendriaPrintHeader(void)
     Log(LOG_INFO, "Telodendria v" TELODENDRIA_VERSION " (Cytoplasm v%s)", CytoplasmGetVersionStr());
     Log(LOG_INFO, "");
     Log(LOG_INFO,
-        "Copyright (C) 2024 Jordan Bancino <@jordan:bancino.net>");
+        "Copyright (C) 2025 Jordan Bancino <@jordan:synapse.telodendria.org>");
     Log(LOG_INFO,
-        "Documentation/Support: https://telodendria.io");
+        "Documentation/Support: https://telodendria.org, #general:synapse.telodendria.org");
     Log(LOG_INFO, "");
 }

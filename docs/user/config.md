@@ -16,7 +16,7 @@ key-value form:
 
 ```json
 {
-    "serverName": "telodendria.io",
+    "serverName": "telodendria.org",
     "listen": [
         {
             "port": 8008
