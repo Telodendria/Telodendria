@@ -156,6 +156,7 @@ get_deps() {
     src="$1"
 
     ${CC} -I${INCLUDE} -I${BUILD} $(if [ -n "${CYTOPLASM}" ]; then echo "-I${CYTOPLASM}/include"; fi) -E "$src" \
+        2> /dev/null                         \
         | grep '^#'                          \
         | awk '{print $3}'                   \
         | cut -d '"' -f 2                    \
@@ -164,8 +165,8 @@ get_deps() {
         | grep -v '^[/<]'                    \
         | grep -e "^${SRC}/" -e "^${BUILD}/" \
         | while IFS= read -r dep; do
-        printf "%s " "$dep"
-    done
+            printf "%s " "$dep"
+        done
 }
 
 compile_obj() {
